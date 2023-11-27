@@ -1,0 +1,7 @@
+*.glob
+*.vo*
+*.aux
+.lia.cache
+imp*.ml*
+.Makefile.coq.d
+Makefile.coq*
