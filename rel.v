@@ -156,7 +156,7 @@ Section Inverse.
   
   Definition inverse (A: Type) (R: relation A): relation A := [set x | R (x.2,x.1)].
 
-  Notation "R .-1" := (@inverse _ R) : classical_set_scope.
+  Local Notation "R .-1" := (@inverse _ R) : classical_set_scope.
   
   Lemma inverse_inverse (U : relation A):  U.-1.-1 = U.
   Proof. rewrite /inverse /mkset predeqE; tauto. Qed.
@@ -209,7 +209,7 @@ Section Inverse.
 
 End Inverse.
 
-Notation "R .-1" := (@inverse _ R) : classical_set_scope.
+Notation "R .-1" := (@inverse _ R). 
 
 #[global]
   Hint Resolve inverse_star inverse_clos_t: relations.
@@ -518,6 +518,18 @@ Section Delta_facts.
     by (exists x; split).
   Qed.
   
+  Lemma DeltaCsubset: (Δ_(X) * R `<=` R).
+  Proof.
+    rewrite /subset /DeltaE /compose /mkset /=.
+    by move => [x y] /= => [[z [[_ <-] H2]]].
+  Qed.
+  
+  Lemma DeltaCsubsetl: (R * Δ_(X) `<=` R).
+  Proof.
+    rewrite /subset /DeltaE /compose /mkset /=.
+    by move => [x y] /= => [[z [H2 [_ <-]]]].
+  Qed.
+    
 End Delta_facts.
 
 #[global]
