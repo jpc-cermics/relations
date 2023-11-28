@@ -11,10 +11,11 @@
 
 From AAC_tactics Require Import AAC.
 
-Set Warnings "-parsing".
-From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq.
+Set Warnings "-parsing -coercions".
+From mathcomp Require Import all_ssreflect ssralg matrix finmap order ssrnum.
+From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
-Set Warnings "parsing".
+Set Warnings "parsing coercions".
 
 From RL Require Import  ssrel rel erel3 aacset.
 
@@ -179,19 +180,24 @@ Section Kw_facts.
 End Kw_facts.
 
 Section CwCw_s_facts.
+  (** * Properties of Cw *)   
 
   Definition D (X: set A) := Δ_(X) * Kw *  Δ_(X).
   Definition C (X: set A) :=  (D X).+ `|` Δ_(X).
-  
-  (** * Properties of Cw *) 
-  Lemma C_sym (X: set A) : @symmetric A (C X).
-  Proof.
-    rewrite /C /D;move => x y [H1| [H3 H4]]; last  by right; split; [rewrite -H4 | ].
-    left; have H3: @symmetric A ( Δ_(X) * (Kw *  Δ_(X))).+ 
-      by apply clos_t_sym, Dx_Kw_Dx_sym.
-    by rewrite composeA in H1; apply H3 in H1;rewrite composeA.
-  Qed.
 
+  Lemma Dsym (X: set A): symmetric ( Δ_(X) * (Kw *  Δ_(X))).+ .
+  Proof.
+   by apply clos_t_sym, Dx_Kw_Dx_sym.
+  Qed.
+  
+  Lemma C_sym (X: set A) : symmetric (C X).
+  Proof.
+    have H1: symmetric (D X).+ by rewrite /D composeA; apply Dsym.
+    move => x y [ H2| [/= H3 H4]].
+    by left; apply: H1.
+    by right; split;[ rewrite /fst -H4 |].
+  Qed.
+  
   (* could be derived from below as Cw is a transitive closure *)
   Lemma C_transitive (X: set A) : (C X) * (C X) = (C X).
   Proof.
@@ -204,36 +210,39 @@ Section CwCw_s_facts.
              = ((D X).+ * (D X).+ `|` ((D X).+ `|` (D X).+) `|` Δ_(X))
       by aac_reflexivity.
     rewrite H1 union_RR.
-    have H2: ((D X).+ * (D X).+ `<=` (D X).+)
-      by move => x y [z [H3 H4]]; apply t_trans with z.
+    have H2: forall (T: relation A), ( T.+ * T.+ `<=` T.+)
+        by move => T [x y] [z [/= H3 H4]];apply t_trans with z.
     have H3: ((D X).+ * (D X).+ `|` (D X).+ = (D X).+)
       by rewrite unionC; apply union_inc_eq.
     by rewrite H3.
   Qed.
   
   (* Equivalence relation on W *)
-  Lemma C_reflexive_W (X: set A): forall w, w∈ X -> (C X) w w.
+  Lemma C_reflexive_W (X: set A): forall w, w \in X -> (C X) (w, w).
   Proof.
     by move => w';rewrite /C /D; right.
   Qed.
   
   Lemma C_as_clos_t (X: set A): (C X) =  (Δ_(X) `|`  Δ_(X) * Kw *  Δ_(X)).+.
   Proof.
-    apply classic_relation;split => [x' y' [H1 | H2] |  x' y'].
-    - by rewrite /D in H1;
-        by elim: H1 => [x y H3 | x y z _ H2 _ H4];
-                      [apply t_step; right | apply t_trans with y].
+    rewrite predeqE => [[x' y']].
+    split => [ [H1 | H2] | ].
+    - rewrite /D /clos_t /= in H1.
+      elim: H1 => [x y H3 | x y z _ H2 _ H4].
+      by apply t_step; right.
+      by apply t_trans with y.
     - by apply t_step; left.
-    - elim => [x y [H1 | H2] | x y z _ H2 _ H4 ].
+    - rewrite /clos_t /=. 
+      elim => [x y [H1 | H2] | x y z _ H2 _ H4 ].
       by right.
       by left; apply t_step.
-      by move: H2 H4 => [H2 | [H2 ->]] [H4 | [H4 <-]];
-                       [left; apply  t_trans with y | left | left | right].
+      pose proof (C_transitive X) as <-.
+      by exists y; split.
   Qed.
   
   (* XXXX utile ? *)
   Lemma C_n (X: set A) : forall (w w':A),
-      w <> w' -> ((C X) w w' <->  exists n, (iter (Δ_(X) * Kw * Δ_(X)) n.+1) w w').
+      w <> w' -> ((C X) (w, w') <->  exists n, (iter (Δ_(X) * Kw * Δ_(X)) n.+1) (w, w')).
   Proof.
     rewrite /C /D; move => w w' H1; split => [[H3| [w1 H3] // ] | [n H3]].
     by apply: clos_t_iterk.
@@ -257,7 +266,7 @@ Section CwCw_s_facts.
   Proof.
     have H2: inverse ( Δ_(X) * (C X)) = (C X) *  Δ_(X)
       by rewrite inverse_compose C_inverse DeltaE_inverse.
-    have H4:  Δ_(X) * (C X) = ( Δ_(X) *(C X)).-1 .-1 by apply inverse_inverse.
+    have H4:  Δ_(X) * (C X) = ( Δ_(X) *(C X)).-1 .-1 by rewrite inverse_inverse.
     rewrite -{1}C_inverse H4 H2;apply inverse_eq, C_ends.
   Qed.
   
@@ -277,7 +286,7 @@ Section Cw_facts.
   Qed.
   
   (* Equivalence relation on W *)
-  Lemma Cw_reflexive_W: forall w, w∈ W -> Cw w w.
+  Lemma Cw_reflexive_W: forall w, w \in W -> Cw (w, w).
   Proof.
     apply C_reflexive_W.
   Qed.
@@ -289,7 +298,7 @@ Section Cw_facts.
   
   (* XXXX utile ? *)
   Lemma Cw_n : forall (w w':A),
-      w <> w' -> (Cw w w' <->  exists n, (iter (Δ_(W) * Kw * Δ_(W)) n.+1) w w').
+      w <> w' -> (Cw (w, w') <->  exists n, (iter (Δ_(W) * Kw * Δ_(W)) n.+1) (w, w')).
   Proof.
     apply C_n.
   Qed.

@@ -848,10 +848,9 @@ Section Clos_trans_facts.
   
   Lemma clos_t_sym: symmetric R -> symmetric (R.+).
   Proof.
-    move => H x' y'; rewrite /symmetric in H.
-    rewrite /clos_t /mkset /=.
-    by elim => [x y H1|x y z _ H2 _ H4];
-              [ apply t_step; apply H in H1 |apply t_trans with y].
+    move => H1 x' y';rewrite /clos_t /=.
+    elim => [x y ? |x y z _ ? _ ?]; first by apply t_step, H1.
+    by apply t_trans with y.
   Qed.
   
   Lemma iter_compose : forall (n1 n2: nat), iter R (addn n1 n2) = (iter R n1) * (iter R n2).
