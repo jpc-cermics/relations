@@ -111,7 +111,7 @@ Section Transitive_Closure.
   Inductive clos_trans (x: A) : A -> Prop :=
     | t_step (y:A) : R (x,y) -> clos_trans x y
     | t_trans (y z:A) : clos_trans x y -> clos_trans y z -> clos_trans x z.
-
+  
   (** Alternative definition by transitive extension on the left *)
 
   Inductive clos_trans_1n (x: A) : A -> Prop :=
@@ -124,9 +124,13 @@ Section Transitive_Closure.
     | tn1_step (y:A) : R (x,y) -> clos_trans_n1 x y
     | tn1_trans (y z:A) : R (y,z) -> clos_trans_n1 x y -> clos_trans_n1 x z.
   
-  Definition clos_t := [set x: A *A | clos_trans (fst x) (snd x)]%classic.
+  Definition clos_t := [set x: A *A | clos_trans x.1 x.2]%classic.
   Definition clos_t_1n := [set x: A *A | clos_trans_1n x.1 x.2]%classic.
   Definition clos_t_n1 := [set x: A *A | clos_trans_n1 x.1 x.2]%classic.
+
+  Inductive clos_t' (x: A*A) : Prop :=
+    | t_step': R x -> clos_t' x
+    | t_trans' (y:A) : clos_t' (x.1, y) -> clos_t' (y,x.2) -> clos_t' x.
 
 End Transitive_Closure.
 
