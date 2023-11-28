@@ -1,6 +1,15 @@
 COQMFFLAGS := -Q . RL
 
-ALLVFILES := ssrel.v rel.v aacset.v erel3.v
+ALLVFILES := ssrel.v rel.v aacset.v \
+	erel3.v \
+	paper_relations.v \
+	paper_csbr_rel.v \
+	paper_csbr_paths.v \
+	paper_tcs_facts.v \
+	paper_csbr.v \
+	paper_tcs.v \
+
+
 
 # erel.v erel3.v ssrel.v aacrel.v paper_relations.v paper_csbr_rel.v paper_csbr_paths.v paper_tcs_facts.v paper_csbr.v paper_tcs.v cssrel.v crel.v
 

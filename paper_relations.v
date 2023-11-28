@@ -349,7 +349,7 @@ Section Cw_s_facts.
   Qed.
   
   (* Equivalence relation on W *)
-  Lemma Cw_s_reflexive_W: forall w, w∈ W_s -> Cw_s w w.
+  Lemma Cw_s_reflexive_W: forall w, w \in W_s -> Cw_s (w, w).
   Proof.
     apply C_reflexive_W. 
   Qed.
@@ -361,7 +361,7 @@ Section Cw_s_facts.
   
   (* XXXX utile ? *)
   Lemma Cw_s_n : forall (w w':A),
-      w <> w' -> (Cw_s w w' <->  exists n, (iter (Δ_(W_s) * Kw * Δ_(W_s)) n.+1) w w').
+      w <> w' -> (Cw_s (w, w') <->  exists n, (iter (Δ_(W_s) * Kw * Δ_(W_s)) n.+1) (w, w')).
   Proof.
     apply C_n. 
   Qed.
@@ -402,10 +402,11 @@ Section CBK_facts.
     by move => X; rewrite /CBK -Fset_comp Fset_CW.
   Qed.
 
-  Lemma CBK_W: forall (X: set A), Included _ (CBK X) W.
+  Lemma CBK_W: forall (X: set A), (CBK X) `<=` W.
   Proof.
     move => X x.
-    by rewrite /CBK Cw_starts -Fset_comp -Fset_comp Fset_DE;move => [x' H1] _.
+    rewrite /CBK Cw_starts -Fset_comp -Fset_comp Fset_DE. 
+    by move => [H1 _]. 
   Qed.
   
 End CBK_facts.
