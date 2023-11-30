@@ -114,6 +114,9 @@ Section Relations_facts.
 
 End Relations_facts.
 
+Check exist2.
+
+
 Section Union_facts.
   
   Variables (A: Type) (R S T: relation A).
@@ -217,7 +220,10 @@ Notation "R .-1" := (@inverse _ R).
 Section Compose.
   
   Definition compose (A: Type) (R T: relation A): relation A := 
-    [set x | (exists (z: A), R (x.1,z) /\ T (z,x.2))]%classic.
+    [set x | exists (z: A), R (x.1,z) /\ T (z,x.2)]%classic.
+
+  Definition compose' (A: Type) (R T: relation A): relation A := 
+    [set xy | exists2 z, R (xy.1, z) & T (z, xy.2)]%classic.
 
 End Compose. 
 
@@ -227,27 +233,37 @@ Section Compose_facts.
   
   Variables (A: Type) (R S T : relation A).
 
+  Lemma Test: compose R S `<=` setT.
+  Proof.
+    move => x [z [H1 H2]]. 
+    by [].
+  Qed.
+  
+  Lemma Test': compose' R S `<=` setT.
+  Proof.
+    move => x [z H1 H2]. 
+    by [].
+  Qed.
+  
   Lemma composeA : (R * S) * T = R * (S * T).
   Proof.
-    rewrite /compose /mkset predeqE;move => [x' y'].
-    split => [ [z [[w [H3 H4]] H2]] | [z [H1 [ w [H3 H4]]]]].
+    rewrite predeqE => x'.
+    split => [ [z [[w /= [? ?]] ?]] | [z [? [ w [? ?]]]]].
     by (exists w);split; [ | exists z; split].
     by (exists w);split; [ exists z | ].
   Qed.
-  
+
   Lemma composeDr : (R `|` S) * T = (R * T) `|` (S * T).
   Proof.
-    rewrite /compose /mkset predeqE;move => [x' y'].
+    rewrite predeqE => x.
     split.
-    by move => [z [[H1|H2] H3]]; [ left| right]; exists z.
-    move => [[ z [H1 H2]] | [ z [H1 H2] ] ];
-           first by exists z; split; [ left | ].
-                      by  exists z; split; [right | ].
+    by move => [z [[? | ? ] ?]]; [ left| right]; exists z.
+    by move => [|] [ z [? ?]];[exists z; split; [ left | ] | exists z; split; [right | ]].
   Qed.
-
+  
   Lemma composeDl : R * (S `|` T) = (R * S) `|` (R * T).
   Proof.
-    rewrite /compose /mkset predeqE;move => [x' y'].
+    rewrite predeqE => x.
     split.
     by move => [z [H1 [H3|H4]]];[ left; exists z; split | right; exists z; split].
     move => [[z [H1 H2]] | [z [H1 H2]]];
@@ -257,22 +273,19 @@ Section Compose_facts.
   
   Lemma compose_inc : S `<=` T ->(R * S) `<=` (R * T). 
   Proof.
-    rewrite /compose /mkset /subset.
-    move => H [x y] [z [H1 H2]].
+    rewrite /subset => H x [z [H1 H2]].
     by exists z; split; [ | apply H].
   Qed.
   
   Lemma composer_inc : S `<=` T ->(S * R ) `<=` (T *R). 
   Proof.
-    rewrite /compose /mkset /subset.
-    move => H [x y] [z [H1 H2]].
+    rewrite /subset => H x [z [? ?]].
     by exists z; split; [apply H | ].
   Qed.
   
   Lemma inverse_compose : (R * S).-1 = S.-1 * R.-1.
   Proof.
-    rewrite /compose /inverse /mkset predeqE.
-    move => [x y].
+    rewrite predeqE => x.
     by split;move => [z [H1 H2]]; exists z; split.
   Qed.
   
@@ -290,6 +303,7 @@ End Compose_facts.
 
 Section Delta.
 
+  (** * Simplifier en enlevant le \in ça doit simplifire les preuves qui suivent *)
   Definition DeltaE (A: Type) (X: set A) : relation A := 
     [set x | x.1 \in X /\ x.1 = x.2]%classic.
 
