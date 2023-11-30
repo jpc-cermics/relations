@@ -1,4 +1,4 @@
-(* -*- Encoding : utf-8 -*- *)
+(* -*- Encoding: utf-8 -*- *)
 (************************************************************************)
 (*         *   The Coq Proof Assistant / The Coq Development Team       *)
 (*  v      *         Copyright INRIA, CNRS and contributors             *)
@@ -25,6 +25,8 @@ Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
 
+(** * some relations results used in Csbr *)
+
 Section Csbr.
 
   (** already in E_incl_Bw *)
@@ -32,7 +34,7 @@ Section Csbr.
   Proof.
     by rewrite -[E]Delta_idem_r; apply: compose_inc; apply: clos_refl_trans_containsD.
   Qed.
-  
+
   (* Equation (9c) *)
   Lemma E9c : Emw = E.-1 * Δ_(W.^c). 
   Proof.
@@ -272,7 +274,11 @@ Section Csbr.
     
     Lemma E31: forall (R:relation A) (X: set A), Δ_(R # X) `<=` (R * Δ_(X) * R.-1).
     Proof.
-      by move => R X x y [[z [H1 H2]] <-]; exists z; split; [exists z; split | ].
+      rewrite /DeltaE /Fset /mkset.
+      move => R X [x y]. 
+      rewrite in_setE.
+      move => [[z [H1 H2]] /= <-]. 
+      by exists z;split;[exists z |].
     Qed.
 
     Lemma E32f : ((Ew .* ) * Δ_(W_s) * (Emw .* )) `<=` ((Ew .* ) * Δ_(W) * (Emw .* )).
@@ -296,13 +302,14 @@ Section Csbr.
     Lemma E32h : (Ew .* * Δ_( W) * Emw .* ) `<=` (Ew .* * Δ_( W_s) * Emw .* ).
     Proof.
       have E32g : Δ_( W) `<=` Δ_( W_s)
-        by move => x y [H1 H2]; rewrite /W_s; split;[exists x; split;[ apply: rt_refl |] | ].
+        by move => [x y] [H1 H2]; rewrite /W_s /Fset /DeltaE /mkset /= in_setE;
+                  split;[exists x; split;[ apply: rt_refl |] | ].
       by apply: composer_inc; apply: compose_inc; apply: E32g.
     Qed.
 
     Lemma E32: ((Ew .* ) * Δ_(W) * (Emw .* )) = ((Ew .* ) * Δ_(W_s) * (Emw .* )).
     Proof.
-      by apply classic_relation; split;[apply: E32h | apply: E32f].
+      by rewrite eqEsubset; split;[apply: E32h | apply: E32f].
     Qed.
 
     Section Key_Lemma_W_s.
@@ -357,7 +364,7 @@ Section Csbr.
       by rewrite composeDr -Bw_ends -Kw_ends.
     Qed.
     
-    Lemma BmKw_starts : Bmw+Kw = (Emw.* * (Bmw + Kw )).
+    Lemma BmKw_starts : Bmw `|` Kw = (Emw.* * (Bmw `|` Kw )).
     Proof.
       by rewrite composeDl -Bmw_starts -Kw_starts.
     Qed.
