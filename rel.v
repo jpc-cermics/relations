@@ -36,59 +36,70 @@ Notation "R ⊂ T" := (@inclusion _ R T) (at level 90, left associativity).
 
 Reserved Notation "R .-1" (at level 2, left associativity, format "R .-1"). 
 
-(*
+
 Section Sets_facts.
 
   Variables (A:Type).
   
-  Lemma notempty_exists: forall (X: Ensemble A), (exists z, z ∈ X) <-> X <> '∅.
+  (* Attention Lemma set0P A : (A != set0) <-> (A !=set0). 
+   * le premier est != l'autre est une notation pour
+   * (exists z, z \in A)
+   *)
+
+  Lemma notempty_exists: forall (X: set A), (exists z, z \in X) <-> (X != set0)%classic.
   Proof.
-    split => [[z H1] H2 | H].
-    by move: H1; rewrite H2;apply: Noone_in_empty.
-    have H1: Inhabited _ X by apply: not_empty_Inhabited.
-    by elim: H1 => [x H1]; exists x.
-  Qed.
- 
-  Lemma empty_notexists: forall (X: Ensemble A), X = '∅ <-> ~(exists z, z ∈ X).
-  Proof.
+    move => X. rewrite set0P.
     split.
-    - move => H1; elim: (classic (exists z, z ∈ X)) => [H2 | //].
-      by rewrite notempty_exists in H2.
-    - move => H1; elim: (classic (X = '∅)) => [// | H2].
-      by rewrite -notempty_exists in H2.
+    by move => [z H1];rewrite in_setE in H1;exists z.
+    by move => [z H1];exists z; rewrite in_setE.
   Qed.
   
-  Lemma empty_iff: forall (X: Ensemble A), ~ (X <> '∅) <-> X = '∅.
+  Lemma empty_notexists: forall (X: set A), X = set0 <-> ~ (exists z, z \in X).
+  Proof.
+    split.
+    - by move => -> [z H1]; rewrite in_setE in H1.
+    - move => H1. rewrite predeqE.
+      move => x. 
+      split => H2.
+      - rewrite -in_setE in H2.
+        have H3: exists (z:A), z \in X by (exists x). 
+        by [].
+      - by [].
+  Qed.
+  
+  Lemma empty_iff: forall (X: set A), ~ (X != set0) <-> X = set0.
   Proof.
     by move => X;rewrite -notempty_exists empty_notexists.
   Qed.
   
-  Lemma W_part : forall (W W' W'': Ensemble A),
-      (Included _ W' W) /\ (W''= Setminus _ W W') -> 
-      W' ∩ W'' = '∅.
+  Lemma W_part : forall (X Y Z: set A),
+      (Y `<=` X) /\ (Z= X `\` Y) -> Y `&` Z = set0.
   Proof.
-    by move => W W' W'' [H1 H2];rewrite empty_notexists H2;
-              move => [w1 [w2 H3] H4]; move: H4 => [H4 H'4].
+    move => X Y Z [H1 H2]. rewrite empty_notexists H2.
+    move => [z H3];rewrite in_setE in H3;move: H3 => [H3 [_ H4]].
+    by []. 
   Qed.
   
-  Lemma In_Setminus : forall (W W': Ensemble A),
-      Included _ (Setminus _ W W') W. 
+  Lemma In_Setminus : forall (X Y: set A), (X `\` Y) `<=` X. 
   Proof.
-    by move => W W' x [H1 H2].
+    by move => X Y x [? ?].
   Qed.
 
-  Lemma Union_empty : forall (W' W'': Ensemble A),
-      W' ∪ W'' = '∅ <-> (W'= '∅) /\ ( W'' = '∅).
+  Lemma Union_empty : forall (X Y: set A), X `|` Y = set0 <-> (X= set0) /\ ( Y = set0).
   Proof.
-    move => W' W''; split => [H | [H1 H2]].
+    move => X Y; split => [H | [H1 H2]].
     - split;rewrite empty_notexists;move => [z H1].
-      by have H3:  W' ∪ W'' <> '∅ by rewrite -notempty_exists;exists z; left.
-      by have H3:  W' ∪ W'' <> '∅ by rewrite -notempty_exists;exists z; right.
-    - by rewrite H1 H2 Union_idempotent.
+      have H3:  X `|` Y != set0 
+        by rewrite -notempty_exists;exists z;rewrite in_setE;left; rewrite -in_setE.
+      by rewrite -empty_iff in H.
+      have H3:  X `|` Y != set0 
+        by rewrite -notempty_exists;exists z;rewrite in_setE;right; rewrite -in_setE.
+      by rewrite -empty_iff in H.
+    - by rewrite H1 H2 setU0.
   Qed.
   
 End Sets_facts. 
-*)
+
 (*
 Section Relation_Classic.
 
@@ -102,7 +113,7 @@ Section Relation_Classic.
     by split => H;[split => x y; rewrite H | apply: Extensionality_Relations].
   Qed.
   
-End Relation_Classic.
+  End Relation_Classic.
 *)
 
 Section Relations_facts.
@@ -111,11 +122,8 @@ Section Relations_facts.
 
   Lemma inclusion_transitive : R `<=` S -> S `<=` T -> R `<=` T.
   Proof. by apply subset_trans. Qed.
-
+  
 End Relations_facts.
-
-Check exist2.
-
 
 Section Union_facts.
   

@@ -66,19 +66,19 @@ Section Bw_implies_active_path.
   
   (** * Lemma 10 (33a) *)
   Lemma Bwpath: forall (x y:A),
-      Bw x y -> (exists (p: seq A),
+      Bw (x,y) -> (exists (p: seq A),
                    Active_path W E (Lifto (x::(rcons p y)) P) x y
                    /\ All (Ew.+)#_(y) p).
   Proof.
-    rewrite /Bw -DuT_eq_Tstar.
-    move => x y [x1 [H1 [/Delta_Id <- | H2]]];first by (exists [::]).
+    rewrite /Bw -DuT_eq_Tstar /mkset .
+    move => x y [x1 [/= H1 [/Delta_Id <- | H2]]];first by (exists [::]).
     pose proof (clos_t_to_paths_l H2) as [p [[H3 H4] H5]]. 
     by exists (x1::p);split;[apply Deployment_to_Active_path |].
   Qed.
   
   (** simplified version for right composition *)
   Lemma Bwpath_1: forall (x y:A),
-      Bw x y -> exists (p : seq (Eo A O)) (y':A),
+      Bw (x,y) -> exists (p : seq (Eo A O)) (y':A),
         Active_path W E (rcons p (y',y,P)) x y /\ Oedge E (y',y,P).
   Proof.
     move => x y H1.
@@ -89,12 +89,12 @@ Section Bw_implies_active_path.
   Qed.
   
   Lemma Bwpath': forall (x y:A),
-      (Bw x y) /\ x ∈ W.^c -> (exists (p: seq A),
+      (Bw (x, y)) /\ x \in W.^c -> (exists (p: seq A),
                                 Active_path W E (Lifto (x::(rcons p y)) P) x y
                                 /\ All (Ew.+)#_(y) (x::p)).
   Proof.
     move => x y [[x1 [H1 H2]] H3]. 
-    have H4: Ew.+ x y by rewrite -r_clos_rt_clos_t;exists x1;split;[exists x;split | ].
+    have H4: Ew.+ (x, y) by rewrite -r_clos_rt_clos_t;exists x1;split;[exists x;split | ].
     pose proof clos_t_to_paths_l H4 as [p [[[H6 H6'] H7] H8]].
     by exists p;split;[ apply Deployment_to_Active_path;split | ].
   Qed.
@@ -105,11 +105,11 @@ Section Bmw_implies_active_path.
 
   (** * Lemma 10 (33b) *)
   Lemma Bmwpath: forall (x y:A),
-      Bmw x y -> (exists (p: seq A), Active_path W E (Lifto (x::(rcons p y)) N) x y
+      Bmw (x, y) -> (exists (p: seq A), Active_path W E (Lifto (x::(rcons p y)) N) x y
                                /\ All (Ew.+)#_(x) p).
   Proof.
     rewrite /Bmw /inverse /Bw -DuT_eq_Tstar.
-    move => x y [x1 [H1 [/Delta_Id <- | H2]]];first by (exists [::]).
+    move => x y [x1 [/= H1 [/Delta_Id <- | H2]]];first by (exists [::]).
     pose proof (clos_t_to_paths_l H2) as [p [[[H3 H3'] H4] H5]]. 
     apply Deployment_path_rev in H4.
     exists (rcons (rev p) x1); split.
@@ -120,7 +120,7 @@ Section Bmw_implies_active_path.
 
   (** simplified version for composition *)
   Lemma Bmwpath_1: forall (x y:A),
-      Bmw x y -> exists (p : seq (Eo A O)) (x':A),
+      Bmw (x, y) -> exists (p : seq (Eo A O)) (x':A),
         Active_path W E ((x,x',N)::p) x y /\ Oedge E (x,x',N).
   Proof.
     move => x y H1.
@@ -131,12 +131,12 @@ Section Bmw_implies_active_path.
   Qed.
   
   Lemma Bmwpath': forall (x y:A),
-      Bmw x y /\ y ∈ W.^c -> 
+      Bmw (x, y) /\ y \in W.^c -> 
       (exists (p: seq A), Active_path W E (Lifto (x::(rcons p y)) N) x y
                      /\ All (Ew.+)#_(x) (rcons p y)).
   Proof.
     move => x y [[x1 [H1 H2]] H3]. 
-    have H4: Ew.+ y x by rewrite -r_clos_rt_clos_t;exists x1;split;[exists y;split | ].
+    have H4: Ew.+ (y, x) by rewrite -r_clos_rt_clos_t;exists x1;split;[exists y;split | ].
     pose proof clos_t_to_paths_l H4 as [p [[[H6 H6'] H7] H8]].
     apply Deployment_path_rev in H7.
     by (exists (rev p));rewrite -Deployment_to_Active_path -rev_cons -!All_rev.
@@ -148,13 +148,13 @@ Section Kw_implies_active_path.
 
   (** * Lemma 10 (33c) *)  
   Lemma Kwpath: forall (x y:A),
-      Kw x y -> (exists (p q: seq A),exists t,
-                   Active_path W E 
-                     ((Lifto (x::(rcons p t)) N)++(Lifto (t::(rcons q y)) P )) x y
-                   /\ All (Ew.+)#_(x) (rcons p t) 
-                   /\ All (Ew.+)#_(y) (t::q)).
+      Kw (x, y) -> (exists (p q: seq A),exists t,
+                      Active_path W E 
+                        ((Lifto (x::(rcons p t)) N)++(Lifto (t::(rcons q y)) P )) x y
+                      /\ All (Ew.+)#_(x) (rcons p t) 
+                      /\ All (Ew.+)#_(y) (t::q)).
   Proof.
-    move => x y [z [[t [H2 [H3 <-]]] H4]]. 
+    move => x y [z [ [t [H2 [/= H3 <-]]] /= H4]]. 
     pose proof (Bmwpath' (conj H2 H3)) as [p [H5 H6]].
     pose proof (Bwpath' (conj H4 H3)) as [q [H7 H8]].
     pose proof (Lifto_rcc p N x t) as H9.
@@ -171,7 +171,7 @@ Section Kw_implies_active_path.
   Qed.
   
   Lemma Kwpath_1: forall (x y:A),
-      Kw x y ->  exists (p : seq (Eo A O)) (x' y':A),
+      Kw (x,y) ->  exists (p : seq (Eo A O)) (x' y':A),
         Active_path W E ((x,x',N)::(rcons p (y',y,P))) x y
         /\ Oedge E (x,x',N) /\ Oedge E (y',y,P).
   Proof.
@@ -192,7 +192,7 @@ Section Cw_s_implies_active_path.
    *)
 
   Lemma BwKw_path1: forall (x y:A),
-      let R:=(Bw + Kw) in R x y -> exists (p : seq (Eo A O)) (y':A),
+      let R:=(Bw `|` Kw)%classic in R (x, y) -> exists (p : seq (Eo A O)) (y':A),
           Active_path W E (rcons p (y',y,P)) x y /\ Oedge E (y',y,P).
   Proof.
     move => x y H1 [H2 | H2].
@@ -203,7 +203,7 @@ Section Cw_s_implies_active_path.
   Qed.
 
   Lemma BmwKw_path1: forall (x y:A),
-      let R:=(Bmw + Kw) in R x y -> exists (p : seq (Eo A O)) (x':A),
+      let R:=(Bmw `|` Kw)%classic in R (x,y) -> exists (p : seq (Eo A O)) (x':A),
           Active_path W E ((x,x',N)::p) x y /\ Oedge E (x,x',N).
   Proof.
     move => x y H1 [H2 | H2].
@@ -215,12 +215,14 @@ Section Cw_s_implies_active_path.
   (* Lemma 10 (33d) *)  
   Lemma Kwcomp: forall (x y:A),
       let R:= (Δ_(W_s) * Kw * Δ_(W_s))* (Δ_(W_s) * Kw * Δ_(W_s))
-      in R x y
+      in R (x, y)
          -> exists (p q: seq (Eo A O)), exists (x' y':A),
           Active_path W E q x y
           /\ q = (x,x',N)::(rcons p (y',y,P)) /\ Oedge E (x,x',N) /\Oedge E (y',y,P).
   Proof. 
-    move => x y' R [z' [[z [[x' [[H1 <-] H2]] [H3 <-]]] [y [[v [[_ <-] H4]] [H5 <-]]]]].
+    
+    move => x y' R [z' [[z [[x' [[/= H1 /= <-] H2]] [/= H3 /= <-]]] H3']].
+    move: H3' =>  [y [[v [[_ /= <-] H4]] [H5 /= <-]]].
     pose proof Kwpath H2 as [p1 [q1 [t1 [H6 [H7 H8]]]]].
     pose proof Kwpath H4 as [p2 [q2 [t2 [H9 [H10 H11]]]]].
     pose proof (Lift_o_start_end p1 q1 x z t1) as [x1 [z1 [r1 H12]]].
@@ -242,12 +244,12 @@ Section Cw_s_implies_active_path.
   
   Lemma Kwcomp_1: forall (x y:A),
       let R:= (Δ_(W_s) * Kw * Δ_(W_s))
-      in R x y
+      in R (x, y)
          -> exists (p q: seq (Eo A O)), exists (x' y':A),
           Active_path W E q x y
           /\ q = (x,x',N)::(rcons p (y',y,P)) /\ Oedge E (x,x',N) /\ Oedge E (y',y,P).
   Proof. 
-    move => x y' R [z [[xx1 [[H1 <-] H2]] [H3 <-]]].
+    move => x y' R [z [[xx1 [[H1 /= <-] H2]] [H3 /= <-]]].
     pose proof Kwpath H2 as [p1 [q1 [t1 [H6 [H7 H8]]]]].
     pose proof (Lift_o_start_end p1 q1 x z t1) as [x1 [z1 [r1 H12]]].
     rewrite H12 in H6.
@@ -257,7 +259,7 @@ Section Cw_s_implies_active_path.
   
   Lemma Kwcomp_n: forall (n: nat) (x y:A),
       let R:= (Δ_(W_s) * Kw * Δ_(W_s))^(n.+1) 
-      in R x y
+      in R (x, y)
          -> exists (p q: seq (Eo A O)), exists (x' y':A),
           Active_path W E q x y
           /\ q = (x,x',N)::(rcons p (y',y,P)) /\ Oedge E (x,x',N) /\ Oedge E (y',y,P).
@@ -269,7 +271,7 @@ Section Cw_s_implies_active_path.
       move => R [z [H1 H5]].
       move: H1 => /Hn [r1 [p [x1 [z1 [H1 [H2 [H3 H4]]]]]]].
       rewrite iter1_id in H5.
-      have H5': z ∈ W_s by move: H5 => [z' [[z'' [[H'1 _] _]] _]].
+      have H5': z \in W_s by move: H5 => [z' [[z'' [[H'1 _] _]] _]].
       move: H5 => /Kwcomp_1 [r2 [q [z2 [y2 [H5 [H6 [H7 H8]]]]]]].
       exists ((rcons r1 (z1,z,P)) ++ (z,z2,N)::r2),(p ++ q), x1, y2.
       split. 
@@ -280,7 +282,7 @@ Section Cw_s_implies_active_path.
   
   Lemma Kwcomp_tc: forall (x y:A),
       let R:= (Δ_(W_s) * Kw * Δ_(W_s)).+
-      in R x y
+      in R (x, y)
          -> exists (p q: seq (Eo A O)), exists (x' y':A),
           Active_path W E q x y
           /\ q = (x,x',N)::(rcons p (y',y,P)) /\ Oedge E (x,x',N) /\ Oedge E (y',y,P).
@@ -292,13 +294,13 @@ Section Cw_s_implies_active_path.
 
   Lemma Kwcomp_tc2: forall (x y:A),
       let R:= (Δ_(W_s) * Kw * Δ_(W_s)).+
-      in R x y ->  x ∈ W_s /\ y ∈ W_s.
+      in R (x, y) ->  x \in W_s /\ y \in W_s.
   Proof.
     move => x y H1 H2.
     rewrite /H1 in H2.
     pose proof H2 as H3.
     rewrite Delta_clos_trans_ends in H2.
-    move: H2 => [y' [_ [H2 <-]]].
+    move: H2 => [y' [_ [H2 /= <-]]].
     rewrite composeA Delta_clos_trans_starts in H3.
     move: H3 => [z' [[H3 _] _]].
     by [].
@@ -310,7 +312,7 @@ Section Aw_s_implies_active_path.
 
   (** * Lemma 11 *)
   Lemma Aw_s_path:  forall (x y:A),
-      Aw_s x y -> exists (p : seq (Eo A O)), Active_path W E p x y.
+      Aw_s (x, y) -> exists (p : seq (Eo A O)), Active_path W E p x y.
   Proof.
     move => x y [[[[/Delta_Id -> | H2] | H2] | H2] | H3].
     - by (exists [::]).
@@ -327,8 +329,8 @@ Section Aw_s_implies_active_path.
         pose proof Kwcomp_tc H4 as [p2 [p3 [t' [z' [H7 [H8 [Ho2 Ho3]]]]]]].
         pose proof BmwKw_path1 H5 as [p4 [z'' [H9 Ho4]]].
         pose proof Kwcomp_tc2 H4 as [H10 H11].
-        have H12: ActiveOe W E (y', t, P) (t, t', N) by [].
-        have H13: ActiveOe W E (z', z, P) (z, z'', N) by [].
+        have H12: ActiveOe W E ((y', t, P), (t, t', N)) by [].
+        have H13: ActiveOe W E ((z', z, P),(z, z'', N)) by [].
         have H14: Active_path W E
                     (rcons p1 (y', t, P) ++ (t, t', N)::(rcons p2 (z', z, P)))
                     x z
@@ -338,21 +340,21 @@ Section Aw_s_implies_active_path.
         apply Active_path_cat with z.
         rewrite rcons_cat rcons_cons.
         by [].
-      + move: H4 => [H1 H4]. rewrite -H4 in H5. clear H4.
+      + move: H4 => [H1 /= H4]. rewrite -H4 in H5. clear H4.
         pose proof BwKw_path1 H3 as [p1 [y' [H6 Ho1]]].
         pose proof BmwKw_path1 H5 as [p4 [t' [H9 Ho4]]].
-        have H12: ActiveOe W E (y', t, P) (t, t', N) by [].
+        have H12: ActiveOe W E ((y', t, P), (t, t', N)) by [].
         exists ((rcons p1 (y', t, P))++ ((t, t', N) :: p4)).
         by apply Active_path_cat with t.
   Qed.
 
   Lemma L11:  forall (x y:A),
-      Aw x y -> exists (p : seq (Eo A O)), Active_path W E p x y.
+      Aw (x, y) -> exists (p : seq (Eo A O)), Active_path W E p x y.
   Proof.
     by move => x y;rewrite L9;apply Aw_s_path.
   Qed.
   
-  Proposition P12: forall (x y:A), Aw x y -> ~ ( x [⊥d] y | W ).
+  Proposition P12: forall (x y:A), Aw (x, y) -> ~ ( x [⊥d] y | W ).
   Proof.
     by move => x y /L11 H1 H2.
   Qed.
@@ -365,12 +367,12 @@ Section Active_path_implies_Aw_s.
   
   Lemma Active_path_l2: forall (o1 o2:O) (x y t:A), 
       Active_path W E [::(x,t,o1);(t,y,o2)] x y
-      -> ( ((let R:= E.-1 *Δ_(W.^c)* E in R x y)
-            \/ (let R:= E *Δ_(W.^c)* E in R x y))
+      -> ( ((let R:= E.-1 *Δ_(W.^c)* E in R (x, y))
+            \/ (let R:= E *Δ_(W.^c)* E in R (x, y)))
            /\ o2 = P) 
          \/ 
-           ( ((let R:= E *Δ_(W_s)* E.-1 in R x y)
-              \/ (let R:= E.-1 *Δ_(W.^c)* E.-1 in R x y))
+           ( ((let R:= E *Δ_(W_s)* E.-1 in R (x, y))
+              \/ (let R:= E.-1 *Δ_(W.^c)* E.-1 in R (x, y)))
              /\ o2 = N).
   Proof.
     move => o1 o2 x y t. 
@@ -386,7 +388,7 @@ Section Active_path_implies_Aw_s.
   
   Lemma Active_path_l2_1: forall (o1 o2:O) (x y t:A), 
       Active_path W E [::(x,t,o1);(t,y,o2)] x y
-      -> ( Aw_sp x y /\ o2 = P) \/ ( Aw_sm x y /\ o2 = N).
+      -> ( Aw_sp (x, y) /\ o2 = P) \/ ( Aw_sm (x, y) /\ o2 = N).
   Proof.
     move => o1 o2 x y t H1.
     pose proof Active_path_l2 H1 as [[H2 H3 ] |[H2 H3]].
@@ -396,42 +398,42 @@ Section Active_path_implies_Aw_s.
 
   (* Definition Aw_sp := Bw + Kw + ((Bw + Kw) * Cw_s * Kw). *)
   
-  Lemma Last1: Aw_sp * Ew ⊂ Aw_sp. 
+  Lemma Last1: (Aw_sp * Ew `<=` Aw_sp)%classic.
   Proof.
     pose proof Bw_ends1 as H1.
     pose proof Kw_ends1 as H2.
-    have H3: Bw * Ew + Kw * Ew ⊂ Bw * Ew + Kw 
+    have H3: (Bw * Ew `|` Kw * Ew `<=` Bw * Ew `|` Kw)%classic
       by apply union_inc_l.
-    have H4: Bw * Ew + Kw ⊂ Bw + Kw
+    have H4: (Bw * Ew `|` Kw `<=` Bw `|` Kw)%classic
       by apply union_inc_r.
-    have H5: Bw * Ew + Kw * Ew ⊂ Bw + Kw
-      by apply inclusion_transitive with (Bw * Ew + Kw).
-    have H6: Bw * Ew + Kw * Ew 
-             + (Bw + Kw) * Cw_s * Kw * Ew ⊂ Bw + Kw + (Bw + Kw) * Cw_s * Kw * Ew
+    have H5: (Bw * Ew `|` Kw * Ew `<=` Bw `|` Kw)%classic
+      by apply inclusion_transitive with (Bw * Ew `|` Kw)%classic.
+    have H6: (Bw * Ew `|` Kw * Ew 
+             `|` (Bw `|` Kw) * Cw_s * Kw * Ew `<=` Bw `|` Kw `|` (Bw `|` Kw) * Cw_s * Kw * Ew)%classic
       by apply union_inc_r.
-    have H7: (Bw + Kw) * Cw_s * Kw * Ew ⊂ (Bw + Kw) * Cw_s * Kw
+    have H7: ((Bw `|` Kw) * Cw_s * Kw * Ew `<=` (Bw `|` Kw) * Cw_s * Kw)%classic
       by rewrite composeA; apply compose_inc.
-    have H8: Bw + Kw + (Bw + Kw) * Cw_s * Kw * Ew ⊂ Bw + Kw + (Bw + Kw) * Cw_s * Kw.
+    have H8: (Bw `|` Kw `|` (Bw `|` Kw) * Cw_s * Kw * Ew `<=` Bw `|` Kw `|` (Bw `|` Kw) * Cw_s * Kw)%classic.
     by apply union_inc_l.
     
     rewrite /Aw_sp. 
-    rewrite composeDr [(Bw + Kw) * Ew]composeDr.
-    by apply inclusion_transitive with (Bw + Kw + (Bw + Kw) * Cw_s * Kw * Ew).
+    rewrite composeDr [((Bw `|` Kw) * Ew)%classic]composeDr.
+    by apply inclusion_transitive with (Bw `|` Kw `|` (Bw `|` Kw) * Cw_s * Kw * Ew)%classic.
   Qed.
   
-  Lemma Last2: Aw_sp * Δ_(W_s) * E.-1 ⊂ Aw_sm.
+  Lemma Last2: (Aw_sp * Δ_(W_s) * E.-1 `<=` Aw_sm)%classic.
   Proof.
     by apply E27c.
   Qed.
   
-  Lemma Last3: Aw_sm * Δ_(W.^c) * E ⊂ Aw_sp.
+  Lemma Last3: (Aw_sm * Δ_(W.^c) * E `<=` Aw_sp)%classic.
   Proof.
     by apply E27b.
   Qed.
   
-  Lemma Last4: Aw_sm * Δ_(W.^c) * E.-1 ⊂ Aw_sm.
+  Lemma Last4: (Aw_sm * Δ_(W.^c) * E.-1 `<=` Aw_sm)%classic.
   Proof.
-    have H1: Bmw * Δ_(W.^c) * E.-1 ⊂ Bmw.
+    have H1: (Bmw * Δ_(W.^c) * E.-1 `<=` Bmw)%classic.
     rewrite /Bmw /Bw /Ew.
     rewrite -DeltaE_inverse inverse_compose inverse_star inverse_compose.
     rewrite DeltaE_inverse DeltaE_inverse.
@@ -445,21 +447,21 @@ Section Active_path_implies_Aw_s.
     rewrite composeA -/R.
     rewrite composeA -/R in H1.
     rewrite /Aw_sm.
-    pose S:= (Bw + Kw) * Cw_s.
+    pose S:= ((Bw `|` Kw) * Cw_s)%classic.
     rewrite -/S.
     rewrite composeDr.
-    have H2: Bmw * R + S * Bmw * R ⊂ Bmw + S * Bmw * R
+    have H2: (Bmw * R `|` S * Bmw * R `<=` Bmw `|` S * Bmw * R)%classic
       by apply union_inc_r.
-    have H3: Bmw + S * Bmw * R ⊂ Bmw + S * Bmw
+    have H3: (Bmw `|` S * Bmw * R `<=` Bmw `|` S * Bmw)%classic
       by apply union_inc_l; rewrite composeA; apply compose_inc.
-    by apply inclusion_transitive with (Bmw + S * Bmw * R).
+    by apply inclusion_transitive with (Bmw `|` S * Bmw * R)%classic.
   Qed.
   
   Lemma L13: forall (n: nat) (p : seq (Eo A O)) (x y:A), 
       size (p) = n.+2 
       -> Active_path W E p x y
       -> exists (q: seq (Eo A O)) (o: O) (y':A),
-          p = rcons q (y',y,o) /\ (( Aw_sp x y /\ o = P) \/ ( Aw_sm x y /\ o = N)).
+          p = rcons q (y',y,o) /\ (( Aw_sp (x, y) /\ o = P) \/ ( Aw_sm (x, y) /\ o = N)).
   Proof.
     elim. 
     - move => p x y H1 H2.
@@ -470,7 +472,7 @@ Section Active_path_implies_Aw_s.
       rewrite /Oe_h /last /Oe_t in H5 H6.
       rewrite H5 H6.
       pose proof Active_path_cc_a H2 as [H7 [H8 [H9 H10]]].
-      rewrite /ComposeOe /Oe_t /Oe_h in H9.
+      rewrite /ComposeOe /Oe_t /Oe_h /mkset /fst /snd in H9.
       rewrite H9 H5 H6 in H2 *.
       exists [:: (u, v, o1)],o2,z.
       split; first by [].
@@ -492,8 +494,8 @@ Section Active_path_implies_Aw_s.
       move: H9 => /eqP H9.
       have H10: exists (r : seq (Eo A O)) (o : O) (y' : A),
           (rcons q (u,v,o1)) = rcons r (y',v , o) 
-          /\ (Aw_sp (Oe_h (head (u,v,o1) q)) v /\ o = P 
-              \/ Aw_sm (Oe_h (head (u,v,o1) q)) v /\ o = N)
+          /\ (Aw_sp ((Oe_h (head (u,v,o1) q)), v) /\ o = P 
+              \/ Aw_sm ((Oe_h (head (u,v,o1) q)), v) /\ o = N)
           by apply Hr.
       clear Hr.
       rewrite -H5 in H2 H10 *;clear H5.
@@ -502,7 +504,7 @@ Section Active_path_implies_Aw_s.
       
       + move: H11 => /rcons_inj [_ _ H14];rewrite H13 in H14;clear H13.
         exists (rcons q (u, v, o1)),o2, v.
-        move: H7 => [H15 [H16 [/ComposeOe_eq H17  H18]]].
+        move: H7 => [/= H15 [H16 [/ComposeOe_eq H17  H18]]].
         rewrite H17 in H4 *.
         split. 
         by [].
@@ -511,13 +513,13 @@ Section Active_path_implies_Aw_s.
         clear H8 H9 r H4 H17 H2 H14 y' o H1 H3 q.
         rewrite /Oe_o in H18.
         elim: o2 H16 H18 => [ H1 H2 | H1 H2].
-        ++ have H3: (Aw_sp * Δ_(W.^c) * E) x t by (exists z);split;[exists z | ].
+        ++ have H3: (Aw_sp * Δ_(W.^c) * E) (x, t) by (exists z);split;[exists z | ].
            by rewrite composeA in H3;left;split;[apply Last1 |].
-        ++ have H3: (Aw_sp * Δ_(W_s) * E.-1) x t by (exists z);split;[exists z | ].
+        ++ have H3: (Aw_sp * Δ_(W_s) * E.-1) (x, t) by (exists z);split;[exists z | ].
            by right;split;[apply Last2|].
       + move: H11 => /rcons_inj [_ _ H14];rewrite H13 in H14;clear H13.
         exists (rcons q (u, v, o1)),o2, v.
-        move: H7 => [H15 [H16 [/ComposeOe_eq H17  H18]]].
+        move: H7 => [/= H15 [H16 [/ComposeOe_eq H17  H18]]].
         rewrite H17 in H4 *.
         split. 
         by [].
@@ -526,17 +528,18 @@ Section Active_path_implies_Aw_s.
         clear H8 H9 r H4 H17 H2 H14 y' o H1 H3 q.
         rewrite /Oe_o in H18.
         elim: o2 H16 H18 => [ H1 H2 | H1 H2].
-        ++ have H3: (Aw_sm * Δ_(W.^c) * E) x t by (exists z);split;[exists z | ].
+        ++ have H3: (Aw_sm * Δ_(W.^c) * E) (x, t) by (exists z);split;[exists z | ].
            by left;split;[apply Last3 |].
-        ++ have H3: (Aw_sm * Δ_(W.^c) * E.-1) x t by (exists z);split;[exists z | ].
+        ++ have H3: (Aw_sm * Δ_(W.^c) * E.-1) (x, t) by (exists z);split;[exists z | ].
            by right;split;[apply Last4 |].
   Qed.
   
   Lemma Active_path_to_Active: 
-    forall (x y:A), (exists (p : seq (Eo A O)), Active_path W E p x y) -> Aw x y.
+    forall (x y:A), (exists (p : seq (Eo A O)), Active_path W E p x y) -> Aw (x, y).
   Proof.
     move => x y [p H1].
-    elim: p H1 => [ H1 | [[x1 y1] o1] p _ ];(* p = [::]*) first by rewrite L9 E27a;left;left.
+    elim: p H1 => [ H1 | [[x1 y1] o1] p _ ];
+                 (* p = [::]*)first by rewrite L9 E27a;left;left;rewrite Delta_Id.
     elim: p => [[H1 [H2 H3]] | [[x2 y2] o2]  p _ H1].
     (* p = [::(x',y',o)] *)
     rewrite /Oe_h /Oe_t in H1 H2;rewrite -H1 -H2;clear H1 H2.
@@ -556,14 +559,14 @@ End Active_path_implies_Aw_s.
 Section Main_Result.
     
   Theorem Th4_1: 
-    forall (x y:A), Aw x y <-> (exists (p : seq (Eo A O)), Active_path W E p x y). 
+    forall (x y:A), Aw (x, y) <-> (exists (p : seq (Eo A O)), Active_path W E p x y). 
   Proof.
     move => x y; split=> [ H1 | H1].
     by rewrite L9 in H1;apply Aw_s_path.
     by apply Active_path_to_Active. 
   Qed.
   
-  Theorem Th4: forall (x y:A), ( x [⊥d] y | W ) <-> ~ Aw x y.
+  Theorem Th4: forall (x y:A), ( x [⊥d] y | W ) <-> ~ Aw (x,y).
   Proof.
     move => x y;pose proof (Th4_1 x y) as H3.
     by split=> [ H1 H2 | H2];rewrite H3 in H2.

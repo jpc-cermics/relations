@@ -29,25 +29,31 @@ Section Tcs.
   
   (* starting by closure properties *) 
 
-  Lemma Singl_iff: forall (x y:A), x ∈ (Singleton _ y) <-> x = y.
+  Lemma Singl_iff': forall (x y:A), (x \in [set y])%classic <-> x = y.
   Proof.
-    move => x' y';
-             by split => [H | ->];[apply Singleton_inv in H|apply In_singleton].
+    move => x y. rewrite in_setE.
+    split. 
+    by [].
+    by move => ->.
   Qed.
   
-  Lemma Clos_Ew: forall (x y:A),  y ∈ Clos_(x | E,W) <-> Ew.* y x.
+  Lemma Clos_Ew: forall (x y:A),  y \in Clos_(x | E,W) <-> Ew.* (y, x).
   Proof.
     move => x' y'.
-    by split => [[z [H1 /Singl_iff <-]]| H1];[|exists x';split;[|apply In_singleton]].
+    split. 
+    rewrite in_setE.
+    move =>  [z [H1 /Singl_iff <-]].
+    by [].
+    by move => H1;rewrite in_setE;exists x';split;[ | rewrite in_setE].
   Qed.
 
   (* Closure intersect as a relation *) 
   Definition Closure_intersect := 
-    fun (x y:A) => Clos_(x | E,W) ∩ Clos_(y | E,W) <> '∅.
+    [set xy | Clos_(xy.1 | E,W) `&` Clos_(xy.2 | E,W) <> set0 ]%classic.
 
   Lemma Clos_Intersect : forall (x y:A), 
-      Clos_(x | E,W) ∩ Clos_(y | E,W) <> '∅ <-> 
-        (let R:= Emw.* * Ew.* in R x y).
+      (Clos_(x | E,W) `&` Clos_(y | E,W) <> set0)%classic <-> 
+        (let R:= Emw.* * Ew.* in R (x, y)).
   Proof.
     move => w1' w2'; split.
     - rewrite -notempty_exists.
