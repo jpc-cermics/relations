@@ -52,16 +52,19 @@ Section Tcs.
     [set xy | Clos_(xy.1 | E,W) `&` Clos_(xy.2 | E,W) <> set0 ]%classic.
 
   Lemma Clos_Intersect : forall (x y:A), 
-      (Clos_(x | E,W) `&` Clos_(y | E,W) <> set0)%classic <-> 
+      (Clos_(x | E,W) `&` Clos_(y | E,W) != set0)%classic <-> 
         (let R:= Emw.* * Ew.* in R (x, y)).
   Proof.
     move => w1' w2'; split.
     - rewrite -notempty_exists.
-      move => [_ [z [w1 [H1 /Singl_iff <-]] [w2 [H2 /Singl_iff <-]]]]. 
+      move => [z H1]. rewrite in_setE in H1.
+      move: H1 => [H1 H2].
+      move: H1 => [w1 [H1 /Singl_iff <-]]. 
+      move: H2 => [w2 [H2 /Singl_iff <-]]. 
       by (exists z; split;[rewrite Emw_1 |]). 
     - rewrite -notempty_exists.
-      move => [z [H1 H2]]; rewrite Emw_1 in H1.
-      by exists z;split;rewrite !Clos_Ew. 
+      move => [z /= [H1 H2]]. rewrite Emw_1 /inverse /mkset /= in H1.
+      by (exists z);rewrite in_setE;split;rewrite -in_setE Clos_Ew. 
   Qed.
   
   (* Closure intersect as a relation, Closure_intersect, is equal to (Emw.* * Ew.* ) *) 
