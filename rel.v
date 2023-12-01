@@ -31,11 +31,11 @@ Notation "R .+" := (clos_t R)
                      (at level 2, left associativity, format "R .+").
 Notation "R .*" := (clos_rt R) 
                      (at level 2, left associativity, format "R .*").
+
+
 (** * to be removed *)
-Notation "R ⊂ T" := (@inclusion _ R T) (at level 90, left associativity).
 
 Reserved Notation "R .-1" (at level 2, left associativity, format "R .-1"). 
-
 
 Section Sets_facts.
 
