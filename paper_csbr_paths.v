@@ -407,7 +407,7 @@ Section Active_path_implies_Aw_s.
     have H4: (Bw * Ew `|` Kw `<=` Bw `|` Kw)%classic
       by apply union_inc_r.
     have H5: (Bw * Ew `|` Kw * Ew `<=` Bw `|` Kw)%classic
-      by apply inclusion_transitive with (Bw * Ew `|` Kw)%classic.
+      by apply subset_trans with (Bw * Ew `|` Kw)%classic.
     have H6: (Bw * Ew `|` Kw * Ew 
              `|` (Bw `|` Kw) * Cw_s * Kw * Ew `<=` Bw `|` Kw `|` (Bw `|` Kw) * Cw_s * Kw * Ew)%classic
       by apply union_inc_r.
@@ -418,7 +418,7 @@ Section Active_path_implies_Aw_s.
     
     rewrite /Aw_sp. 
     rewrite composeDr [((Bw `|` Kw) * Ew)%classic]composeDr.
-    by apply inclusion_transitive with (Bw `|` Kw `|` (Bw `|` Kw) * Cw_s * Kw * Ew)%classic.
+    by apply subset_trans with (Bw `|` Kw `|` (Bw `|` Kw) * Cw_s * Kw * Ew)%classic.
   Qed.
   
   Lemma Last2: (Aw_sp * Δ_(W_s) * E.-1 `<=` Aw_sm)%classic.
@@ -454,7 +454,7 @@ Section Active_path_implies_Aw_s.
       by apply union_inc_r.
     have H3: (Bmw `|` S * Bmw * R `<=` Bmw `|` S * Bmw)%classic
       by apply union_inc_l; rewrite composeA; apply compose_inc.
-    by apply inclusion_transitive with (Bmw `|` S * Bmw * R)%classic.
+    by apply subset_trans with (Bmw `|` S * Bmw * R)%classic.
   Qed.
   
   Lemma L13: forall (n: nat) (p : seq (Eo A O)) (x y:A), 

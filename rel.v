@@ -23,7 +23,7 @@ Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
 
-(** * relations as a (set T*T) *)
+(** * relations as sets: (set T*T) *)
 
 Definition relation T := set (T * T).
 
@@ -36,12 +36,8 @@ Reserved Notation "R .-1" (at level 2, left associativity, format "R .-1").
 Section Sets_facts.
 
   Variables (A:Type).
-  
-  (* Attention Lemma set0P A : (A != set0) <-> (A !=set0). 
-   * le premier est != l'autre est une notation pour
-   * (exists z, z \in A)
-   *)
 
+  (* usefull to ease changes mixed with moves *)
   Lemma inP: forall (x:A) (X: set A), x \in X <-> X x. 
   Proof.
     by move => x X; rewrite in_setE.
@@ -56,25 +52,13 @@ Section Sets_facts.
     by move => X; rewrite set0P;split;move => [z /inP H1]; exists z. 
   Qed.
   
-  Lemma notempty_exists': forall (X: set A), (exists z, z \in X) <-> (X != set0)%classic.
-  Proof.
-    move => X. rewrite set0P.
-    split.
-    by move => [z H1];rewrite in_setE in H1;exists z.
-    by move => [z H1];exists z; rewrite in_setE.
-  Qed.
-  
   Lemma empty_notexists: forall (X: set A), X = set0 <-> ~ (exists z, z \in X).
   Proof.
+    move => X.
     split.
-    - by move => -> [z H1]; rewrite in_setE in H1.
-    - move => H1. rewrite predeqE.
-      move => x. 
-      split => H2.
-      - rewrite -in_setE in H2.
-        have H3: exists (z:A), z \in X by (exists x). 
-        by [].
-      - by [].
+    - by move => -> [z /inP H1]. 
+    - move => H1. rewrite predeqE => x.
+      by split => [/inP H2 | H2];[have H3: exists (z:A), z \in X by (exists x) |].
   Qed.
   
   Lemma empty_iff: forall (X: set A), ~ (X != set0) <-> X = set0.
@@ -85,9 +69,8 @@ Section Sets_facts.
   Lemma W_part : forall (X Y Z: set A),
       (Y `<=` X) /\ (Z= X `\` Y) -> Y `&` Z = set0.
   Proof.
-    move => X Y Z [H1 H2]. rewrite empty_notexists H2.
-    move => [z H3];rewrite in_setE in H3;move: H3 => [H3 [_ H4]].
-    by []. 
+    move => X Y Z [? H2];rewrite empty_notexists H2.
+    by move => [z /inP [? [_ ?]]].
   Qed.
   
   Lemma In_Setminus : forall (X Y: set A), (X `\` Y) `<=` X. 
@@ -110,17 +93,8 @@ Section Sets_facts.
   
 End Sets_facts. 
 
-Section Relations_facts.
-
-  Variables (A: Type) (R S T: relation A).
-
-  Lemma inclusion_transitive : R `<=` S -> S `<=` T -> R `<=` T.
-  Proof. by apply subset_trans. Qed.
-  
-End Relations_facts.
-
 Section Union_facts.
-  
+  (** * union of relations using set unions *)
   Variables (A: Type) (R S T: relation A).
 
   Lemma unionC: R `|` S = S `|` R.
@@ -168,29 +142,23 @@ Section Inverse.
   
   Lemma inverse_sym : R.-1 = R <-> symmetric R.
   Proof.
-    rewrite /inverse /mkset predeqE /symmetric. 
+    rewrite predeqE /symmetric. 
     split => [ H1 x y /H1 // H | H1 [x y]].
     by rewrite /=; split; apply H1.
   Qed.
   
   Lemma inverse_star : R.*.-1 = R.-1.* .
   Proof.
-    rewrite /clos_rt /inverse /mkset /= predeqE.
-    move => [x' y'] /=.
-    split. 
-    by elim => [x y /= H| |x y z _ H2 _ H4];
-              [ apply rt_step|apply rt_refl |apply rt_trans with y].
-    by elim => [x y /= H| |x y z _ H2 _ H4];
-              [ apply rt_step|apply rt_refl |apply rt_trans with y].
+    rewrite /clos_rt /inverse /mkset predeqE => xy /=.
+    by split;(elim => [x y /= ?| |x y z _ ? _ ?];
+                     [apply: rt_step|apply: rt_refl |apply: (rt_trans (y:=y))]).
   Qed.
-
+  
   Lemma inverse_clos_t : R.+.-1 = R.-1.+ .
   Proof.
-    rewrite /clos_t /inverse /mkset /= predeqE.
-    move => [x' y'] /=.
-    split.
-    by elim => [x y H|x y z _ H2 _ H4];[ apply t_step |apply t_trans with y].
-    by elim => [x y H|x y z _ H2 _ H4];[ apply t_step |apply t_trans with y].
+    rewrite /clos_t /inverse /mkset /= predeqE => xy /=.
+    by split;(elim => [x y H|x y z _ H2 _ H4];
+                     [apply: t_step |apply: (t_trans (y:=y))]).
   Qed.
   
   Lemma inverse_eq : R= S <-> R.-1 = S.-1.

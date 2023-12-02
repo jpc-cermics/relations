@@ -103,7 +103,7 @@ Section Bw_facts.
   Proof.
     rewrite /Bw /Ew.
     have H1: Δ_(W.^c) * E `<=` (Δ_(W.^c) * E).* .
-    apply inclusion_transitive with (Δ_(W.^c) * E).+ .
+    apply subset_trans with (Δ_(W.^c) * E).+ .
     apply iter1_inc_clos_trans.
     apply clos_t_clos_rt.
     rewrite composeA.
@@ -418,7 +418,7 @@ Section Aw_facts.
     have H1: Aw = Bw `|` ('Δ `|` Bmw `|` Kw `|` Dw) by rewrite /Aw;aac_reflexivity.
     have H2: Bw `<=` Aw by rewrite H1;apply union_containsl.
     pose proof E_incl_Bw as H3.
-    by apply inclusion_transitive with Bw.
+    by apply subset_trans with Bw.
   Qed.
 
   Lemma Einv_inc_Aw: E.-1 `<=` Aw.
@@ -426,7 +426,7 @@ Section Aw_facts.
     have H1: Aw = Bmw `|` ('Δ `|` Bw `|` Kw `|` Dw) by rewrite /Aw;aac_reflexivity.
     have H2: Bmw `<=` Aw by rewrite H1;apply union_containsl.
     pose proof Einv_inc_Bmw as H3.
-    by apply inclusion_transitive with Bmw.
+    by apply subset_trans with Bmw.
   Qed.
 
 End  Aw_facts.
@@ -444,12 +444,12 @@ Section Aw_sp_facts.
       by apply compose_inc.
     have H4: E.-1 * Δ_(W.^c) * Bw `<=` Bmw * Δ_(W.^c) * Bw
       by apply composer_inc; apply composer_inc.
-    by apply inclusion_transitive with (E.-1 * Δ_(W.^c) * Bw).
+    by apply subset_trans with (E.-1 * Δ_(W.^c) * Bw).
     have H2: Kw `<=` Aw_sp.
     rewrite /Aw_sp.
     rewrite unionA unionC unionA.
     by apply union_containsl.
-    by apply inclusion_transitive with Kw.
+    by apply subset_trans with Kw.
   Qed.
   
   Lemma I3: E *Δ_(W.^c)* E `<=` Aw_sp.
@@ -458,7 +458,7 @@ Section Aw_sp_facts.
     have H2: Bw `<=` Aw_sp 
       by rewrite /Aw_sp unionA;apply union_containsl.
     
-    by apply inclusion_transitive with Bw.
+    by apply subset_trans with Bw.
 
   Qed.
 
@@ -477,7 +477,7 @@ Section Aw_sm_facts.
     have H4: E * Δ_(W_s) * Bmw `<=` Bw * Δ_(W_s) * Bmw
       by apply composer_inc; apply composer_inc.
     have H5: E *Δ_(W_s)* E.-1 `<=` Bw*Δ_(W_s)*Bmw
-      by apply inclusion_transitive with (E * Δ_(W_s) * Bmw).
+      by apply subset_trans with (E * Δ_(W_s) * Bmw).
     have H'1: Δ_(W_s) `<=` Cw_s by apply union_containsr.
     have H'2: Δ_(W_s) * Bmw `<=` Cw_s * Bmw by apply composer_inc.
     have H'3: Bw * Δ_(W_s) * Bmw `<=` Bw * Cw_s * Bmw
@@ -485,12 +485,12 @@ Section Aw_sm_facts.
     have H'4: Bw * Cw_s * Bmw `<=` (Bw `|` Kw) * Cw_s * Bmw
       by apply composer_inc;apply composer_inc;apply union_containsl.
     have H'5: Bw * Δ_(W_s) * Bmw `<=` (Bw `|` Kw) * Cw_s * Bmw
-      by apply inclusion_transitive with (Bw * Cw_s * Bmw).
+      by apply subset_trans with (Bw * Cw_s * Bmw).
     have H'6: (Bw `|` Kw) * Cw_s * Bmw `<=` Bmw `|` (Bw `|` Kw) * Cw_s * Bmw
       by apply union_containsr.
     have H'7: Bw*Δ_(W_s)*Bmw `<=` Aw_sm
-      by rewrite /Aw_sm;apply inclusion_transitive with ((Bw `|` Kw) * Cw_s * Bmw).
-    by apply inclusion_transitive with (Bw*Δ_(W_s)*Bmw).
+      by rewrite /Aw_sm;apply subset_trans with ((Bw `|` Kw) * Cw_s * Bmw).
+    by apply subset_trans with (Bw*Δ_(W_s)*Bmw).
   Qed.
 
   Lemma I8: E.-1 *Δ_(W.^c)* E.-1 `<=` Aw_sm.
@@ -500,7 +500,7 @@ Section Aw_sm_facts.
             -[Δ_(W.^c).-1 * E.-1]inverse_compose -inverse_compose.
     by apply inverse_inc; apply I3_1.
     have H2: Bmw `<=` Aw_sm by apply union_containsl.
-    by apply  inclusion_transitive with Bmw.
+    by apply  subset_trans with Bmw.
   Qed.
 
 End Aw_sm_facts.

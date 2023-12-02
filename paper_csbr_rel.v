@@ -209,7 +209,7 @@ Section Csbr.
       rewrite {1}[Bmw]H -composeDr. 
       set R2 := ('Δ `|` R1) * Bmw * Δ_( W .^c).
       have H1: (R2 * E) `<=` (R2 *Bw) by  apply: compose_inc;apply: E9b1.
-      suff H2: (R2 * Bw) `<=` Aw_sp by apply: inclusion_transitive H1 H2.
+      suff H2: (R2 * Bw) `<=` Aw_sp by apply: subset_trans H1 H2.
       rewrite /R2 composeA composeA.
       rewrite -[(Bmw * (_ * Bw))]composeA -/Kw composeDr. 
       rewrite Delta_idem_l /R1 /Aw_sp [Bw `|` Kw `|` _]unionA.
@@ -224,14 +224,14 @@ Section Csbr.
       have E27c2: Δ_(W_s) `<=` Cw_s by rewrite /Cw_s;apply: union_containsr.
       have H1: (Δ_(W_s)*E.-1) `<=` (Cw_s*E.-1) by apply composer_inc; apply: E27c2.
       have H2: (Cw_s * E.-1) `<=` (Cw_s * Bmw) by apply compose_inc; apply: E27c1.
-      have E27c3: (Δ_(W_s)*E.-1) `<=` (Cw_s * Bmw) by apply: inclusion_transitive H1 H2.
+      have E27c3: (Δ_(W_s)*E.-1) `<=` (Cw_s * Bmw) by apply: subset_trans H1 H2.
       have E27c4: ((Bw `|` Kw)*Δ_(W_s)*E.-1) `<=` ((Bw `|` Kw) * (Cw_s) * Bmw)
         by rewrite [_ * _ * E.-1]composeA [_ * _ * Bmw]composeA;
         apply: compose_inc; apply: E27c3.
       have H3: ((Bw `|` Kw)*Cw_s * Bmw) `<=`  Aw_sm 
         by rewrite /Aw_sm; apply: union_containsr.
       have H4: ((Bw `|` Kw) * Δ_( W_s) * Em) `<=` Aw_sm 
-        by apply: inclusion_transitive E27c4 H3.
+        by apply: subset_trans E27c4 H3.
       have E27c5: Cw_s * Δ_(W_s) = Cw_s
         by rewrite {1}/Cw_s composeDr -Delta_clos_trans_ends DeltaE_inv -/Cw_s.
       have E27c6: forall (R S: relation A), (S * R = R) -> ((R.+ `|` S)* R) = (R.+)
@@ -248,9 +248,9 @@ Section Csbr.
       have H2': (((Bw `|` Kw) * Cw_s) * E.-1) `<=` (((Bw `|` Kw) * Cw_s) * Bmw)
         by apply: compose_inc; apply: E27c1.
       have E27c9: ((Bw `|` Kw)*Cw_s * Kw * Δ_(W_s)*E.-1) `<=` ((Bw `|` Kw)*Cw_s * Bmw)
-        by apply: inclusion_transitive H1' H2'.
+        by apply: subset_trans H1' H2'.
       have H5: ((Bw `|` Kw)*Cw_s * Kw * Δ_(W_s)*Em) `<=` Aw_sm
-        by apply:  inclusion_transitive E27c9 H3.
+        by apply:  subset_trans E27c9 H3.
       by rewrite /Aw_sp composeDr composeDr;apply: union_inc_b H4 H5.
     Qed.
     

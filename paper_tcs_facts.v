@@ -121,7 +121,7 @@ Section Tcs.
     have H1: (Closure_intersectW).+ `<=` (Δ_(W) * Kw * Δ_(W)).+ 
       by apply clos_t_inc; apply Clos_Intersect_W_inc.
     have H2: (Δ_(W) * Kw * Δ_(W)).+ `<=` Cw by apply union_containsl.
-    by apply inclusion_transitive with (Δ_(W) * Kw * Δ_(W)).+ .
+    by apply subset_trans with (Δ_(W) * Kw * Δ_(W)).+ .
   Qed.
 
 (*
