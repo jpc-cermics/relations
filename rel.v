@@ -31,10 +31,6 @@ Notation "R .+" := (clos_t R)
                      (at level 2, left associativity, format "R .+").
 Notation "R .*" := (clos_rt R) 
                      (at level 2, left associativity, format "R .*").
-
-
-(** * to be removed *)
-
 Reserved Notation "R .-1" (at level 2, left associativity, format "R .-1"). 
 
 Section Sets_facts.
@@ -46,7 +42,21 @@ Section Sets_facts.
    * (exists z, z \in A)
    *)
 
+  Lemma inP: forall (x:A) (X: set A), x \in X <-> X x. 
+  Proof.
+    by move => x X; rewrite in_setE.
+  Qed.
+
+  Lemma inP_Test: forall (x:A) (X Y: set A), x \in X `|` Y -> True.
+    by move => x X Y /inP [H1 | H1].
+  Qed.
+    
   Lemma notempty_exists: forall (X: set A), (exists z, z \in X) <-> (X != set0)%classic.
+  Proof.
+    by move => X; rewrite set0P;split;move => [z /inP H1]; exists z. 
+  Qed.
+  
+  Lemma notempty_exists': forall (X: set A), (exists z, z \in X) <-> (X != set0)%classic.
   Proof.
     move => X. rewrite set0P.
     split.
@@ -99,22 +109,6 @@ Section Sets_facts.
   Qed.
   
 End Sets_facts. 
-
-(*
-Section Relation_Classic.
-
-  Variables (A:Type) (R S:relation A).
-
-  (* we use relations in a classical context with extensionality axiom *)
-  Axiom Extensionality_Relations : @same_relation A R S -> R = S.
-  
-  Lemma classic_relation : (R = S) <-> (@same_relation A R S).
-  Proof.
-    by split => H;[split => x y; rewrite H | apply: Extensionality_Relations].
-  Qed.
-  
-  End Relation_Classic.
-*)
 
 Section Relations_facts.
 
