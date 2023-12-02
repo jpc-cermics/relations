@@ -218,9 +218,9 @@ Section CwCw_s_facts.
   Qed.
   
   (* Equivalence relation on W *)
-  Lemma C_reflexive_W (X: set A): forall w, w \in X -> (C X) (w, w).
+  Lemma C_reflexive_W (X: set A): forall w, X w -> (C X) (w, w).
   Proof.
-    by move => w';rewrite /C /D; right.
+    by move => w';rewrite /C /D;right.
   Qed.
   
   Lemma C_as_clos_t (X: set A): (C X) =  (Δ_(X) `|`  Δ_(X) * Kw *  Δ_(X)).+.
@@ -286,7 +286,7 @@ Section Cw_facts.
   Qed.
   
   (* Equivalence relation on W *)
-  Lemma Cw_reflexive_W: forall w, w \in W -> Cw (w, w).
+  Lemma Cw_reflexive_W: forall w, W w -> Cw (w, w).
   Proof.
     apply C_reflexive_W.
   Qed.
@@ -349,7 +349,7 @@ Section Cw_s_facts.
   Qed.
   
   (* Equivalence relation on W *)
-  Lemma Cw_s_reflexive_W: forall w, w \in W_s -> Cw_s (w, w).
+  Lemma Cw_s_reflexive_W: forall w, W_s w -> Cw_s (w, w).
   Proof.
     apply C_reflexive_W. 
   Qed.

@@ -275,7 +275,7 @@ Section Delta.
 
   (** * Simplifier en enlevant le \in ça doit simplifire les preuves qui suivent *)
   Definition DeltaE (A: Type) (X: set A) : relation A := 
-    [set x | x.1 \in X /\ x.1 = x.2]%classic.
+    [set x | X x.1 /\ x.1 = x.2]%classic.
 
   Definition DeltaCE (A: Type) (X: set A) : relation A := 
     DeltaE (~` X).
@@ -308,8 +308,7 @@ Section Delta_facts.
   Lemma DeltaE_inc :   X `<=` Y -> Δ_(X) `<=` Δ_(Y).
   Proof.
     rewrite /symmetric /DeltaE /mkset /subset /=.
-    move =>  H [x y] /=; rewrite !in_setE => [[H1 <-]]. 
-    by split;[apply H |].
+    by move =>  H [x y] [H1 <-];split;[apply H |].
   Qed.
 
   Lemma DeltaE_inv :  Δ_(X) * Δ_(X) = Δ_(X).
@@ -329,24 +328,22 @@ Section Delta_facts.
   Lemma Delta_Id : forall (x y:A), 'Δ (x,y) <-> x = y.
   Proof.
     rewrite /DeltaE /mkset /=.
-    move => x y; split;first by move => [H1 ->].
-    by move => H1; split;[apply mem_setT|].
+    by move => x y; split;first by move => [H1 ->].
   Qed.
   
   Lemma DeltaE_inc_D : Δ_(X) `<=` 'Δ.
   Proof.
     rewrite /DeltaE /mkset /subset /=.
-    by move => [x y] /= [H1 <-]; split;[apply mem_setT|].
+    by move => [x y] /= [H1 <-].
   Qed.
   
   Lemma DeltaW_XXXX : forall (X' Y': set A), Δ_(X') * Δ_(Y') = Δ_(X' `&` Y').
   Proof.
     move => X' Y'.
     rewrite /DeltaE /compose /mkset predeqE.
-    move => [x y] /=; rewrite !in_setE.
-    split => [[z [[H1 <-] [H2 <-]]] | [[H1 H2] <-]]. 
-    by rewrite !in_setE in H2.
-    by exists x; rewrite in_setE. 
+    move => xy /=;split => [[z [[H1 <-] [H2 <-]]] | [[H1 H2] <-]]. 
+    by []. 
+    by exists xy.1. 
   Qed.
 
   Lemma WWcI: X `&` X.^c = set0.
@@ -358,15 +355,14 @@ Section Delta_facts.
   Lemma DeltaW_Wc : Δ_(X) * Δ_(X.^c) = 'Δc.
   Proof.
     rewrite DeltaW_XXXX WWcI /DeltaCE /DeltaE /setC /set0 predeqE. 
-    move => [x y]/=.
-    by split; rewrite !in_setE; move => [H1 <-].
+    by move => [x y] /=;split => [ [? _] // | [? _] // ].
   Qed.
   
   Lemma DeltaWc_W : Δ_(X.^c) * Δ_(X) = 'Δc.
   Proof.
     rewrite DeltaW_XXXX setIC WWcI /DeltaCE /DeltaE /setC /set0 predeqE. 
     move => [x y]/=.
-    by split; rewrite !in_setE; move => [H1 <-].
+    by split; move => [H1 <-].
   Qed.
   
   Lemma DeltaC_union_ideml : 'Δc `|` R = R.
@@ -374,7 +370,7 @@ Section Delta_facts.
     rewrite /setU /DeltaCE /DeltaE /setC /mkset predeqE. 
     move => [x y]/=.
     split.
-    by move => [[H1 H2] | H1];[rewrite in_setE in H1 |].
+    by move => [[H1 H2] | H1].
     by move => H1; right.
   Qed.
   
@@ -387,23 +383,23 @@ Section Delta_facts.
   Proof.
     rewrite /compose /DeltaCE /DeltaE /setC /mkset predeqE. 
     move => [x y]/=; split.
-    by move => [z [[ H1 _] _]];rewrite in_setE in H1.
-    by move => [H1 _]; rewrite in_setE in H1.
+    by move => [z [[ H1 _] _]].
+    by move => [H1 _].
   Qed.
   
   Lemma DeltaC_compose_absorbr :  R * 'Δc = 'Δc.
   Proof.
     rewrite /compose /DeltaCE /DeltaE /setC /mkset predeqE. 
     move => [x y]/=; split.
-    by move => [z [_ [H1 _]]];rewrite in_setE in H1.
-    by move => [H1 _]; rewrite in_setE in H1.
+    by move => [z [_ [H1 _]]].
+    by move => [H1 _].
   Qed.
   
   Lemma DeltaE_union : forall (X' Y':set A), Δ_(X') `|` Δ_(Y') = Δ_(X' `|` Y').
   Proof.
     move => X' Y'.
     rewrite /DeltaE /setU /mkset predeqE.
-    move => [x y] /=; rewrite !in_setE.
+    move => [x y] /=.
     split.
     by move => [[H1 <-] | [H1 <-]];[split;[left |] | split;[right |]].
     by move => [[H1 | H1] <-];[left | right].
@@ -488,7 +484,7 @@ Section Delta_facts.
       (R (x,y) <-> let DR:= (Δ_(X) * R * Δ_(X)) in DR (x,y)).
   Proof.
     rewrite /compose /DeltaE /mkset /=.
-    move => x y [H1 H2].
+    move => x y [/inP H1 /inP H2].
     split=> [ H3 | [z [[t [[H3 ->] H4] [H5 <-]]]] //].
     by (exists y; split;[ exists x; split | ]).
   Qed.
@@ -497,7 +493,7 @@ Section Delta_facts.
       x \in X -> (R (x,y) <-> let DR:= (Δ_(X) * R) in DR (x,y)).
   Proof.
     rewrite /compose /DeltaE /mkset /=.
-    move => x y H1.
+    move => x y /inP H1.
     split => [ H2 | [z [[H2 ->] H3] ] //].
     by (exists x; split).
   Qed.
@@ -522,7 +518,7 @@ End Delta_facts.
 Section Foresets.
 
   Definition Fset (A:Type) (R: relation A) (Y: set A) : set A :=
-    [set x | exists (y: A), R (x,y) /\ y \in Y]%classic.
+    [set x | exists (y: A), R (x,y) /\ Y y]%classic.
     
 End Foresets.
 
@@ -560,8 +556,8 @@ Section Foreset_facts.
     rewrite /Fset /DeltaE /mkset predeqE /=.
     move => x.
     split.
-    by move => [x' [/Delta_Id -> H1]]; rewrite in_setE in H1.
-    by move => H; exists x; split;[split;[apply mem_setT|] | rewrite in_setE].
+    by move => [x' [/Delta_Id -> H1]].
+    by move => H; exists x; split;[split|].
   Qed.
 
   Lemma Fset_DE : Δ_(Y)#X = Y `&` X.
@@ -569,9 +565,8 @@ Section Foreset_facts.
     rewrite /Fset /DeltaE /mkset predeqE /=.
     move => x.
     split.
-    by move => [x' [[H1 H'1] H2]];rewrite !in_setE in H2 H1;
-              split; [ | rewrite H'1]. 
-    by move => [H1 H2]; exists x; rewrite !in_setE.
+    by move => [x' [[H1 H'1] H2]];split; [ | rewrite H'1]. 
+    by move => [H1 H2]; exists x.
   Qed.
   
   Lemma Fset_DCE : Δ_(Y.^c)#X = X `\` Y.
@@ -579,9 +574,8 @@ Section Foreset_facts.
     rewrite /Fset /DeltaE /setC /mkset predeqE /=.
     move => x.
     split.
-    by move => [x' [[H1 H'1] H2]];rewrite !in_setE in H2 H1;
-              split; [rewrite H'1 |].
-    by move => [H1 H2]; exists x; rewrite !in_setE.
+    by move => [x' [[H1 H'1] H2]];split; [rewrite H'1 |].
+    by move => [H1 H2]; exists x.
   Qed.
   
   Lemma Fset_inc : R `<=` S -> R#X `<=` S#X.
@@ -592,28 +586,25 @@ Section Foreset_facts.
   
   Lemma Fset_inc1 : X `<=` Y -> R#X `<=` R#Y.
   Proof.
-    move => H x [y [H1 H2]]. rewrite inE in H2.
-    exists y. rewrite inE. split. by []. by apply H.
+    move => H x [y [H1 H2]].
+    exists y. split. by []. by apply H.
   Qed.
   
   Lemma set_inc2: forall (x: A), x \in X <->  [set x] `<=` X.
   Proof.
     move => x. split.
-    - move => ? y ?. 
-      by (have H2: x = y by []); rewrite -in_setE -H2. 
-    - move => H1.
-      by rewrite in_setE; apply H1. 
+    - by move => /inP H1 y /inP/Singl_iff ->. 
+    - by move => H1;rewrite in_setE; apply: H1. 
   Qed.
   
   Lemma Fset_comp : S # (R # X) = (S * R) # X.
   Proof.
     rewrite /Fset /compose /Fset /mkset predeqE /=.
     move => x; split.
-    move => [z [H1 H2]]. rewrite !in_setE in H2. 
-    move: H2 => [y [H2 H3]]; rewrite !in_setE in H3.
-    by (exists y);split; [ exists z;split |  rewrite in_setE]. 
-    by move => [ y [[z [H3 H4]] H2]]; exists z; split;
-              [ | rewrite in_setE; exists y].
+    move => [z [H1 H2]]. 
+    move: H2 => [y [H2 H3]].
+    by (exists y);split; [ exists z;split |]. 
+    by move => [ y [[z [H3 H4]] H2]];exists z; split;[|exists y].
   Qed.
   
   Lemma Fset_union_rel : S#X `|` R#X = (S `|` R) # X.
@@ -632,33 +623,31 @@ Section Foreset_facts.
   Proof.
     rewrite /Fset /setU /mkset predeqE /=.
     move => x; split. 
-    - move => [z [H1 H2]]. rewrite !in_setE in H2.  
+    - move => [z [H1 H2]].
       move: H2 => [H2 | H2].
-      left. exists z. by rewrite in_setE.
-      right. exists z. by rewrite in_setE.
+      left. by exists z.
+      right. by exists z.
     - move => [[y [H1 H2]] | [y [H1 H2]]].
-      exists y. split. by []. rewrite in_setE. rewrite in_setE in H2. by left.
-      exists y. split. by []. rewrite in_setE. rewrite in_setE in H2. by right.
+      exists y. split. by []. by left.
+      exists y. split. by []. by right.
   Qed.
   
   (* Foreset in extension *)
 
-  Definition Fset_ext := fun (x:A) => (exists y, y \in Y /\ x \in R#_(y)).
+  Definition Fset_ext := fun (x:A) => (exists y, Y y /\ R#_(y) x).
   
-  Lemma Fset_union_set : forall (x:A), x \in (R#Y) <-> exists y, y \in Y /\ x \in R#_(y).
+  Lemma Fset_union_set : forall (x:A), (R#Y) x <-> exists y, Y y /\ R#_(y) x.
   Proof.
     move => x.
     rewrite /Fset /mkset /=.
     split.
-    - rewrite in_setE. move => [y [H1 H2]].
-      exists y. split. by []. rewrite in_setE. exists y. split. by []. by rewrite in_setE.
-    - move => [y [H1 H2]]. rewrite !in_setE in H1 H2 *.
+    - move => [y [H1 H2]].
+      exists y. split. by []. exists y. split. by []. by [].
+    - move => [y [H1 H2]]. 
       move: H2 => [z [H2 H3]].
       exists z.
-      rewrite in_setE in H3.
       split. by [].
-      have -> : z = y by []. 
-      by rewrite in_setE.
+      by rewrite H3.
   Qed.
 
   Lemma Fset_union_ext : (R#Y) = Fset_ext. 
@@ -666,8 +655,8 @@ Section Foreset_facts.
     rewrite /Fset_ext predeqE.
     move => x. 
     split => H. 
-    by rewrite -Fset_union_set in_setE.
-    by rewrite -in_setE Fset_union_set. 
+    by rewrite -Fset_union_set.
+    by rewrite  Fset_union_set. 
   Qed.
 
   Lemma Union_Setminus : X `|` Y = X `|` (Y `\` X). 
@@ -684,35 +673,33 @@ Section Foreset_facts.
       by right.
   Qed.
   
-  Lemma Fset_intersect : forall (x y:A), (exists z, z \in R#_(x) /\ z \in S#_(y))
+  Lemma Fset_intersect : forall (x y:A), (exists z, R#_(x) z /\ S#_(y) z)
                                     <-> let RmR := R.-1 * S in RmR (x,y). 
   Proof.
     rewrite /Fset /mkset.
     move => x y.
     split. 
     - move => [ z [H1 H2]].
-      rewrite !in_setE in H1 H2.
       move: H1 => [r [H1 H1']].
       move: H2 => [t [H2 H2']].
-      rewrite !in_setE in H1' H2'.
       have -> : x = r by [].
       have <- : t = y by [].
       exists z. split. by rewrite /inverse /=. by [].
     - rewrite /inverse; move => [z /= [H1 H2]].
-      exists z. rewrite !in_setE.
-      split. exists x. rewrite in_setE.  by []. 
-      exists y. rewrite in_setE. by []. 
+      exists z.
+      split. exists x.  by []. 
+      exists y. by []. 
   Qed.
   
-  Lemma Fset_singleton: forall (x:A), reflexive R -> x \in R#_(x). 
+  Lemma Fset_singleton: forall (x:A), reflexive R -> R#_(x) x. 
   Proof.
-    move => x H.  rewrite in_setE /Fset /mkset. exists x. rewrite in_setE.  by []. 
+    move => x H.  rewrite /Fset /mkset. exists x.  by []. 
   Qed.
   
-  Lemma Fset_rt_singleton: forall (x:A), x \in R.*#_(x). 
+  Lemma Fset_rt_singleton: forall (x:A), R.*#_(x) x. 
   Proof.
-    move => x.  rewrite in_setE /Fset /mkset. exists x.
-    split. by apply rt_refl. by rewrite in_setE.
+    move => x.  rewrite /Fset /mkset. exists x.
+    split. by apply rt_refl. by [].
   Qed.
 
   Lemma Fset_restrict : X `<=` Y -> R#X = (R* Δ_(Y))# X.
@@ -720,41 +707,40 @@ Section Foreset_facts.
     rewrite /subset /Fset /compose /DeltaE /mkset predeqE /=. 
     move => H x; split. 
     - move => [y [H1 H2]].
-      exists y. split. exists y. split. by []. split. rewrite in_setE. apply H. by rewrite -in_setE. by []. by [].
+      exists y. split. exists y. split. by []. split. apply H. by []. by []. by [].
     - by move => [y [[z [H1 [_ <- ]]] H4]];(exists z). 
   Qed.
 
   
-  Lemma Fset_t1: forall (x y:A), R (x, y) -> x \in R.+#_(y). 
+  Lemma Fset_t1: forall (x y:A), R (x, y) -> R.+#_(y) x. 
   Proof.
     move => x y H1.
-    rewrite in_setE /Fset /clos_rt /mkset /=.
-    exists y. split. by apply t_step. by rewrite Singl_iff.
+    rewrite /Fset /clos_rt /mkset /=.
+    exists y. split. by apply t_step. by []. 
   Qed.
   
   Lemma Fset_t2: forall (x y:A), 
-      (exists (x1:A), R (x, x1) /\ x1 \in R.+#_(y)) -> x \in R.+#_(y). 
+      (exists (x1:A), R (x, x1) /\ R.+#_(y) x1) -> R.+#_(y) x. 
   Proof.
     move => x y' [x1 [H1 H2]].  
-    move: H2. rewrite /Fset /clos_t /mkset /= !in_setE.
-    move => [y [H2 /Singl_iff <-]].
+    move: H2. rewrite /Fset /clos_t /mkset /=.
+    move => [y [H2 <-]].
     exists y. split. apply t_trans with x1. by apply t_step. by [].
-    by rewrite Singl_iff. 
+    by [].
   Qed.
 
   Lemma Fset_t3: forall (x y z:A), 
-      x \in R.+#_(y) /\ R (y, z) -> x \in R.+#_(z) . 
+      R.+#_(y) x /\ R (y, z) -> R.+#_(z) x. 
   Proof.
-    move => x y z. rewrite !in_setE /Fset /clos_t /mkset /=.  
-    move => [[y' [/clos_trans_tn1_iff H1 /Singl_iff <-]] H2].
-    by (exists z);rewrite Singl_iff; split;[rewrite clos_trans_tn1_iff;apply tn1_trans with y'| ].
+    move => x y z. rewrite /Fset /clos_t /mkset /=.  
+    move => [[y' [/clos_trans_tn1_iff H1 <-]] H2].
+    by (exists z); split;[rewrite clos_trans_tn1_iff;apply tn1_trans with y'| ].
   Qed.
   
   Lemma Fset_t4: forall (y z:A), 
       R (y, z) -> ( (R.+)#_(y) `<=` (R.+)#_(z) ).
   Proof.
-    move => y z H1 x H2. rewrite -in_setE. apply Fset_t3 with y.
-    by rewrite in_setE.
+    move => y z H1 x H2. by apply Fset_t3 with y.
   Qed.
 
 End Foreset_facts.
@@ -763,17 +749,16 @@ Section Closure_facts.
 
   Variables (A: Type) (E: relation A) (W: set A).
 
-  Lemma Clos_x_x : forall (x:A), x \in Clos_(x | E,W).
+  Lemma Clos_x_x : forall (x:A), Clos_(x | E,W) x.
   Proof.
     rewrite /Fset /mkset /= => x.
-    rewrite in_setE.
-    exists x;split. apply rt_refl. by apply /Singl_iff.
+    exists x;split. apply rt_refl. by []. 
   Qed.
   
   Lemma Clos_to_singleton: forall (X: set A) (x:A),
-      x \in Clos(X | E, W) <-> exists y, y \in X /\ x \in Clos_(y |E ,W).
+      Clos(X | E, W) x <-> exists y, X y /\ Clos_(y |E ,W) x.
   Proof.
-    by split;move => /Fset_union_set ?.
+    by split; rewrite Fset_union_set.
   Qed.    
   
   Lemma Clos_union: forall (X Y: set A),
@@ -783,9 +768,9 @@ Section Closure_facts.
   Qed.
   
   Lemma Clos_s_inc: forall (X Y: set A) (x:A),
-      x \in X -> Clos_(x| E,W) `<=` Clos(X `|` Y| E,W).
+      X x -> Clos_(x| E,W) `<=` Clos(X `|` Y| E,W).
   Proof.
-    move => X Y x' /set_inc2 H1.
+    move => X Y x' /inP/set_inc2 H1.
     have H2:  Clos_(x'|E,W) `<=` Clos(X | E,W) 
       by apply Fset_inc1.
     have H3:  Clos(X|E,W) `<=` Clos(X `|` Y|E,W)
@@ -809,7 +794,7 @@ Section Closure_facts.
       X `<=` W -> X `<=` Clos(X| E,W).
   Proof.
     move => X H1 x H2. 
-    by rewrite /Fset /mkset;exists x;split;[apply rt_refl| rewrite in_setE].
+    by rewrite /Fset /mkset;exists x;split;[apply rt_refl| ].
   Qed.    
   
 End Closure_facts.
@@ -964,7 +949,7 @@ Section Clos_refl_trans_facts.
   Proof.
     rewrite predeqE /DeltaE /mkset /= => [[x' y']].
     split. 
-    - move => /Delta_Id -> /=. split. apply mem_setT. by [].
+    - move => /Delta_Id -> /=. split.  by []. by [].
     - by [].
   Qed.
 
@@ -1182,7 +1167,7 @@ End Clos_Fset.
 Section Relation_restricted.
 
   Definition Restrict (A:Type) (R: relation A) (X: set A) := 
-    [ set x | x.1 \in X /\ x.2 \in X /\ R x]%classic.
+    [ set x | X x.1 /\ X x.2 /\ R x]%classic.
   
   Lemma Rest (A:Type) (X: set A) (R: relation A) : (Restrict R X) = Δ_(X) * R * Δ_(X).
   Proof.

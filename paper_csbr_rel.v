@@ -276,7 +276,6 @@ Section Csbr.
     Proof.
       rewrite /DeltaE /Fset /mkset.
       move => R X [x y]. 
-      rewrite in_setE.
       move => [[z [H1 H2]] /= <-]. 
       by exists z;split;[exists z |].
     Qed.
@@ -302,7 +301,7 @@ Section Csbr.
     Lemma E32h : (Ew .* * Δ_( W) * Emw .* ) `<=` (Ew .* * Δ_( W_s) * Emw .* ).
     Proof.
       have E32g : Δ_( W) `<=` Δ_( W_s)
-        by move => [x y] [H1 H2]; rewrite /W_s /Fset /DeltaE /mkset /= in_setE;
+        by move => [x y] [H1 H2]; rewrite /W_s /Fset /DeltaE /mkset /=;
                   split;[exists x; split;[ apply: rt_refl |] | ].
       by apply: composer_inc; apply: compose_inc; apply: E32g.
     Qed.

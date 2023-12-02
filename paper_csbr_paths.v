@@ -89,7 +89,7 @@ Section Bw_implies_active_path.
   Qed.
   
   Lemma Bwpath': forall (x y:A),
-      (Bw (x, y)) /\ x \in W.^c -> (exists (p: seq A),
+      (Bw (x, y)) /\ W.^c x -> (exists (p: seq A),
                                 Active_path W E (Lifto (x::(rcons p y)) P) x y
                                 /\ All (Ew.+)#_(y) (x::p)).
   Proof.
@@ -131,7 +131,7 @@ Section Bmw_implies_active_path.
   Qed.
   
   Lemma Bmwpath': forall (x y:A),
-      Bmw (x, y) /\ y \in W.^c -> 
+      Bmw (x, y) /\ W.^c y -> 
       (exists (p: seq A), Active_path W E (Lifto (x::(rcons p y)) N) x y
                      /\ All (Ew.+)#_(x) (rcons p y)).
   Proof.
@@ -271,7 +271,7 @@ Section Cw_s_implies_active_path.
       move => R [z [H1 H5]].
       move: H1 => /Hn [r1 [p [x1 [z1 [H1 [H2 [H3 H4]]]]]]].
       rewrite iter1_id in H5.
-      have H5': z \in W_s by move: H5 => [z' [[z'' [[H'1 _] _]] _]].
+      have H5': W_s z by move: H5 => [z' [[z'' [[H'1 _] _]] _]].
       move: H5 => /Kwcomp_1 [r2 [q [z2 [y2 [H5 [H6 [H7 H8]]]]]]].
       exists ((rcons r1 (z1,z,P)) ++ (z,z2,N)::r2),(p ++ q), x1, y2.
       split. 
@@ -294,7 +294,7 @@ Section Cw_s_implies_active_path.
 
   Lemma Kwcomp_tc2: forall (x y:A),
       let R:= (Δ_(W_s) * Kw * Δ_(W_s)).+
-      in R (x, y) ->  x \in W_s /\ y \in W_s.
+      in R (x, y) ->  W_s x /\ W_s y.
   Proof.
     move => x y H1 H2.
     rewrite /H1 in H2.
