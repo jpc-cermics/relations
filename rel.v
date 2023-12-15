@@ -25,8 +25,6 @@ Local Open Scope classical_set_scope.
 
 (** * relations as sets: (set T*T) *)
 
-Definition relation T := set (T * T).
-
 Notation "R .+" := (clos_t R) 
                      (at level 2, left associativity, format "R .+").
 Notation "R .*" := (clos_rt R) 
@@ -47,7 +45,8 @@ Section Sets_facts.
   Proof.
     by move => X; rewrite set0P;split;move => [z /inP H1]; exists z. 
   Qed.
-  
+
+  (* begin snippet S1:: no-out *)  
   Lemma empty_notexists: forall (X: set A), X = set0 <-> ~ (exists z, z \in X).
   Proof.
     move => X.
@@ -56,8 +55,11 @@ Section Sets_facts.
     - move => H1; rewrite predeqE => x.
       by split => [/inP H2 | H2];[have H3: exists (z:A), z \in X by (exists x) |].
   Qed.
-  
+  (* end snippet S1 *) 
+
+  (* begin snippet S2 *)  
   Lemma empty_iff: forall (X: set A), ~ (X != set0) <-> X = set0.
+  (* end snippet S2 *)  
   Proof.
     by move => X;rewrite -notempty_exists empty_notexists.
   Qed.
@@ -74,7 +76,7 @@ Section Sets_facts.
     by move => X Y x [? ?].
   Qed.
 
-  Lemma Union_empty : forall (X Y: set A), X `|` Y = set0 <-> (X= set0) /\ ( Y = set0).
+  Lemma Union_empty : forall (X Y: set A), X `|` Y = set0 <-> (X = set0) /\ ( Y = set0).
   Proof.
     move => X Y; split => [H | [H1 H2]].
     - split;rewrite empty_notexists;move => [z H1].
@@ -129,7 +131,9 @@ Section Inverse.
   
   Variables (A: Type) (R S: relation A).
   
+  (* begin snippet S3 *)  
   Definition inverse (A: Type) (R: relation A): relation A := [set x | R (x.2,x.1)].
+  (* end snippet S3 *)  
 
   Local Notation "R .-1" := (@inverse _ R) : classical_set_scope.
   

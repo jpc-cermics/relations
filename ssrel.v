@@ -520,14 +520,4 @@ Section Properties.
 
   End Equivalences.
 
-  (** * XXX to be moved 
-  Definition transp (R: relation A) := [set x | R (x.2,x.1)].
-  
-  Lemma clos_trans_transp_permute : transp (clos_t R) = clos_t (transp R).
-  Proof.
-    by split;elim => [x' y' H | x' y' z' _ H2 _ H4];
-                 [apply t_step | apply t_trans with y' | apply t_step | apply t_trans with y'].
-  Qed.
-   *)
-
 End Properties.

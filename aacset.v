@@ -79,7 +79,6 @@ Section AAC_eq_relC.
 
 End AAC_eq_relC.
 
-
 Section AAC_eq_ops.
 
   (* inverse *) 
@@ -96,12 +95,11 @@ Section AAC_eq_ops.
   #[export] Instance aac_clos_refl_trans_eq_compat T :
     Proper (eq ==> eq) (@clos_refl_trans T).
   Proof. by move => R S ->. Qed. 
-  
-  (* Comprendre comment on etend a l'inclusion *)
+
 End AAC_eq_ops.
 
 Section Test.
-
+  (** * test of AAC with sets *)
   Variables (A: Type) (X Y Z T: set A).
   
   Goal (X `|` Y `|` Z `|` T)%classic = (X `|` (Y `|` Z) `|` T)%classic.
