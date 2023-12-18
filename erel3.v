@@ -70,6 +70,53 @@ Section Utilities.
 
 End Utilities.
 
+Section Wip.
+  (** * test to check how to prove that active path can be chosen uniq *)
+
+  (* we use eqType here *)
+  Variables (A: eqType).
+  
+  Lemma trunck_seq: forall (x: A) (p: seq A),
+      ((x \in p) /\ exists (p1:seq A) , x \notin p1 /\ exists p2, (p= p1 ++ (x::p2)))
+      \/ ~ (x \in p).
+  Proof.
+    move => x' p.
+    elim: p => [ | x p [[H1 [p1 [H2 [p2 H3]]]] | H1] ].
+    - by right.
+    - left; split;first by rewrite in_cons H1 orbT.
+      case Hx: (x'== x). 
+      + by move: Hx => /eqP <-;(exists [::]);split;[|exists p].
+      + by exists(x::p1);split;[rewrite in_cons Hx H2 | (exists p2); rewrite H3].
+            - case Hx: (x'== x);last by right;rewrite in_cons Hx /=.
+              left;split;first by rewrite in_cons Hx /=.
+              by exists[::]; split;[ | exists p; move: Hx => /eqP ->].
+  Qed.
+
+  (* general property of seq *)
+  Lemma trunck_seq_rev: forall (x: A) (p: seq A),
+      ((x \in p) /\ exists (p1 p2:seq A), x \notin p2 /\ p= p1 ++ (x::p2))
+      \/ ~ (x \in p).
+  Admitted.
+          
+  (* P is compatible with truncation *)
+  Lemma trunck_seq_P: forall (x: A) (p p1 p2: seq A) (P: A -> (seq A) -> Prop),
+      P x p -> p = p1 ++ (x::p2) -> P x p2.
+  Admitted.
+
+  (* existence with uniq *)
+  Lemma P_uniq: forall (x: A) (p: seq A) (P: A-> (seq A) -> Prop),
+      P x p -> exists (p2:seq A), x \notin p2 /\ P x p2.
+  Proof.
+    move => x p P H1.
+    case Hx: (x \in p); last first.
+    by (exists p);split;[rewrite Hx /= |].
+    pose proof trunck_seq_rev x p as [[_ [p1 [p2 [H3 H4]]]] | H2].
+    - exists p2. split. by []. by apply: (trunck_seq_P H1 H4).
+    - by [].
+  Qed.
+           
+End Wip.
+
 Section All.
   (** * all the elements of a sequence belong to a set
    * very similar to all (in seq.v) except that we use Prop here not bool.
@@ -85,30 +132,35 @@ Section All.
     end.
   
   Notation "p [∈] X" := (All X p) (at level 4, no associativity).
-  
-  Lemma All_cons': forall (X: set A) (p: seq A) (x:A),
+
+  Lemma All_cons: forall (X: set A) (p: seq A) (x:A),
       ((x::p) [∈]  X)  <->  p [∈] X /\ X x.
   Proof.
     move => X p x.
     by split;[elim : p x => [ x // | y p H1 x [H2 H2']];split;[ apply H1 |] | ].
   Qed.
 
-  Lemma All_cons: forall (X: set A) (p: seq A) (x:A),
-      All X (x::p) <-> All X p /\ X x.
+  (* using a boolean version *)
+  Lemma All_iff: forall (X: set A) (p: seq A), 
+      (p [∈]  X) <-> all (fun x => x \in X) p.
   Proof.
-    move => X p x.
-    by split;[elim : p x => [ x // | y p H1 x [H2 H2']];split;[ apply H1 |] | ].
+    move => X p;split.
+    - elim:p => [? // | x p H1 /All_cons [/H1 H2 H3] //].
+      rewrite -in_setE /= in H3. 
+      rewrite /all H3 /=.
+      by apply H2.
+    - elim:p => [? // | x p H1]. 
+      by rewrite All_cons /all => /andP [? /H1 ?];split;[|rewrite -in_setE].
   Qed.
-
+  
   Lemma All_subset: forall (X Y: set A) (p: seq A),
-      (X `<=` Y)%classic -> All X p -> All Y p.
+      (X `<=` Y)%classic ->  (p [∈]  X) -> (p [∈] Y).
   Proof.
     move => X Y.
-    elim => [ // | x p1]. 
-    move => H1 H2 /All_cons [H3 H4].  
-    rewrite All_cons. split. apply H1. by []. by []. by apply H2.
+    elim => [ // | x p H1 H2 /All_cons [H3 H4]]. 
+    by rewrite All_cons;split;[apply: H1|apply: H2].
   Qed. 
-
+  
   Lemma All_rcons: forall (X: set A) (p: seq A) (x:A),
       All X (rcons p x) <->  All X p /\ X x.
   Proof.
@@ -135,7 +187,7 @@ Section All.
     by elim: p q => [q [_ H1] //| x p Hr q [/All_cons [H1 H2] H3]];
                    rewrite cat_cons All_cons;split;[apply Hr | ].
   Qed. 
-
+  
 End All.
 
 Section Seq_lift. 
