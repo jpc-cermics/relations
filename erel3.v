@@ -97,12 +97,11 @@ Section Wip.
       ((x \in p) /\ exists (p1 p2:seq A), x \notin p2 /\ p= p1 ++ (x::p2))
       \/ ~ (x \in p).
   Admitted.
-          
+  
   (* P is compatible with truncation *)
-  Lemma trunck_seq_P: forall (x: A) (p p1 p2: seq A) (P: A -> (seq A) -> Prop),
+  Axiom trunck_seq_P: forall (x: A) (p p1 p2: seq A) (P: A -> (seq A) -> Prop),
       P x p -> p = p1 ++ (x::p2) -> P x p2.
-  Admitted.
-
+  
   (* existence with uniq *)
   Lemma P_uniq: forall (x: A) (p: seq A) (P: A-> (seq A) -> Prop),
       P x p -> exists (p2:seq A), x \notin p2 /\ P x p2.
@@ -130,7 +129,7 @@ Section All.
     | [::] => True
     | x1::p1 => All X p1 /\ X x1
     end.
-  
+
   Notation "p [∈] X" := (All X p) (at level 4, no associativity).
 
   Lemma All_cons: forall (X: set A) (p: seq A) (x:A),
@@ -140,8 +139,10 @@ Section All.
     by split;[elim : p x => [ x // | y p H1 x [H2 H2']];split;[ apply H1 |] | ].
   Qed.
 
+  Check All.
+
   (* using a boolean version *)
-  Lemma All_iff: forall (X: set A) (p: seq A), 
+  Lemma All_iff_all: forall (X: set A) (p: seq A), 
       (p [∈]  X) <-> all (fun x => x \in X) p.
   Proof.
     move => X p;split.
@@ -151,6 +152,22 @@ Section All.
       by apply H2.
     - elim:p => [? // | x p H1]. 
       by rewrite All_cons /all => /andP [? /H1 ?];split;[|rewrite -in_setE].
+  Qed.
+  
+  Lemma All_eq_all: forall (X: set A) (p: seq A), 
+      (p [∈]  X) = all (fun x => x \in X) p.
+  Proof.
+    by move => X p;rewrite propeqP;apply  All_iff_all.
+  Qed.
+
+  Lemma All_eq_all': forall (X: set A) (p: seq A), 
+      (p [∈]  X) = all (fun x => x \in X) p.
+  Proof.
+    move => X. 
+    elim => [ | x p H1]; first by rewrite /All trueE.
+    rewrite propeqP;split => [ /All_cons [H2 /inP H3] | /andP [/inP H2 H3]].
+    by rewrite /all H3 /= -H1.
+    by rewrite All_cons;split;[rewrite H1|].
   Qed.
   
   Lemma All_subset: forall (X Y: set A) (p: seq A),
@@ -700,11 +717,9 @@ Section Seq_liftO.
   Proof.
     move => p q x y t;rewrite /Lifto /UnLiftO_A. 
     rewrite !pair_o_iff -pair_cat.
-    (* XXXX ? why do I need to cut the rewrite list *)
     by rewrite pair_invl -Lift_cat_crc -rcons_cat Lift_inv1.
     by rewrite size_nseq.
   Qed.
-
 
   (* subset of AxAxO induced by a relation and orientation *)
   
