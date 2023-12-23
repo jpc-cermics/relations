@@ -19,3 +19,6 @@ all: $(targets)
 clean:
 	rm -fr $(snippets_root) 
 	rm -f targets.mk
+
+ignore:
+	svn propset svn:ignore -F .cvsignore .
