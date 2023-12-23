@@ -11,7 +11,7 @@
 
 (* This file is a modified version of the contents of lib/coq/theories/Relations
  * using mathcomp to define relations as set (T * T) and ssreflect for proofs
- * See the original files for the list of authors 
+ * See the original files for the list of authors (B. Barras, P. Castéran, C. Cornes)
  * Jean-Philippe Chancelier 2023.
  *)
 
@@ -27,7 +27,9 @@ Local Open Scope classical_set_scope.
 
 Section Relation_Definition.
 
+  (* begin snippet relation:: no-out *)  
   Definition relation (T: Type) := set (T * T).
+  (* end snippet relation *)  
 
   Variables (T : Type) (R : relation T).
 
@@ -121,11 +123,13 @@ Section Reflexive_Transitive_Closure.
   Variables (T: Type) (R: relation T).
   
   (** Definition by direct reflexive-transitive closure *)
+  (* begin snippet clos_refl_trans:: no-out *)  
   Inductive clos_refl_trans (x:T) : T -> Prop :=
   | rt_step (y:T) : R (x,y) -> clos_refl_trans x y
   | rt_refl : clos_refl_trans x x
   | rt_trans (y z:T) :
     clos_refl_trans x y -> clos_refl_trans y z -> clos_refl_trans x z.
+  (* end snippet clos_refl_trans *)
 
   (** Alternative definition by transitive extension on the left *)
   Inductive clos_refl_trans_1n (x: T) : T -> Prop :=
@@ -139,10 +143,13 @@ Section Reflexive_Transitive_Closure.
   | rtn1_trans (y z:T) :
     R (y,z) -> clos_refl_trans_n1 x y -> clos_refl_trans_n1 x z.
 
+  (* begin snippet clos_rt:: no-out *)  
   Definition clos_rt := [set x: T *T | clos_refl_trans x.1 x.2]%classic.
+  (* end snippet clos_rt *)  
+
   Definition clos_rt_1n := [set x: T *T | clos_refl_trans_1n x.1 x.2]%classic.
   Definition clos_rt_n1 := [set x: T *T | clos_refl_trans_n1 x.1 x.2]%classic.
-
+  
   Lemma clos_rt_rt1n_iff : clos_rt = clos_rt_1n.
   Proof.
     have clos_rt1n_step : forall x' y', R (x',y') -> clos_refl_trans_1n x' y'
@@ -173,42 +180,42 @@ Section Reflexive_Transitive_Closure.
   Qed.
   
   (** Induction on the left transitive step *)
-  Lemma clos_rt_ind_left :
-      forall (x:T) (P:T -> Prop), P x ->
-	                 (forall y z:T, clos_rt (x, y) -> P y -> R (y,z) -> P z) ->
-	                 forall z:T, clos_rt (x, z) -> P z.
-    Proof.
-      rewrite /clos_rt /mkset /=.
-      move => x1 P H H0 z1 H1.
-      move: H H0.
-      elim: H1 => [x y H1 H2 H3| // |x y z H1 IH1 H2 IH2 H3 H4].
-      by apply H3 with (y:=x) (z:=y); [apply rt_refl| | ].
-      apply IH2; first by  apply IH1; [ apply H3 | apply H4].
-        by move => y0 z0 H6 H7 H8;apply H4 with y0; [apply rt_trans with y | | ].
-    Qed.
+  Lemma clos_rt_ind_left :forall (x:T) (P:T -> Prop),
+      P x ->
+      (forall y z:T, clos_rt (x, y) -> P y -> R (y,z) -> P z) ->
+      forall z:T, clos_rt (x, z) -> P z.
+  Proof.
+    rewrite /clos_rt /mkset /=.
+    move => x1 P H H0 z1 H1.
+    move: H H0.
+    elim: H1 => [x y H1 H2 H3| // |x y z H1 IH1 H2 IH2 H3 H4].
+    by apply H3 with (y:=x) (z:=y); [apply rt_refl| | ].
+    apply IH2; first by  apply IH1; [ apply H3 | apply H4].
+    by move => y0 z0 H6 H7 H8;apply H4 with y0; [apply rt_trans with y | | ].
+  Qed.
     
-    (** Induction on the right transitive step *)
-    Lemma clos_rt1n_ind_right : forall (P : T -> Prop) (z:T),
-        P z ->
-        (forall x y, R (x,y) -> clos_rt_1n (y, z) -> P y -> P x) ->
-        forall x, clos_rt_1n (x,z) -> P x.
-    Proof.
-      rewrite /clos_rt_1n /mkset/=.
-      move => P z H1 H2 x H3.
-      move: H2 H1.
-      elim: H3 => [x1 H1 H2| x1 y1 z1 H1 H2 H3 H4 H5]; first by [].
-      by apply H4 with y1; [ | |apply H3].
-    Qed.
-    
-    Lemma clos_rt_ind_right : forall (P : T -> Prop) (z:T),
-        P z ->
-        (forall x y, R (x,y) -> P y -> clos_rt (y, z) -> P x) ->
-        forall x, clos_rt (x, z) -> P x.
-    Proof.
-      move => P z Hz IH x Hxz;rewrite clos_rt_rt1n_iff in Hxz.
-      elim/clos_rt1n_ind_right: Hxz; first by [].
-      by rewrite -clos_rt_rt1n_iff;move => x' y Hxy Hyz Hy;apply: (IH x' y).
-    Qed.
+  (** Induction on the right transitive step *)
+  Lemma clos_rt1n_ind_right : forall (P : T -> Prop) (z:T),
+      P z ->
+      (forall x y, R (x,y) -> clos_rt_1n (y, z) -> P y -> P x) ->
+      forall x, clos_rt_1n (x,z) -> P x.
+  Proof.
+    rewrite /clos_rt_1n /mkset/=.
+    move => P z H1 H2 x H3.
+    move: H2 H1.
+    elim: H3 => [x1 H1 H2| x1 y1 z1 H1 H2 H3 H4 H5]; first by [].
+    by apply H4 with y1; [ | |apply H3].
+  Qed.
+  
+  Lemma clos_rt_ind_right : forall (P : T -> Prop) (z:T),
+      P z ->
+      (forall x y, R (x,y) -> P y -> clos_rt (y, z) -> P x) ->
+      forall x, clos_rt (x, z) -> P x.
+  Proof.
+    move => P z Hz IH x Hxz;rewrite clos_rt_rt1n_iff in Hxz.
+    elim/clos_rt1n_ind_right: Hxz; first by [].
+    by rewrite -clos_rt_rt1n_iff;move => x' y Hxy Hyz Hy;apply: (IH x' y).
+  Qed.
   
 End Reflexive_Transitive_Closure.
 

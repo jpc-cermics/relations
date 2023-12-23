@@ -156,17 +156,16 @@ Section All.
   Lemma All_subset: forall (X Y: set A) (p: seq A),
       (X `<=` Y)%classic ->  (p [∈]  X) -> (p [∈] Y).
   Proof.
-    move => X Y.
-    elim => [ // | x p H1 H2 /All_cons [H3 H4]]. 
-    by rewrite All_cons;split;[apply: H1|apply: H2].
-  Qed. 
+    move => X Y; elim => [ // | x p1]. 
+    by move => H1 H2 /All_cons [? ?];rewrite All_cons;split; [apply: H1| apply: H2].
+  Qed.
   
   Lemma All_rcons: forall (X: set A) (p: seq A) (x:A),
       All X (rcons p x) <->  All X p /\ X x.
   Proof.
     move => X;elim => [// | x' p H1 x];split.
-    by rewrite rcons_cons; move => [/H1 [H2 H3] H4];split;[split | ].
-    by move => [[H2 H3] H4];rewrite rcons_cons;split;[apply H1|].
+    by rewrite rcons_cons; move => [/H1 [? ?] ?];split;[split | ].
+    by move => [[? ?] ?];rewrite rcons_cons;split;[apply H1|].
   Qed. 
   
   Lemma All_rev: forall (X: set A) (p: seq A),
@@ -174,9 +173,9 @@ Section All.
   Proof.
     move => X.
     have H1: forall (p':seq A), All X p' ->  All X (rev p')
-        by elim => [// | x' p H1 [H2 H3]];
+        by elim => [// | x' p H1 [? ?]];
                   rewrite rev_cons All_rcons; split;[ apply H1 | ].
-    by split => [ | H2];[ apply H1 | rewrite -[p]revK; apply H1].
+    by split => [ | ?];[ apply H1 | rewrite -[p]revK; apply H1].
   Qed. 
 
   Lemma All_cat: forall (X: set A) (p q: seq A),
