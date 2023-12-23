@@ -1,0 +1,219 @@
+\ProvidesPackage{causal}[2023/22/12 v1.0 LaTeX package for causal works]
+
+\RequirePackage{optsys}
+
+% Separation operators
+\newcommand{\GenericSeparation}[1]%
+{\mathrel{\raisebox{-0.2em}{$\substack{\text{\small $\Vert$} \\[-1.7mm] \line(1,0){10}\\ #1}$}}}
+\newcommand{\ConditionalDirectionalSeparation}{\GenericSeparation{d}}
+\newcommand{\ConditionalTopologicalSeparation}{\GenericSeparation{t}}
+\newcommand{\ConditionalRelationalSeparation}{\GenericSeparation{r}}
+\newcommand{\ConditionalMoralSeparation}{\GenericSeparation{m}}
+\newcommand{\Tsep}{\GenericSeparation{t}}
+
+\newcommand{\LastElement}[1]{{#1}^\star}
+\newcommand{\FirstElements}[1]{{#1}^-}
+
+\renewcommand{\AGENT}{{\mathbb A}}
+\renewcommand{\Agent}{{A}}
+
+\newcommand{\cut}{\psi}
+\newcommand{\ORDER}{\Sigma}
+\newcommand{\ordering}{\varphi}
+\newcommand{\totalordering}{\rho}
+\newcommand{\numAGENT}{| \AGENT |}
+
+\newcommand{\AgentSubsetW}{W}
+\newcommand{\AgentSubsetY}{Y}
+\newcommand{\AgentSubsetZ}{Z}
+\newcommand{\HistorySubset}{H}
+
+\newcommand{\ParentRelation}{\mathcal{P}} % symbol for the parent relation 
+\newcommand{\SubEH}{{\emptyset,\HistorySubset}}
+\newcommand{\SubWH}{{\AgentSubsetW,\!\HistorySubset}}
+\newcommand{\Precedence}{\ParentRelation}
+\newcommand{\PrecedenceWH}{\ParentRelation_{\AgentSubsetW,\HistorySubset}}
+\newcommand{\npPrecedenceWH}{\PrecedenceWH}
+\newcommand{\PrecedenceWHInv}{\PrecedenceWH^{-1}}
+\newcommand{\PrecedenceEmptyH}{\ParentRelation_{\emptyset,\HistorySubset}}
+\newcommand{\PrecedenceEmptyHISTORY}{\ParentRelation_{\emptyset,\HISTORY}}
+\newcommand{\PrecedenceWHISTORY}{\ParentRelation_{\AgentSubsetW,\HISTORY}}
+
+\newcommand{\DualRelation}{\mathcal{K}_{\SubWH}}
+\newcommand{\ThroughtWRelation}{\mathcal{T}_{\SubWH}}
+\newcommand{\TransitiveDualRelation}{{\overline{\DualRelation}}}
+
+% Pearl 
+\renewcommand{\Precedence}{\EDGE}
+\renewcommand{\AGENT}{\VERTEX}
+\renewcommand{\agent}{\alpha}
+\renewcommand{\agentbis}{\gamma}
+\renewcommand{\bgent}{\gamma}
+\renewcommand{\Bgent}{\Gamma}
+\renewcommand{\cgent}{\lambda}
+\renewcommand{\Cgent}{\Lambda}
+\newcommand{\dgent}{\delta}
+\newcommand{\Dgent}{\Delta}
+\newcommand{\fgent}{\theta}
+\newcommand{\Fgent}{\Theta}
+
+% Relations (from mathfrak to mathcal)
+\renewcommand{\relation}{\mathcal{R}}
+\renewcommand{\relationbis}{\mathcal{S}}
+\renewcommand{\relationter}{\relationbis} %%%% XXXX
+
+\newcommand{\UpperIndex}{\AgentSubsetW}
+\newcommand{\upperAgentSubsetW}{^{\text{\tiny $\UpperIndex$}}}
+\newcommand{\MinusupperAgentSubsetW}{^{\text{\tiny$-\UpperIndex$}}}
+
+% Precedence
+\renewcommand{\PrecedenceEmptyH}{\Precedence}
+\newcommand{\ParentalPrecedence}{\Precedence\upperAgentSubsetW}
+\newcommand{\npParentalPrecedence}{\np{\Precedence\upperAgentSubsetW}}
+\renewcommand{\PrecedenceWH}{\ParentalPrecedence}
+\renewcommand{\npPrecedenceWH}{\np{\PrecedenceWH}}
+\newcommand{\ConverseParentalPrecedence}{\Precedence\MinusupperAgentSubsetW}
+
+\newcommand{\tinyTC}[4]{{#1^{\text{\tiny $#2 #3 #4$}}}}
+\newcommand{\TransitiveClosureRelation}[2]{\tinyTC{#1}{}{#2}{+}}
+\newcommand{\TransitiveClosureConverseRelation}[2]{\tinyTC{#1}{-}{#2}{+}}
+\newcommand{\TransitiveReflexiveClosureRelation}[2]{\tinyTC{#1}{}{#2}{*}}
+\newcommand{\TransitiveReflexiveClosureConverseRelation}[2]{\tinyTC{#1}{-}{#2}{*}}
+
+\newcommand{\TransitiveClosureParentalPrecedence}{\TransitiveClosureRelation{\Precedence}{\UpperIndex}}
+\newcommand{\TransitiveClosureConverseParentalPrecedence}{\TransitiveClosureConverseRelation{\Precedence}{\UpperIndex}}
+\newcommand{\TransitiveReflexiveClosureParentalPrecedence}{\TransitiveReflexiveClosureRelation{\Precedence}{\UpperIndex}}
+\newcommand{\TransitiveReflexiveClosureConverseParentalPrecedence}{\TransitiveReflexiveClosureConverseRelation{\Precedence}{\UpperIndex}}
+
+\newcommand{\MoralVertices}{\mathbb{M}}
+\newcommand{\SubsetMoralVertices}{\mathbb{O}}
+\newcommand{\SubsetMoralVerticesInWc}{\mathbb{S}}
+\newcommand{\SubsetMoralPrecedence}{\Precedence^{\text{\tiny $\SubsetMoralVertices$}}}
+\newcommand{\SubsetMoralPrecedenceInWc}{\Precedence^{\text{\tiny $\SubsetMoralVerticesInWc$}}}
+\newcommand{\MPInf}{\Precedence^{\text{\tiny $\SubsetMoralVertices +$}}}
+\newcommand{\MPInvInf}{\Precedence^{\text{\tiny $- \SubsetMoralVertices +$}}}
+
+% Relations deduced from Precedence
+\newcommand{\ConditionalAncestor}{\TransitiveReflexiveClosureParentalPrecedence}
+\newcommand{\ConverseConditionalAncestor}{\TransitiveReflexiveClosureConverseParentalPrecedence}
+
+\newcommand{\ACTIVE}{\mathcal{A}}
+\newcommand{\ConditionalActive}{\ACTIVE\upperAgentSubsetW}
+\newcommand{\ConditionalActivePlus}{\ConditionalActive_{*+}}
+\newcommand{\ConditionalActiveMinus}{\ConditionalActive_{*-}}
+\newcommand{\ConditionalActiveStar}{\ConditionalActive_{*}}
+
+\newcommand{\ConditionalAscendent}{\mathcal{B}\upperAgentSubsetW}
+\newcommand{\ConverseConditionalAscendent}{\mathcal{B}\MinusupperAgentSubsetW}
+\newcommand{\ConditionalCommonCause}{\mathcal{K}\upperAgentSubsetW}
+\newcommand{\ConverseConditionalCommonCause}{\ConditionalCommonCause}
+\newcommand{\Cousinhood}{\mathcal{C}\upperAgentSubsetW}
+\newcommand{\CousinhoodStar}{\mathcal{C}\upperAgentSubsetW_{*}}
+
+\newcommand{\ConditionalActiveThreeStar}{%
+  \Bp{
+    \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+    \CousinhoodStar
+    \bp{\ConverseConditionalAscendent \cup \ConverseConditionalCommonCause}
+  }
+}
+
+\newcommand{\ConditionalCollider}{\mathcal{L}\upperAgentSubsetW}
+\newcommand{\ConditionalColliderCupDelta}{\ConditionalCollider \cup \Delta_\AgentSubsetW}
+\newcommand{\Moral}{\mathcal{M}}
+
+% Topology
+\newcommand{\TopologicalClosureTwo}[2]{\overline{#2}^{\text{\tiny $#1$}}}
+\newcommand{\topology}{{\cal T}} %{\tau}
+\newcommand{\ClopenSet}{F}
+\newcommand{\ClosedSet}{C}
+\newcommand{\CONNECTEDCOMPONENT}{{\cal K}}
+\newcommand{\ConnectedComponent}{K}
+\newcommand{\OpenSet}{O}
+\newcommand{\TopologyUpper}[1]{\topology^{{\text{\tiny $#1$}}}}
+\newcommand{\TopologyLower}[1]{\topology_{{\text{\tiny $#1$}}}}
+\newcommand{\ClosedTopology}[1]{{\cal F}^{{\text{\tiny $#1$}}}}
+\newcommand{\TopologyW}{\topology\upperAgentSubsetW}
+\newcommand{\ClosedTopologyW}{{\cal F}\upperAgentSubsetW}
+
+% Graphs
+\renewcommand{\graph}{\AGENT,\Precedence}
+\newcommand{\moralgraph}{\AGENT, \Moral}
+\newcommand{\OrientedGraph}{\VERTEX,\EDGE}
+\newcommand{\npOrientedGraph}{\np{\OrientedGraph}}
+\newcommand{\UnorientedGraph}{\VERTEX,\EDGE\cup\Converse{\EDGE}}
+\newcommand{\npUnorientedGraph}{\np{\UnorientedGraph}}
+\newcommand{\WBCmoralgraph}{\np{\Bgent\cup\Cgent\cup\AgentSubsetW}^{*}, \Moral}
+\newcommand{\Wbcmoralgraph}{\TransitiveReflexiveClosure{\Precedence}\np{\na{\bgent}\cup\na{\cgent}\cup\AgentSubsetW}, \Moral}
+\newcommand{\npgraph}{\np{\AGENT,\Precedence}}
+
+% Paths
+\newcommand{\chain}{\pi}
+\ifdefined\path\renewcommand{\path}{\varrho}\else\newcommand{\path}{\varrho}\fi
+\newcommand{\pathbis}{\varrho'}
+\newcommand{\pathter}{\varrho''}
+\newcommand{\Path}{P}
+\newcommand{\PATH}{P}
+\newcommand{\SubsetPath}{S}
+\newcommand{\SubsetPathbis}{S'}
+\newcommand{\SubsetPathter}{S''}
+
+% Extended-oriented edge paths
+\newcommand{\orient}{o}
+\newcommand{\orientbis}{o'}
+\newcommand{\orientter}{o''}
+\newcommand{\UndirectedPath}{\rho}
+\newcommand{\UndirectedPathbis}{\rho'}
+\newcommand{\UndirectedPathter}{\rho''}
+\newcommand{\UPath}{U}
+\newcommand{\UPATH}{U}
+\newcommand{\BlockedUndirectedPaths}[1]{\UPATH_b^\AgentSubsetW\np{#1}}
+\newcommand{\ActiveUndirectedPaths}[1]{\UPATH_a^\AgentSubsetW\np{#1}}
+\newcommand{\MoralUndirectedPaths}[1]{\UPATH_m^\AgentSubsetW\np{#1}}
+
+% Operations on paths
+\newcommand{\Projection}{\varpi}
+\newcommand{\ProjectionUndirectedPath}{\Omega}
+\newcommand{\Endpoint}{\mathfrak{E}}
+\newcommand{\BoundaryU}[2]{\mathfrak{X}_{\UPATH}\nc{#1\mid #2}} % ^{#2}\nc{#1}}
+\newcommand{\bcBoundaryU}[2]{\mathfrak{X}_{\UPATH}\bc{#1\mid #2}} % ^{#2}\bc{#1}}
+\newcommand{\Internals}{\iota}
+\newcommand{\tail}[1]{#1\llower}%{#1^{-}}
+\newcommand{\head}[1]{#1\upper}%{#1^{+}}
+\newcommand{\Tail}{\tail}%[1]{#1\llower}
+\newcommand{\Head}{\head}%[1]{#1\upper}
+
+\newcommand{\DeploymentInUPaths}[2]{D_{\UPATH}\nc{#1\mid #2}} % {D^{#2}\nc{#1}}
+\newcommand{\bcDeploymentInUPaths}[2]{D_{\UPATH}\bc{#1\mid #2}} % {D^{#2}\bc{#1}}
+\newcommand{\DeploymentInPaths}[2]{D_{\PATH}\nc{#1\mid #2}} % {D^{#2}\nc{#1}}
+\newcommand{\bcDeploymentInPaths}[2]{D_{\PATH}\bc{#1\mid #2}} % {D^{#2}\bc{#1}}
+\newcommand{\SeparatingPaths}[2]{S^{#2}_{\AgentSubsetW,\HistorySubset}\nc{#1}}
+
+% Abreviations
+\newcommand{\EdgePath}{(edge) path}
+\newcommand{\EdgeSubPath}{(edge) subpath}
+\newcommand{\EdgePaths}{(edge) paths}
+\newcommand{\undirected}{extended-oriented}
+\newcommand{\Undirected}{Extended-oriented}
+\newcommand{\UndirectedEdgePaths}{\Undirected\ paths}
+\newcommand{\undirectedEdgePath}{\undirected\ path}
+\newcommand{\undirectedEdgeSubPath}{\undirected\ subpath}
+\newcommand{\undirectedEdgeSubPaths}{\undirected\ subpaths}
+\newcommand{\undirectedEdgePaths}{\undirected\ paths}
+
+\newcommand{\RelTheta}{\Theta\upperAgentSubsetW}
+\newcommand{\ConverseRelTheta}{\Theta\MinusupperAgentSubsetW}
+\newcommand{\ConditionalActiveThreeTheta}{\np{\RelTheta\Cousinhood\ConverseRelTheta}}
+
+\newcommand{\ConditionalUp}{\npTransitiveReflexiveClosure{\Converse{\Precedence}\Delta_{\Complementary\AgentSubsetW}} \Converse{\Precedence}}
+\newcommand{\ConditionalDown}{{\Precedence} \npTransitiveReflexiveClosure{\Delta_{\Complementary\AgentSubsetW}\Precedence}}
+\newcommand{\ConditionalUpDown}{\ConditionalUp \Delta_{\Complementary\AgentSubsetW} \ConditionalDown}
+
+\newcommand{\SetProd}[2]{\prod_{i=1}^{#2} #1}
+
+\newcommand{\MoralSubset}{{S}}
+\newcommand{\MoralPrecedence}{\Precedence_{\MoralSubset}}
+
+\newcommand{\TransitiveReflexiveClosureOfSet}[1]{\TopologicalClosureTwo{\EDGE}{#1}}
+
+\endinput

@@ -1,0 +1,33 @@
+%%%% For Alectryon
+\usepackage{texments}
+%%% for movies by alectryon
+\usepackage{./movies/snippets/assets/alectryon}
+\usepackage{./movies/snippets/assets/pygments}
+
+% Prevent breaks in the middle of syntactic units
+\let\OldPY\PY
+\def\PY#1#2{\OldPY{#1}{\mbox{#2}}}
+
+%%% One hypothesis per line 
+\makeatletter
+\renewcommand{\alectryon@hyps@sep}{\alectryon@nl}
+\makeatother
+
+%%% \snippets{A,B,C,…} inputs a series of snippets as one block (with \itemsep
+%%% between them).  A, B, C should be paths to files in snippets/.
+\usepackage{etoolbox}
+\makeatletter
+
+\newcommand{\pathtomovies}{./movies}
+
+\newcommand{\inputsnippets}[1]
+  {{\setlength{\itemsep}{1pt}\setlength{\parsep}{0pt}% Adjust spacing
+    \alectryon@copymacros\begin{io}
+      \forcsvlist{\item\@inputsnippet}{#1}
+    \end{io}}}
+\let\input@old\input % Save definition of \input
+\newcommand{\@inputsnippet}[1]
+  {{\renewenvironment{alectryon}{}{}% Skip \begin{alectryon} included in snippet
+    \input@old{{\pathtomovies}/snippets/#1}}}
+\makeatother
+

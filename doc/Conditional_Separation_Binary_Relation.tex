@@ -1,0 +1,4061 @@
+% START
+\documentclass[12pt]{article}
+\def\citep#1{\cite{#1}}
+
+\newif\ifpreprint
+% select preprinttrue (by uncommenting) if you want to generate the
+% preprint version with aditional materials
+\preprinttrue
+% select (by uncommenting) preprintfalse if you want to obtain a version without moral relation
+% ready for submission.
+%\preprintfalse
+
+\usepackage{fullpage}
+
+% START
+% macros
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+
+\usepackage{amsfonts}       % blackboard math symbolsG
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{euscript}
+\usepackage{stmaryrd} % used by \ic 
+\usepackage{color}
+
+\usepackage[colors]{optsys}
+% we can pass options to optsys \PassOptionsToPackage{colors}{optsys}
+% and let causal load optsys
+\usepackage{causal}
+\usepackage{snippets}
+
+% START
+% macros to remove in submissions
+\usepackage{amsmath}
+
+\newcommand{\nb}[3]{
+		{\colorbox{#2}{\bfseries\sffamily\tiny\textcolor{white}{#1}}}
+		{\textcolor{#2}{$\blacktriangleright${#3}$\blacktriangleleft$}}}
+
+\newcommand{\mdl}[1]{\nb{Michel}{cyan}{#1}}
+\newcommand{\jpc}[1]{\nb{JPC}{blue}{#1}}
+\newcommand{\Benjamin}[1]{\nb{Benjamin}{green}{#1}}
+
+% START
+\title{Conditional Separation as a Binary Relation}% Between Vertices}
+
+% START
+\author{%
+  Jean-Philippe Chancelier$^\dagger$,
+  Michel De Lara\footnote{CERMICS, Ecole des Ponts, Marne-la-Vall\'ee, France},
+  Benjamin Heymann\footnote{Criteo AI Lab, Paris, France}
+}
+
+\date{\today}
+
+% START
+\begin{document}
+
+\maketitle
+
+% START
+\begin{abstract}
+  Pearl's d-separation is a foundational notion to study conditional
+  independence between random variables on directed acyclic graphs.
+  Pearl defined the d-separation of two subsets conditionally on a third one.
+  We show how the d-separation can be extended beyond acyclic graphs
+  and can be expressed and characterized as a binary relation between vertices. 
+\end{abstract}
+
+% START
+% \pagebreak 
+\setcounter{tocdepth}{2}
+\pagebreak\tableofcontents \pagebreak 
+
+% START
+\section{Introduction}
+As the world shifts toward more and more data-driven decision-making, causal
+inference is taking more space in applied sciences, statistics and machine
+learning.  This is because it allows for better, more robust decision-making,
+and provides a way to interpret the data that goes beyond correlation
+\citep{pearl2018book}.  In his seminal work~\citep{pearl1995causal}, Pearl
+builds on graphical models~\citep{cowell2006probabilistic} to introduce the
+so-called do-calculus and the notion of d-separation on a directed acyclic graph
+(DAG).
+
+This paper was written in parallel to two other papers
+\citep{De-Lara-Chancelier-Heymann-2021,Heymann-De-Lara-Chancelier-2021}, all of
+which aim at providing another perspective on conditional independence and
+do-calculus.  Here we show how the d-separation can be extended beyond DAGs and
+can be expressed and characterized as a binary relation between vertices.  We
+think this work will allow for new proof strategies in the developpement of the
+theory of causal inference.  In particular, the main result is an intermediate
+step that we reuse in the two other above mentionned papers.  Last, we think the
+developpement of a theory based on binary relations makes it amenable to
+computer aided proof~\citep{pous2013}. %
+
+In Sect.~\ref{Conditional_active_relation_induced_by_endpoints_of_non-blocking_paths},
+we present our extended definition of d-separation and then characterize it as
+the complementary of the conditional active binary relation between vertices in
+Sect.~\ref{Characterization__of_the_conditional_directional_separation_binary_relation},
+we state and sketch the proof of our main result, the characterization of the
+d-separation relation as the complementary of the conditional active relation.
+Part of the proof is relegated in Appendices~\ref{Additional_material}
+and~\ref{Proof_of_Theorem}%
+\ifpreprint , as well as a treatment of the moral
+  relation~\citep{Lauritzen-et-al-1990} with binary relations in
+  Appendices~\ref{Moral_relation}.  \else .  \fi
+
+\section{Test of coq snippets}
+
+\inputsnippets{rel/S1.tex}
+\inputsnippets{rel/S2.tex}
+\inputsnippets{rel/S3.tex}
+
+\section{A formal Pearl's $d$-separation definition}
+%\section{Conditional active relation induced by endpoints of non-blocking paths}
+\label{Conditional_active_relation_induced_by_endpoints_of_non-blocking_paths}
+
+In~\S\ref{UndirectedEdgePaths_in_a_graph}, we deal with
+graphs but using the concepts of binary relations;
+we formally define what we call \undirectedEdgePaths\ in a graph.
+Thus equipped, in~\S\ref{Definition_of_the_conditional_directional_separation_binary_relation}
+we formally adapt Pearl's definition of active (and blocked)
+\undirectedEdgePaths\ in a graph,
+from which we deduce the (conditional) d-separation binary relation.
+Then, we also introduce elementary binary relations that are the bricks
+to define a new binary relation that we call conditional active relation.
+
+\subsection{\UndirectedEdgePaths\ in a graph}
+\label{UndirectedEdgePaths_in_a_graph}
+
+We employ the vocabulary and concepts both of binary relations and of graph theory.
+% 
+We take inspiration from~\citep{PEARL1986357} to define the notion of blocked paths
+on a graph, not necessarily finite nor acyclic.
+% 
+We use the notation \( \ic{r,s}=\na{r,r+1,\ldots,s-1,s} \) for two integers $r \leq s$.
+
+\subsubsection{Background on binary relations}
+
+Let $\AGENT$ be a nonempty set (finite or not). 
+We recall that a \emph{(binary) relation}~$\relation$ on~$\AGENT$ is
+a subset $\relation \subset \AGENT\times\AGENT $ and that 
+\( \bgent\, \relation\, \cgent \) means 
+\( \np{\bgent,\cgent} \in \relation \).
+For any subset \( \Bgent \subset \AGENT \), 
+the \emph{(sub)diagonal relation} is \( \Delta_{\Bgent} = \bset{ \np{\bgent,\cgent} \in \AGENT\times\AGENT }%
+{ \bgent=\cgent \in \Bgent } \)
+and the \emph{diagonal relation} is \( \Delta=\Delta_{\AGENT} \).
+%
+A \emph{foreset} of a relation~$\relation$ is
+any set of the form \( \relation \, \cgent = 
+\defset{ \bgent \in  \AGENT }{ \bgent\, \relation \, \cgent } \),
+where \( \cgent \in \AGENT \), 
+or, by extension, of the form \( \relation \, \Cgent = 
+\defset{ \bgent \in  \AGENT }{ \exists \cgent \in \Cgent \eqsepv \bgent\,
+  \relation \, \cgent } \), where \( \Cgent \subset \AGENT \).
+%
+An \emph{afterset} of a relation~$\relation$ is
+any set of the form \( \bgent \, \relation = 
+\defset{ \cgent \in  \AGENT }{ \bgent\, \relation \, \cgent } \),
+where \( \bgent \in \AGENT \), 
+or, by extension, of the form \( \Bgent \, \relation = 
+\defset{ \cgent \in  \AGENT }{ \exists \bgent \in \Bgent \eqsepv \bgent\,
+  \relation \, \cgent } \), where \( \Bgent \subset \AGENT \).
+%
+The \emph{opposite} or \emph{complementary~$\Complementary{\relation}$} of a binary
+relation~$\relation$ is the relation~$\Complementary{\relation}=\AGENT\times\AGENT\setminus\relation$,
+that is, defined by \( \bgent\, \relation^{\mathsf{c}} \, \cgent \iff 
+\neg \np{ \bgent\, \relation \, \cgent } \).
+The \emph{converse~$\Converse{\relation}$} of a binary relation~$\relation$ is
+defined by \( \bgent\, \Converse{\relation} \, \cgent \iff \cgent\, \relation \, \bgent
+\) (and $\relation$ is  \emph{symmetric} if \( \Converse{\relation}=\relation \)).
+The \emph{composition}
+$\relation\relation'$ of two
+binary relations~$\relation, \relation'$ on~$\AGENT$ is defined by
+\( \bgent (\relation\relation') \cgent \iff
+\exists \delta \in  \AGENT \), \( \bgent\, \relation \, \delta \)
+and \( \delta\, \relation' \, \cgent \);
+then, by induction we define\footnote{%
+  In what follows, when we consider a binary relation
+  as a subset $\relation \subset \AGENT\times\AGENT $, we will use the notation
+  \( \SetProd{\relation}{n} \subset \SetProd{\AGENT\times\AGENT}{n}\), where $n$ is
+  a positive integer, to
+  denote a product subset of the product set~\( \AGENT^{2n} \),
+  thus making the distinction with the binary relation
+  $\relation^{n} \subset \AGENT\times\AGENT $ obtained by $n$~compositions.}
+\( \relation^{n+1}=\relation\relation^{n} \) for \( n \in \NN^* \). 
+The \emph{transitive closure} of a binary relation~$\relation$ is
+\( \TransitiveClosure{\relation} = \cup_{k=1}^{\infty} \relation^{k} \)
+(and $\relation$ is  \emph{transitive} if \( \TransitiveClosure{\relation}=\relation \))
+and the \emph{reflexive and transitive closure} is 
+\( \TransitiveReflexiveClosure{\relation}= \TransitiveClosure{\relation} \cup
+\Delta = \cup_{k=0}^{\infty} \relation^{k} \) with the convention $\relation^0=\Delta$. 
+% 
+A \emph{partial equivalence relation} is a symmetric and transitive binary
+relation (generally denoted by~$\sim$ or~$\equiv$).
+An \emph{equivalence relation} is a reflexive, symmetric and transitive binary
+relation. 
+{\small 
+\inputsnippets{ssrel/relation.tex}
+\inputsnippets{ssrel/clos_refl_trans.tex}
+\inputsnippets{ssrel/clos_rt.tex}
+}
+
+\subsubsection{Extended-oriented paths in a (directed simple) graph (permitting loops)}
+
+Let $\VERTEX$ be a nonempty set (finite or not), whose elements are called \emph{vertices}.  Let
+\( \EDGE \subset \VERTEX\times\VERTEX \) be a relation on~$\VERTEX$, whose
+elements are ordered pairs (that is, couples) of vertices called \emph{edges}.
+The first element of an edge is the \emph{tail of the edge},
+whereas the second one is the \emph{head of the edge}.
+Both tail and head are called \emph{endpoints} of the edge,
+and we say that the edge connects its endpoints.
+We define a \emph{loop} %in the graph~$(\VERTEX,\EDGE)$
+as an element of \( \Delta \cap \EDGE \), that is, a loop is an edge that
+connects a vertex to itself.
+
+A \emph{graph}, as we use it throughout this paper, is a
+couple~$(\VERTEX,\EDGE)$.
+This definition is very basic and we now stress proximities and differences with
+classic notions in graph theory.
+As we define a graph, it may hold a finite or infinite number of vertices;
+there is at most one edge that has a couple of ordered vertices as single endpoints,
+hence a graph (in our sense) is not a multigraph (in graph theory);
+loops are not excluded (since we do not impose $\Delta \cap \EDGE=\emptyset$).
+Hence, what we call a graph would be called a directed simple graph permitting
+loops in graph theory. 
+
+
+To define blocked and active \undirectedEdgePaths\ relative to the
+graph~\( \npOrientedGraph \), we need to fix additional vocabulary and
+notation.
+In the graph~$(\VERTEX,\EDGE)$, 
+the \emph{undirected edges} are the elements of $\EDGE \cap \Converse{\EDGE}$
+--- that is, edges with both $(\cgent,\bgent)\in \EDGE$
+and $(\bgent, \cgent)\in \EDGE$ (hence, including loops).
+Then, the graph~$(\VERTEX,\EDGE)$ is said to be \emph{undirected} if
+all edges are undirected edges, 
+or, equivalently, if \( \EDGE=\EDGE \cap \Converse{\EDGE} \)
+or if \( \Converse{\EDGE} = \EDGE \).
+The \emph{undirected extension} of a graph~$(\VERTEX,\EDGE)$
+is the graph~$(\VERTEX,\EDGE \cup \Converse{\EDGE})$.
+
+In the graph~$(\VERTEX,\EDGE)$, 
+the \emph{directed edges} are the elements of
+$\EDGE \cap \npComplementary{ \Converse{\EDGE} }$ --- that is, 
+edges with $(\cgent,\bgent)\in \EDGE$ such that $(\bgent, \cgent)\not\in \EDGE$
+(recall that we do not assume that $\EDGE \cap \Converse{\EDGE}=\emptyset$).
+Then, the graph~$(\VERTEX,\EDGE)$ is said to be \emph{directed} if
+all edges are directed edges, 
+or, equivalently, if 
+\( \EDGE \cap \Converse{\EDGE}=\emptyset \), that is, 
+when no two edges have the same endpoints.
+
+In graph theory, one finds the notions of path, chain and walk. 
+To avoid ambiguities,
+we formally define an \EdgePath\ in $(\VERTEX,\EDGE)$ (in our sense) 
+as the classical notion of path in a graph~\citep{Diestel}
+
+We also define an \undirectedEdgePath\ in $(\VERTEX,\EDGE)$ (in our sense)
+as what corresponds to chain path in~\citep{Lauritzen-et-al-1990}. 
+\medskip
+
+\noindent $\bullet$
+An \emph{\EdgePath} of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$ is a
+sequence 
+\( \path=\bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \in \SetProd{\EDGE}{n} \)
+of $n$~edges such that
+\( \head{\vertex_i}=\tail{\vertex_{i+1}} \), $i\in\ic{1,n{-}1}$ or, equivalently, is a sequence
+\( \path=\bseqa{ \np{\vertex_i,\vertex_{i+1}} }{i\in\ic{1,n}} \in \SetProd{\EDGE}{n} \).
+% 
+The first element~$\tail{\vertex_1}$ of an \EdgePath\
+\( \path=\bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \) 
+is the \emph{tail of the \EdgePath}, 
+whereas the last one~$\head{\vertex_n}$ is the \emph{head of the \EdgePath}.
+Both tail and head are called \emph{endpoints} of the \EdgePath. 
+% 
+We denote by
+\begin{subequations}
+  \begin{align}
+    \PATH^n\np{\OrientedGraph} %    \PATH^n\np{\graph}
+    &=
+      \Bset{ \bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \in \SetProd{\EDGE}{n} }
+      { \head{\vertex_i}=\tail{\vertex_{i+1}} \text{ for } i\in\ic{1,n{-}1}}
+      \subset \SetProd{\EDGE}{n}
+      \intertext{the set of (edge) paths of length~$n$
+      ($n\ge 1$) relative to the graph~$\npOrientedGraph$, and by}
+      \PATH\np{\OrientedGraph}
+    &=
+      \bigcup_{n\ge 0} \PATH^n\np{\OrientedGraph}
+      \subset \VERTEX^2 \cup \bigcup_{n\ge 1} \SetProd{\EDGE}{n}
+      \label{eq:PATHOrientedGraph}
+  \end{align}
+  the set of finite \EdgePaths\ relative to the graph~$\npOrientedGraph$,
+  where $\PATH^0\np{\OrientedGraph}$, made of what we call \emph{paths of length~$0$}, is defined by
+  \begin{equation}
+    \PATH^0\np{\OrientedGraph}=
+    \bset{ \np{\vertex,\vertex}}{ \vertex \in \VERTEX \text{ and }
+      \np{\vertex,\vertex} \not\in \EDGE}
+    = \Delta \cap \Complementary{\EDGE} \subset \VERTEX^2  
+    \eqfinp
+  \end{equation}
+  Thus, by definition, we have that
+  \begin{equation}
+    \PATH^0\np{\OrientedGraph} \cup \PATH^1\np{\OrientedGraph}
+    \supset 
+    \bp{ \Delta \cap \Complementary{\EDGE} } \cup  \bp{ \Delta \cap \EDGE }
+    = \Delta
+    \eqfinv
+  \end{equation}
+  so that \EdgePaths\ of length~0 or~1  contain the diagonal~$\Delta$. 
+\end{subequations}
+We denote by $\cardinal{\path}$ the length of a path $\path \in
+\PATH\np{\OrientedGraph}$.
+An \emph{\EdgeSubPath} of the \EdgePath~$\path$ is an \EdgePath\ obtained by a
+subsequence of consecutive indices. 
+\medskip
+
+\noindent $\bullet$
+An \emph{\undirectedEdgePath} of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$
+is a couple 
+\( \UndirectedPath= \np{\path,\orient} \in 
+\SetProd{(\EDGE \cup \Converse{\EDGE})}{n} \times \na{-1,+1}^n \),
+where \( \path=\bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \) 
+and $\orient = \sequence{\orient_i}{i\in\ic{1,n}} \in \na{-1,+1}^n$
+are such that, for all $i\in\ic{1,n{-}1}$, we have \( \head{\vertex_i}=\tail{\vertex_{i+1}}
+\) and 
+either $\np{\tail{\vertex_i},\head{\vertex_i}}\in \EDGE$ if $\orient_i={+1}$
+or $\np{\tail{\vertex_i},\head{\vertex_i}}\in \Converse{\EDGE}$ if $\orient_i={-1}$.
+We denote 
+\begin{subequations}
+  \begin{align}
+    \EDGE^{(+1)}
+    &= \EDGE \eqsepv \EDGE^{(-1)}= \Converse{\EDGE}
+      \intertext{and we introduce (for $n\ge 1$)}
+      % \\
+    \UPATH^n\np{\OrientedGraph}
+    &= \Big\{ \np{\path,\orient} \in \SetProd{(\EDGE\cup\Converse{\EDGE})}{n} \times
+      \na{-1,+1}^n \, \big\vert 
+      \nonumber
+    \\
+    & 
+      \qquad \path=\sequence{\path_i}{i\in\ic{1,n}} \in\PATH^n\np{\UnorientedGraph} \text{ and } \path_i \in
+      \EDGE^{(\orient_i)} \text{ for } i\in\ic{1,n} \Big\}
+      \label{eq:undirected_(edge)_paths_of_length_n}
+    \\
+    &\subset  \SetProd{\np{\EDGE\cup \Converse{\EDGE}}}{n} \times \na{-1,+1}^n
+      \nonumber 
+      \intertext{the set of \undirectedEdgePaths\
+      of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$, and by}
+      \UPATH\np{\OrientedGraph}
+    &=
+      \bigcup_{n\ge 0} \UPATH^n\np{\OrientedGraph}
+      \subset \bp{ \VERTEX^2\times\na{+1} } \cup \bigcup_{n\ge 1} \Bp{ 
+      \SetProd{(\EDGE\cup\Converse{\EDGE})}{n} \times \na{-1,+1}^n }
+      \label{eq:undirectedEdgePaths}
+  \end{align}
+  % with the notation $\EDGE^{(+1)} = \EDGE$ and $\EDGE^{(-1)}= \Converse{\EDGE}$ and by
+  % $\UPATH\np{\OrientedGraph}= \bigcup_{n\ge 1} \UPATH^n\np{\OrientedGraph}$
+  the set of finite \undirectedEdgePaths\footnote{%
+    It is to be noted that an \undirectedEdgePath\ is \emph{not a path in the graph
+      $\npOrientedGraph$}, neither in the undirected graph $\npUnorientedGraph$.
+    % Following an \undirectedEdgePath\ is just as following a route with your car in a town allowing yourself to take one way
+    % road in the forbidden direction. 
+    However, considering a couple $(\path,\orient)\in \UPATH^n\np{\OrientedGraph}$, we obtain that
+    $\path \in \PATH^n\np{\UnorientedGraph}$, % with $\hat{\EDGE}= \EDGE \cup \Converse{\EDGE}$, 
+    that is, $\path$ is an (edge) path in the unoriented graph
+    \( \npUnorientedGraph \).
+    % \hat\graph = (\VERTEX, \EDGE \cup \Converse{\EDGE})$.
+    We thus obtain a natural surjection
+    $(\path,\orient)\mapsto \path$
+    % $\injection_{\UPATH}: (\path,\orient)\mapsto \path$ 
+    from $\UPATH\np{\OrientedGraph}$ to $\PATH\np{\UnorientedGraph}$.
+    This canonical surjection is not necessary injective because
+    a path in $\PATH\np{\UnorientedGraph}$ that has an edge in $\EDGE \cap \Converse{\EDGE}$
+    is the image of two distinct \undirectedEdgePaths.
+    The surjection $(\path,\orient)\mapsto \path$ 
+    is a bijection in the special case when 
+    the graph~\( \npOrientedGraph \) is directed,
+    that is, when $\EDGE \cap \Converse{\EDGE}=\emptyset$, that is, 
+    when no two edges have the same endpoints. 
+    % For $\path\in \PATH_{\hat{\EDGE}}\np{\UnorientedGraph}$, we have that
+    % For $\path\in \PATH\np{\UnorientedGraph}$, we have that
+    % \( \injection_{\UPATH}^{-1}(\path)
+    % =  \bset{ (\path,\orient) }{ \orient \in \na{-1,+1}^{\cardinal{\path}}} \).
+    % \begin{equation}
+    %   \injection_{\UPATH}^{-1}(\path)
+    %   =  \bset{ (\path,\orient) }{ \orient \in \na{-1,+1}^{\cardinal{\path}}}
+    %   \eqfinp
+    % \end{equation}
+  }
+  relative to the graph~$\npOrientedGraph$, where
+  $\UPATH^{n}\np{\OrientedGraph}$ for $n\ge 1$ is defined
+  by~\eqref{eq:undirected_(edge)_paths_of_length_n}
+  and $\UPATH^{0}\np{\OrientedGraph}$, the set of \undirectedEdgePaths\ of length~$0$,  is defined by
+  \begin{equation}
+    \UPATH^0\np{\OrientedGraph}=
+    \Bset{ \bp{\np{\vertex,\vertex},+1}\in (\VERTEX{\times}\VERTEX)\times \na{+1}}{ \np{\vertex,\vertex} \not\in \EDGE}
+    = \bp{ \Delta \cap \Complementary{\EDGE} } \times \na{+1}
+    \eqfinp
+    \label{eq:undirectedEdgePaths_of_length0}
+  \end{equation}
+  Thus, by definition, we have that
+  \begin{equation}
+    \UPATH^0\np{\OrientedGraph} \cup \UPATH^1\np{\OrientedGraph}
+    \supset 
+    \bp{ \Delta \cap \Complementary{\EDGE} } \times \na{+1}
+    \cup  \bp{ \Delta \cap \EDGE } \times \na{+1}
+    = \Delta\times \na{+1}
+    \eqfinv
+    \label{eq:undirectedEdgePaths_of_length0or1}
+  \end{equation}
+  so that \undirectedEdgePaths\ of length~0 or~1 contain \( \Delta\times \na{+1}
+  \). 
+\end{subequations}
+% 
+An \emph{\undirectedEdgeSubPath} of the \undirectedEdgePath~$\UndirectedPath
+\in\UPATH\np{\OrientedGraph}$ is an \undirectedEdgePath\ obtained by a
+subsequence of consecutive indices. 
+
+\medskip
+
+\noindent $\bullet$ 
+We denote by \( \Projection^n: \PATH^n \np{\OrientedGraph}
+\to\VERTEX\times\VERTEX \) the \emph{projection
+  on the tail and head endpoints} of an \EdgePath\ of length~$n$.
+It is defined, for \( \path\in\PATH^n\np{\OrientedGraph}\), by 
+\(\Projection^n\np{\path}=
+\Projection^n\np{(\tail{\vertex_i},\head{\vertex_i})_{i\in\ic{1,n}}} 
+= \np{\tail{\vertex_1},\head{\vertex_{n}}}\).
+We denote by \( \Projection: \PATH \np{\OrientedGraph} \to \VERTEX\times\VERTEX \) 
+the projection mapping on the tail and head endpoints defined by
+\begin{subequations}
+  \begin{equation}
+    \forall \path\in \PATH\np{\OrientedGraph}
+    \eqsepv
+    \Projection\np{\path} = \Projection^{\cardinal{\path}}\np{\path} \in \VERTEX\times\VERTEX 
+    \eqfinp
+    \label{eq:Projection_PATH}
+  \end{equation}
+  We also distinguish the tail and the head endpoints projection mappings by
+  \begin{equation}
+    \Projection=\np{\Tail{\Projection},\Head{\Projection}}
+    \mtext{ where }
+    \Tail{\Projection}: \PATH \np{\OrientedGraph} \to \VERTEX
+    \mtext{ and }
+    \Head{\Projection}: \PATH \np{\OrientedGraph} \to \VERTEX
+    \eqfinp 
+    \label{eq:Projection_PATH_first_and_last}
+  \end{equation}  
+  We use the notation \( \Projection_{\UPATH}: \UPATH \np{\OrientedGraph} \to\VERTEX\times\VERTEX \) 
+  to denote the projection mappings on the tail and head endpoints of an \undirectedEdgePath. 
+  It is defined, for $\np{\path,\orient}\in \UPATH\np{\OrientedGraph}$, by 
+  \begin{equation}
+    \Projection_{\UPATH}\bp{\np{\path,\orient}} =  \Projection\np{\path} 
+    \eqsepv
+    \forall \np{\path,\orient}\in \UPATH\np{\OrientedGraph}
+    \eqfinp
+    \label{eq:Projection}
+  \end{equation}
+  % \mdl{cette notation ne semble pas utilisée}
+  % \rouge{  We also distinguish the tail and the head endpoints by
+  % \begin{equation}
+  %   \Projection_{\UPATH}=\np{\Tail{\Projection_{\UPATH}},\Head{\Projection_{\UPATH}}}
+  %   \mtext{ where }
+  %   \Tail{\Projection_{\UPATH}}: \UPATH \np{\OrientedGraph} \to \VERTEX
+  %   \mtext{ and }
+  %   \Head{\Projection_{\UPATH}}: \UPATH \np{\OrientedGraph} \to \VERTEX
+  %   \eqfinp 
+  % \end{equation}  }
+\end{subequations}
+\medskip
+
+\ifpreprint 
+\noindent $\bullet$ We denote by \( \Internals^n: \PATH^n \np{\OrientedGraph}
+\rightrightarrows\VERTEX \) the set-valued mapping giving the 
+\emph{intermediate vertices} of an \EdgePath\ of length~$n$ ($n\ge 0$).
+It is defined, for %\( \path=\sequence{\tail{\vertex_i},\head{\vertex_i}}{i\in\ic{1,n}}
+\( \path=\sequence{\vertex_i,\vertex_{i+1}}{i\in\ic{1,n}}
+\in\PATH^n\np{\OrientedGraph}\) in~\eqref{eq:PATHOrientedGraph}, by
+\begin{subequations}
+  \begin{equation}
+    \Internals^n\np{\path}=
+    \Internals^n\bp{\sequence{\vertex_i,\vertex_{i+1}}{i\in\ic{1,n}}} =  
+    % \Internals^n\bp{\sequence{\tail{\vertex_i},\head{\vertex_i}}{i\in\ic{1,n}}} =
+    \na{\vertex_2,\ldots,\vertex_{n}}
+  \end{equation}
+  (which reduces to the empty set for $n=0$ or $1$).
+  Notice that
+  \[
+    \na{\vertex_1,\vertex_2,\ldots,\vertex_{n},\vertex_{n{+}1}}
+    =   \na{\vertex_1} \cup \na{\vertex_2,\ldots,\vertex_{n}} \cup \na{\vertex_{n{+}1}}
+    = \Tail{\Projection}\np{\path} \cup \Internals^n\np{\path}
+    \cup \Head{\Projection}\np{\path}
+    \eqfinp
+  \]
+  We denote by \( \Internals: \PATH \np{\OrientedGraph}\rightrightarrows \VERTEX
+  \)
+  the set-valued mapping giving the intermediate vertices of an \EdgePath\ by
+  \begin{equation}
+    \forall \path \in \PATH \np{\OrientedGraph}
+    \eqsepv
+    \Internals\np{\path} = \Internals^{\cardinal{\path}}\np{\path} 
+    \eqfinp
+    \label{eq:Internals_PATH}
+  \end{equation}
+  We use the notation   \( \Internals_{\UPATH}: \UPATH \np{\OrientedGraph} \rightrightarrows\VERTEX \)
+  to denote the set-valued mapping giving the intermediate vertices of an \undirectedEdgePath. 
+  It is defined, for $\np{\path,\orient}\in\UPATH\np{\OrientedGraph}$
+  in~\eqref{eq:undirectedEdgePaths}, by 
+  \begin{equation}
+    \forall \np{\path,\orient}\in \UPATH\np{\OrientedGraph}
+    \eqsepv
+    \Internals_{\UPATH}\bp{\np{\path,\orient}} =  \Internals\np{\path} 
+    \eqfinp
+    \label{eq:Internals_UPATH}
+    % \label{eq:Projection}
+  \end{equation}
+\end{subequations}
+\medskip
+\fi 
+
+\noindent \(\bullet\)
+To define blocked \undirectedEdgePaths, 
+the following notions prove useful. 
+With any binary relation \( \relation \subset \VERTEX\times\VERTEX \),
+we associate the subset~\( \DeploymentInUPaths{\relation}{\OrientedGraph} \)
+of~\( \UPATH\np{\OrientedGraph} \) in~\eqref{eq:undirectedEdgePaths},
+that we call the \emph{deployment in \undirectedEdgePaths}, 
+defined by 
+\begin{equation}
+  \forall \relation \subset \VERTEX\times\VERTEX 
+  \eqsepv 
+  \DeploymentInUPaths{\relation}{\OrientedGraph}
+  = \Projection_{\UPATH}^{-1}(\relation) \subset \UPATH\np{\OrientedGraph} 
+  \eqfinv
+  \label{eq:DeploymentInUPaths}
+\end{equation}
+where the projection~\( \Projection_{\UPATH} \) has been defined
+in~\eqref{eq:Projection}.
+The deployment \(\DeploymentInUPaths{\relation}{\OrientedGraph} \)
+is made of the \undirectedEdgePaths\ whose endpoints satisfy the 
+binary relation~\( \relation \).
+%
+We also associate with~\( \relation \)
+the subset~\( \DeploymentInPaths{\relation}{\OrientedGraph} \)
+of~\( \UPATH\np{\OrientedGraph} \),
+that we call the \emph{deployment in paths},
+defined by 
+\begin{equation}
+  \forall \relation \subset \VERTEX\times\VERTEX 
+  \eqsepv 
+  \DeploymentInPaths{\relation}{\OrientedGraph}
+  = \Projection^{-1}(\relation) \subset \PATH\np{\OrientedGraph} 
+  \eqfinv
+  \label{eq:DeploymentInPaths}
+\end{equation}
+where the projection~\( \Projection \) has been defined
+in~\eqref{eq:Projection_PATH}.
+The deployment in paths~\( \DeploymentInPaths{\relation}{\OrientedGraph} \)
+is made of the \EdgePaths\  whose endpoints satisfy the 
+binary relation~\( \relation \).
+
+
+\subsection{Definitions of active \undirectedEdgePaths, of  conditional
+  directional separation and of conditional active binary relation}
+\label{Definition_of_the_conditional_directional_separation_binary_relation}
+
+% \subsubsection{Definition of active \undirectedEdgePaths\ in a graph}
+
+We define active \undirectedEdgePaths\ relative to the graph~$\npOrientedGraph$
+in Definition~\ref{de:ActivePaths}.
+Then, we  obtain the definition of blocked \undirectedEdgePaths\ relative to the
+graph~$\npOrientedGraph$, as defined by~\citep{PEARL1986357}, by switching to the
+complementary set.
+% We define blocked \undirectedEdgePaths\ relative to the graph~$\npOrientedGraph$ as follows.
+
+\begin{definition}
+  % \label{de:BlockedUndirectedPaths}
+  \label{de:ActivePaths}
+  Let \( \npOrientedGraph \) be a graph, 
+  and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.
+  % 
+  We say that an  \undirectedEdgePath\
+  \(\UndirectedPath=\np{\path,\orient} \in
+  \UPATH\np{\OrientedGraph} \) in~\eqref{eq:undirectedEdgePaths}
+  relative to the graph~\(\npOrientedGraph\)
+  is an \emph{active \undirectedEdgePath} (\wrt\footnote{With respect to} the subset~$\AgentSubsetW$)
+  if %it is an \undirectedEdgePath\ and that,
+  either its length is~0 or~1,
+  or (when its length is at least~$2$)
+  \(\UndirectedPath=\np{\path,\orient}=\bp{\nseqp{(\tail{\vertex_i},\head{\vertex_i})}{i \in
+      \ic{1,\cardinal{\path}}},\nseqp{\orient_i}{i \in \ic{1,\cardinal{\path}}}}\)
+  is such that, for all $i\in \ic{1,\cardinal{\path}-1}$, the consecutive extended-oriented subpaths
+  \(\bp{\np{\tail{\vertex_i},\head{\vertex_i}}, \orient_i}\)  and
+  \(\bp{\np{\tail{\vertex_{i+1}},\head{\vertex_{i+1}}}, \orient_{i+1}}\)
+  satisfy one of the four following cases
+  \begin{enumerate}
+  \item
+    $\orient_i = +1$, $\orient_{i+1}= +1$ and $\head{\vertex_i} = \tail{\vertex_{i+1}} \in \Complementary{\AgentSubsetW}$,
+    \label{it:ActivePaths_case1}
+  \item
+    $\orient_i = -1$, $\orient_{i+1}= -1$ and $\head{\vertex_i} = \tail{\vertex_{i+1}} \in \Complementary{\AgentSubsetW}$,
+    \label{it:ActivePaths_case2}
+  \item
+    $\orient_i = -1$, $\orient_{i+1}= +1$ and $\head{\vertex_i} = \tail{\vertex_{i+1}} \in \Complementary{\AgentSubsetW}$,
+    \label{it:ActivePaths_case3}
+  \item
+    $\orient_i = +1$, $\orient_{i+1}= -1$ and $\head{\vertex_i} = \tail{\vertex_{i+1}} \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW}$,
+    \label{it:ActivePaths_case4}
+  \end{enumerate}
+  where \( \TransitiveReflexiveClosure{\EDGE}= \TransitiveClosure{\EDGE} \cup \Delta \)
+  is the reflexive and transitive closure of the relation~$\EDGE$,
+  and where
+  
+  \begin{equation}
+    \TransitiveReflexiveClosureOfSet{\AgentSubsetW}=
+    \TransitiveReflexiveClosure{\EDGE}\AgentSubsetW 
+    \eqfinp
+    \label{eq:TransitiveReflexiveClosure_AgentSubsetW}
+  \end{equation}
+  We denote by \( \ActiveUndirectedPaths{\OrientedGraph} \subset \UPATH\np{\OrientedGraph}\)
+  the subset of all active \undirectedEdgePaths\ (\wrt\ the subset~$\AgentSubsetW$). 
+  We say that an \undirectedEdgePath\ is \emph{blocked} if it is not active
+  and we denote by \( \BlockedUndirectedPaths{\OrientedGraph} = 
+  \bpComplementary{\ActiveUndirectedPaths{\OrientedGraph}}\)   
+  the subset of all blocked \undirectedEdgePaths\ (\wrt\ the subset~$\AgentSubsetW$).
+\end{definition} 
+Notice that any \undirectedEdgePath\ of length~0 or 1 is active by definition.
+
+We introduce in Definition~\ref{de:vertices-d-separated} a new binary relation
+between vertices: we say that 
+two vertices are (conditionally) directionally separated if and only if
+all the \undirectedEdgePaths, having them as endpoints, are blocked.
+This definition mimics Pearl's d-separation, but with two differences:
+the graph is not supposed to be acyclic, and the separation is between vertices
+and not between disjoint subsets. 
+
+  \begin{definition}
+    \label{de:vertices-d-separated}
+    Let \( \npOrientedGraph \) be a graph, 
+    and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.
+    % 
+%    Let $\bgent$, $\cgent\in \AGENT$ be two vertices.
+    We denote
+    \begin{equation}
+      \bgent \ConditionalDirectionalSeparation \cgent \mid \AgentSubsetW
+      \iff 
+      \bcDeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph} \subset
+      \BlockedUndirectedPaths{\graph}
+      \qquad \bp{ \forall \bgent,\cgent \in \AGENT }
+      \eqfinv
+      \label{eq:vertices-d-separated}
+    \end{equation}
+    and we say that the vertices~$\bgent$ and $\cgent$ are 
+    (conditionally) \emph{directionally separated}  (\wrt\ the subset~$\AgentSubsetW$).
+  \end{definition}
+
+
+
+
+\section{Characterization  of $d$-separation by means of binary relations}
+\label{Characterization__of_the_conditional_directional_separation_binary_relation}
+
+Our main result is the characterization of the conditional directional
+separation relation (extension of the d-separation)
+as the complementary of the conditional active relation defined below in
+Equation~\eqref{eq:conditional_active_relation}.
+% We just give a sketch of proof here, as details are to be found in
+% Appendix~\ref{Proof_of_Theorem}. 
+
+For the purpose of characterizing the conditional directional separation relation~\(
+\ConditionalDirectionalSeparation \), we introduce the following binary relations on~$\AGENT$.
+
+\begin{definition}
+  \label{de:all_the_relations}
+  Let \( \npOrientedGraph \) be a graph, 
+  and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.
+  % 
+  We define the \emph{conditional parental relation}~\( \ParentalPrecedence \)
+  as
+  \begin{subequations}
+    \begin{align}
+      \ParentalPrecedence 
+      &= \Delta_{\Complementary{\AgentSubsetW}}\Precedence
+        \mtext{ \qquad that is, }
+        \bgent\ParentalPrecedence\cgent \iff
+        \bgent\in\Complementary{\AgentSubsetW} \mtext{ and }
+        \bgent\Precedence\cgent \qquad \bp{\forall \bgent,\cgent \in \AGENT }
+        \eqfinv
+        \label{eq:conditional_parental_relation}
+        % 
+        \intertext{the \emph{conditional ascendent relation}
+        \( \ConditionalAscendent \) as }
+        \ConditionalAscendent &=
+                                \ConditionalDown = \Precedence \TransitiveReflexiveClosureParentalPrecedence
+                                \label{eq:conditional_ascendent_relation}
+                                % 
+                                \intertext{which relates a descendent with
+                                an ascendent by means of %a bridge made of
+                                elements in~$\Complementary{\AgentSubsetW}$u. 
+                                We define their converses~\( \ConverseParentalPrecedence \) and
+                                \( \ConverseConditionalAscendent \) as }
+                                \ConverseParentalPrecedence
+      &= \npConverse{\ParentalPrecedence}
+        = \Converse{\Precedence} \Delta_{\Complementary{\AgentSubsetW}}
+        \eqfinv
+        \label{eq:converse_conditional_parental_relation}
+      \\
+      \ConverseConditionalAscendent
+      &= \Converse{\bp{\ConditionalAscendent}}
+        = \ConditionalUp
+        = \TransitiveReflexiveClosureConverseParentalPrecedence \Converse{\Precedence}
+        \eqfinp
+        \label{eq:converse_conditional_ascendent_relation}
+        \intertext{With these elementary binary relations,
+        we define the \emph{conditional common cause relation}~$\ConditionalCommonCause$ 
+        as the symmetric relation}
+        \ConditionalCommonCause 
+                              &=
+                                \ConverseConditionalAscendent \Delta_{\Complementary\AgentSubsetW}
+                                \ConditionalAscendent
+                                = \TransitiveClosureConverseParentalPrecedence \TransitiveClosureParentalPrecedence
+                                \label{eq:common_cause}
+                                \eqfinv
+                                % \\
+      \intertext{the \emph{conditional cousinhood relation}~$\Cousinhood$
+      as the partial equivalence relation} 
+      \Cousinhood
+      &=
+        \bpTransitiveClosure{\Delta_{\AgentSubsetW} \ConditionalCommonCause
+        \Delta_{\AgentSubsetW} }
+        \cup
+        \Delta_{\AgentSubsetW}
+        \eqfinv
+        \label{eq:Cousinhood}
+        % \\
+      \intertext{
+      and the \emph{conditional active relation}~$\ConditionalActive$ 
+      as the symmetric relation}
+      \ConditionalActive
+      &= \Delta \cup 
+        \ConditionalAscendent \cup \ConverseConditionalAscendent \cup \ConditionalCommonCause
+        \cup
+        \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+        \Cousinhood
+        \bp{\ConverseConditionalAscendent \cup \ConverseConditionalCommonCause}
+        \eqfinp
+        \label{eq:conditional_active_relation}
+    \end{align}
+  \end{subequations}
+\end{definition}
+
+
+\begin{theorem}
+  \label{th:ConditionalDirectionalSeparation_IFF_relation}
+  Let \( \npOrientedGraph \) be a graph, 
+  and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.
+  % 
+  The conditional directional separation relation~$\ConditionalDirectionalSeparation$
+  (Definition~\ref{de:vertices-d-separated})
+  is the complementary~$\bpComplementary{ \ConditionalActive }$ of the
+  conditional active relation~$\ConditionalActive$
+  (Equation~\eqref{eq:conditional_active_relation} in Definition~\ref{de:all_the_relations}):
+  \begin{equation}
+    \bp{  \;\protect\ConditionalDirectionalSeparation \; \mid \AgentSubsetW }
+    =
+    \bpComplementary{ \ConditionalActive }
+           \mtext{ \qquad that is, }
+    \bgent\ConditionalDirectionalSeparation\cgent
+      \; \mid \AgentSubsetW  \iff
+      \neg \np{ \bgent\ConditionalActive\cgent }
+      \qquad \bp{ \forall \bgent,\cgent \in \AGENT }
+    \eqfinp 
+  \end{equation}
+  In other words, we have that 
+  \begin{equation}
+    \bset{ \np{\bgent,\cgent} \in \AGENT\times\AGENT }{  \DeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph} \subset
+      \BlockedUndirectedPaths{\graph} }
+    = \npComplementary{\ConditionalActive}
+    \eqfinp
+  \end{equation}
+\end{theorem}
+
+\begin{proof}
+  Let \( \bgent,\cgent \in \AGENT \) be two vertices. 
+  In Proposition~\ref{pr:ConditionalDirectionalSeparation_seilpmi_relation},
+  we show that 
+  \( \bgent \ConditionalActive \cgent \implies 
+  \neg \bp{\bgent \ConditionalDirectionalSeparation \cgent \mid \AgentSubsetW}
+  \) or, equivalently (see~\eqref{eq:vertices-d-separated} in
+  Definition~\ref{de:vertices-d-separated}), that 
+  \(  \bgent {\ConditionalActive} \cgent \implies
+  \DeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph} 
+  \cap \ActiveUndirectedPaths{\graph} 
+  \neq\emptyset \).
+  % 
+  We simply give a sketch of proof here, as details are to be found in the Appendix~\ref{Proof_of_Theorem}. 
+  % 
+  As the binary relation~\(  \ConditionalActive \) is given by the union of five
+  relations in~\eqref{eq:conditional_active_relation},
+  the proof examines five cases and exhibits an active path
+  (one in~\( \ActiveUndirectedPaths{\graph} \), see Definition~\ref{de:ActivePaths})
+  that joins the vertices~\( \bgent \) and \( \cgent \) in the five cases
+  when \( \bgent \ConditionalActive \cgent \). 
+  \medskip
+
+  % In Proposition~\ref{pr:ConditionalDirectionalSeparation_implies_relation},
+  Now,  we show that 
+  \( \neg \bp{\bgent \ConditionalDirectionalSeparation \cgent \mid \AgentSubsetW}
+  \implies \bgent \ConditionalActive \cgent \) or, equivalently (see~\eqref{eq:vertices-d-separated} in
+  Definition~\ref{de:vertices-d-separated}), that 
+  \(
+  \DeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph} 
+  \cap \ActiveUndirectedPaths{\graph} 
+  \neq\emptyset 
+  \implies
+  \bgent {\ConditionalActive} \cgent \).
+  For this purpose, we assume that there exists an \undirectedEdgePath\
+  \( \UndirectedPath \in \UPATH^{n}\np{\graph} \)
+  joining the two vertices~$\bgent$ and $\cgent$ and such that \( \UndirectedPath
+  \) is active.
+  We are going to prove that $\bgent \ConditionalActive\cgent$.
+  
+  If the path length of~\( \UndirectedPath \) is smaller or equal to one, then,
+  by definition~\eqref{eq:undirected_(edge)_paths_of_length_n} of
+  $\UPATH^{1}\np{\OrientedGraph}$, we necessarily have that
+  either $\bgent \Precedence\cgent$, or $\bgent \Converse{\Precedence}\cgent$,
+  or $\bgent \Delta\cgent$.
+  Now, as \( \Precedence \subset \ConditionalAscendent \subset
+  \ConditionalActive \)
+  by~\eqref{eq:conditional_ascendent_relation}
+  and~\eqref{eq:conditional_active_relation}, 
+  as \( \Converse{\Precedence} \subset \ConverseConditionalAscendent \subset
+  \ConditionalActive \)
+  by~\eqref{eq:converse_conditional_ascendent_relation}
+  and~\eqref{eq:conditional_active_relation}, 
+  and as \( \Delta \subset \ConditionalActive \)
+  by~\eqref{eq:conditional_ascendent_relation}
+  and~\eqref{eq:conditional_active_relation},
+  we conclude that $\bgent \ConditionalActive \cgent$.
+  
+  If the path length of~\( \UndirectedPath \) is $\ge 2$,
+  we use Lemma~\ref{lem:induction-lemma} (proof by induction on the path length)
+  and we obtain that $\bgent \ConditionalActivePlus \cgent$ or $\bgent \ConditionalActiveMinus
+  \cgent$.
+  We therefore conclude that $\bgent \ConditionalActive \cgent$
+  since $\ConditionalActive =
+  \Delta \cup \ConditionalActivePlus \cup \ConditionalActiveMinus$
+  by~\eqref{eq:ConditionalActivePlus_cup_Minus}. 
+  \medskip 
+  
+  This ends the proof.
+  % 
+\end{proof}
+
+
+
+
+
+
+
+
+
+\section{Conclusion}
+
+Together with its two companion
+papers~\citep{De-Lara-Chancelier-Heymann-2021,Heymann-De-Lara-Chancelier-2021}, 
+this paper is a contribution to providing
+another perspective on conditional independence and do-calculus.
+In this paper, we have considered directed graphs (DGs) not necessarily acyclic,
+and we have shown how the d-separation can be extended beyond acyclic
+graphs and can be expressed and characterized as a binary relation
+between vertices.
+%
+The results in this paper are instrumental in proving those
+in~\citep{De-Lara-Chancelier-Heymann-2021} on topological conditional separation (t-separation),
+hence in the use of t-separation to establish conditional independence
+in~\citep{Heymann-De-Lara-Chancelier-2021}.
+
+Moreover, there are other perspectives.
+First, such developpement of a theory based on binary relations is interesting in
+itself as it makes it amenable to computer aided proof.
+Second, there are other notions of separation (between subsets) in graph theory that can also 
+be expressed by means of binary relations (between vertices).
+We illustrate how. 
+  Let \( \npOrientedGraph \) be a graph, 
+  and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices,
+  and $\bgent$, $\cgent\in \AGENT$ be two vertices.
+  Then, the three following statements are equivalent:
+  any path from~$\bgent$ to~$\cgent$ passes through~$\AgentSubsetW$;
+  there does not exist a path from~$\bgent$ to~$\cgent$ which passes
+  through~$\Complementary{\AgentSubsetW}$;
+  \( \neg \np{ \bgent \npTransitiveClosure{ \EDGE \Delta_{\Complementary{\AgentSubsetW}} \EDGE} \cgent } \).
+  
+% \mdl{keep below?}
+% Let $\relation  \subset \VERTEX\times\VERTEX$ be a relation on~$\VERTEX$.
+% Any (vertex) path in the graph \( \np{\VERTEX,\EDGE} \) is a path in the
+% subgraph \( \np{ \TopologicalClosure{\Converse{\EDGE},\EDGE}{\relation}, \EDGE } \).
+
+% \begin{itemize}
+% \item
+%   There exists a path in the deployement of the relation~$\relation$   which passes
+%   through~$\Complementary{\AgentSubsetW}$  
+% \item
+%   \( \TransitiveReflexiveClosureConverse{\EDGE}\relation
+%   \TransitiveReflexiveClosureConverse{\EDGE} \cap 
+%   \Delta_{\AgentSubsetW} = \emptyset \)
+% \end{itemize}
+
+\appendix
+
+
+\section{Additional material}
+\label{Additional_material}
+
+\subsection{Material on \undirectedEdgePaths\ in a graph}
+
+In~\S\ref{appendix_Definitions_undirectedEdgePaths}, we introduce additional definitions
+related to \undirectedEdgePaths\ in a graph.
+In~\S\ref{appendix_Lemmas_undirectedEdgePaths}, we show Lemmas that will be instrumental
+in the proof of Theorem~\ref{th:ConditionalDirectionalSeparation_IFF_relation}.
+
+\subsubsection{Definitions}
+\label{appendix_Definitions_undirectedEdgePaths}
+
+We refer the reader to~\S\ref{UndirectedEdgePaths_in_a_graph}
+for the basic definitions. 
+
+
+\subsubsubsection{Concatenation of \undirectedEdgePaths\ in a graph}
+
+We recall that \( \PATH\np{\OrientedGraph} \) in~\eqref{eq:PATHOrientedGraph}
+is the set of finite \EdgePaths\ in the graph~$\npOrientedGraph$,
+and that \( \UPATH\np{\OrientedGraph} \) in~\eqref{eq:undirectedEdgePaths}
+is the set of finite \undirectedEdgePaths\ relative to the
+graph~$\npOrientedGraph$. 
+
+\noindent $\bullet$ 
+The \EdgePaths\ \( \pathbis \in \PATH\np{\OrientedGraph}\)
+and \( \pathter \in \PATH\np{\OrientedGraph}\)
+can be \emph{concatenated} when 
+\( \Head{\Projection}\np{\pathbis}=\Tail{\Projection}\np{\pathter} \)
+(see Equation~\eqref{eq:Projection_PATH_first_and_last}) to give the new 
+\EdgePath
+\begin{subequations}
+  \begin{equation}
+    \path = \pathbis \ltimes \pathter = \np{\pathbis,\pathter}
+    \in \PATH\np{\OrientedGraph} 
+    \eqfinv
+    \label{eq:concatenation_Path}
+  \end{equation}
+  called \emph{concatenation} of~$\pathbis$ and \( \pathter \).
+  It is easily seen that the operation~$\ltimes$ is associative.
+
+  The \undirectedEdgePaths\
+  \( \UndirectedPathbis= \np{\pathbis,\orientbis} 
+  % =\bp{\np{\vertexbis_i,\vertexbis_i^+}_{i\in\ic{1,n}},\orientbis} 
+  \in \UPATH\np{\OrientedGraph}\)
+  and
+  \( \UndirectedPathter= \np{\pathter,\orientter} 
+  % =\bp{\np{\vertexter_j,\vertexter_j^+}_{j=1,\ldots,m},\orientter}
+  \in \UPATH\np{\OrientedGraph}\)
+  can be \emph{concatenated} when 
+  \( \Head{\Projection}\np{\UndirectedPathbis}=
+  \Tail{\Projection}\np{\UndirectedPathter} \) to give the new 
+  \undirectedEdgePath
+  % \begin{subequations}
+  \begin{equation}
+    \UndirectedPath = \UndirectedPathbis \ltimes\UndirectedPathter
+    = \bp{ \np{\pathbis,\pathter}, \np{\orientbis,\orientter} }
+    = \bp{ \pathbis \ltimes \pathter, \np{\orientbis,\orientter} }
+    % \Bp{ \bp{\np{\vertexbis_i,\vertexbis_i^+}_{i\in\ic{1,n}},
+    % \np{\vertexter_j,\vertexter_j^+}_{j=1,\ldots,m}},
+    % \np{\orientbis,\orientter} } 
+    \in \UPATH\np{\OrientedGraph} 
+    \eqfinv
+    \label{eq:concatenation_UndirectedPath}
+  \end{equation}
+  called \emph{concatenation} of~$\UndirectedPathbis$
+  and \( \UndirectedPathter \).
+  It is easily seen that the operation~$\ltimes$ is associative.
+  For any subsets \( \SubsetPathbis \subset \UPATH\np{\OrientedGraph} \) 
+  and \( \SubsetPathter \subset \UPATH\np{\OrientedGraph} \) of
+  \undirectedEdgePaths, we define 
+  \begin{equation}
+    \SubsetPathbis  \ltimes \SubsetPathter 
+    = \bset{ \UndirectedPathbis \ltimes\UndirectedPathter }%
+    { \UndirectedPathbis \in \SubsetPathbis
+      \eqsepv
+      \UndirectedPathter \in \SubsetPathter } 
+    \subset \UPATH\np{\OrientedGraph} 
+    \eqfinv
+    \label{eq:concatenation_SubsetPath}
+  \end{equation}
+  with \( \SubsetPathbis  \ltimes \SubsetPathter = \emptyset \)
+  when \( \Head{\Projection}\np{\SubsetPathbis} 
+  \cap 
+  \Tail{\Projection}\np{\SubsetPathter} = \emptyset \).
+\end{subequations}
+\ifpreprint
+It is easily obtained that the intermediate vertices~\eqref{eq:Internals_PATH}
+of a concatenation are given by
+\begin{equation}
+  \Internals_{\UPATH}\np{\UndirectedPath} = 
+  \Internals_{\UPATH}\np{\UndirectedPathbis \ltimes\UndirectedPathter}
+  =
+  \Internals_{\UPATH}\np{\UndirectedPathbis} \cup
+  \na{\Head{\Projection}\np{\UndirectedPathbis}} \cup
+  \Internals_{\UPATH}\np{\UndirectedPathter} 
+  =
+  \Internals_{\UPATH}\np{\UndirectedPathbis} \cup
+  \na{\Tail{\Projection}\np{\UndirectedPathter}} \cup
+  \Internals_{\UPATH}\np{\UndirectedPathter} 
+  % \Internals\np{\pathbis \ltimes \pathter}=
+  % \Internals\np{\pathbis} \cup \na{\Head{\Projection}\np{\pathbis}} \cup \Internals\np{\pathter}
+  % =\Internals\np{\pathbis} \cup \na{\Tail{\Projection}\np{\pathter}} \cup \Internals\np{\pathter}
+  \eqfinp
+  \label{eq:Internals_PATH_concatenation}
+\end{equation}
+\fi
+
+
+
+\subsubsubsection{More on deployment in paths}\quad
+
+\noindent $\bullet$
+For any binary relation \( \relation \subset \VERTEX\times\VERTEX \),
+the subset \( \DeploymentInUPaths{\relation}{\OrientedGraph} \subset \UPATH\np{\OrientedGraph} \) 
+is made of \undirectedEdgePaths\ (relative to the graph~$\npOrientedGraph$)
+whose ordered endpoints (head and tail)
+satisfy the relation~$\relation$.
+The mapping $\relation \mapsto \DeploymentInUPaths{\relation}{\OrientedGraph} $ is nondecreasing
+\wrt\ the inclusion order, as it satisfies
+% \begin{subequations}
+\begin{equation}
+  \forall \relation \subset \VERTEX{\times}\VERTEX 
+  \eqsepv 
+  \forall \relationbis \subset \VERTEX{\times}\VERTEX 
+  \eqsepv 
+  \DeploymentInUPaths{\relation \cup \relationbis}{\OrientedGraph}
+  =
+  \DeploymentInUPaths{\relation}{\OrientedGraph}
+  \cup 
+  \DeploymentInUPaths{\relationbis}{\OrientedGraph}
+  \eqfinp
+  \label{eq:DeploymentInPaths_property_union}
+\end{equation}
+\medskip
+
+\noindent $\bullet$ 
+By the very definition~\eqref{eq:DeploymentInUPaths} of the deployment in \undirectedEdgePaths, 
+and by definition~\eqref{eq:concatenation_SubsetPath} of the concatenation
+between subsets, we have the inclusion
+\begin{equation}
+  \forall \relation \subset \VERTEX{\times}\VERTEX 
+  \eqsepv 
+  \forall \relationbis \subset \VERTEX{\times}\VERTEX 
+  \eqsepv 
+  \DeploymentInUPaths{\relation}{\OrientedGraph}
+  \ltimes 
+  \DeploymentInUPaths{\relationbis}{\OrientedGraph}
+  \subset
+  \DeploymentInUPaths{\relation\relationbis}{\OrientedGraph}
+  \eqfinp
+  \label{eq:DeploymentInPaths_property_composition}
+\end{equation}  
+% \end{subequations}
+We use the following notations
+\begin{subequations}
+  \begin{align}
+    \DeploymentInUPaths{\relation}{\OrientedGraph}^n 
+    &=
+      \overbrace{\DeploymentInUPaths{\relation}{\OrientedGraph} \ltimes \cdots \ltimes
+      \DeploymentInUPaths{\relation}{\OrientedGraph}}^{\text{$n$ times}}
+      \eqfinv 
+    \\
+    \TransitiveClosure{\DeploymentInUPaths{\relation}{\OrientedGraph}} 
+    &=
+      \bigcup_{n \ge 1} \DeploymentInUPaths{\relation}{\OrientedGraph}^n
+      \eqfinp
+  \end{align}
+\end{subequations}
+
+\subsubsubsection{Endpoint relation in \undirectedEdgePaths}\quad
+
+\noindent $\bullet$ 
+With any subset \( \SubsetPath \subset \UPATH\np{\OrientedGraph} \) of
+\undirectedEdgePaths, we associate the following binary
+relation~\( \BoundaryU{\SubsetPath}{\OrientedGraph} \) on~$\VERTEX$, 
+that we call \emph{endpoint relation}, %\emph{boundary relation}, 
+% \emph{endpoint relation} \( \Endpoint \subset \VERTEX\times\VERTEX \) 
+defined by 
+\begin{equation}
+  \forall \SubsetPath \subset \UPATH\np{\OrientedGraph}
+  \eqsepv 
+  \BoundaryU{\SubsetPath}{\OrientedGraph} = \Projection\np{\SubsetPath}
+  = \bset{ \Projection\np{\UndirectedPath} }{ \UndirectedPath\in \SubsetPath} \subset \VERTEX\times\VERTEX 
+  % = \bset{ \Projection\bp{\np{\path,\orient}} }{ \np{\path,\orient}\in \SubsetPath} \subset \VERTEX\times\VERTEX 
+  \eqfinv
+  \label{eq:BoundaryU}
+\end{equation}
+where the projection~\( \Projection \) has been defined
+in~\eqref{eq:Projection}. 
+% \label{de:endpoint_relation}
+
+The subset \( \BoundaryU{\SubsetPath}{\OrientedGraph} \subset \VERTEX\times\VERTEX \) 
+is the subset of couples of vertices which are ordered endpoints (head and tail)
+of an \undirectedEdgePath\ contained in~$\SubsetPath$.
+By construction, the mapping $\SubsetPath
+\mapsto\BoundaryU{\SubsetPath}{\OrientedGraph}$ is nondecreasing \wrt\
+the inclusion order, and takes values that are binary relations included in
+the binary relation~\( \npTransitiveClosure{\EDGE\cup \Converse{\EDGE}} \), that
+is,
+\begin{equation}
+  \forall \SubsetPath \subset \UPATH\np{\OrientedGraph}
+  \eqsepv 
+  \BoundaryU{\SubsetPath}{\OrientedGraph} \subset
+  \npTransitiveClosure{\EDGE\cup \Converse{\EDGE}} 
+  \eqfinp
+\end{equation}
+
+\noindent $\bullet$
+Joint properties between boundary relation~$\BoundaryU{\cdot}{\OrientedGraph}$
+and deployment in \undirectedEdgePaths~\( \DeploymentInUPaths{\cdot}{\OrientedGraph} \)
+are as follows:
+\begin{subequations}
+  \label{boundary-deployment-properties}
+  \begin{align}
+    \bcBoundaryU{\DeploymentInUPaths{\relation}{\OrientedGraph}}{\OrientedGraph}
+    & \subset \relation
+      \eqsepv \forall \relation \subset \VERTEX{\times}\VERTEX
+    \\
+    \bcDeploymentInUPaths{\BoundaryU{\SubsetPath}{\OrientedGraph}}{\OrientedGraph}
+    & \supset
+      \SubsetPath
+      \eqsepv \forall \SubsetPath \subset \UPATH\np{\OrientedGraph}
+      \eqfinp
+  \end{align}
+\end{subequations}
+
+
+
+\subsubsection{Lemmas}
+\label{appendix_Lemmas_undirectedEdgePaths}
+
+We develop useful links between active \undirectedEdgePaths\
+  (see Definition~\ref{de:ActivePaths})
+and binary relations between ordered endpoints (head and tail) of the path.
+%
+In the next lemma, we
+give a first insight in that direction for \undirectedEdgePaths\ of length~$2$.
+
+\begin{lemma}
+  \label{le:active-length-2}
+  Let \( \npOrientedGraph \) be a graph, 
+  and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.
+  % 
+  Let  \(\UndirectedPath=\np{\path,\orient} \in  \ActiveUndirectedPaths{\OrientedGraph}  \) be
+  a given active \undirectedEdgePath\ of length~2
+  (see Definition~\ref{de:ActivePaths})
+  with   $\bgent$ as head endpoint and $\cgent$ as tail endpoint, that is,
+  there exists a vertex $\dgent\in\VERTEX$ such that 
+  \begin{equation}
+    \UndirectedPath = \Bp{ \bp{ \np{\bgent,\dgent},
+        \np{\dgent,\cgent} }, \np{\orient_1,\orient_2} }
+    \text{ with }
+    \np{\orient_1,\orient_2} \in \na{-1,+1}^2
+    \eqfinp
+    \label{eq:le:active-length-2}    
+  \end{equation}
+  % (  \( \Projection\np{\path} = \np{\bgent, \cgent} \)).
+  Then, one of the following two possibilities holds true:
+  \begin{enumerate}
+  \item
+    the \undirectedEdgePath~$\UndirectedPath$ ends with $\orient_2=+1$ orientation,
+    and then %we have that
+    either
+    \(\bgent  \EDGE \Delta_{\Complementary{\AgentSubsetW}}\EDGE  \cgent\)
+    or
+    \(\bgent   \Converse{\EDGE} \Delta_{\Complementary{\AgentSubsetW}} \EDGE  \cgent\),
+  \item
+    the \undirectedEdgePath~$\UndirectedPath$ ends with $\orient_2=-1$ orientation,
+    and then %we have that
+    either
+    \( \bgent\EDGE \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \Converse{\EDGE}\cgent \)
+    or \( \bgent \Converse{\EDGE} \Delta_{\Complementary{\AgentSubsetW}}\Converse{\EDGE} \cgent\).
+  \end{enumerate}
+\end{lemma}
+
+
+\begin{proof}
+  As \(\UndirectedPath=\np{\path,\orient} \) in~\eqref{eq:le:active-length-2}
+  belongs to~\( \ActiveUndirectedPaths{\OrientedGraph} \) --- 
+  hence to \( \UPATH\np{\OrientedGraph} \),
+  the set of finite \undirectedEdgePaths\ in~\eqref{eq:undirectedEdgePaths} --- 
+  we have that %  \(  \UndirectedPath = \Bp{ \bp{ \np{\bgent,\dgent},
+  % \np{\dgent,\cgent} }, \np{\orient_1,\orient_2} } \)
+  % where 
+  \( \np{\bgent,\dgent} \in \EDGE \) if $\orient_1={+1}$,
+  \( \np{\bgent,\dgent} \in \Converse{\EDGE} \) if $\orient_1={-1}$,
+  \( \np{\dgent,\cgent} \in \EDGE \) if $\orient_2={+1}$,
+  and \( \np{\dgent,\cgent} \in \Converse{\EDGE} \) if $\orient_2={-1}$.
+  Now, we consider the four conditions enumerated in Definition~\ref{de:ActivePaths} which must be satisfied
+  for the \undirectedEdgePath~$\UndirectedPath$ to be active and which impose constraints on the
+  vertex~$\dgent$ according to the possible orientations.
+
+  \begin{enumerate}
+  \item
+    First, we consider the case when the \undirectedEdgePath~$\UndirectedPath$
+    ends with $+1$ orientation, that is, when $\orient_2=+1$.
+    \begin{itemize}
+    \item
+      Item~\ref{it:ActivePaths_case1} in Definition~\ref{de:ActivePaths}
+      corresponds to 
+      $\orient_1 = +1$, $\orient_{2}= +1$ and $\dgent \in
+      \Complementary{\AgentSubsetW}$, which gives that 
+      $\bgent \EDGE^{(+1)} \Delta_{\Complementary{\AgentSubsetW}}\dgent$ and $\dgent\Delta_{\Complementary{\AgentSubsetW}}
+      \EDGE^{(+1)}\cgent$. Hence, by composition of binary relations, we get that
+      $\bgent \EDGE \Delta_{\Complementary{\AgentSubsetW}} \EDGE\cgent$,
+      using the property \( \Delta_{\Complementary{\AgentSubsetW}}\Delta_{\Complementary{\AgentSubsetW}}=\Delta_{\Complementary{\AgentSubsetW}}\).
+    \item
+      Item~\ref{it:ActivePaths_case3} in Definition~\ref{de:ActivePaths} corresponds to 
+      $\orient_1 = -1$, $\orient_{2}= +1$ and $\dgent \in
+      \Complementary{\AgentSubsetW}$, which gives that 
+      $\bgent \EDGE^{(-1)} \Delta_{\Complementary{\AgentSubsetW}}\dgent$ and $\dgent\Delta_{\Complementary{\AgentSubsetW}}
+      \EDGE^{(+1)}\cgent$. Hence, we get that 
+      $\bgent \Converse\EDGE \Delta_{\Complementary{\AgentSubsetW}} \EDGE\cgent$.
+    \end{itemize}
+  \item
+    Second, we consider the case when the \undirectedEdgePath~$\UndirectedPath$ ends with $-1$ orientation,
+    that is, when $\orient_2=-1$:
+    \begin{itemize}
+    \item
+      Item~\ref{it:ActivePaths_case2} in Definition~\ref{de:ActivePaths} corresponds to 
+     $\orient_1 = -1$, $\orient_{2}= -1$ and $\dgent \in \Complementary{\AgentSubsetW}$, which gives that 
+       $\bgent \EDGE^{(-1)} \Delta_{\Complementary{\AgentSubsetW}}\dgent$ and $\dgent\Delta_{\Complementary{\AgentSubsetW}}
+      \EDGE^{(-1)}\cgent$. Hence, we get that 
+      $\bgent \Converse\EDGE \Delta_{\Complementary{\AgentSubsetW}}
+      \Converse\EDGE\cgent$,
+    \item
+      Item~\ref{it:ActivePaths_case4} in Definition~\ref{de:ActivePaths} corresponds to 
+      $\orient_1 = +1$, $\orient_{2}= -1$ and $\dgent \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW}$, which gives that 
+       $\bgent \EDGE^{(+1)}
+       \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}\dgent$
+       and $\dgent\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \EDGE^{(-1)}\cgent$. Hence, we get that 
+      $\bgent \EDGE \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+      \Converse\EDGE\cgent$,
+      using the property \(
+      \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+      = \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \). 
+    \end{itemize}
+    % 
+  \end{enumerate}
+
+  This ends the proof.
+\end{proof}
+
+Now, we develop the machinery to analyze active \undirectedEdgePaths\ 
+by considering decomposition into subpaths and junctions when
+reconcatenating.
+For this purpose, we need notation. 
+
+% \noindent $\bullet$ 
+We denote by \( \Tail{\ProjectionUndirectedPath}: \UPATH\np{\OrientedGraph} \to \UPATH^{1}\np{\OrientedGraph} \) 
+(resp. \( \Head{\ProjectionUndirectedPath}: \UPATH\np{\OrientedGraph} \to \UPATH^{1}\np{\OrientedGraph} \)
+the projection on the tail (resp. head) endpoint of an \undirectedEdgePath,
+defined, for \(\np{\path,\orient}\in\UPATH^n\np{\OrientedGraph}\) and $n\ge 1$, by 
+\begin{subequations}
+  \label{eq:ProjectionUndirectedPath}
+  \begin{align}
+    \Tail{\ProjectionUndirectedPath}\bp{\np{\path,\orient}}
+    &= 
+      \Tail{\ProjectionUndirectedPath}
+      \bp{ \nseqa{\tail{\vertex_i},\head{\vertex_i}}{i\in\ic{1,n}},
+      \nseqa{\orient_i}{i\in\ic{1,n}} }
+      = \bp{\np{\tail{\vertex_1},\head{\vertex_1}},\orient_1 } 
+      \eqfinv
+    \\
+    \Head{\ProjectionUndirectedPath}\bp{\np{\path,\orient}}
+    &= 
+      \Head{\ProjectionUndirectedPath}
+      \bp{ \nseqa{\tail{\vertex_i},\head{\vertex_i}}{i\in\ic{1,n}},
+      \nseqa{\orient_i}{i\in\ic{1,n}} }
+      = \bp{\np{\tail{\vertex_n},\head{\vertex_n}},\orient_n } 
+      \eqfinp
+  \end{align}
+\end{subequations}
+
+The following Lemma is a straightforward consequence of the definitions
+of active \undirectedEdgePaths\ in~\( \ActiveUndirectedPaths{\OrientedGraph} \)
+(see Definition~\ref{de:ActivePaths}),
+of concatenation~$\ltimes$ in~\eqref{eq:concatenation_UndirectedPath}
+and of the projection mappings~\(\Tail{\ProjectionUndirectedPath}\) and 
+\( \Head{\ProjectionUndirectedPath} \) in~\eqref{eq:ProjectionUndirectedPath}.
+The proof is left to the reader. 
+
+\begin{lemma}
+  \label{lem:ActiveUndirectedPaths_subpaths_junctions_when_reconcatenating}
+  Let \( \npOrientedGraph \) be a graph, 
+  and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.
+  Let \(\UndirectedPath \in \UPATH\np{\OrientedGraph} \)
+  be an  \undirectedEdgePath\ of length~\( n \geq 2 \). We have that
+  \begin{equation}
+    \UndirectedPath \in \ActiveUndirectedPaths{\OrientedGraph}
+    \iff
+    \exists \UndirectedPathbis, \UndirectedPathter
+    \in \ActiveUndirectedPaths{\OrientedGraph}
+    \eqsepv 
+    \UndirectedPath = \UndirectedPathbis \ltimes \UndirectedPathter
+    \eqsepv
+    \Head{\ProjectionUndirectedPath}\np{\UndirectedPathbis}
+    \ltimes
+    \Tail{\ProjectionUndirectedPath}\np{\UndirectedPathter}
+    \in \ActiveUndirectedPaths{\OrientedGraph}
+    \eqfinp
+    \label{eq:ActiveUndirectedPaths_subpaths_junctions_when_reconcatenating}    
+  \end{equation}
+\end{lemma}
+
+
+
+\subsection{Material on binary relations}
+\label{Material_on_binary_relations}
+
+In~\S\ref{appendix_Lemmas_binary_relations},
+we prove Lemmas on the binary relations of
+Definition~\ref{de:all_the_relations}.
+In~\S\ref{appendix_Definitions_binary_relations},
+we define new binary relations and we establish properties.
+
+
+\subsubsection{Lemmas on the binary relations of Definition~\ref{de:all_the_relations}}
+\label{appendix_Lemmas_binary_relations}
+
+We refer the reader to Definition~\ref{de:all_the_relations}
+for the definitions of basic binary relations.
+
+\begin{lemma}
+  We have that
+  \begin{subequations}
+    \begin{align}
+      \ConverseConditionalAncestor \ConditionalAncestor
+      &=
+        {\Delta 
+        \cup
+        \Delta_{\Complementary{\AgentSubsetW}} \ConditionalAscendent 
+        \cup \ConverseConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}}
+        \cup \ConditionalCommonCause
+        }
+        \eqfinv
+        \label{eq:AA}
+      \\
+      \Cousinhood \ConverseConditionalAncestor \ConditionalAncestor
+      &=
+        \Cousinhood \bp{
+        \Delta \cup
+        \ConverseConditionalAscendent
+        \Delta_{{\Complementary{\AgentSubsetW}}}
+        \cup \ConditionalCommonCause}
+        \eqfinv
+        \label{eq:CEmEsubset}
+     \\
+      \Cousinhood \ConverseConditionalAncestor \ConditionalAncestor \Cousinhood
+      &= \Cousinhood
+        \eqfinv
+        \label{eq:gammaAAgamma}
+      \\
+      \Cousinhood \ConverseConditionalAncestor \ConditionalAncestor
+      \Delta_{\Complementary{\AgentSubsetW}}
+      &= \Cousinhood \bp{
+        \ConverseConditionalAscendent 
+        \cup \ConditionalCommonCause}
+        \Delta_{\Complementary{\AgentSubsetW}}
+        \eqfinv
+        \label{eq:gammaAADelta}
+      \\
+      \Delta_{\Complementary{\AgentSubsetW}} \ConverseConditionalAncestor \ConditionalAncestor    \Cousinhood 
+      &=
+        \Delta_{\Complementary{\AgentSubsetW}}
+        \bp{
+        \ConditionalAscendent 
+        \cup \ConditionalCommonCause}
+        \Cousinhood
+        \eqfinp
+        \label{eq:DeltaAAgamma}
+     \end{align}
+  \end{subequations}
+\end{lemma}
+
+
+
+
+\begin{proof}\quad
+
+  \noindent $\bullet$
+  We prove Equation~\eqref{eq:AA} as follows:
+  \begin{align*}
+    \ConverseConditionalAncestor \ConditionalAncestor
+    &= \bp{\Delta \cup  \TransitiveClosureConverseParentalPrecedence}
+      \bp{\Delta \cup \TransitiveClosureParentalPrecedence}
+      \intertext{as \( \ConditionalAncestor=\Delta \cup \TransitiveClosureParentalPrecedence\)
+      by definition of the reflexive and transitive closure of a binary relation}
+    % \\
+    &= \Delta \cup \TransitiveClosureParentalPrecedence \cup  \TransitiveClosureConverseParentalPrecedence \cup
+      \TransitiveClosureConverseParentalPrecedence  \TransitiveClosureParentalPrecedence
+      \tag{by developing}
+    \\
+    &= \Delta \cup \TransitiveClosureParentalPrecedence \cup  \TransitiveClosureConverseParentalPrecedence \cup
+      \ConditionalCommonCause 
+      \tag{by definition of $\ConditionalCommonCause$ in~\eqref{eq:common_cause}}
+    \\
+    &= \Delta \cup
+      \bp{\Delta_{\Complementary{\AgentSubsetW}}\ConditionalDown}
+      \cup
+      \bp{ \ConditionalUp \Delta_{\Complementary{\AgentSubsetW}}}
+      \cup
+      \ConditionalCommonCause 
+      \intertext{as $\TransitiveClosure{\relation}=
+      \relation\TransitiveReflexiveClosure{\relation}
+      = \TransitiveReflexiveClosure{\relation}\relation $
+      for any binary relation~$\relation$, used here with
+      \( \relation= \Delta_{\Complementary\AgentSubsetW}\Precedence \)
+      and with     \( \relation= \Converse{\Precedence}\Delta_{\Complementary\AgentSubsetW} \)}
+    % \\
+    &=
+      \Delta 
+      \cup
+      \Delta_{\Complementary{\AgentSubsetW}} \ConditionalAscendent 
+      \cup \ConverseConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}}
+      \cup \ConditionalCommonCause
+      \eqfinp
+      \tag{by definition of $\ConditionalAscendent$ in~\ref{eq:converse_conditional_parental_relation}}
+  \end{align*}
+  
+
+  \noindent $\bullet$
+  We prove Equation~\eqref{eq:CEmEsubset} as follows:
+  \begin{align*}
+    \Cousinhood \ConverseConditionalAncestor \ConditionalAncestor
+    &=
+      \Cousinhood \Delta_{\AgentSubsetW}
+      \ConverseConditionalAncestor \ConditionalAncestor
+      \intertext{as $\Cousinhood$ ends with $\Delta_{\AgentSubsetW}$
+      in~\eqref{eq:Cousinhood}, hence \( \Cousinhood=\Cousinhood\Delta_{\AgentSubsetW}\)}
+%    \\
+    &=
+      \Cousinhood \Delta_{\AgentSubsetW}
+      \bp{\Delta 
+      \cup
+      \Delta_{\Complementary{\AgentSubsetW}} \ConditionalAscendent 
+      \cup \ConverseConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}}
+      \cup \ConditionalCommonCause}
+      \tag{by~\eqref{eq:AA}}
+    \\
+    &=
+      \Cousinhood 
+      \bp{ \Delta_{\AgentSubsetW}\Delta
+      \cup
+      \Delta_{\AgentSubsetW}\Delta_{\Complementary{\AgentSubsetW}} \ConditionalAscendent
+      \cup
+      \Delta_{\AgentSubsetW}\ConverseConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}}
+      \cup
+      \Delta_{\AgentSubsetW}\ConditionalCommonCause}
+      \tag{by developing}
+    \\
+    &=
+      \Cousinhood \Delta_{\AgentSubsetW}
+      \bp{\Delta \cup
+      \ConverseConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}}
+      \cup \ConditionalCommonCause}
+      \tag{as $\Delta_{\AgentSubsetW}\Delta_{\Complementary{\AgentSubsetW}}=\emptyset$}
+    \\
+    &=
+      \Cousinhood \bp{
+      \Delta \cup
+      \ConverseConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}}
+      \cup \ConditionalCommonCause}
+      \tag{as \( \Cousinhood\Delta_{\AgentSubsetW}=\Cousinhood\)}
+      \eqfinp
+  \end{align*}
+
+  \noindent $\bullet$
+  We prove Equation~\eqref{eq:gammaAAgamma} as follows:
+  \begin{align*}
+    \Cousinhood \ConverseConditionalAncestor \ConditionalAncestor \Cousinhood
+    &=
+      \Cousinhood \bp{
+      \Delta \cup
+      \ConverseConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}}
+      \cup \ConditionalCommonCause} \Cousinhood
+      \tag{by~\eqref{eq:CEmEsubset}}
+     \\
+    &=
+      \Cousinhood\Delta_{\AgentSubsetW} \bp{
+      \Delta \cup
+      \ConverseConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}}
+      \cup \ConditionalCommonCause} \Delta_{\AgentSubsetW} \Cousinhood
+      \intertext{as $\Cousinhood$ begins and ends with $\Delta_{\AgentSubsetW}$
+      in~\eqref{eq:Cousinhood}, hence \( \Cousinhood=\Cousinhood\Delta_{\AgentSubsetW}=\Delta_{\AgentSubsetW}\Cousinhood\)}
+%      \\
+    % &=
+    %   \Cousinhood \Delta_{\AgentSubsetW}\ConverseConditionalAncestor \ConditionalAncestor\Delta_{\AgentSubsetW} \Cousinhood
+    %   \tag{as $\Cousinhood$ begins and ends with $\Delta_{\AgentSubsetW}$ in~\eqref{eq:Cousinhood}}
+    % \\
+    % &=\Cousinhood  \Delta_{\AgentSubsetW}
+    %   \bp{\Delta 
+    %   \cup
+    %   \Delta_{\Complementary{\AgentSubsetW}} \ConditionalAscendent 
+    %   \cup \ConverseConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}}
+    %   \cup \ConditionalCommonCause
+    %   }
+    %   \Delta_{\AgentSubsetW}
+    %   \Cousinhood
+    %   \tag{by~\eqref{eq:AA}}
+    % \\
+    &=
+      \Cousinhood  \Delta_{\AgentSubsetW}
+      \bp{\Delta 
+      \cup \ConditionalCommonCause
+      }
+      \Delta_{\AgentSubsetW}
+      \Cousinhood
+      \tag{as %$\Delta_{\AgentSubsetW}\Delta_{\Complementary{\AgentSubsetW}}=$
+      $\Delta_{\Complementary{\AgentSubsetW}}\Delta_{\AgentSubsetW}=\emptyset$}
+    \\
+    &=\Cousinhood \bp{\Delta_{\AgentSubsetW}
+      \cup \Delta_{\AgentSubsetW} \ConditionalCommonCause\Delta_{\AgentSubsetW}}
+      \Cousinhood
+      \tag{by developing}
+    \\
+    &= \bp{\Delta_{\AgentSubsetW} \cup \bpTransitiveClosure{\Delta_{\AgentSubsetW} \ConditionalCommonCause
+      \Delta_{\AgentSubsetW} } }
+      \bp{\Delta_{\AgentSubsetW} \cup \Delta_{\AgentSubsetW} \ConditionalCommonCause\Delta_{\AgentSubsetW}}
+      \bp{ \Delta_{\AgentSubsetW} \cup \bpTransitiveClosure{\Delta_{\AgentSubsetW} \ConditionalCommonCause
+      \Delta_{\AgentSubsetW} } }
+      \tag{by definition~\eqref{eq:Cousinhood} of $\Cousinhood$}
+    \\
+    &=
+      \bp{ \Delta_{\AgentSubsetW} \cup \bpTransitiveClosure{\Delta_{\AgentSubsetW} \ConditionalCommonCause
+      \Delta_{\AgentSubsetW} } }
+      \bp{ \Delta_{\AgentSubsetW} \cup \bpTransitiveClosure{\Delta_{\AgentSubsetW} \ConditionalCommonCause
+      \Delta_{\AgentSubsetW} } }
+      \intertext{as $(\Delta_{\AgentSubsetW} \cup \TransitiveClosure{\relation})
+      (\Delta_{\AgentSubsetW} \cup \relation)=
+      \Delta_{\AgentSubsetW} \cup
+      \TransitiveClosure{\relation}\Delta_{\AgentSubsetW} \cup
+      \Delta_{\AgentSubsetW}\relation \cup \TransitiveClosure{\relation}\relation =
+      \Delta_{\AgentSubsetW} \cup
+      \TransitiveClosure{\relation}
+      \cup \TransitiveClosure{\relation}\relation =
+      \Delta_{\AgentSubsetW} \cup \TransitiveClosure{\relation}$ whenever 
+      $\relation\Delta_{\AgentSubsetW}=
+      \Delta_{\AgentSubsetW}\relation=\relation$,
+      which is the case for \( \relation=\Delta_{\AgentSubsetW} \ConditionalCommonCause
+      \Delta_{\AgentSubsetW} \)}
+    % \\
+    &=
+      \Delta_{\AgentSubsetW} \cup \bpTransitiveClosure{\Delta_{\AgentSubsetW} \ConditionalCommonCause
+      \Delta_{\AgentSubsetW} }
+      \tag{by developing}
+    \\
+    &=
+      \Cousinhood
+      \eqfinp
+      \tag{by definition~\eqref{eq:Cousinhood} of $\Cousinhood$}
+  \end{align*}
+  
+  \noindent $\bullet$
+  We prove Equation~\eqref{eq:gammaAADelta} as follows:
+  \begin{align*}
+    \Cousinhood \ConverseConditionalAncestor \ConditionalAncestor
+    \Delta_{\Complementary{\AgentSubsetW}}
+    &=
+      \Cousinhood \bp{
+      \Delta \cup
+      \ConverseConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}}
+      \cup \ConditionalCommonCause} \Delta_{\Complementary{\AgentSubsetW}}
+      \tag{by~\eqref{eq:CEmEsubset}}
+    \\
+    &=
+      \Cousinhood \Delta_{\AgentSubsetW}\bp{
+      \Delta \cup
+      \ConverseConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}}
+      \cup \ConditionalCommonCause} \Delta_{\Complementary{\AgentSubsetW}}
+      \intertext{as $\Cousinhood$ ends with $\Delta_{\AgentSubsetW}$
+      in~\eqref{eq:Cousinhood}, hence \( \Cousinhood=\Cousinhood\Delta_{\AgentSubsetW}\)}
+%    
+   % &=
+   %    \Cousinhood \Delta_{\AgentSubsetW}
+   %    \ConverseConditionalAncestor \ConditionalAncestor
+   %    \Delta_{\Complementary{\AgentSubsetW}}
+   %    \tag{as $\Cousinhood$ ends with $\Delta_{\AgentSubsetW}$ in~\eqref{eq:Cousinhood}}
+   %  \\
+   %  &=
+   %    \Cousinhood \Delta_{\AgentSubsetW}
+   %    \bp{\Delta 
+   %    \cup
+   %    \Delta_{\Complementary{\AgentSubsetW}} \ConditionalAscendent 
+   %    \cup \ConverseConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}}
+   %    \cup \ConditionalCommonCause}
+   %    \Delta_{\Complementary{\AgentSubsetW}}
+   %    \tag{by~\eqref{eq:AA}}
+   %  \\
+    % &=
+    %   \Cousinhood 
+    %   \bp{ \Delta_{\AgentSubsetW}\Delta\Delta_{\Complementary{\AgentSubsetW}} 
+    %   \cup
+    %   \Delta_{\AgentSubsetW}\Delta_{\Complementary{\AgentSubsetW}} \ConditionalAscendent\Delta_{\Complementary{\AgentSubsetW}}
+    %   \cup
+    %   \Delta_{\AgentSubsetW}\ConverseConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}}\Delta_{\Complementary{\AgentSubsetW}}
+    %   \cup
+    %   \Delta_{\AgentSubsetW}\ConditionalCommonCause\Delta_{\Complementary{\AgentSubsetW}} }
+    % \\
+    &=
+      \Cousinhood \Delta_{\AgentSubsetW}
+      \bp{ \ConverseConditionalAscendent
+      \cup \ConditionalCommonCause}
+      \Delta_{\Complementary{\AgentSubsetW}}
+      \tag{as $\Delta_{\AgentSubsetW}\Delta_{\Complementary{\AgentSubsetW}}=\emptyset$}
+    \\
+    &=
+      \Cousinhood \bp{
+      \ConverseConditionalAscendent 
+      \cup \ConditionalCommonCause}
+      \Delta_{\Complementary{\AgentSubsetW}}
+      \eqfinp
+      \tag{as \( \Cousinhood=\Cousinhood\Delta_{\AgentSubsetW}\)}
+  \end{align*}
+  \noindent $\bullet$
+  Equation~\eqref{eq:DeltaAAgamma} is obtained from Equation~\eqref{eq:gammaAADelta}
+  by switching to converse relation.
+  \medskip
+  
+  This ends the proof. 
+\end{proof}
+
+
+\subsubsection{Definitions and properties of new binary relations}
+\label{appendix_Definitions_binary_relations}
+
+We refer the reader to Definition~\ref{de:all_the_relations}
+for the definitions of basic binary relations.
+% 
+We add two new ones, where we recall that
+\(    \TransitiveReflexiveClosureOfSet{\AgentSubsetW}=
+\TransitiveReflexiveClosure{\EDGE}\AgentSubsetW \) by~\eqref{eq:TransitiveReflexiveClosure_AgentSubsetW}:
+% \begin{subequations}
+\begin{align}
+  \CousinhoodStar
+  &=
+    \bpTransitiveClosure{ \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+    \ConditionalCommonCause \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} }
+    \cup 
+    \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+    \eqfinv
+    \label{eq:CousinhoodStar}
+  \\
+  \ConditionalActiveStar
+  &=
+    \Delta \cup 
+    \ConditionalAscendent \cup \ConverseConditionalAscendent \cup \ConditionalCommonCause
+    \cup
+    \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+    % \bp{\ConverseConditionalAscendent \cup \ConverseConditionalCommonCause}\RelTheta
+    \CousinhoodStar
+    \bp{\ConverseConditionalAscendent \cup \ConverseConditionalCommonCause}
+    \eqfinp
+    \label{eq:conditional_active_relationStar}
+\end{align}
+% \end{subequations}
+Notice that the \emph{star conditional cousinhood relation}~\( \CousinhoodStar \) in~\eqref{eq:CousinhoodStar} is
+the relation~\( \Cousinhood \) in~\eqref{eq:Cousinhood} with
+\( \AgentSubsetW \) replaced by~\(
+\TransitiveReflexiveClosureOfSet{\AgentSubsetW} \),
+and the \emph{star conditional active relation}~$\ConditionalActiveStar$ 
+in~\eqref{eq:conditional_active_relationStar} is
+the relation~\( \ConditionalActive \) in~\eqref{eq:conditional_active_relation} with
+\( \Cousinhood \) replaced by~\( \CousinhoodStar \).
+
+
+
+
+\begin{lemma}
+  The two following relations
+  \begin{subequations}
+    \begin{align}
+      \ConditionalActivePlus
+      &=
+        \ConditionalAscendent \cup \ConditionalCommonCause
+        \cup 
+        \Bp{\bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+        \CousinhoodStar % \bp{
+        % \np{\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \ConditionalCommonCause \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}}^{+}
+        % \cup
+        % \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+        % }
+        {\ConditionalCommonCause}}
+        \eqfinv
+        \label{eq:ConditionalActivePlus}
+      \\
+      \ConditionalActiveMinus
+      &= \ConverseConditionalAscendent \cup
+        \Bp{
+        \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+        \CousinhoodStar %      \bp{
+        % \np{\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \ConditionalCommonCause \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}}^{+}
+        % \cup
+        % \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+        % }
+        \ConverseConditionalAscendent
+        }
+        \eqfinv
+        \label{eq:ConditionalActiveMinus}      
+    \end{align}
+  \end{subequations}
+  satisfy the following properties
+  \begin{subequations}
+    \begin{align}
+      \ConditionalActiveStar
+      &=
+        \Delta \cup \ConditionalActivePlus \cup \ConditionalActiveMinus
+        \eqfinv
+        \label{eq:ConditionalActivePlus_cup_Minus}      
+      \\
+      \ConditionalActivePlus
+      & \supset 
+        \ConditionalActiveMinus \Delta_{\Complementary{\AgentSubsetW}}
+        {\Precedence}
+        \eqfinv
+        \label{eq:ConditionalActivePlus_supset}
+      \\
+      \ConditionalActiveMinus
+      & \supset 
+        \ConditionalActivePlus \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+        \Converse{\Precedence}
+        \eqfinp 
+        \label{eq:ConditionalActiveMinus_supset}        
+    \end{align}
+  \end{subequations}  
+\end{lemma}
+
+\begin{proof}
+  \quad
+
+  \noindent $\bullet$
+  We prove~\eqref{eq:ConditionalActivePlus_cup_Minus} as follows:
+  \begin{align*}
+\ConditionalActiveStar
+      &=
+    \Delta \cup 
+    \ConditionalAscendent \cup \ConverseConditionalAscendent \cup \ConditionalCommonCause
+    \cup
+    \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+    \CousinhoodStar
+        \bp{\ConverseConditionalAscendent \cup \ConverseConditionalCommonCause}
+        \tag{by definition~\eqref{eq:conditional_active_relationStar} of~$\ConditionalActiveStar$}
+\\
+      &=
+    \Delta \cup 
+  \underbrace{  \ConditionalAscendent \cup \ConditionalCommonCause
+       \cup 
+        \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+        \CousinhoodStar {\ConditionalCommonCause} }_{=\ConditionalActivePlus \textrm{by~\eqref{eq:ConditionalActivePlus}}}
+        \cup
+ \underbrace{\ConverseConditionalAscendent \cup
+        \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+        \CousinhoodStar  \ConverseConditionalAscendent  }_{=\ConditionalActiveMinus \textrm{by~\eqref{eq:ConditionalActiveMinus}}}
+\eqfinp               
+  \end{align*}
+
+  \noindent $\bullet$  
+  We prove~\eqref{eq:ConditionalActivePlus_supset} as follows:     
+  \begin{align*}
+    \ConditionalActiveMinus\Delta_{\Complementary{\AgentSubsetW}} {\Precedence}
+    &=
+      \bgp{ \ConverseConditionalAscendent \cup
+      \Bp{
+      \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+      \CousinhoodStar \ConverseConditionalAscendent } }
+      \Delta_{\Complementary{\AgentSubsetW}} {\Precedence}
+      \tag{by definition~\eqref{eq:ConditionalActiveMinus} of~$\ConditionalActiveMinus$}
+    \\
+    &=
+      \bgp{ \Delta \cup 
+      \Bp{
+      \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+      \CousinhoodStar } } 
+      \ConverseConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}} {\Precedence}
+      \tag{by factorizing $\ConverseConditionalAscendent$}
+    \\
+    &\subset 
+      \bgp{ \Delta \cup 
+      \Bp{
+      \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+      \CousinhoodStar } }
+      \ConverseConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}} 
+      \ConditionalAscendent 
+      \tag{as \( \Precedence \subset \ConditionalAscendent \)
+      by~\eqref{eq:conditional_ascendent_relation} }
+    \\
+    & =
+      \bgp{ \Delta \cup 
+      \Bp{
+      \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+      \CousinhoodStar } } 
+      \ConditionalCommonCause
+      \tag{by definition~\eqref{eq:common_cause} of $\ConditionalCommonCause$}
+    \\
+    & =
+      \ConditionalCommonCause \cup 
+      \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+      \CousinhoodStar \ConditionalCommonCause 
+      \tag{by developing}
+    \\        
+    &\subset \ConditionalActivePlus
+      \eqfinp
+      \tag{by definition~\eqref{eq:ConditionalActivePlus} of~$\ConditionalActivePlus$}
+      % \label{eq:subsetC+}
+  \end{align*}
+
+  \noindent $\bullet$  
+  We prove~\eqref{eq:ConditionalActiveMinus_supset} as follows:
+  % \jpc{developed as asked by mdl}
+  \begin{align*}
+    \ConditionalActivePlus \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+    \Converse{\Precedence}
+    &=
+      \bgp{  \ConditionalAscendent \cup \ConditionalCommonCause
+      \cup 
+      \Bp{\bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+      \CousinhoodStar
+      {\ConditionalCommonCause}} } \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+      \Converse{\Precedence}
+      \tag{by definition~\eqref{eq:ConditionalActivePlus} of~$\ConditionalActivePlus$}
+    \\
+    &=
+      \bp{
+      \np{  \ConditionalAscendent \cup \ConditionalCommonCause}
+      \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \Converse{\Precedence}}
+      \cup
+      \bgp{
+      \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+      \CousinhoodStar
+      {\ConditionalCommonCause}
+      \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \Converse{\Precedence}}
+      \tag{by developing}
+      \eqfinp 
+  \end{align*}
+  We treat each of the two terms in the union separately.
+  We are going to show that each term is included in~$\ConditionalActiveMinus$. 
+  
+  For the first term, we have that
+  \begin{align*}
+    \np{\ConditionalAscendent \cup \ConditionalCommonCause }
+    \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+    \Converse{\Precedence}
+    &\subset
+      \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+      \CousinhoodStar
+      \ConverseConditionalAscendent
+      \intertext{as $\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+      \subset \CousinhoodStar$ by~\eqref{eq:CousinhoodStar},
+      and as  $\Converse{\Precedence} \subset
+      \ConverseConditionalAscendent$
+      by~\eqref{eq:converse_conditional_ascendent_relation}}
+    % \\
+    &\subset \ConditionalActiveMinus
+      \eqfinp
+      \tag{as  $\ConditionalActiveMinus
+      = \ConverseConditionalAscendent \cup
+      \bp{
+      \np{\ConditionalAscendent \cup \ConditionalCommonCause} \CousinhoodStar
+      \ConverseConditionalAscendent
+      }$ by definition~\eqref{eq:ConditionalActiveMinus} }
+  \end{align*}
+  For the second term, we have that
+  \begin{align*}
+    &\bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+      \CousinhoodStar
+      {\ConditionalCommonCause}
+      \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \Converse{\Precedence}
+    \\
+    &\hspace{1cm}=
+      \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+      \Bp{
+      \np{\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \ConditionalCommonCause \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}}^{+}
+      \cup
+      \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+      }
+      {\ConditionalCommonCause}
+      \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \Converse{\Precedence}
+      \tag{by definition~\eqref{eq:CousinhoodStar} of $\CousinhoodStar$}
+    \\
+    &\hspace{1cm}=
+      \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+      \bp{
+      \np{\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \ConditionalCommonCause \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}}^{+}
+      \cup
+      \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+      }
+      \bp{\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} {\ConditionalCommonCause}
+      \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+      }
+      \Converse{\Precedence}
+      \tag{by inserting $\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}$}
+    \\
+    &\hspace{1cm}\subset
+      \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+      \bp{
+      \np{\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \ConditionalCommonCause \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}}^{+}
+      \cup
+      \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+      }
+      \Converse{\Precedence}
+      \intertext{as $ \np{ \TransitiveClosure{\relation} \cup 
+      \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} } \relation \subset 
+      \TransitiveClosure{\relation} $ for any relation~$\relation$ such that 
+      $\relation\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}=
+      \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}\relation=\relation$,
+      which is the case for \( \relation=\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \ConditionalCommonCause
+      \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \)}
+    % \\
+    &\hspace{1cm}=
+      \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+      \CousinhoodStar
+      \Converse{\Precedence}
+      \tag{by definition~\eqref{eq:CousinhoodStar} of $\CousinhoodStar$}
+    \\
+    &\hspace{1cm}\subset
+      \bp{\ConditionalAscendent \cup \ConditionalCommonCause}
+      \CousinhoodStar
+      \ConverseConditionalAscendent
+      \tag{as $ \Converse{\Precedence}
+      \subset\ConverseConditionalAscendent$
+      by~\eqref{eq:converse_conditional_ascendent_relation}}
+    \\
+    &\hspace{1cm}\subset \ConditionalActiveMinus
+      \eqfinp
+      \tag{as  $\ConditionalActiveMinus
+      = \ConverseConditionalAscendent \cup
+      \bp{
+      \np{\ConditionalAscendent \cup \ConditionalCommonCause} \CousinhoodStar
+      \ConverseConditionalAscendent
+      }$ by definition~\eqref{eq:ConditionalActiveMinus} }
+  \end{align*}
+  We conclude that 
+  $\ConditionalActivePlus
+  \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+  \Converse{\Precedence} \subset \ConditionalActiveMinus$.
+  \medskip
+
+  This ends the proof. 
+\end{proof}
+
+
+
+% \subsubsubsection{$\ConditionalActive =\ConditionalActive_{*}$}
+
+\begin{lemma}
+  \label{le:cond-act-equals-cond-act-star}
+  We have that
+  \begin{equation}
+    \ConditionalActive =\ConditionalActiveStar
+    \eqfinp
+  \end{equation}
+\end{lemma}
+
+
+\begin{proof}
+  The proofs is in three steps.
+  \medskip
+
+  \noindent $\bullet$
+  We prove that
+  \begin{align}
+    \forall \relation \subset \AGENT\times\AGENT \eqsepv
+    \forall \Bgent \subset \AGENT \eqsepv
+    \TransitiveReflexiveClosure{\relation}{\Bgent}
+    & =
+      \npTransitiveReflexiveClosure{\Delta_{\Complementary{\Bgent}}\relation} \Bgent 
+      \eqfinp
+      \label{eq:R-kleene-G-equals}
+  \end{align}
+  % for any relation $\relation \subset \VERTEX{\times}\VERTEX$ and any
+  % subset $\Bgent \subset \VERTEX$ of vertices we have 
+  % \begin{equation}
+  %   \TransitiveReflexiveClosure{\relation}{\Bgent}
+  %   =  \npTransitiveReflexiveClosure{\Delta_{\Complementary{\Bgent}}\relation}
+  %   \Bgent
+  %   \eqfinp
+  %   \label{eq:foreset-property}
+  % \end{equation}
+  For this purpose, we prove
+  the following induction assumption~\( {\cal H}_n \): 
+  for any $n\ge 1$, we have that $\np{\cup_{k=0}^n \relation^k}\Bgent
+  =  \bp{ \cup_{k=0}^n \np{\Delta_{\Complementary{\Bgent}} \relation}^k
+  }\Bgent$, where we recall the convention $\relation^0=\Delta$.
+
+  As a preliminary result, for any \( \Bgent, \Cgent\subset \AGENT \),
+  from the sequence of equalities
+  \( \np{\Delta \Bgent} \cup \np{\relation \Cgent}
+  = \Bgent \cup \bp{ \np{\relation \Cgent} \backslash \Bgent}
+  % \\
+  = \Bgent \cup  \np{\Delta_{\Complementary{\Bgent}} \relation \Cgent}
+  % \\
+  =\np{\Delta \Bgent} \cup  \np{\Delta_{\Complementary{\Bgent}} \relation
+    \Cgent} \), we deduce that
+  \begin{equation}
+    \np{\Delta \Bgent} \cup \np{\relation \Cgent}=
+    \np{\Delta \Bgent} \cup  \np{\Delta_{\Complementary{\Bgent}} \relation \Cgent}
+    \eqfinp    
+    \label{eq:preliminary_result}
+    \end{equation}
+  Thus, with \( \Cgent=\Bgent \), we obtain that $\np{\cup_{k=0}^1 \relation^k}\Bgent
+  =  \bp{ \cup_{k=0}^1 \np{\Delta_{\Complementary{\Bgent}} \relation}^k
+  }\Bgent$, that is, assumption~\( {\cal H}_1 \) holds true. 
+  
+  Now, we suppose that, for a given $n\ge 1$, the induction assumption~\( {\cal H}_n
+  \) holds true. Then, we have that 
+  \begin{align*}
+    \np{\cup_{k=0}^{n+1} \relation^k}\Bgent
+    &=
+      \np{\Delta \Bgent} \cup
+      \Bp{\relation \bp{\np{\cup_{k=0}^n \relation^k}}\Bgent}
+      \tag{using the convention $\relation^0=\Delta$}
+    \\
+    &=
+      \np{\Delta \Bgent} \cup
+      \Bp{\Delta_{\Complementary{\Bgent}} \relation \bp{\np{\cup_{k=0}^n \relation^k}}\Bgent}
+      \intertext{using the preliminary result~\eqref{eq:preliminary_result}
+      but with the binary relation \( \relation \bp{\np{\cup_{k=0}^n
+      \relation^k}} \)}
+ %   \\
+    &=
+      \np{\Delta \Bgent} \cup
+      \bgp{\Delta_{\Complementary{\Bgent}} \relation
+      \bp{ \cup_{k=0}^n \np{\Delta_{\Complementary{\Bgent}} \relation}^k }\Bgent}
+      \tag{using the induction assumption~\( {\cal H}_n \)}
+    \\
+    &=
+      \np{\Delta \Bgent} \cup \Bp{
+      \bp{ \cup_{k=1}^{n+1} \np{\Delta_{\Complementary{\Bgent}} \relation}^k }\Bgent}
+    \\
+    &=
+      \bp{ \cup_{k=0}^{n+1} \np{\Delta_{\Complementary{\Bgent}} \relation}^k }\Bgent
+      \eqfinp
+      \tag{as \( \np{\Delta_{\Complementary{\Bgent}} \relation}^0 =\Delta\)}
+  \end{align*}
+  Thus, we have proven the induction assumption~\( {\cal H}_{n+1} \).
+\medskip
+  % Now, for $n=1$ we have using the preliminary equality that
+  % $\np{\Delta \cup \relation}\Bgent=\np{\Delta \Bgent} \cup \np{\relation \Bgent} =
+  % \np{\Delta \Bgent} \cup \bp{\np{\Delta_{\Complementary{\Bgent}}\relation} \Bgent}=
+  % \bp{\Delta \cup \np{\Delta_{\Complementary{\Bgent}}\relation}}\Bgent$.
+
+  Now, let us suppose that $\bgent \in
+  \TransitiveReflexiveClosure{\relation}\Bgent$. Then, there exists an integer $n\ge 1$ 
+  such that $\bgent \in \np{\cup_{k=0}^n \relation^k}\Bgent$; using the just
+  proven property~\( {\cal H}_n \), we get that
+  $\bgent \in \bp{ \cup_{k=0}^{n} \np{\Delta_{\Complementary{\Bgent}} \relation}^k }\Bgent$ and, therefore,
+  $\bgent \in
+  \npTransitiveReflexiveClosure{\Delta_{\Complementary{\Bgent}}\relation}\Bgent$.
+  Thus, we have shown that
+  $ \TransitiveReflexiveClosure{\relation}\Bgent \subset
+  \npTransitiveReflexiveClosure{\Delta_{\Complementary{\Bgent}}\relation}\Bgent$.
+  The converse inclusion is easier to prove as
+  \( \Delta_{\Complementary{\Bgent}}\relation \subset\relation \).
+  Finally, we have shown the equality
+  $ \TransitiveReflexiveClosure{\relation}\Bgent =
+  \npTransitiveReflexiveClosure{\Delta_{\Complementary{\Bgent}}\relation}\Bgent$,
+  which is~\eqref{eq:R-kleene-G-equals}.
+  \medskip
+  
+  \noindent $\bullet$
+  The following inclusion is easy to prove:
+  \begin{align}
+    \forall \relation \subset \AGENT\times\AGENT \eqsepv
+    \forall \Bgent \subset \AGENT \eqsepv
+    \Delta_{\relation\Bgent} 
+    &\subset 
+      \relation\Delta_{\Bgent}\Converse{\relation}
+      \eqfinp
+      \label{eq:delta-R-G-subset-R-delta-G-Rinv}
+  \end{align}
+%  \medskip
+  
+  \noindent $\bullet$
+  We prove that
+  \begin{align}
+    \TransitiveReflexiveClosureParentalPrecedence  \Delta_{\AgentSubsetW}
+    \TransitiveReflexiveClosureConverseParentalPrecedence
+    & =
+      \TransitiveReflexiveClosureParentalPrecedence \Delta_{\np{\TransitiveReflexiveClosure{\Precedence}\AgentSubsetW}}
+      \TransitiveReflexiveClosureConverseParentalPrecedence\eqfinp
+      \label{eq:star-no-star}
+  \end{align}
+  Using Equation~\eqref{eq:R-kleene-G-equals} with $\relation{=}\Precedence$ and
+  $\Bgent{=}\AgentSubsetW$ gives
+  $\TransitiveReflexiveClosure{\Precedence}\AgentSubsetW
+  =\npTransitiveReflexiveClosure{\Delta_{\Complementary{\AgentSubsetW}}\Precedence}
+  \AgentSubsetW = \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW$.
+  Combined with the Inclusion~\eqref{eq:delta-R-G-subset-R-delta-G-Rinv}, we get
+  \( \Delta_{\TransitiveReflexiveClosure{\Precedence}\AgentSubsetW} 
+  = \Delta_{\TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW} 
+  \subset \TransitiveReflexiveClosureParentalPrecedence \Delta_{\AgentSubsetW}
+  \TransitiveReflexiveClosureConverseParentalPrecedence
+  \). 
+  Thus, we obtain that 
+  \begin{align*}
+    \TransitiveReflexiveClosureParentalPrecedence  \Delta_{\np{\TransitiveReflexiveClosure{\Precedence}\AgentSubsetW}}\TransitiveReflexiveClosureConverseParentalPrecedence
+    & \subset\TransitiveReflexiveClosureParentalPrecedence
+      \np{\TransitiveReflexiveClosureParentalPrecedence \Delta_{\AgentSubsetW} \TransitiveReflexiveClosureConverseParentalPrecedence} 
+      \TransitiveReflexiveClosureConverseParentalPrecedence
+      =%\subset
+      {\TransitiveReflexiveClosureParentalPrecedence \Delta_{\AgentSubsetW} \TransitiveReflexiveClosureConverseParentalPrecedence}\eqfinp
+  \end{align*}
+  Thus, we have obtained the inclusion
+  \(
+  \TransitiveReflexiveClosureParentalPrecedence  \Delta_{\AgentSubsetW}
+  \TransitiveReflexiveClosureConverseParentalPrecedence
+  \supset
+  \TransitiveReflexiveClosureParentalPrecedence \Delta_{\np{\TransitiveReflexiveClosure{\Precedence}\AgentSubsetW}}
+  \TransitiveReflexiveClosureConverseParentalPrecedence
+  \).
+  The reverse inclusion  follows from the fact that
+  \(\AgentSubsetW \subset  \TransitiveReflexiveClosureOfSet{\AgentSubsetW}=
+  \TransitiveReflexiveClosure{\EDGE}\AgentSubsetW \)
+  by~\eqref{eq:TransitiveReflexiveClosure_AgentSubsetW},   
+  which gives
+  \(
+  \TransitiveReflexiveClosureParentalPrecedence  \Delta_{\AgentSubsetW}\TransitiveReflexiveClosureConverseParentalPrecedence
+  \subset 
+  \TransitiveReflexiveClosureParentalPrecedence \Delta_{\np{\TransitiveReflexiveClosure{\Precedence}\AgentSubsetW}}\TransitiveReflexiveClosureConverseParentalPrecedence
+  \).
+
+  \medskip
+  \noindent $\bullet$
+  Finally, we prove that
+  $\ConditionalActive =\ConditionalActiveStar$. For that purpose, it suffices
+  to show that replacing the subexpressions $\Delta_{\AgentSubsetW}$ by
+  $\Delta_{\np{\TransitiveReflexiveClosure{\Precedence}\AgentSubsetW}}$ in the
+  expression~\eqref{eq:conditional_active_relation} of $\ConditionalActive$ does not change the relation. Using the
+  definition of $\ConditionalActive$ in
+  Equation~\eqref{eq:conditional_active_relation}, we obtain that
+  $\Delta_{\AgentSubsetW}$ appears only in subexpressions of the form
+  $\ConditionalAscendent \Delta_{\AgentSubsetW} \ConverseConditionalAscendent$
+  or
+  $\ConditionalCommonCause \Delta_{\AgentSubsetW} \ConverseConditionalAscendent$
+  or $\ConditionalAscendent \Delta_{\AgentSubsetW} \ConditionalCommonCause$ or
+  $\ConditionalCommonCause \Delta_{\AgentSubsetW} \ConditionalCommonCause$. Now,
+  using the fact that the two relations $\ConditionalAscendent$ and
+  $\ConditionalCommonCause$ always end with
+  $\TransitiveReflexiveClosureParentalPrecedence$ and the two relation
+  $\ConverseConditionalAscendent$ and $\ConditionalCommonCause$ always start with
+  $\TransitiveReflexiveClosureConverseParentalPrecedence$ we obtain that
+  $\Delta_{\AgentSubsetW}$ appears only in subexpressions of the form
+  $\TransitiveReflexiveClosureParentalPrecedence \Delta_{\AgentSubsetW}
+  \TransitiveReflexiveClosureConverseParentalPrecedence$.  We conclude, using
+  Equation~\eqref{eq:star-no-star}, that $\Delta_{\AgentSubsetW}$ can be
+  replaced by
+  $\Delta_{\np{\TransitiveReflexiveClosure{\Precedence}\AgentSubsetW}}$ in
+  $\ConditionalActive$ without changing the relation.
+  \medskip
+
+  This ends the proof.
+\end{proof}
+
+
+
+\section{Proof of Theorem~\ref{th:ConditionalDirectionalSeparation_IFF_relation}}
+\label{Proof_of_Theorem}
+
+The proof of Theorem~\ref{th:ConditionalDirectionalSeparation_IFF_relation}
+relies on the following
+Proposition~\ref{pr:ConditionalDirectionalSeparation_seilpmi_relation}
+(itself based on Lemmas~\ref{lem:BlockedUndirectedPaths_elementary} and~\ref{lem:ConditionalDirectionalSeparation_seilpmi_relation-two})
+and on Lemma~\ref{lem:induction-lemma}, that we are going to prove. 
+
+The following Lemma~\ref{lem:BlockedUndirectedPaths_elementary}
+displays elementary relational patterns (composition of relations)
+whose deployment in paths contain active \undirectedEdgePaths.
+% 
+The binary relations below have been introduced in Definition~\ref{de:all_the_relations},
+except for the two additional ones defined in~\eqref{eq:CousinhoodStar}
+and in~\eqref{eq:conditional_active_relationStar}. 
+% 
+For any integer \( n\geq 1\), we denote by \( \1_{n}=\np{+1,\ldots,+1} \)
+(resp. \( -\1_{n}=\np{-1,\ldots,-1} \)) the vector of length~$n$ made of~$+1$ (resp. of~$-1$).
+%
+We recall that the deployment~\( \DeploymentInUPaths{\relation}{\OrientedGraph}
+\) in \undirectedEdgePaths\ of a binary relation~$\relation$ has been defined
+in~\eqref{eq:DeploymentInUPaths}%
+\ifpreprint
+, and the intermediate vertices~$\Internals_{\UPATH}$ 
+of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
+\fi
+.
+\ifpreprint 
+\begin{lemma}
+  \label{lem:BlockedUndirectedPaths_elementary}
+  Let \( \npOrientedGraph \) be a graph, 
+  and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.
+  For any two vertices $\bgent$, $\cgent\in \VERTEX$, we have 
+  \begin{subequations}
+    \begin{align}
+      \bgent \ConditionalAscendent\cgent 
+      \implies & 
+                 \mtext{there exists } \UndirectedPath \in \UPATH\np{\OrientedGraph}
+                 \mtext{ such that }
+                 \nonumber \\
+               & 
+                 \bp{\path, \1_{\cardinal{\path}} } 
+                 \in 
+                 \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph} 
+                 \cap \ActiveUndirectedPaths{\OrientedGraph} %\neq\emptyset
+                 \nonumber 
+      \\
+               & 
+                 \text{and }
+                 \Internals_{\UPATH}\np{\UndirectedPath} \subset \TransitiveClosureParentalPrecedence \cgent
+                 \eqfinv
+                 \label{eq:BlockedUndirectedPaths_elementary_Delta_ComplementaryAgentSubsetW_EDGE} 
+      \\
+      \bgent \ConverseConditionalAscendent\cgent 
+      \implies
+               & 
+                 \mtext{there exists }\UndirectedPath \in \UPATH\np{\OrientedGraph}
+                 \mtext{ such that }
+                 \nonumber \\
+               & 
+                 \bp{\path, -\1_{\cardinal{\path}} } 
+                 \in 
+                 \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph} 
+                 \cap \ActiveUndirectedPaths{\OrientedGraph}
+                 \nonumber \\                                      % PREPRINTONLY
+               &                                                   % PREPRINTONLY
+                 \text{and }                                       % PREPRINTONLY
+                 \Internals_{\UPATH}\np{\UndirectedPath} \subset    % PREPRINTONLY
+                 \TransitiveClosureParentalPrecedence \bgent       % PREPRINTONLY
+                 \eqfinv
+                 \label{eq:BlockedUndirectedPaths_elementary_Converse_EDGE_Delta_ComplementaryAgentSubsetW} 
+      \\
+      \bgent\ConditionalCommonCause\cgent
+      \implies
+               & 
+                 \mtext{there exists }\UndirectedPath=\np{\path,\orient} \in
+                 \UPATH\np{\OrientedGraph},
+                 \mtext{with } \cardinal{\UndirectedPath} \geq 2
+                 \nonumber \\
+               & \mtext{and } \orient=\np{-1,\ldots,+1} 
+                 \in \na{-1}\times\na{-1,+1}^{\cardinal{\UndirectedPath}-2}\times\na{+1},
+                 \mtext{ such that}
+                 \nonumber \\
+               & 
+                 \UndirectedPath=\np{\path,\orient}=\bp{\path, \np{-1,\ldots,+1} } 
+                 \in 
+                 \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph}
+                 \cap \ActiveUndirectedPaths{\OrientedGraph} %\neq\emptyset
+                 \nonumber \\  % PREPRINTONLY
+               & % PREPRINTONLY
+                 \text{and }% PREPRINTONLY
+                 \Internals_{\UPATH}\np{\UndirectedPath} \subset% PREPRINTONLY
+                 \TransitiveClosureParentalPrecedence \na{\bgent,\cgent}% PREPRINTONLY
+                 % \TopologicalClosure{\AgentSubsetW}{\na{\bgent,\cgent}} % PREPRINTONLY
+                 \eqfinv
+                 \label{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_Converse_EDGE_Delta_ComplementaryAgentSubsetW} 
+      \\
+      \bgent\CousinhoodStar\cgent
+      \implies
+               & 
+                 \bgent \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW}, \,
+                 \cgent \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \mtext{ and }
+                 \bgent = \cgent \mtext{ or }
+                 \nonumber \\
+               & 
+                 \mtext{there exists }\UndirectedPath=\np{\path,\orient} \in \UPATH\np{\OrientedGraph},
+                 \mtext{with } \cardinal{\UndirectedPath} \geq 2                
+                 \nonumber \\
+               & \mtext{and } \orient=\np{-1,\ldots,+1} 
+                 \in \na{-1}\times\na{-1,+1}^{\cardinal{\UndirectedPath}-2}\times\na{+1},
+                 \mtext{ such that}
+                 \nonumber \\
+               & 
+                 \UndirectedPath=\np{\path,\orient}=\bp{\path, \np{-1,\ldots,+1} } 
+                 \in 
+                 \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph}
+                 \cap \ActiveUndirectedPaths{\OrientedGraph} % \neq\emptyset
+                 \nonumber \\ % PREPRINTONLY
+               & % PREPRINTONLY
+                 \text{and } \Internals_{\UPATH}\np{\UndirectedPath} \subset% PREPRINTONLY
+                 \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW% PREPRINTONLY
+                 \eqfinp
+                 \label{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_TransitiveClosure}
+    \end{align}
+    \ifpreprint 
+      Moreover, in Implication~\eqref{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_TransitiveClosure},
+      if a vertice $\dgent\in\Internals_{\UPATH}\np{\UndirectedPath} $ belongs
+      to~$\AgentSubsetW$,
+      it necessarily appears in a subpath of $\UndirectedPath$ of the form
+      \(
+      { \Bp{ \bp{ \np{\tail{\vertex},\dgent},  \np{\dgent, \head{\vertex} }
+          },\np{+1,-1} } }
+      \).
+    \fi 
+  \end{subequations}
+\end{lemma}
+
+\else 
+
+\begin{lemma}
+  \label{lem:BlockedUndirectedPaths_elementary}
+  Let \( \npOrientedGraph \) be a graph, 
+  and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.
+  For any two vertices $\bgent$, $\cgent\in \VERTEX$, we have 
+  \begin{subequations}
+    \begin{align}
+      \bgent \ConditionalAscendent\cgent 
+      \implies & 
+                 \mtext{there exists } \UndirectedPath \in \UPATH\np{\OrientedGraph}
+                 \mtext{ such that }
+                 \nonumber \\
+               & 
+                 \bp{\path, \1_{\cardinal{\path}} } 
+                 \in 
+                 \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph} 
+                 \cap \ActiveUndirectedPaths{\OrientedGraph} %\neq\emptyset
+                 % \nonumber 
+                 % \\
+                 % & 
+                 % \text{and }
+                 % \Internals_{\UPATH}\np{\UndirectedPath} \subset \TransitiveClosureParentalPrecedence \cgent
+                     \eqfinv
+                     \label{eq:BlockedUndirectedPaths_elementary_Delta_ComplementaryAgentSubsetW_EDGE} 
+      \\
+      \bgent \ConverseConditionalAscendent\cgent 
+      \implies
+               & 
+                 \mtext{there exists }\UndirectedPath \in \UPATH\np{\OrientedGraph}
+                 \mtext{ such that }
+                 \nonumber \\
+               & 
+                 \bp{\path, -\1_{\cardinal{\path}} } 
+                 \in 
+                 \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph} 
+                 \cap \ActiveUndirectedPaths{\OrientedGraph}
+                 % \nonumber \\                                      % PREPRINTONLY
+                 % &                                                   % PREPRINTONLY
+                 % \text{and }                                       % PREPRINTONLY
+                 % \Internals_{\UPATH}\np{\UndirectedPath} \subset    % PREPRINTONLY
+                 % \TransitiveClosureParentalPrecedence \bgent       % PREPRINTONLY
+                     \eqfinv
+                     \label{eq:BlockedUndirectedPaths_elementary_Converse_EDGE_Delta_ComplementaryAgentSubsetW} 
+      \\
+      \bgent\ConditionalCommonCause\cgent
+      \implies
+               & 
+                 \mtext{there exists }\UndirectedPath=\np{\path,\orient} \in
+                 \UPATH\np{\OrientedGraph},
+                 \mtext{with } \cardinal{\UndirectedPath} \geq 2
+                 \nonumber \\
+               & \mtext{and } \orient=\np{-1,\ldots,+1} 
+                 \in \na{-1}\times\na{-1,+1}^{\cardinal{\UndirectedPath}-2}\times\na{+1},
+                 \mtext{ such that}
+                 \nonumber \\
+               & 
+                 \UndirectedPath=\np{\path,\orient}=\bp{\path, \np{-1,\ldots,+1} } 
+                 \in 
+                 \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph}
+                 \cap \ActiveUndirectedPaths{\OrientedGraph} %\neq\emptyset
+                 % \nonumber \\  % PREPRINTONLY
+                 % & % PREPRINTONLY
+                 % \text{and }% PREPRINTONLY
+                 % \Internals_{\UPATH}\np{\UndirectedPath} \subset% PREPRINTONLY
+                 % \TransitiveClosureParentalPrecedence \na{\bgent,\cgent}% PREPRINTONLY
+                     \eqfinv
+                     \label{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_Converse_EDGE_Delta_ComplementaryAgentSubsetW} 
+      \\
+      \bgent\CousinhoodStar\cgent
+      \implies
+               & 
+                 \bgent \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW}, \,
+                 \cgent \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \mtext{ and }
+                 \nonumber \\
+               & 
+                 \mtext{there exists }\UndirectedPath=\np{\path,\orient} \in \UPATH\np{\OrientedGraph},
+                 \mtext{with } \cardinal{\UndirectedPath} \geq 2                
+                 \nonumber \\
+               & \mtext{and } \orient=\np{-1,\ldots,+1} 
+                 \in \na{-1}\times\na{-1,+1}^{\cardinal{\UndirectedPath}-2}\times\na{+1},
+                 \mtext{ such that}
+                 \nonumber \\
+               & 
+                 \UndirectedPath=\np{\path,\orient}=\bp{\path, \np{-1,\ldots,+1} } 
+                 \in 
+                 \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph}
+                 \cap \ActiveUndirectedPaths{\OrientedGraph} % \neq\emptyset
+                 % \nonumber \\ % PREPRINTONLY
+                 % & % PREPRINTONLY
+                 % \text{and } \Internals_{\UPATH}\np{\UndirectedPath} \subset% PREPRINTONLY
+                 % \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW% PREPRINTONLY
+                     \eqfinp
+                     \label{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_TransitiveClosure}
+    \end{align}
+    \ifpreprint 
+    Moreover, in Implication~\eqref{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_TransitiveClosure},
+    if a vertice $\dgent\in\Internals_{\UPATH}\np{\UndirectedPath} $ belongs
+    to~$\AgentSubsetW$,
+    it necessarily appears in a subpath of $\UndirectedPath$ of the form
+    \(
+    { \Bp{ \bp{ \np{\tail{\vertex},\dgent},  \np{\dgent, \head{\vertex} }
+        },\np{+1,-1} } }
+    \).
+    \fi 
+  \end{subequations}
+\end{lemma}
+\fi 
+
+\begin{proof} \quad 
+
+  \noindent $\bullet$ 
+  We prove the implication~\eqref{eq:BlockedUndirectedPaths_elementary_Delta_ComplementaryAgentSubsetW_EDGE}.
+  Let $\bgent$, $\cgent\in \VERTEX$ be such that
+  \( \bgent \ConditionalAscendent\cgent \).   
+  By~\eqref{eq:conditional_ascendent_relation}, we have that
+  \( \ConditionalAscendent\cgent =
+  \EDGE\npTransitiveReflexiveClosure{\Delta_{\Complementary{\AgentSubsetW}}\EDGE}\),
+  hence that \( \bgent
+  \EDGE\npTransitiveReflexiveClosure{\Delta_{\Complementary{\AgentSubsetW}}\EDGE}\cgent
+  \).
+  %
+    As \( \npTransitiveReflexiveClosure{\Delta_{\Complementary{\AgentSubsetW}}\EDGE}=
+  \Delta \cup \cup_{n=1}^{\infty}
+  \np{\Delta_{\Complementary{\AgentSubsetW}}\EDGE}^{n} \) by definition, 
+  if \( \bgent \EDGE\npTransitiveReflexiveClosure{\Delta_{\Complementary{\AgentSubsetW}}\EDGE}\cgent \),
+  then either 
+  \( \bgent \EDGE \cgent \)
+  or there exists $n\geq 1$ such that 
+  \( \bgent \EDGE\np{\Delta_{\Complementary{\AgentSubsetW}}\EDGE}^{n} \cgent \).
+  Thus, we consider two cases.
+
+  If \( \bgent \EDGE \cgent \),
+  the \undirectedEdgePath\ \( \bp{ \np{\bgent,\cgent}, +1 } \)
+  is both in \( \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph} \),
+  by definition~\eqref{eq:DeploymentInUPaths},
+  and belongs to~\( \ActiveUndirectedPaths{\OrientedGraph} \),
+  as it is of length~1 hence is active (see Definition~\ref{de:ActivePaths}). 
+
+  If \( \bgent\EDGE \np{\Delta_{\Complementary{\AgentSubsetW}}\EDGE}^{n} \cgent \),
+  with $n\geq 1$, then 
+  there exists a sequence \( \sequence{\vertex_i}{i\in\ic{0,n+1}} \) in~$\VERTEX$ such that 
+  \( \vertex_{0}=\bgent \), \( \vertex_{n+1}=\cgent \), 
+  and 
+  \( \vertex_{i-1} \EDGE \vertex_{i} \),
+  \( \vertex_{i} \in \Complementary{\AgentSubsetW} \),
+  \( \vertex_{i} \EDGE \vertex_{i+1} \),
+  for $i\in\ic{1,n}$.
+  The following 
+  \( \UndirectedPath= \bp{\sequence{ \np{\vertex_i,\vertex_{i+1}}
+    }{i\in\ic{0,n}}, \1_{n+1} } \)
+  is an \undirectedEdgePath\ that 
+  belongs to
+  \( \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph} \),
+  as \( \Projection\np{\UndirectedPath}=\np{\bgent,\cgent} \),
+  and also to~\( \ActiveUndirectedPaths{\OrientedGraph} \).
+  Indeed, all the \undirectedEdgeSubPaths \\
+  \( \Bp{ \bp{ \np{\vertex_{i-1},\vertex_{i}},
+      \np{\vertex_{i},\vertex_{i+1}} }, \np{+1,+1} } \)
+  for $i\in\ic{1,n}$, satisfy Item~\ref{it:ActivePaths_case1} in
+  Definition~\ref{de:ActivePaths} 
+  because \( \vertex_{i} \in \Complementary{\AgentSubsetW} \).
+  \ifpreprint
+  It remains to show that
+  $\Internals_{\UPATH}\np{\UndirectedPath} \subset\TransitiveClosureParentalPrecedence \cgent$.
+  This inclusion easily follows from the fact that,
+  by definition~\eqref{eq:Internals_PATH} of the intermediate vertices,
+  we have that \( \Internals_{\UPATH}\np{\UndirectedPath} =
+  \na{ \vertex_{2}, \ldots, \vertex_{n-1} } \) where
+  \( \vertex_{n-1} \in \Complementary{\AgentSubsetW}\cap\EDGE\cgent
+  = \Delta_{\Complementary{\AgentSubsetW}}\EDGE\cgent
+  = \ParentalPrecedence\cgent  \subset \TransitiveClosureParentalPrecedence
+  \cgent \),
+  \ldots,
+  \( \vertex_{n-k} \in \np{\ParentalPrecedence}^k\cgent  \subset \TransitiveClosureParentalPrecedence \cgent \), 
+  \ldots,   \( \vertex_{2} \in \np{\ParentalPrecedence}^{n-2}\cgent
+  \subset \TransitiveClosureParentalPrecedence \cgent \).
+  \fi 
+  \medskip
+  
+  
+  \noindent $\bullet$ 
+  We prove the implication~\eqref{eq:BlockedUndirectedPaths_elementary_Converse_EDGE_Delta_ComplementaryAgentSubsetW}
+  in the same way
+  (here, all the \undirectedEdgeSubPaths\ satisfy Item~\ref{it:ActivePaths_case2} in
+  Definition~\ref{de:ActivePaths}).
+  \medskip
+
+  
+  \noindent $\bullet$ 
+  We
+  prove the implication~\eqref{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_Converse_EDGE_Delta_ComplementaryAgentSubsetW}.
+  Let $\bgent$, $\cgent\in \VERTEX$ be such that
+  \( \bgent\ConditionalCommonCause\cgent \).
+  By definition~\eqref{eq:common_cause} of \(\ConditionalCommonCause\),
+  we obtain that \( \bgent \ConverseConditionalAscendent
+  \Delta_{\Complementary{\AgentSubsetW}} \ConditionalAscendent \cgent \).
+  As a consequence of the definition of the composition of relations, 
+  % Therefore,
+  % if \( \bgent \npTransitiveClosure{\Converse{\EDGE} \Delta_{\Complementary{\AgentSubsetW}} }
+  % \npTransitiveClosure{\Delta_{\Complementary{\AgentSubsetW}}\EDGE}\cgent \),
+  % then, 
+  there exists \( \dgent \in \Complementary{\AgentSubsetW} \) such that 
+  \( \bgent
+  \ConverseConditionalAscendent
+  \dgent \)
+  and
+  \( \dgent  \ConditionalAscendent \cgent \).
+  Thus, by~\eqref{eq:BlockedUndirectedPaths_elementary_Converse_EDGE_Delta_ComplementaryAgentSubsetW},
+  there exists \( \UndirectedPathbis =\bp{\pathbis, -\1_{\cardinal{\pathbis}} } 
+  \in \DeploymentInUPaths{\np{\bgent,\dgent}}{\OrientedGraph} 
+  \cap \ActiveUndirectedPaths{\OrientedGraph}\) and
+  by~\eqref{eq:BlockedUndirectedPaths_elementary_Delta_ComplementaryAgentSubsetW_EDGE},
+  there exists \( \UndirectedPathter =\bp{\pathter,  \1_{\cardinal{\pathter}} }
+  \in \DeploymentInUPaths{\np{\dgent,\cgent}}{\OrientedGraph} 
+  \cap \ActiveUndirectedPaths{\OrientedGraph} \).
+  % 
+  We consider the \undirectedEdgePath\ 
+  \( \UndirectedPath = \UndirectedPathbis \ltimes \UndirectedPathter  \in
+  \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph} \)
+  obtained by concatenation as in~\eqref{eq:concatenation_UndirectedPath},
+  and which is such that \( \cardinal{\UndirectedPath} \geq 2 \). 
+  We claim that \( \UndirectedPath \in
+  \ActiveUndirectedPaths{\OrientedGraph} \).
+  Indeed, \( \UndirectedPathbis \in
+  \ActiveUndirectedPaths{\OrientedGraph} \)
+  and \(\UndirectedPathter \in
+  \ActiveUndirectedPaths{\OrientedGraph} \)
+  by assumption, so that, by
+  Equation~\eqref{eq:ActiveUndirectedPaths_subpaths_junctions_when_reconcatenating} in
+  Lemma~\ref{lem:ActiveUndirectedPaths_subpaths_junctions_when_reconcatenating},
+  it only remains to show that 
+  \[
+    \Bp{ \bp{ \np{\vertexbis,\dgent},  \np{\dgent, \vertexter } },
+      \np{-1,+1} } =
+    {\Head{\ProjectionUndirectedPath}\np{\UndirectedPathbis}
+      \ltimes
+      \Tail{\ProjectionUndirectedPath}\np{\UndirectedPathter}}
+    \in \ActiveUndirectedPaths{\OrientedGraph}
+    \eqfinv
+  \]
+  where 
+  % the triplet \( \np{\vertexbis,\dgent, \vertexter } \), where 
+  \( \np{\vertexbis,\dgent} \) is the first edge of the \undirectedEdgePath\ 
+  \( \UndirectedPathbis = \bp{\pathbis, -\1_{\cardinal{\pathbis}} } \) and 
+  \( \np{\dgent, \vertexter } \) is the last edge of the \undirectedEdgePath\ 
+  \( \UndirectedPathter =\bp{\pathter,  \1_{\cardinal{\pathter}} } \).
+  % By assumption on \( \UndirectedPathbis \) and \( \UndirectedPathter\),
+  % the \undirectedEdgePath\ 
+  % \( \UndirectedPath = \UndirectedPathbis \ltimes \UndirectedPathter\) contains the couple
+  % \( \Bp{ \bp{ \np{\vertexbis,\dgent},  \np{\dgent, \vertexter } },
+  % \np{-1,+1} } \), where \( \dgent \in \Complementary{\AgentSubsetW} \).
+  Now, the above subpath satisfies Item~\ref{it:ActivePaths_case3} in
+  Definition~\ref{de:ActivePaths} 
+  because \( \vertex_{i} \in \Complementary{\AgentSubsetW} \).
+  % 
+  % Now, the above subpath pattern corresponds to
+  % none of the four cases in
+  % Definition~\ref{de:ActivePaths},
+  % because \( \dgent \in \Complementary{\AgentSubsetW} \)
+  % for the first three cases,
+  % and because of the orientation \( \np{-1,+1} \)
+  % for the last fourth case.
+  We deduce that \( \UndirectedPath = \UndirectedPathbis \ltimes
+  \UndirectedPathter
+  = \Bp{ \np{\pathbis,\pathter}, 
+    \bp{ -\1_{\cardinal{\pathbis}}, \1_{\cardinal{\pathter}} } } \in 
+  \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph}
+  \cap \ActiveUndirectedPaths{\OrientedGraph} \).
+  \ifpreprint 
+  It remains to show that 
+  $\Internals_{\UPATH}\np{\UndirectedPath} \subset
+  \TransitiveClosureParentalPrecedence \na{\bgent,\cgent} $
+  but this comes from~\eqref{eq:Internals_PATH_concatenation} which gives
+  \[
+    \Internals_{\UPATH}\np{\UndirectedPath} = 
+    \underbrace{\Internals_{\UPATH}\np{\UndirectedPathbis}}_{\subset
+      \TransitiveClosureParentalPrecedence\bgent}
+    \cup
+    \overbrace{ \na{\dgent} }^{\subset \TransitiveClosureParentalPrecedence\bgent
+      \cap \TransitiveClosureParentalPrecedence\cgent}
+    \cup
+    \underbrace{\Internals_{\UPATH}\np{\UndirectedPathter}}_{\subset
+      \TransitiveClosureParentalPrecedence\cgent}
+    \subset
+    \TransitiveClosureParentalPrecedence\bgent
+    \cup \np{ \TransitiveClosureParentalPrecedence\bgent
+      \cap \TransitiveClosureParentalPrecedence\cgent}
+    \cup
+    \TransitiveClosureParentalPrecedence\cgent
+    = \TransitiveClosureParentalPrecedence \na{\bgent,\cgent} 
+    \eqfinp
+  \]
+  % This inclusion follows from the fact that
+  % the intermediate and first vertice of the path $\UndirectedPathter$ are in
+  % $\Complementary{\AgentSubsetW}$ and are all ancestors of the node ${\cgent}$ for the relation $\Precedence$
+  % while the intermediate and last vertice of the path $\UndirectedPathbis$ are in
+  % $\Complementary{\AgentSubsetW}$ and are all ancestors of the node ${\bgent}$ for the relation $\Precedence$.
+  \fi
+  \medskip
+
+  \noindent $\bullet$ 
+  We
+  prove the implication~\eqref{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_TransitiveClosure}.
+  We suppose that \( \bgent\CousinhoodStar\cgent \).
+  As \( \CousinhoodStar =
+  \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+  \cup  \bpTransitiveClosure{ \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+    \ConditionalCommonCause \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} } \)
+  by~\eqref{eq:CousinhoodStar},
+  we consider three cases:
+  either \( \bgent\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}\cgent \),
+  or  \( \bgent
+  \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}\ConditionalCommonCause
+  \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \cgent \)
+  or there exists $n \geq 1$ such that 
+  \( \bgent \bp{\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+    \ConditionalCommonCause
+    \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}}^{n+1} \cgent \).
+
+  Suppose that \( \bgent\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}\cgent \).
+  Then \( \bgent=\cgent \), and thus the \undirectedEdgePath\ 
+  \( \UndirectedPath = \bp{\np{\bgent,\cgent}, +1} \in \UPATH^0\np{\OrientedGraph} \) is active as
+  any \undirectedEdgePath\ of length~0 or 1 is active by
+  Definition~\ref{de:ActivePaths}
+  and by~\eqref{eq:undirectedEdgePaths_of_length0or1}. 
+  
+  Suppose that \( \bgent
+  \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}\ConditionalCommonCause
+  \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \cgent \).
+  Then, \( \bgent \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \), 
+  \( \cgent \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \) and
+  \( \bgent\ConditionalCommonCause \cgent \).
+  Therefore, 
+  by~\eqref{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_Converse_EDGE_Delta_ComplementaryAgentSubsetW}
+  there exists \( \UndirectedPath \in \UPATH\np{\OrientedGraph} \),
+  with \( \cardinal{\UndirectedPath} \geq 2 \),
+  and \( \orient %\np{-1,\ldots,+1}
+  \in\na{-1}\times\na{-1,+1}^{\cardinal{\UndirectedPath}-2}\times\na{+1} \)
+  such that \( \bp{\path, \orient %\np{-1,\ldots,+1}
+  } \in \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph}
+  \cap \ActiveUndirectedPaths{\OrientedGraph} \)
+  \ifpreprint
+  and that
+  \(\Internals_{\UPATH}\np{\UndirectedPath} \subset
+  \TransitiveClosureParentalPrecedence\na{\bgent,\cgent} \).
+  As \( \na{\bgent,\cgent} \subset \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \),
+  we get that \( \Internals_{\UPATH}\np{\UndirectedPath} \subset
+  \TransitiveClosureParentalPrecedence
+  \TransitiveReflexiveClosureOfSet{\AgentSubsetW} = \TransitiveClosureParentalPrecedence \TransitiveReflexiveClosureParentalPrecedence
+  \AgentSubsetW = \TransitiveClosureParentalPrecedence \AgentSubsetW \),
+  since \(    \TransitiveReflexiveClosureOfSet{\AgentSubsetW}=
+  \TransitiveReflexiveClosure{\EDGE}\AgentSubsetW \)
+  by~\eqref{eq:TransitiveReflexiveClosure_AgentSubsetW}
+  and \( \TransitiveClosureParentalPrecedence
+  \TransitiveReflexiveClosureParentalPrecedence =
+  \TransitiveClosureParentalPrecedence \)%
+  \fi
+  .
+
+  Suppose that
+  \( \bgent \bp{\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+    \ConditionalCommonCause
+    \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}}^{n+1} \cgent \).
+  Then, there exists a sequence 
+  \( \sequence{\dgent_i}{i\in\ic{0,n+1}} \) in~\( \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \)
+  such that \( \dgent_0=\bgent \), \( \dgent_{n+1}=\cgent \) 
+  and \( \dgent_i \ConditionalCommonCause \dgent_{i+1} \) for $i\in\ic{0,n}$.
+  Therefore, 
+  by~\eqref{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_Converse_EDGE_Delta_ComplementaryAgentSubsetW},
+  there exists a sequence 
+  \( \sequence{\UndirectedPath_i}{i\in\ic{0,n}} \) in~\( \UPATH\np{\OrientedGraph}\)
+  of \undirectedEdgePaths\ such that
+  \( \cardinal{\UndirectedPath_i} \geq 2 \) for $i\in\ic{0,n}$,
+  and that 
+  \( \UndirectedPath_i = \np{\path_i, \orient_i }
+  \in \DeploymentInUPaths{\np{\dgent_i,\dgent_{i+1}}}{\OrientedGraph}
+  \cap \ActiveUndirectedPaths{\OrientedGraph} \)
+  for $i\in\ic{0,n}$, where \( \orient_i \) is of the form~\( \np{-1,\ldots,+1}
+  \) 
+  \ifpreprint 
+  and such that $\Internals_{\UPATH}\np{\UndirectedPath_i} \subset \TransitiveClosureParentalPrecedence \AgentSubsetW$
+  for $i\in\ic{0,n}$%
+  \fi
+  .
+  We define the \undirectedEdgePath\ 
+  \( \UndirectedPath = \UndirectedPath_0 \ltimes \cdots \ltimes
+  \UndirectedPath_n  \in
+  \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph} \),
+  by iterated (associative) concatenation as
+  in~\eqref{eq:concatenation_UndirectedPath}, which is such that
+  \( \cardinal{\UndirectedPath} \geq 2 \) and that
+  \[ \UndirectedPath = \bp{\path_0 \ltimes \cdots \ltimes \path_n,
+      \np{ \orient_0, \ldots, \orient_n} }
+    % \bp{\np{-1,\ldots,+1 }, \ldots, \np{-1,\ldots,+1 } } }
+    \mtext{ where }
+    \orient_i \in \na{-1} \times \na{-1,+1}^{\cardinal{\path_i}-2} \times \na{+1}
+    \eqsepv
+    \forall i\in\ic{0,n}
+    \eqfinp 
+  \]
+  We claim that \( \UndirectedPath \in
+  \ActiveUndirectedPaths{\OrientedGraph} \).
+  Indeed, \( \UndirectedPath_i \in \ActiveUndirectedPaths{\OrientedGraph} \)
+  for $i\in\ic{0,n}$,
+  so that, by
+  Equation~\eqref{eq:ActiveUndirectedPaths_subpaths_junctions_when_reconcatenating} in
+  Lemma~\ref{lem:ActiveUndirectedPaths_subpaths_junctions_when_reconcatenating},
+  it only remains to show that, for $i\in\ic{0,n-1}$, 
+  \begin{align}
+    \Bp{ \bp{ \np{\tail{\vertex_{i}},\dgent_{i+1}},  \np{\dgent_{i+1}, \head{\vertex_{i+1}} } },
+    \np{+1,-1} }
+    &= 
+      {\Head{\ProjectionUndirectedPath}\np{\UndirectedPath_{i}}
+      \ltimes
+      \Tail{\ProjectionUndirectedPath}\np{\UndirectedPath_{i+1}}}
+      \in \ActiveUndirectedPaths{\OrientedGraph}
+      \eqfinv
+  \end{align}
+  where 
+  \( \np{\tail{\vertex}_{i},\dgent_{i+1}} \) is the last edge of the \undirectedEdgePath\ 
+  \( \UndirectedPath_i = \np{\path_i, \orient_i } \) and 
+  \( \np{\dgent_{i+1}, \head{\vertex}_{i+1}} \) is the first edge of the \undirectedEdgePath\ 
+  \( \UndirectedPath_{i+1} =\np{\path_{i+1}, \orient_{i+1} } \).
+  As \( \dgent_{i+1} \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \), for $i\in\ic{0,n-1}$,
+  and because of the orientation \( \np{-1,+1} \),
+  all the above subpaths satisfy Item~\ref{it:ActivePaths_case4} in
+  Definition~\ref{de:ActivePaths}. 
+  % 
+  % Now, the above subpath pattern corresponds to
+  % none of the four cases in
+  % Definition~\ref{de:ActivePaths},
+  % because \( \dgent \in \Complementary{\AgentSubsetW} \)
+  % for the first three cases,
+  % and because of the orientation \( \np{-1,+1} \)
+  % for the last fourth case.
+  We conclude that \( \UndirectedPath = \UndirectedPath_0 \ltimes \cdots \ltimes \UndirectedPath_n \in 
+  \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph}
+  \cap \ActiveUndirectedPaths{\OrientedGraph} \).
+  \ifpreprint
+  Finally, from~\eqref{eq:Internals_PATH_concatenation}, we get that
+  \begin{equation}
+    \Internals_{\UPATH}\np{\UndirectedPath}
+    = \underbrace{\Bp{ \bigcup_{i=0}^n
+      \overbrace{\Internals_{\UPATH}\np{\UndirectedPath_i}}^{\subset
+        \TransitiveClosureParentalPrecedence\AgentSubsetW
+      }}}_{\subset \TransitiveClosureParentalPrecedence\AgentSubsetW
+  \subset \complementary{\AgentSubsetW}}
+    \cup
+    \underbrace{\overbrace{ \na{\dgent_0,\ldots,\dgent_n}}^{\subset \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW}}
+    _{\subset
+      \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW
+      = \TransitiveClosureParentalPrecedence \AgentSubsetW \cup \AgentSubsetW
+    }
+    \subset
+    \TransitiveClosureParentalPrecedence\AgentSubsetW
+    \cup 
+    \TransitiveReflexiveClosureParentalPrecedence\AgentSubsetW
+    \subset \TransitiveReflexiveClosureParentalPrecedence\AgentSubsetW
+    \label{eq:InternalsofRhoasUnion}
+  \end{equation}
+  since \(\Internals_{\UPATH}\np{\UndirectedPath_i}\subset
+  \TransitiveClosureParentalPrecedence \AgentSubsetW \) and
+  $\delta_i \in \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW$
+  for $i\in\ic{0,n}$. % The last statement comes from the fact that intermediate vertice which are in
+  % $\AgentSubsetW$ must be in the subset $\na{\dgent_0,\ldots,\dgent_n}$ since $\TransitiveClosureParentalPrecedence \AgentSubsetW \subset \Complementary\AgentSubsetW$ and the vertices $\sequence{\delta_i}{i\in\ic{0,n}}$
+  % satisfy the requested subpath property as given in Equation~\eqref{eq:subpat-property}. 
+  \fi
+  \medskip
+
+  \ifpreprint
+  \noindent $\bullet$ 
+  Moreover, in the implication~\eqref{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_TransitiveClosure},
+  if a vertice $\dgent\in\Internals_{\UPATH}\np{\UndirectedPath} $ belongs
+  to~$\AgentSubsetW$,
+  it necessarily appears in a subpath of $\UndirectedPath$ of the form
+  \(
+  \Bp{ \bp{ \np{\tail{\vertex},\dgent},  \np{\dgent, \head{\vertex} }},
+    \np{+1,-1} }
+  \). 
+  Indeed, using Equation~\eqref{eq:InternalsofRhoasUnion}, we obtain that
+  a vertice $\dgent\in\Internals_{\UPATH}\np{\UndirectedPath} $ possibly belong
+  to~$\AgentSubsetW$ only when $\delta \in \na{\dgent_1,\ldots,\dgent_n}$
+  which gives the result.
+  \medskip
+  \fi 
+      
+  This ends the proof.
+\end{proof}
+
+
+\begin{lemma}
+  Let \( \npOrientedGraph \) be a graph, 
+  and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.
+  Let \( \bgent, \cgent \in\AGENT \) be two vertices and assume that
+  $\bgent \ConditionalActive \cgent$ where $\ConditionalActive$ is the conditional active
+  relation~\eqref{eq:conditional_active_relation}.
+  Then, there exists an active
+  \undirectedEdgePath\, $\UndirectedPath$, joining the two vertices~$\bgent$ and $\cgent$%
+  \ifpreprint
+  ,
+  whose intermediate vertices belong to
+  \(\TransitiveClosureParentalPrecedence \na{\bgent,\cgent}
+  \cup
+  \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW
+  \), that is, 
+  \begin{align}
+    \bgent \ConditionalActive \cgent
+    \implies&
+              \exists \UndirectedPath \in
+              \DeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph} \cap \ActiveUndirectedPaths{\graph}
+              % \text{ s.t }
+              % \Projection_{\UPATH}\np{\UndirectedPath}= (\bgent,\cgent)
+              \nonumber 
+    \\
+            &\text{ and }
+              \Internals_{\UPATH}\np{\UndirectedPath}
+              \subset
+              \TransitiveClosureParentalPrecedence \na{\bgent,\cgent}
+              \cup
+              \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW
+              \eqfinp
+              \label{eq:awtopath}
+  \end{align}
+  Moreover, an intermediate vertice $\vertex$ is in $\AgentSubsetW$ only if it appears
+  in a $2$-length subpath of $\UndirectedPath$ of the form 
+  \( \Bp{ \bp{\np{\vertex_{i-1},\vertex},\np{\vertex,\vertex_{i+1}}} , \np{+1,-1} } \).
+  \else
+  .
+  \fi
+  \label{lem:ConditionalDirectionalSeparation_seilpmi_relation-two}
+\end{lemma}
+
+\begin{proof}
+  As the relation $\ConditionalActiveStar$ defined
+  in~\eqref{eq:conditional_active_relationStar} equals the relation
+  $\ConditionalActive$ in~\eqref{eq:conditional_active_relation}
+  (as proved in Lemma~\ref{le:cond-act-equals-cond-act-star}),
+  we suppose that we are given two vertices  \( \bgent, \cgent \in\AGENT \) such that
+  $\bgent \ConditionalActiveStar \cgent$
+  and we prove the existence of $\UndirectedPath \in
+  \DeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph} \cap \ActiveUndirectedPaths{\graph}$
+  that joins $\bgent$ and $\cgent$%
+  \ifpreprint
+  and such that \( \Internals\np{\UndirectedPath}
+  \subset
+  \TransitiveClosureParentalPrecedence \na{\bgent,\cgent}
+  \cup
+  \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW
+  \)
+  \fi
+  .
+  By~\eqref{eq:conditional_active_relationStar}, giving
+  $\ConditionalActiveStar$, 
+  we have that 
+  \[
+    \bgent \bgp{\Delta \cup \ConditionalAscendent \cup
+      \ConverseConditionalAscendent \cup \ConditionalCommonCause \cup
+      \ConditionalActiveThreeStar} \cgent
+    \eqfinp
+  \]
+  
+  We consider the five cases, one by one.
+  More precisely, for each case, we are going to show that
+  there exists \(  \UndirectedPath \in \DeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph} 
+  \cap \ActiveUndirectedPaths{\graph} \)
+  \ifpreprint
+  such that
+  $\Internals_{\UPATH}\np{\UndirectedPath}
+  \subset
+  \TransitiveClosureParentalPrecedence \na{\bgent,\cgent}
+  \cup
+  \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW$%
+  \fi
+  .
+  
+  The first case is \( \bgent \Delta \cgent \), that is, \(\bgent = \cgent\).
+  As any \undirectedEdgePath\ of length~0 or~1 is active by definition
+  (see the comment following Definition~\ref{de:ActivePaths}),
+  we conclude that \( \bp{\np{\bgent,\cgent},+1} \in \DeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph} 
+  \cap \ActiveUndirectedPaths{\graph} \)%
+  \ifpreprint
+  and, as 
+  $\Internals_{\UPATH}\bp{\bp{\np{\bgent,\cgent},+1}}=\emptyset$, the second assertion is satisfied
+  \fi
+  .
+  
+  The second case is \( \bgent \ConditionalAscendent \cgent \).
+  % , that is,
+  % \( \bgent \ConditionalDown \cgent \)
+  % by~\eqref{eq:conditional_ascendent_relation}.
+  We conclude that there exists \( \UndirectedPath\in \DeploymentInUPaths{\np{\bgent,\cgent}}{\graph} 
+  \cap \ActiveUndirectedPaths{\graph} \)
+  \ifpreprint
+  such that
+  $\Internals_{\UPATH}\np{\UndirectedPath} \subset \TransitiveClosureParentalPrecedence \cgent$
+  \fi
+  thanks
+  to~\eqref{eq:BlockedUndirectedPaths_elementary_Delta_ComplementaryAgentSubsetW_EDGE}
+  in Lemma~\ref{lem:BlockedUndirectedPaths_elementary}.
+  
+  The third case is \( \bgent \ConverseConditionalAscendent \cgent \).
+  % , that is,
+  % \( \bgent \ConditionalUp \cgent \)
+  % by~\eqref{eq:converse_conditional_ascendent_relation}.
+  We conclude that there exists \( \UndirectedPath\in \DeploymentInUPaths{\np{\bgent,\cgent}}{\graph} 
+  \cap \ActiveUndirectedPaths{\graph} \)
+  \ifpreprint
+  such that
+  $\Internals_{\UPATH}\np{\UndirectedPath} \subset \TransitiveClosureParentalPrecedence \bgent$
+  \fi
+  thanks
+  to~\eqref{eq:BlockedUndirectedPaths_elementary_Converse_EDGE_Delta_ComplementaryAgentSubsetW}
+  in Lemma~\ref{lem:BlockedUndirectedPaths_elementary}.
+  
+  The fourth case is \( \bgent \ConditionalCommonCause \cgent \).
+  % , that is,
+  % \( \bgent \TransitiveClosureConverseParentalPrecedence
+  % \TransitiveClosureParentalPrecedence \cgent \)
+  % by~\eqref{eq:common_cause}. 
+  We conclude that there exists \( \UndirectedPath\in \DeploymentInUPaths{\np{\bgent,\cgent}}{\graph} 
+  \cap \ActiveUndirectedPaths{\graph} \)
+  \ifpreprint
+  such that
+  $\Internals_{\UPATH}\np{\UndirectedPath} \subset \TransitiveClosureParentalPrecedence
+  \na{\bgent,\cgent}$
+  \fi
+  thanks
+  to~\eqref{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_Converse_EDGE_Delta_ComplementaryAgentSubsetW}
+  in Lemma~\ref{lem:BlockedUndirectedPaths_elementary}.
+  
+  It remains to tackle the fifth case. 
+  % \item 
+  Suppose that $\bgent \ConditionalActiveThreeStar \cgent$.
+  Therefore, there
+  exist \( \dgent_1 \) and \( \dgent_2 \) in~$\VERTEX$ such that
+  \[
+    \bgent \bp{\ConditionalAscendent \cup \ConditionalCommonCause}\dgent_1
+    \text{ and }
+    \dgent_1 \CousinhoodStar \dgent_2
+    \text{ and }
+    \dgent_2 \bp{\ConverseConditionalAscendent \cup \ConditionalCommonCause} \cgent
+    \eqfinp
+  \]
+  % We consider the two subcases 
+  % \( \dgent_1 \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}\dgent_2 \)
+  % and
+  % \( \dgent_1 \bp{\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+  % \ConditionalCommonCause
+  % \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}}^{+}\dgent_2 \).
+  
+  % First, we focus on $\dgent_1 
+  % \Bp{
+  % \bp{\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \ConditionalCommonCause \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}}^{+}
+  % \cup
+  % \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+  % }\dgent_2$
+  %   (and later on the left junction  with
+  %   $\bgent \bp{\ConditionalAscendent \cup \ConditionalCommonCause}\dgent_1$
+  %   and
+  %   on the right junction with 
+  %   $\dgent_2 \bp{\ConverseConditionalAscendent \cup \ConditionalCommonCause}
+  %   \cgent$),
+  %   with
+
+  
+  We % suppose that
+  % \[
+  %   \bgent \bp{\ConditionalAscendent \cup \ConditionalCommonCause}\dgent_1
+  %   \text{ and }
+  %   \dgent_1 \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \dgent_2
+  %   \text{ and }
+  %   \dgent_2 \bp{\ConverseConditionalAscendent \cup \ConditionalCommonCause} \cgent
+  % \]
+  % and we 
+  are going to display an \undirectedEdgePath\ \( \UndirectedPath \in 
+  \DeploymentInUPaths{\np{\dgent,\bgent}}{\graph} 
+  \cap \ActiveUndirectedPaths{\graph} \).
+  % 
+  \begin{itemize}
+  \item
+    % As \( \dgent_1 \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \dgent_2
+    % \), we get that
+    % \( \dgent_1= \dgent_2 \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \).
+    % Thus, we are in the situation where there exists \( \dgent \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \)
+    % such that \( \bgent\bp{\ConditionalAscendent \cup \ConditionalCommonCause} \dgent\) and
+    % \( \dgent \bp{\ConverseConditionalAscendent \cup \ConditionalCommonCause}
+    % \cgent \).
+    
+    Considering the left hand side 
+    \( \bgent\bp{\ConditionalAscendent \cup \ConditionalCommonCause} \dgent_1\) and
+    using Lemma~\ref{lem:BlockedUndirectedPaths_elementary}, 
+    we obtain --- either by~\eqref{eq:BlockedUndirectedPaths_elementary_Delta_ComplementaryAgentSubsetW_EDGE} applied to
+    \( \bgent \ConditionalAscendent \dgent_1 \), or
+    by~\eqref{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_Converse_EDGE_Delta_ComplementaryAgentSubsetW}
+    applied to \( \bgent \ConditionalCommonCause \dgent_1\) --- 
+    that there exists
+    \[
+      \UndirectedPath_{1}= \np{\path_{1}, \orient_{1} }
+      =\bp{\path_{1}, \np{\ldots,+1} } \in 
+      \DeploymentInUPaths{\np{\bgent,\dgent_1}}{\graph} 
+      \cap \ActiveUndirectedPaths{\graph}
+      \ifpreprint  \eqfinv \else \eqfinp \fi
+    \]
+    \ifpreprint
+    and we have \(\Internals_{\UPATH}\np{\UndirectedPath_{1}} \subset
+    \TransitiveClosureParentalPrecedence \na{\bgent,\dgent_1}\).
+    \fi
+    
+
+  \item 
+    In the same way, considering the right hand side
+    \( \dgent_2 \bp{\ConverseConditionalAscendent \cup \ConditionalCommonCause} \cgent \)
+    and using Lemma~\ref{lem:BlockedUndirectedPaths_elementary}, 
+    we obtain  --- either by~\eqref{eq:BlockedUndirectedPaths_elementary_Converse_EDGE_Delta_ComplementaryAgentSubsetW}
+    applied to  \( \dgent_2 \ConverseConditionalAscendent \cgent \),
+    or by~\eqref{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_Converse_EDGE_Delta_ComplementaryAgentSubsetW}
+    applied to \( \dgent_2 \ConditionalCommonCause \cgent \) --- 
+    that there exists
+    \[
+      \UndirectedPath_{2} =\np{\path_{2}, \orient_{2} }
+      =\bp{\path_{2}, \np{-1,\ldots} } \in 
+      \DeploymentInUPaths{\np{\dgent_2,\bgent}}{\graph} 
+      \cap \ActiveUndirectedPaths{\graph}
+      \ifpreprint  \eqfinv \else \eqfinp \fi
+    \]
+    \ifpreprint
+    and we have \(\Internals_{\UPATH}\np{\UndirectedPath_{2}} \subset
+    \TransitiveClosureParentalPrecedence \na{\dgent_2,\cgent}\).
+    \fi
+  \item
+    Considering the middle expression 
+    \( \dgent_1 \CousinhoodStar \dgent_2 \) and 
+    using Lemma~\ref{lem:BlockedUndirectedPaths_elementary}, 
+    we obtain
+    by~\eqref{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_TransitiveClosure}
+    that \( \dgent_1 \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \), 
+    \( \dgent_2 \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \),
+    and that there exists
+    \[
+      \UndirectedPath_{1,2}
+      =\np{\path_{1,2}, \orient_{1,2} } =\bp{\path_{1,2}, \np{-1,\ldots,+1} } 
+      \in        \DeploymentInUPaths{\np{\dgent_1,\dgent_2}}{\graph} 
+      \cap \ActiveUndirectedPaths{\graph}
+      \ifpreprint  \eqfinv \else \eqfinp \fi
+    \]
+    \ifpreprint
+    and we have \(\Internals_{\UPATH}\np{\UndirectedPath_{1,2}} \subset
+    \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW\).
+    \fi
+    % 
+  \end{itemize}
+  
+  We consider the \undirectedEdgePath\ 
+  \( \UndirectedPath = \UndirectedPath_1 \ltimes \UndirectedPath_{1,2} \ltimes \UndirectedPath_2 \)
+  obtained by concatenation as in~\eqref{eq:concatenation_UndirectedPath}.
+  By construction, we have that \( \UndirectedPath \in
+  \DeploymentInUPaths{\np{\bgent,\cgent}}{\graph} \).
+  We claim that \( \UndirectedPath \in
+  \ActiveUndirectedPaths{\graph} \).
+  Indeed, \( \UndirectedPath_1, \UndirectedPath_{1,2}, \UndirectedPath_2
+  \in \ActiveUndirectedPaths{\graph} \) 
+  by assumption,
+  so that, by
+  Equation~\eqref{eq:ActiveUndirectedPaths_subpaths_junctions_when_reconcatenating} in
+  Lemma~\ref{lem:ActiveUndirectedPaths_subpaths_junctions_when_reconcatenating},
+  it only remains to show that
+  \begin{align}
+    \Bp{ \bp{ \np{\tail{\vertex_{1}},\dgent_{1}},  \np{\dgent_{1}, \head{\vertex_{1,2}} } },
+    \np{+1,-1} }
+    &= 
+      {\Head{\ProjectionUndirectedPath}\np{\UndirectedPath_{1}}
+      \ltimes
+      \Tail{\ProjectionUndirectedPath}\np{\UndirectedPath_{1,2}}}
+      \in \ActiveUndirectedPaths{\OrientedGraph}
+      \eqfinv
+      \label{eq:dgent-one-property}
+      \intertext{where 
+      \( \np{\tail{\vertex_{1}},\dgent_{1}} \) is the last edge of the \undirectedEdgePath\ 
+      \( \UndirectedPath_{1}\) and 
+      \( \np{\dgent_{1}, \head{\vertex_{1,2}} } \) is the first edge of the \undirectedEdgePath\ 
+      \( \UndirectedPath_{1,2} \), and that }
+    % 
+      \Bp{ \bp{  \np{\tail{\vertex_{1,2}},\dgent_{2} }, \np{\dgent_{2}, \head{\vertex_{2}} }  },
+      \np{+1,-1} }
+    &= 
+      {\Head{\ProjectionUndirectedPath}\np{\UndirectedPath_{1,2}}
+      \ltimes
+      \Tail{\ProjectionUndirectedPath}\np{\UndirectedPath_{2}}}
+      \in \ActiveUndirectedPaths{\OrientedGraph}
+      \eqfinv
+      \label{eq:dgent-two-property}
+  \end{align}
+  where 
+  \( \np{\tail{\vertex_{1,2}},\dgent_{2}} \) is the last edge of the \undirectedEdgePath\ 
+  \( \UndirectedPath_{1,2}\) and 
+  \( \np{\dgent_{2}, \head{\vertex_{2}} } \) is the first edge of the \undirectedEdgePath\ 
+  \( \UndirectedPath_{2} \). 
+  As \( \dgent_1,  \dgent_2 \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \)
+  and because of the orientation \( \np{-1,+1} \),
+  the two subpaths hereabove satisfy Item~\ref{it:ActivePaths_case4} in
+  Definition~\ref{de:ActivePaths}. 
+  We conclude that \( \UndirectedPath \in 
+  \DeploymentInUPaths{\np{\bgent,\cgent}}{\graph}
+  \cap \ActiveUndirectedPaths{\graph} \).%
+  \ifpreprint
+  Now, we have that
+  \begin{align*}
+    \Internals_{\UPATH}\np{\UndirectedPath}
+    &=
+      \Internals_{\UPATH}\np{\UndirectedPath_1} \cup \na{\dgent_1}
+      \cup
+      \Internals_{\UPATH}\np{\UndirectedPath_{1,2}} \cup \na{\dgent_2}
+      \cup
+      \Internals_{\UPATH}\np{\UndirectedPath_2}
+    \\
+    &\subset
+      \TransitiveClosureParentalPrecedence \na{\bgent,\dgent_1}
+      \cup
+      \na{\dgent_1}
+      \cup
+      \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW
+      \cup
+      \na{\dgent_2}
+      \cup
+      \TransitiveClosureParentalPrecedence \na{\dgent_2,\cgent}
+      \intertext{as \(\Internals_{\UPATH}\np{\UndirectedPath_{1}} \subset
+      \TransitiveClosureParentalPrecedence \na{\bgent,\dgent_1}\),
+      \(\Internals_{\UPATH}\np{\UndirectedPath_{1,2}} \subset
+      \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW\) and
+      \(\Internals_{\UPATH}\np{\UndirectedPath_{2}} \subset
+      \TransitiveClosureParentalPrecedence \na{\dgent_2,\cgent}\)}      
+    % \\
+    &=
+      \TransitiveClosureParentalPrecedence\bgent
+      \cup
+      \TransitiveClosureParentalPrecedence\dgent_1
+      \cup
+      \na{\dgent_1}
+      \cup
+      \TransitiveReflexiveClosureParentalPrecedence\AgentSubsetW
+      \cup
+      \na{\dgent_2}
+      \cup
+      \TransitiveClosureParentalPrecedence\dgent_2
+      \cup
+      \TransitiveClosureParentalPrecedence\cgent
+    \\
+    &=
+      \TransitiveClosureParentalPrecedence\bgent
+      \cup
+      \TransitiveReflexiveClosureParentalPrecedence\dgent_1
+      \cup
+      \TransitiveReflexiveClosureParentalPrecedence\AgentSubsetW
+      \cup
+      \TransitiveReflexiveClosureParentalPrecedence\dgent_2
+      \cup
+      \TransitiveClosureParentalPrecedence\cgent
+    \\
+    & \subset
+      \TransitiveClosureParentalPrecedence\bgent
+      \cup
+      \TransitiveReflexiveClosureParentalPrecedence\AgentSubsetW
+      \cup
+      \TransitiveClosureParentalPrecedence\cgent
+      \tag{as        \( \dgent_1 \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \), 
+      \( \dgent_2 \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \)}
+    % \tag{as $\bgent$, $\cgent \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW}$ }
+    \\
+    &=
+      \TransitiveClosureParentalPrecedence \na{\bgent,\cgent}
+      \cup \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW
+      \eqfinp
+  \end{align*}
+  The last assertion of the Proposition --- namely, that
+  an intermediate vertice $\vertex$ is in~$\AgentSubsetW$ only if it appears
+  in a $2$-length subpath of $\UndirectedPath$ of the form 
+  \( \Bp{ \bp{\np{\vertex_{i-1},\vertex},\np{\vertex,\vertex_{i+1}}} ,
+    \np{+1,-1} } \) ---
+  follows from the last assertion
+  of Lemma~\ref{lem:BlockedUndirectedPaths_elementary}
+  and from Equations~\eqref{eq:dgent-one-property} and~\eqref{eq:dgent-two-property}.
+  \fi
+  \medskip 
+  
+  This ends the proof.
+  
+\end{proof}
+
+The following Proposition~\ref{pr:ConditionalDirectionalSeparation_seilpmi_relation}
+is half of the proof of
+Theorem~\ref{th:ConditionalDirectionalSeparation_IFF_relation}. 
+
+\begin{proposition}
+  Let \( \npOrientedGraph \) be a graph, 
+  and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.
+  % 
+  Let \( \bgent, \cgent \in\AGENT \) be two vertices.
+  We have the implication
+  \begin{equation}
+    \bgent \ConditionalActive \cgent \implies 
+    \neg \bp{\bgent \ConditionalDirectionalSeparation \cgent \mid \AgentSubsetW}
+    \label{eq:rel-to-d-sep}
+  \end{equation}
+  where $\ConditionalActive$ is the conditional active
+  relation~\eqref{eq:conditional_active_relation}
+  and $\ConditionalDirectionalSeparation$ is the
+  conditional directional separation relation~\eqref{eq:vertices-d-separated}.
+  % 
+  \label{pr:ConditionalDirectionalSeparation_seilpmi_relation}  
+\end{proposition}
+
+\begin{proof} The proof is an easy consequence of
+  Lemma~\ref{lem:ConditionalDirectionalSeparation_seilpmi_relation-two}.
+ Let \( \bgent, \cgent \in\AGENT \) be two vertices.  We have that
+  \begin{align*}
+    \bgent \ConditionalActive \cgent
+    &\implies
+      \exists \UndirectedPath \in
+      \DeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph} \cap \ActiveUndirectedPaths{\graph}
+      \nonumber
+      \tag{by  Lemma~\ref{lem:ConditionalDirectionalSeparation_seilpmi_relation-two}}
+    \\
+    &\implies
+      \neg \Bp{\bcDeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph} \subset
+      \BlockedUndirectedPaths{\graph}}
+      \tag{by definition of $\BlockedUndirectedPaths{\graph}$}
+    \\
+    &\implies
+      \neg \bp{\bgent \ConditionalDirectionalSeparation \cgent \mid \AgentSubsetW}
+      \eqfinp
+      \tag{by~\eqref{eq:vertices-d-separated} in Definition~\ref{de:vertices-d-separated}}
+  \end{align*}
+  This ends the proof.
+\end{proof}
+
+The following  Lemma~\ref{lem:induction-lemma} is instrumental in the second half of the proof of
+Theorem~\ref{th:ConditionalDirectionalSeparation_IFF_relation}. 
+
+\begin{lemma}
+  Let \( \npOrientedGraph \) be a graph, 
+  and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.
+  % 
+  For any $n\ge 2$ and $\bgent$, $\cgent \in \AGENT$, the following statement
+  holds true.
+  % be fixed. We say that
+  % the induction assumption ${\mathbb H}'_n$ is satisfied by $(\bgent,\cgent)$ if
+  For any
+  \undirectedEdgePath\ \( \UndirectedPath = \np{\path,\orient} \in \UPATH^{n}\np{\graph} \) of length~$n$
+  joining two vertices~$\bgent$ and $\cgent$ (that is,
+  \( \BoundaryU{\na{\UndirectedPath}}{\graph}=\na{ \np{\bgent,\cgent} } \) as in~\eqref{eq:BoundaryU}), and
+  such that \( \UndirectedPath \) is active (that is,
+  \( \UndirectedPath \in \ActiveUndirectedPaths{\graph} \) as in
+  Definition~\ref{de:ActivePaths}), 
+  one of the two following properties is fullfiled:
+  \begin{enumerate}
+  \item
+    Either $\bgent\ConditionalActivePlus \cgent$ and
+    the last orientation of $\UndirectedPath$ is $\orient_n=+1$,
+    \label{it:lem:induction-lemma_+1}
+  \item
+    Or $\bgent\ConditionalActiveMinus \cgent$ and
+    the last orientation of $\UndirectedPath$ is $\orient_n=-1$.
+    \label{it:lem:induction-lemma_-1}
+  \end{enumerate}
+  \label{lem:induction-lemma}
+\end{lemma}
+
+
+\begin{proof}
+  We call ${\mathcal H}_{n}$ the statement in Lemma~\ref{lem:induction-lemma}
+  and we prove by induction that it is satisfied for all $n\ge 2$.
+  \medskip
+
+  We prove ${\mathcal H}_{2}$. For this purpose, we consider an \undirectedEdgePath~$\UndirectedPath$ of length~$2$,
+  joining two vertices $\bgent$ and $\cgent$ in the graph~$(\graph)$, and 
+  which is active, that is, by definition~\eqref{eq:BoundaryU} of the
+  endpoint relation~\( \BoundaryU{\SubsetPath}{\OrientedGraph} \) on~$\VERTEX$, 
+  \begin{equation*}
+    \UndirectedPath \in \UPATH^{2}\np{\graph}
+    \text{ and }
+    \BoundaryU{\na{\UndirectedPath}}{\graph}=\na{ \np{\bgent,\cgent} }
+    \text{ and }
+    \UndirectedPath \in \ActiveUndirectedPaths{\graph}
+    \eqfinp 
+  \end{equation*}
+  Using Lemma~\ref{le:active-length-2}, there are two cases to consider.
+  % 
+  In the first case, the \undirectedEdgePath\ ends with orientation~$+1$  and is
+  such that
+  either \(\bgent  \Precedence \Delta_{\Complementary{\AgentSubsetW}}\Precedence  \cgent\)
+  or \(\bgent   \Converse{\Precedence} \Delta_{\Complementary{\AgentSubsetW}} \Precedence  \cgent\).
+  Using the properties that
+  \( \Precedence \Delta_{\Complementary{\AgentSubsetW}}\Precedence
+  \subset \ConditionalAscendent
+  \subset \ConditionalActivePlus\)
+  (by~\eqref{eq:conditional_ascendent_relation} and~\eqref{eq:ConditionalActivePlus})
+  and that 
+  \( \Converse{\Precedence} \Delta_{\Complementary{\AgentSubsetW}} \Precedence
+  \subset \ConditionalCommonCause \subset \ConditionalActivePlus\)
+  (by~\eqref{eq:common_cause} and~\eqref{eq:ConditionalActivePlus}),
+  we obtain that
+  the case~\ref{it:lem:induction-lemma_-1} of~${\mathcal H}_2$ is satisfied.
+  % 
+  In the second case, the \undirectedEdgePath\ path ends with orientation~$-1$ and is
+  such that
+  either 
+  \( \bgent\Precedence \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \Converse{\Precedence}\cgent \)
+  or \( \bgent \Converse{\Precedence} \Delta_{\Complementary{\AgentSubsetW}}\Converse{\Precedence} \cgent\).
+  Using the properties that
+  \(\Precedence \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \Converse{\Precedence}
+  \subset   \ConditionalAscendent  \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}} \ConverseConditionalAscendent
+  \subset \ConditionalActiveMinus \)
+  (by~\eqref{eq:conditional_ascendent_relation}
+  and~\eqref{eq:ConditionalActiveMinus})
+  and that
+  \(\Converse{\Precedence} \Delta_{\Complementary{\AgentSubsetW}}\Converse{\Precedence}
+  \subset \ConverseConditionalAscendent\subset \ConditionalActiveMinus\)
+  (by~\eqref{eq:converse_conditional_ascendent_relation}
+  and~\eqref{eq:ConditionalActiveMinus}),
+  we obtain that the case~\ref{it:lem:induction-lemma_-1} of~${\mathcal H}_2$ is
+  satisfied.
+  
+  \medskip
+  We suppose that the induction assumption~${\mathcal H}_{n-1}$ holds true, where $n-1 \ge 2$,
+  and we are going to show that ${\mathcal H}_{n}$ holds true. 
+  For this purpose, we consider an \undirectedEdgePath~$\UndirectedPath$ of length~$n$ ($n \geq 2$), 
+  joining two vertices $\bgent$ and $\cgent$ in the graph~$(\graph)$, and 
+  which is active, that is, 
+  \begin{equation*}
+    \UndirectedPath \in \UPATH^{n}\np{\graph}
+    \text{ and }
+    \BoundaryU{\na{\UndirectedPath}}{\graph}=\na{ \np{\bgent,\cgent} }
+    \text{ and }
+    \UndirectedPath \in \ActiveUndirectedPaths{\graph}
+    \eqfinp 
+  \end{equation*}
+  We decompose the \undirectedEdgePath~$\UndirectedPath$ as
+  \[
+    \UndirectedPath=\np{\path,\orient}=\bp{\nseqp{(\tail{\vertex_i},\head{\vertex_i})}{i \in
+        \ic{1,n}},\nseqp{\orient_i}{i \in \ic{1,n}}}
+    = \UndirectedPath_{n{-}1} \ltimes \overline{\UndirectedPath}
+    \eqfinv
+  \]
+  where
+  \(
+  \UndirectedPath_{n{-}1}=\bp{\nseqp{(\tail{\vertex_i},\head{\vertex_i})}{i \in
+      \ic{1,n{-}1}},\nseqp{\orient_i}{i \in \ic{1,n{-}1}}}
+  \in \UPATH^{n{-}1}\np{\graph}
+  \)
+  is an \undirectedEdgePath\ of length~$n{-}1$,
+  and where $\overline{\UndirectedPath}=\bp{\np{\tail{\vertex_n},\head{\vertex_n}}, \orient_{n}}\in \UPATH^{1}\np{\graph}$
+  is an \undirectedEdgePath\ of length~$1$.
+  We have that \( \tail{\vertex_1}=\bgent \) and \( \head{\vertex_n}=\cgent \).
+  It is clear that the \undirectedEdgePath~$\UndirectedPath_{n{-}1}$ is active, 
+  that is, \(   \UndirectedPath_{n{-}1} \in \ActiveUndirectedPaths{\graph}\).
+  Indeed, otherwise, the \undirectedEdgePath~$\UndirectedPath_{n{-}1}$
+  would be in one of the four cases listed in 
+  Definition~\ref{de:vertices-d-separated}, hence so would be the \undirectedEdgePath~$\UndirectedPath$.
+  But this would contradict the assumption that
+  \(  \UndirectedPath \in \ActiveUndirectedPaths{\graph} \).
+  As the \undirectedEdgePath~$\UndirectedPath_{n{-}1}$ is active and of length~$n{-}1$,
+  it satisfies the induction assumption~${\mathcal H}_{n-1}$. We deduce that
+  either $\bgent \ConditionalActivePlus \head{\vertex_{n-1}}$
+  and the last orientation of $\UndirectedPath_{n-1}$ is
+  $\orient_{n-1}=+1$, or
+  $\bgent \ConditionalActiveMinus \head{\vertex_{n-1}}$ and the last orientation of $\UndirectedPath_{n-1}$ is
+  $\orient_{n-1}=-1$.
+  We analyze the two cases separately.
+
+  \medskip
+  \noindent $\bullet$
+  Assume that we have
+  $\bgent \ConditionalActivePlus \head{\vertex_{n-1}}$ and that
+  the last orientation of~$\UndirectedPath_{n-1}$ is $\orient_{n-1}=+1$,
+  that is, $\UndirectedPath_{n-1}$ ends with \(
+  \bp{\np{\tail{\vertex_{n-1}},\head{\vertex_{n-1}}}, +1} \). 
+  There are two possibilities for the
+  \undirectedEdgePath~$\overline{\UndirectedPath}=\bp{\np{\tail{\vertex_n},\head{\vertex_n}}, \orient_{n}}$.
+  
+  \begin{itemize}
+    
+  \item
+    Suppose that $\overline{\UndirectedPath}=\bp{\np{\tail{\vertex_n},\head{\vertex_n}}, +1
+    }= \bp{\np{\tail{\vertex_{n}},\cgent}, +1}$, that
+    is, \( \np{\tail{\vertex_{n}},\cgent} \in \Precedence \) by~\eqref{eq:undirected_(edge)_paths_of_length_n}.
+    % 
+    As the path $\UndirectedPath$ is active by assumption, the pattern
+    \( \Bp{ \bp{\np{\tail{\vertex_{n-1}},\head{\vertex_{n-1}}}, +1},
+      \bp{\np{\tail{\vertex_n},\head{\vertex_n}}, +1} } \) must satisfy Item~\ref{it:ActivePaths_case1} in
+    Definition~\ref{de:ActivePaths}. We deduce that 
+    $\head{\vertex_{n-1}}=\tail{\vertex_{n}} \in \Complementary{\AgentSubsetW}$. 
+    Now, we wrap up the results obtained so far.
+    % 
+    On the one hand, from $\bgent \ConditionalActivePlus \head{\vertex_{n-1}}$,
+    $\head{\vertex_{n-1}}=\tail{\vertex_{n}} \in \Complementary{\AgentSubsetW}$
+    and \( \np{\tail{\vertex_{n}},\cgent} \in \Precedence \),
+    we get that  $\bgent\ConditionalActivePlus
+    \Delta_{\Complementary{\AgentSubsetW}}
+    \Precedence\cgent$, hence that 
+    $\bgent \ConditionalActivePlus\cgent$ because
+    the relation~$\ConditionalActivePlus$ in~\eqref{eq:ConditionalActivePlus}
+    ends with the relation
+    $\ConditionalAscendent$ and as 
+    $\ConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}}\Precedence
+    =\ConditionalDown (\Delta_{\Complementary{\AgentSubsetW}}\Precedence)
+    \subset \ConditionalAscendent$ 
+    by~\eqref{eq:conditional_ascendent_relation}.
+    % 
+    On the other hand, the \undirectedEdgePath~$\UndirectedPath$ ends with~$+1$,
+    as it is the case for~$\overline{\UndirectedPath}$.
+    % 
+    We conclude that the \undirectedEdgePath~$\UndirectedPath$ of length~$n$
+    satisfies the case~\ref{it:lem:induction-lemma_+1} of~${\mathcal H}_{n}$,
+    since it ends with~$+1$ and its endpoints are such 
+    that $\bgent \ConditionalActiveMinus\cgent$.
+    Therefore, we have proven the case~\ref{it:lem:induction-lemma_+1} of
+    the induction assumption~${\mathcal H}_{n}$
+    for the \undirectedEdgePaths\ of length~$n$.
+    % 
+  \item
+    Suppose that $\overline{\UndirectedPath}=
+    \bp{\np{\tail{\vertex_n},\head{\vertex_n}}, -1}=
+    \bp{\np{\tail{\vertex_{n}},\cgent}, -1}$, that
+    is, \( \np{\tail{\vertex_{n}},\cgent} \in \Converse{\Precedence} \)
+    by~\eqref{eq:undirected_(edge)_paths_of_length_n}.
+    % 
+    As the path $\UndirectedPath$ is active, the pattern
+    \( \Bp{ \bp{\np{\tail{\vertex_{n-1}},\head{\vertex_{n-1}}}, +1},
+      \bp{\np{\tail{\vertex_n},\head{\vertex_n}}, -1} } \) must satisfy Item~\ref{it:ActivePaths_case4} in
+    Definition~\ref{de:ActivePaths}. We deduce that 
+    $\head{\vertex_{n-1}}=\tail{\vertex_{n}} \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW}$.
+    Now, we wrap up the results obtained so far.
+    % 
+    On the one hand, from $\bgent \ConditionalActivePlus \head{\vertex_{n-1}}$,
+    $\head{\vertex_{n-1}}=\tail{\vertex_{n}} \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW}$
+    and \( \np{\tail{\vertex_{n}},\cgent} \in \Converse{\Precedence} \),
+    we get that  $\bgent\ConditionalActivePlus
+    \Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}
+    \Converse{\Precedence}\cgent$, hence that 
+    $\bgent \ConditionalActiveMinus\cgent$  by~\eqref{eq:ConditionalActiveMinus_supset}.
+    % 
+    On the other hand, the \undirectedEdgePath~$\UndirectedPath$ ends with~$-1$,
+    as it is the case for~$\overline{\UndirectedPath}$.
+    % 
+    We conclude that the \undirectedEdgePath~$\UndirectedPath$ of length~$n$
+    satisfies the case~\ref{it:lem:induction-lemma_-1} of~${\mathcal H}_{n}$,
+    since it ends with~$-1$ and its endpoints are such 
+    that $\bgent \ConditionalActiveMinus\cgent$.
+    Therefore, we have proven the case~\ref{it:lem:induction-lemma_-1} of
+    the induction assumption~${\mathcal H}_{n}$
+    for the \undirectedEdgePaths\ of length~$n$.
+    % 
+  \end{itemize}
+
+  \medskip
+  \noindent $\bullet$
+  Assume that we have
+  $\bgent \ConditionalActiveMinus \head{\vertex_{n-1}}$
+  and that the last orientation of~$\UndirectedPath_{n-1}$ is
+  $\orient_{n-1}=-1$, that
+  is, \( \np{\tail{\vertex_{n}},\cgent} \in \Converse{\Precedence} \). 
+  There are two possibilities for the 
+  \undirectedEdgePath~$\overline{\UndirectedPath}=\bp{\np{\tail{\vertex_n},\head{\vertex_n}},
+    \orient_{n}}$.
+  
+  \begin{itemize}
+  \item
+    Suppose that $\overline{\UndirectedPath}=
+    \bp{\np{\tail{\vertex_n},\head{\vertex_n}}, +1}= \bp{\np{\tail{\vertex_{n}},\cgent}, +1}$, that
+    is, \( \np{\tail{\vertex_{n}},\cgent} \in \Precedence \) by~\eqref{eq:undirected_(edge)_paths_of_length_n}.
+    As the path $\UndirectedPath$ is active, the pattern
+    \( \Bp{ \bp{\np{\tail{\vertex_{n-1}},\head{\vertex_{n-1}}}, -1},
+      \bp{\np{\tail{\vertex_n},\head{\vertex_n}}, +1} } \) must satisfy Item~\ref{it:ActivePaths_case3} in
+    Definition~\ref{de:ActivePaths}. We deduce that 
+    $\head{\vertex_{n-1}}=\tail{\vertex_{n}} \in \Complementary{\AgentSubsetW}$. 
+    Now, we wrap up the results obtained so far.
+    % 
+    On the one hand, from $\bgent \ConditionalActiveMinus \head{\vertex_{n-1}}$,
+    $\head{\vertex_{n-1}}=\tail{\vertex_{n}} \in \Complementary{\AgentSubsetW}$
+    and \( \np{\tail{\vertex_{n}},\cgent} \in \Precedence \),
+    we get that  $\bgent\ConditionalActiveMinus
+    \Delta_{\Complementary{\AgentSubsetW}}
+    \Converse{\Precedence}\cgent$, hence that 
+    $\bgent \ConditionalActivePlus\cgent$  by~\eqref{eq:ConditionalActiveMinus_supset}.
+    % 
+    On the other hand, the \undirectedEdgePath~$\UndirectedPath$ ends with~$+1$,
+    as it is the case for~$\overline{\UndirectedPath}$.
+    % 
+    We conclude that the \undirectedEdgePath~$\UndirectedPath$ of length~$n$
+    satisfies the case~\ref{it:lem:induction-lemma_+1} of~${\mathcal H}_{n}$,
+    since it ends with~$+1$ and its endpoints are such 
+    that $\bgent \ConditionalActivePlus\cgent$.
+    Therefore, we have proven the case~\ref{it:lem:induction-lemma_+1} of
+    the induction assumption~${\mathcal H}_{n}$
+    for the \undirectedEdgePaths\ of length~$n$.
+    % 
+  \item
+    Suppose that $\overline{\UndirectedPath}=
+    \bp{\np{\tail{\vertex_n},\head{\vertex_n}}, -1}= \bp{\np{\tail{\vertex_{n}},\cgent}, -1}$, that
+    is, \( \np{\tail{\vertex_{n}},\cgent} \in \Converse{\Precedence} \)
+    by~\eqref{eq:undirected_(edge)_paths_of_length_n}.
+    % 
+    As the path $\UndirectedPath$ is active, the pattern
+    \( \Bp{ \bp{\np{\tail{\vertex_{n-1}},\head{\vertex_{n-1}}}, -1},
+      \bp{\np{\tail{\vertex_n},\head{\vertex_n}}, -1} } \) must satisfy Item~\ref{it:ActivePaths_case2} in
+    Definition~\ref{de:ActivePaths}. We deduce that 
+    $\head{\vertex_{n-1}}=\tail{\vertex_{n}} \in \Complementary{\AgentSubsetW}$. 
+    Now, we wrap up the results obtained so far.
+    % 
+    On the one hand, from $\bgent \ConditionalActiveMinus \head{\vertex_{n-1}}$,
+    $\head{\vertex_{n-1}}=\tail{\vertex_{n}} \in \Complementary{\AgentSubsetW}$
+    and \( \np{\tail{\vertex_{n}},\cgent} \in \Converse{\Precedence} \),
+    we get that  $\bgent\ConditionalActiveMinus
+    \Delta_{\Complementary{\AgentSubsetW}}
+    \Converse{\Precedence}\cgent$, hence that 
+    $\bgent \ConditionalActiveMinus\cgent$ because
+    the relation~$\ConditionalActiveMinus$ ends with the relation
+    $\ConverseConditionalAscendent$ and we have that
+    $\ConverseConditionalAscendent \Delta_{\Complementary{\AgentSubsetW}}\Converse{\Precedence}
+    = \ConditionalUp\Delta_{\Complementary{\AgentSubsetW}}\Converse{\Precedence}
+    \subset \ConverseConditionalAscendent$  which implies that
+    $\ConditionalActiveMinus \Delta_{\Complementary{\AgentSubsetW}}\Converse{\Precedence}
+    \subset \ConditionalActiveMinus$. 
+    % 
+    On the other hand, the \undirectedEdgePath~$\UndirectedPath$ ends with~$-1$,
+    as it is the case for~$\overline{\UndirectedPath}$.
+    % 
+    We conclude that the \undirectedEdgePath~$\UndirectedPath$ of length~$n$
+    satisfies the case~\ref{it:lem:induction-lemma_-1} of~${\mathcal H}_{n}$,
+    since it ends with~$-1$ and its endpoints are such 
+    that $\bgent \ConditionalActiveMinus\cgent$.
+    Therefore, we have proven the case~\ref{it:lem:induction-lemma_-1} of
+    the induction assumption~${\mathcal H}_{n}$
+    for the \undirectedEdgePaths\ of length~$n$.
+    % 
+  \end{itemize}
+  \medskip
+
+  This ends the proof. 
+\end{proof}
+
+\ifpreprint 
+\section{Moral relation}
+\label{Moral_relation}
+
+% \subsection{Definition of conditional moral separation}
+
+Let \( \npOrientedGraph \) be a graph.
+The \emph{moral relation}%associated with~$\Precedence$ is the relation
+~$\Moral$ on $\np{\VERTEX,\Precedence}$ is defined in~\citep{Lauritzen-et-al-1990} by
+\begin{equation}
+  \Moral= \bp{\Precedence\cup \Precedence\Converse{\Precedence}} \cup
+  \bp{\Converse\Precedence \cup \Precedence\Converse{\Precedence}}
+  \subset \Precedence\times\Precedence
+  \eqfinp
+  \label{eq:moral-definition}
+\end{equation}
+
+In Proposition~\ref{pr:from-active-path-to-moral-graph}, which is a consequence
+of Lemma~\ref{lem:ConditionalDirectionalSeparation_seilpmi_relation-two},
+we prove that, when two vertices $\bgent$ and $\cgent$ are in relation by the
+conditional active relation~\eqref{eq:conditional_active_relation}, then 
+there exists an (edge) path in the graph \( (\VERTEX, \Moral) \)
+joining the two vertices $\bgent$ and $\cgent$ 
+with intermediate vertices in 
+$\TransitiveClosureParentalPrecedence
+\bp{\na{\bgent,\cgent}\cup\AgentSubsetW}$.
+
+\begin{proposition}
+  \label{pr:from-active-path-to-moral-graph}
+    Let \( \npOrientedGraph \) be a graph, 
+  and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.  
+  Let $\ConditionalActive$ be the conditional active
+  relation~\eqref{eq:conditional_active_relation}
+  and $\Moral$ be the relation~\eqref{eq:moral-definition}. 
+  Then, for all $\bgent, \cgent \in \VERTEX$, we have that
+  \begin{align}
+    \bgent \ConditionalActive \cgent
+    \implies&
+              \exists \path \in
+              \DeploymentInPaths{\na{\np{\bgent,\cgent}}}{\moralgraph}
+              \text{ and  }
+              \Internals\np{\path}
+              \subset
+              \TransitiveClosureParentalPrecedence \bp{\na{\bgent,\cgent}\cup\AgentSubsetW}
+              \eqfinp
+              \label{eq:awtopathMoral}
+  \end{align}
+\end{proposition}
+
+%\jpc{is it clear now ?}
+\begin{proof}
+  Let  $\bgent, \cgent \in \VERTEX$. Using
+  Lemma~\ref{lem:ConditionalDirectionalSeparation_seilpmi_relation-two},
+  there exists an active \undirectedEdgePath\ $\UndirectedPath$ joining the two
+  vertices~$\bgent$ and $\cgent$ and such that
+  $\Internals_{\UPATH}\np{\UndirectedPath} \subset
+  \TransitiveClosureParentalPrecedence \na{\bgent,\cgent} \cup
+  \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW$.
+%  \jpc{I use $\vertex$ as the notation $\delta$ is used for the special vertices of Lemma~\ref{lem:ConditionalDirectionalSeparation_seilpmi_relation-two}}
+  We denote by
+  $\sequence{\vertex_i}{i=0,\ldots,\cardinal{\UndirectedPath}}$ the sequence of
+  intermediate vertices of $\UndirectedPath$.  For
+  $i=0,\ldots,\cardinal{\UndirectedPath}-1$, we have that $\vertex_i \Moral \vertex_{i+1}$
+  as, by definition~\eqref{eq:undirectedEdgePaths} of an \undirectedEdgePath, we have that 
+  $\vertex_i \Precedence \vertex_{i+1}$ or
+  $\vertex_i \Converse\Precedence \vertex_{i+1}$.  In the same way, we have that
+  $\bgent \Moral \vertex_0$ and $\vertex_{\cardinal{\UndirectedPath}} \Moral \cgent$.
+  Thus, we build an (edge) path 
+  \( \path'=\sequence{ \np{\vertex_i,\vertex_{i+1}} }{i\in\ic{1,\cardinal{\UndirectedPath}-1}} \)
+  which belongs to $\DeploymentInPaths{\na{\np{\bgent,\cgent}}}{\moralgraph}$ as defined in Equation~\eqref{eq:DeploymentInPaths}.
+  However, the (edge) path $\path'$ does not satisfy the assumption 
+  $\Internals\np{\path'}
+  \subset
+  \TransitiveClosureParentalPrecedence \bp{\na{\bgent,\cgent}\cup\AgentSubsetW}$ as some intermediate vertex 
+  of $\path'$ may belong to $\AgentSubsetW$. But using the last statement of 
+  Lemma~\ref{lem:ConditionalDirectionalSeparation_seilpmi_relation-two}, we
+  have that, given an intermediate vertex of $\path'$, $\vertex_i \in \AgentSubsetW$ is only possible when $\vertex_i$ is a
+  ``$\delta$'' vertex, that is, $\vertex_i$ appears in a subpath of~$\UndirectedPath$ of the form
+  \( \Bp{ \bp{\np{\vertex_{i-1},\vertex_i},\np{\vertex_i,\vertex_{i+1}}} , \np{+1,-1} } \) which implies that
+  $\vertex_{i-1} \Precedence \vertex_i$ and
+  $\vertex_{i} \Converse\Precedence \vertex_{i+1}$ hence that
+  $\vertex_{i-1} \Moral \vertex_{i+1}$ by definition of the moral relation
+  in~\eqref{eq:moral-definition}.
+  We define the \EdgePath~$\path''$ as obtained from the \EdgePath~$\path'$ by
+  removing all the ``$\delta$'' vertices.
+  We readily get that $\path''$ belongs, as does~$\path'$, to
+  $\DeploymentInPaths{\na{\np{\bgent,\cgent}}}{\moralgraph}$
+  and has the same internal vertices in $\Complementary\AgentSubsetW$ as does~$\path'$.
+  % Thus $\path$, the \EdgePath\ obtained from $\path'$ by removing all the ``$\delta$'' vertices remains in
+  % $\DeploymentInPaths{\na{\np{\bgent,\cgent}}}{\moralgraph}$ and have internal vertices
+  % in $\Complementary\AgentSubsetW$.
+  We conclude that
+  \[
+    \Internals\np{\path''} \subset
+    \Internals\np{\path'} \cap \Complementary\AgentSubsetW
+    \subset 
+    \bp{\TransitiveClosureParentalPrecedence \na{\bgent,\cgent} \cup
+      \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW}\cap \Complementary\AgentSubsetW
+    \subset
+    \TransitiveClosureParentalPrecedence{\na{\bgent,\cgent}}
+    \cup
+    \TransitiveClosureParentalPrecedence \AgentSubsetW
+    = \TransitiveClosureParentalPrecedence{\bp{\na{\bgent,\cgent}\cup\AgentSubsetW}}
+    \eqfinp
+  \]
+  This ends the proof.
+\end{proof}
+
+
+Let $\AgentSubsetW$, $\Bgent$, $\Cgent \subset \AGENT$ be three subsets of
+vertices, that are pairwise disjoints.  We define the subset 
+\( \MoralSubset= \TransitiveReflexiveClosure{\Precedence}
+\np{\Bgent\cup\Cgent\cup\AgentSubsetW} \subset \AGENT \)
+of vertices, and the binary relation
+\( \Precedence_\MoralSubset= \Precedence \cap \np{\MoralSubset\times\MoralSubset}
+\) on~\( \MoralSubset \). 
+The subgraph
+$(\MoralSubset,\Precedence_\MoralSubset)$ is composed of the set of vertices
+$\MoralSubset$ and of the set~$\Precedence_\MoralSubset$ of edges, given by the
+restriction of the relation~$\Precedence$ to the subset~$\MoralSubset$.
+The \emph{moral relation}~$\Moral_{\MoralSubset}$ on the subgraph
+$(\MoralSubset,\Precedence_\MoralSubset)$ %associated with~$\Precedence_{\MoralSubset}$
+is the subset of~$\MoralSubset\times\MoralSubset$ defined by
+\begin{equation}
+  \Moral_{\MoralSubset} =
+  \bp{\MoralPrecedence\cup \MoralPrecedence\Converse{\MoralPrecedence}} \cup
+  \bpConverse{\MoralPrecedence \cup \MoralPrecedence\Converse{\MoralPrecedence}}
+  \subset \MoralSubset\times\MoralSubset
+  \eqfinp
+  \label{eq:moral-subset-definition}
+\end{equation}
+
+Now, under the assumptions of
+Proposition~\ref{pr:from-active-path-to-moral-graph}
+and the additional assumption that
+$\bgent \in \Bgent$ and $\cgent \in \Cgent$, 
+we obtain a stronger result.
+% that there exists an
+% active \undirectedEdgePath\ $\UndirectedPath$ joining them in the subgraph
+% $(\MoralSubset,\Precedence_\MoralSubset)$.
+
+\begin{corollary}
+  Let $\AgentSubsetW$, $\Bgent$, $\Cgent \subset \AGENT$ be three subsets of
+vertices, that are pairwise disjoints.
+  Let $\bgent \in \Bgent$ and $\cgent \in \Cgent$ be given. Then, we have that 
+  \begin{align}
+    \bgent \ConditionalActive \cgent
+    &\implies
+      \exists \path \in
+      \DeploymentInPaths{\na{\np{\bgent,\cgent}}}{\MoralSubset,\Moral_{\MoralSubset}}
+      \text{ and  }
+      \Internals\np{\path}
+      \subset \complementary{\AgentSubsetW}
+      \eqfinp
+      \label{co:active-to-moral-deploy}
+  \end{align}
+\end{corollary}
+
+\begin{proof} The proof is a simple consequence of
+  Proposition~\ref{pr:from-active-path-to-moral-graph} as the path 
+  obtained in Equation~\eqref{eq:awtopathMoral} is a path in the subgraph 
+  $(\MoralSubset,\Precedence_\MoralSubset)$ and its intermediate vertices
+  satisfy 
+  $\Internals\np{\path}
+  \subset
+  \TransitiveClosureParentalPrecedence \bp{\na{\bgent,\cgent}\cup\AgentSubsetW}
+  \subset \Complementary{\AgentSubsetW}$.
+\end{proof}
+
+\begin{proposition}
+  \label{pr:lauritzen-2}
+      Let \( \npOrientedGraph \) be a graph, 
+ and let $\AgentSubsetW$, $\Bgent$, $\Cgent \subset \AGENT$ be three subsets of
+  vertices, that are pairwise disjoints.
+  We have the implication:
+  \begin{align}
+    \exists \path \in
+    \DeploymentInPaths{\Bgent\times\Cgent}{\bp{\MoralSubset,\Moral_{\MoralSubset}}}
+    &
+      \text{ such that }
+      \Internals\np{\path}
+      \subset
+      \Complementary\AgentSubsetW
+      \nonumber % \label{eq:s-ms-active}
+    \\
+    &\implies
+      \exists \UndirectedPath \in
+      \DeploymentInUPaths{\Bgent\times\Cgent}{\graph} \cap \ActiveUndirectedPaths{\graph}
+      \eqfinp
+      \label{eq:awtopath-ter}
+  \end{align}
+\end{proposition}
+
+
+\begin{proof} Let
+  $\path \in
+  \DeploymentInPaths{\Bgent\times\Cgent}{\bp{\MoralSubset,\Moral_{\MoralSubset}}}$
+  such that
+  $\Internals\np{\path} \subset \Complementary\AgentSubsetW$.
+  Then, there exists a sequence
+  $\sequence{\vertex_i}{i\in\ic{1,\cardinal{\path}+1}}$ of vertices in $\MoralSubset$ such that
+  \( \path=\sequence{ \np{\vertex_i,\vertex_{i+1}}
+  }{i\in\ic{1,\cardinal{\path}}}\) with $\vertex_1 \in \Bgent$,
+  $\vertex_{\cardinal{\path}+1}\in \Cgent$ and such that
+  $\vertex_i \Moral_{\MoralSubset} \vertex_{i+1}$ and
+  $\vertex_i \in \Complementary \AgentSubsetW$ for all
+  $i=2,\ldots,\cardinal{\path}$. Using the definition of $\Moral_{\MoralSubset}$,
+  there are two cases: either for all
+  $i=2,\ldots,\cardinal{\path}$ there exists $\orient_i \in \na{-1,+1}$ such that
+  $\vertex_i \Precedence^{\np{\orient_i}} \vertex_{i+1}$ and, in that case, we
+  build the \undirectedEdgePath\
+  $\UndirectedPath_i = \bp{(\vertex_i,\vertex_{i+1}),\orient_i}$;
+  or there exists $\dgent_i \in \MoralSubset$ such that
+  $\vertex_i \Precedence^{\np{1}} \dgent_i \Precedence^{\np{-1}}\vertex_{i+1}$
+  and, in that case, we build the \undirectedEdgePath\ 
+  $\UndirectedPath_i=\Bp{\bp{(\vertex_i,\dgent_i),(\dgent_i,\vertex_{i+1})},\na{1,-1}}$
+  of length~$2$.
+  By concatenation, we obtain the \undirectedEdgePath\
+  $\UndirectedPath = \UndirectedPath_1 \ltimes \ldots \ltimes
+  \UndirectedPath_{\cardinal{\path}}$.
+
+  It remains to show that the \undirectedEdgePath~$\UndirectedPath$ is active.
+  As, by assumption, the vertices
+  $\sequence{\vertex_i}{i\in\ic{1,\cardinal{\path}+1}}$ are in $\Complementary
+  \AgentSubsetW$, then Definition~\ref{de:ActivePaths} implies that $\UndirectedPath$
+  can only be blocked at the vertices appearing in $2$-length
+  \undirectedEdgeSubPath\ of the form
+  $\Bp{\bp{(\vertex,\dgent),(\dgent,\vertex')},\na{1,-1}}$ with
+  $\dgent \in \MoralSubset$.
+  If $\dgent \in \TransitiveReflexiveClosure{\Precedence}\AgentSubsetW$, then the
+  subpath is active.  If $\dgent \in \MoralSubset$ and
+  $\dgent \not\in \TransitiveReflexiveClosure{\Precedence}\AgentSubsetW$, then
+  it easily follows that
+  $\dgent \in \TransitiveClosureParentalPrecedence \bp{\Bgent \cup \Cgent} =
+  \TransitiveClosureParentalPrecedence \Bgent \cup
+  \TransitiveClosureParentalPrecedence\Cgent $ and the subpath is blocked. We
+  denote by $n$ the number of blocked subpaths of length~2 of $\UndirectedPath$
+  for which %the middle vertice
+  $\dgent \in \TransitiveClosureParentalPrecedence \Bgent \cup
+  \TransitiveClosureParentalPrecedence\Cgent$ and we prove that, when $n >0$, we
+  can build a new~$\UndirectedPath$ which has a strictly smaller number of
+  blocked subpaths. We consider only the case where the vertice at the center of the blocked subpath of length 2
+  is such that $\dgent \in  \TransitiveClosureParentalPrecedence \Bgent$ as the case
+  $\dgent \in  \TransitiveClosureParentalPrecedence \Cgent$ can be treated in a similar way.
+  Denote by $\UndirectedPath'$ the subpath of $\UndirectedPath$ starting at $\dgent$ and ending
+  in $\Cgent$. The subpath $\UndirectedPath$ contains a number of blocked
+  subpaths which is stricly smaller than
+  $n$. As $\dgent \in  \TransitiveClosureParentalPrecedence \Bgent$, there exists
+  an active \undirectedEdgeSubPath\ $\UndirectedPath''$ starting in~$\Bgent$ and ending at~$\dgent$.
+  Then, by concatenation, we obtain that $\UndirectedPath'' \ltimes \UndirectedPath' \in 
+  \DeploymentInUPaths{\Bgent\times\Cgent}{\graph}$ for which the number of  blocked subpaths 
+  is strictly smaller that~$n$, since it is the case for $\UndirectedPath'$, and since
+  $\UndirectedPath''$ does not contain blocked subpaths and 
+  the connection at node~$\dgent$ is active in the concatenated path $\UndirectedPath'' \ltimes \UndirectedPath'$.
+  We can iterate the process a finite number of times (at most $n$) to obtain at the end
+  an active \undirectedEdgeSubPath.
+  This ends the proof.
+\end{proof}
+
+We relate in Proposition~\ref{p:conditionalactiveinmoral} the conditional active relation 
+$\ConditionalActive$ to the moral relation $\Moral_{\MoralSubset}$ defined on the subset 
+$\MoralSubset$ in Equation~\eqref{eq:moral-subset-definition}.
+
+\begin{proposition}
+  \label{p:conditionalactiveinmoral}
+  Let \( \npOrientedGraph \) be a graph, 
+  and let $\AgentSubsetW$, $\Bgent$, $\Cgent \subset \AGENT$ be three subsets of
+  vertices, that are pairwise disjoints.
+  We have the equivalence:
+  \begin{align}
+    \Delta_{\Bgent} \ConditionalActive \Delta_{\Cgent}
+    \not= \emptyset
+    &\iff 
+      \Delta_{\Bgent} \Moral_{\MoralSubset}
+      \npTransitiveReflexiveClosure{\Delta_{\Complementary\AgentSubsetW}\Moral_{\MoralSubset}}
+      \Delta_{\Cgent}
+      \not= \emptyset
+      \eqfinp
+  \end{align}
+\end{proposition}
+
+\begin{proof}\quad
+  
+  \noindent ($\implies$) Let $\bgent\in \Bgent$ and  $\cgent\in \Cgent$ be two given vertices such that
+  $\bgent \ConditionalActive\cgent$. 
+  Then, using Equation~\eqref{eq:awtopathMoral},
+  there exists $\path \in \DeploymentInPaths{\na{\np{\bgent,\cgent}}}{\moralgraph}$ such that
+  $\Internals\np{\path}
+  \subset
+  \TransitiveClosureParentalPrecedence\bp{\na{\bgent,\cgent}\cup\AgentSubsetW}$.
+  As $\bgent\in \Bgent$ and  $\cgent\in \Cgent$,
+  we get that $\Internals\np{\path} \subset \MoralSubset \cap \Complementary\AgentSubsetW$ and, thus,
+  that $\path$ is a path in the subgraph $\np{\MoralSubset,
+    \Moral_{\MoralSubset}}$ with intermediate vertices
+  in~$\Complementary\AgentSubsetW$. Hence, we obtain that
+  $\path \in \DeploymentInPaths{\na{\np{\bgent,\cgent}}}{\MoralSubset, \Moral_{\MoralSubset}}$ and
+  $\Internals\np{\path} \subset \Complementary\AgentSubsetW$. Then, we easily
+  get that 
+  $\bgent \Moral_{\MoralSubset}
+  \npTransitiveReflexiveClosure{\Delta_{\Complementary\AgentSubsetW}\Moral_{\MoralSubset}}\cgent$.
+  
+  \noindent ($\impliedby$)  Let $\bgent\in \Cgent$ and  $\cgent\in \Cgent$ be two vertices such that
+  $\bgent \Moral_{\MoralSubset}\npTransitiveReflexiveClosure{\Delta_{\Complementary\AgentSubsetW}\Moral_{\MoralSubset}}\cgent$. 
+  Then, 
+  there exists $\path \in \DeploymentInPaths{\na{\np{\bgent,\cgent}}}{\MoralSubset, \Moral_{\MoralSubset}}$ with
+  $\Internals\np{\path} \subset \Complementary\AgentSubsetW$.
+  Thus we get, by Proposition~\ref{pr:lauritzen-2}, that
+  \(
+  \UndirectedPath \in
+  \DeploymentInUPaths{\Bgent\times\Cgent}{\graph} \cap \ActiveUndirectedPaths{\graph}
+  \) and, as proved in Theorem~\ref{th:ConditionalDirectionalSeparation_IFF_relation}, it gives that
+  $\bgent \ConditionalActive\cgent$.
+\end{proof}
+
+\begin{definition}
+      Let \( \npOrientedGraph \) be a graph, 
+ and let $\AgentSubsetW$, $\Bgent$, $\Cgent \subset \AGENT$ be three subsets of
+ vertices, that are pairwise disjoints.
+    The two subsets $\Bgent$, $\Cgent \subset \AGENT$ of vertices are said to be
+  \emph{conditionally morally active} (w.r.t the subset~$\AgentSubsetW$) if there exists an \emph{(edge) path} in
+  the moral graph $(\MoralSubset, \Moral_{\MoralSubset})$ with endpoints in
+  $\Bgent$ and  $\Cgent$ and such that all the intermediate vertices are in
+  $\Complementary{\AgentSubsetW}$.
+
+  The two subsets \( \Bgent, \Cgent \subset \AGENT \) of vertices %$\Bgent$ and $\Cgent$ 
+are said to be \emph{conditionally morally blocked} (w.r.t the subset~$\AgentSubsetW$), denoted by
+  $\Bgent \protect\ConditionalMoralSeparation \Cgent\mid \AgentSubsetW$ when they are not
+  \emph{conditionally morally active} (w.r.t the subset~$\AgentSubsetW$), that is,
+  \begin{equation}
+    {\Bgent \protect\ConditionalMoralSeparation \Cgent\mid \AgentSubsetW}
+    \iff
+    \bset{
+      \path \in
+      \DeploymentInPaths{\Bgent\times\Cgent}{{\MoralSubset,\Moral_{\MoralSubset}}}
+    }{ \Internals\np{\path}\subset \Complementary\AgentSubsetW} = \emptyset
+    \eqfinp
+    \label{eq:moraliy-conditionaly-separated}
+  \end{equation}
+\end{definition}
+
+\begin{theorem}
+     Let \( \npOrientedGraph \) be a graph, 
+ and let $\AgentSubsetW$, $\Bgent$, $\Cgent \subset \AGENT$ be three subsets of
+ vertices, that are pairwise disjoints.
+  We have the equivalence: 
+  \begin{equation}
+    \Bgent \protect\ConditionalMoralSeparation \Cgent\mid \AgentSubsetW
+    \iff
+    \Bgent \ConditionalDirectionalSeparation \Cgent \mid \AgentSubsetW
+    \qquad \bp{ \forall \Bgent, \Cgent \subset \AGENT}
+    \eqfinp
+  \end{equation}
+\end{theorem}
+
+\begin{proof} We have
+  \begin{align*}
+    \neg\bp{\Bgent \protect\ConditionalMoralSeparation \Cgent\mid \AgentSubsetW}
+    &\iff
+      \exists 
+      \path \in
+      \DeploymentInPaths{\Bgent\times\Cgent}{\bp{\MoralSubset,\Moral_{\MoralSubset}}}
+      \text{ such that }
+      \Internals\np{\path}\subset \Complementary\AgentSubsetW
+      \tag{by~\eqref{eq:moraliy-conditionaly-separated}}
+    \\
+    &\implies
+      \exists \UndirectedPath \in
+      \DeploymentInUPaths{\Bgent\times\Cgent}{\graph} \cap \ActiveUndirectedPaths{\graph}
+      \tag{by~\eqref{eq:awtopath-ter}}
+    \\
+    &\iff
+      \neg\bp{\Bgent \ConditionalDirectionalSeparation \Cgent \mid \AgentSubsetW}
+      \tag{by Theorem~\ref{th:ConditionalDirectionalSeparation_IFF_relation}}
+      \eqfinp
+      % \\
+    \intertext{and}
+    \neg\bp{\Bgent \ConditionalDirectionalSeparation \Cgent \mid \AgentSubsetW}
+    &\iff \Delta_{\Bgent} \ConditionalActive \Delta_{\Cgent} \not=\emptyset
+    \\
+    &\implies
+      \exists \path \in
+      \DeploymentInPaths{\na{\np{\bgent,\cgent}}}{\MoralSubset,\Moral_{\MoralSubset}}
+      \text{ such that }
+      \Internals\np{\path}
+      \subset \complementary{\AgentSubsetW}
+      \tag{by~\eqref{co:active-to-moral-deploy}}
+    \\
+    &\iff
+      \neg\bp{\Bgent \ConditionalMoralSeparation \Cgent \mid \AgentSubsetW}
+      \tag{by~\eqref{eq:moraliy-conditionaly-separated}}
+      \eqfinp
+  \end{align*}
+  This ends the proof.
+\end{proof}
+
+% \jpc{remarque pour michel}\mdl{où veux tu en venir ?}
+
+% Consider the relation $ \Delta_{X} \relation \npTransitiveReflexiveClosure{ \Delta_{Y} \relation} \Delta_{Z}$ where
+% $\relation$ is a symmetric relation. We have, assuming that $X\subset Y$ and $Z\subset Y$ and $X\cap Z =\emptyset$
+% \begin{equation}
+%   \Delta_{X} \relation \npTransitiveReflexiveClosure{ \Delta_{Y} \relation} \Delta_{Z}
+%   = \Delta_{X}\npTransitiveReflexiveClosure{ \relation \Delta_{Y}} \npTransitiveReflexiveClosure{ \Delta_{Y} \relation} \Delta_{Z}
+% \end{equation}
+
+
+% \begin{proof}
+%   \begin{subequations}
+%   \begin{align}
+%     \Delta_{X}
+%     &\npTransitiveReflexiveClosure{ \relation \Delta_{Y}}
+%       \npTransitiveReflexiveClosure{ \Delta_{Y} \relation} \Delta_{Z}
+%       =
+%       \Delta_{X} \bp{\npTransitiveClosure{ \relation \Delta_{Y}} \cup \Delta}
+%       \bp{\npTransitiveClosure{ \Delta_{Y} \relation} \cup \Delta} \Delta_{Z}
+%     \\
+%     &= \Delta_{X} \Delta_{Z}
+%       \cup
+%       \Delta_{X} \npTransitiveClosure{ \relation \Delta_{Y}}\Delta_{Z}
+%       \cup
+%       \Delta_{X} \npTransitiveClosure{ \Delta_{Y} \relation} \Delta_{Z}
+%       \cup
+%       \Delta_{X} \npTransitiveClosure{ \relation \Delta_{Y}}  \npTransitiveClosure{ \Delta_{Y} \relation} \Delta_{Z}
+%     \\
+%     &= \emptyset
+%       \cup \Delta_{X}  \npTransitiveReflexiveClosure{ \relation \Delta_{Y}} \relation\Delta_{Y} \Delta_{Z}
+%       \cup \Delta_{X}\Delta_{Y} \relation \npTransitiveReflexiveClosure{ \Delta_{Y} \relation} \Delta_{Z}
+%       \cup
+%       \Delta_{X} \npTransitiveClosure{ \relation \Delta_{Y}}  \npTransitiveClosure{ \Delta_{Y} \relation} \Delta_{Z}
+%     \\
+%     &= 
+%       \Delta_{X}  \npTransitiveReflexiveClosure{ \relation \Delta_{Y}} \relation \Delta_{Z}
+%       \cup \Delta_{X} \relation \npTransitiveReflexiveClosure{ \Delta_{Y} \relation} \Delta_{Z}
+%       \cup
+%       \Delta_{X} \npTransitiveClosure{ \relation \Delta_{Y}}  \npTransitiveClosure{ \Delta_{Y} \relation} \Delta_{Z}
+%     \\
+%     &=
+%       \Delta_{X}  \npTransitiveReflexiveClosure{ \relation \Delta_{Y}} \relation \Delta_{Z}
+%       \cup
+%       \Delta_{X} \npTransitiveClosure{ \relation \Delta_{Y}}  \npTransitiveClosure{ \Delta_{Y} \relation} \Delta_{Z}
+%     \\
+%     &= 
+%       \Delta_{X}  \npTransitiveReflexiveClosure{ \relation \Delta_{Y}} \relation \Delta_{Z}
+%   \end{align}    
+%   \end{subequations}
+% %
+% \end{proof}
+
+\fi % end of ifpreprint 
+
+
+% START
+\bibliographystyle{plain}%{abbrv}
+\bibliography{DeLara}
+% START
+
+\end{document}
+
+% START
+\subsubsection{Graph vocabulary}
+
+From Lauritzen
+
+A graph, as we use it throughout this paper, is a pair $(\VERTEX,\EDGE)$, where $\VERTEX$ is a
+finite set of vertices and the set of edges $\EDGE$ is a subset of the set $\VERTEX\times\VERTEX$ of
+ordered pairs of \rouge{distinct} vertices.
+
+ils interdisent les loops (In graph theory, a loop (also called a self-loop or a buckle) is an edge that connects a vertex to itself. A simple graph contains no loops).
+
+simple graph veut dire no multiple edges between two ordered distinct vertices
+and no loops (v->v)
+
+Edges with both $(\cgent,\bgent)\in \EDGE$ and $(\bgent, \cgent)\in \EDGE$ are called undirected edges 
+whereas an edge $(\cgent,\bgent)\in \EDGE$ such that $(\bgent, \cgent)\not\in \EDGE$ is called a directed edge.
+
+un graph est undirected si il n'a que des undirected edges
+Il est dit directed si il n'a que des directed edges 
+
+On autorise nous un mix des deux ce qui a un nom ?
+
+On peut considerer le undirected grah associé à un graphe (pour nous celui
+obtenut en symétrisant E)
+
+Wikipedia: 
+
+A directed graph is called an oriented graph if none of its pairs of vertices is linked by two symmetric edges. 
+Among directed graphs, the oriented graphs are the ones that have no 2-cycles (that is at most one of (x, y) and (y, x) may be arrows of the graph).[1]
+
+La definition de Wikipedia est étrange car un directed graph peut aussi etre
+undirected !  Ex  E={(a,b),(b,a)};
+
+Lauritzen (2002) Chain graph models and their causal interpretations
+
+Chain graphs, which admit both directed and undirected edges, but no partially directedcycles,  were  introduced  as  a  natural  generalization  of  both  undirected  graphs  and  acyclicdirected  graphs
+Lauritzen  and  Wermuth,  1989)  .One  of  the  original  motivations  forintroducing chain graphs was that the inclusion of undirected edges allowed the modelling
+
+A partially directed cycle: est un cycle dans un graphe qui contient des directed et des undorected edges avec au moins 1 directed edges.
+
+A chain graphis a graph in which there are no partially directed cycles .A chain
+graph in which there are no undirected edges is a DAG.The chain components T of
+a chain graph are the connected components of the undirectedgraph obtained by
+removing all directed edges from the chain graph .In a DAG, all chain components
+are singletons.For $A\subset V$ ,$G_A$ denotes the subgraph which has $A$ as
+vertex set and all edges inheritedfrom G .Such a subgraph is said to
+beinduced by A. A minimal complex in a chain graph is an induced subgraph of the
+. Minimal complexes play a fundamental role for the chain graph
+Markov property, to be further described below
+
