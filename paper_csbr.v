@@ -41,18 +41,18 @@ Section Paper.
   Qed.
   
   Lemma  L7_csbr:
-    (Emw.* * Ew.* ) = ('Δ `|` (Δ_(W.^c) * Bw) `|` (Bmw *Δ_(W.^c)) `|` Kw)
-    /\ Cw * (Emw .* ) * (Ew .* ) = Cw * ('Δ `|` Bmw*Δ_(W.^c) `|` Kw)
-    /\ (Cw * (Emw .* ) * (Ew .* )) * Cw  = Cw 
-    /\ (Cw * (Emw .* ) * (Ew .* )) * Δ_(W.^c)  = Cw *(Bmw `|` Kw)  * Δ_(W.^c).
+    (Emw.* `;` Ew.* ) = ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw)
+    /\ Cw `;` (Emw .* ) `;` (Ew .* ) = Cw `;` ('Δ `|` Bmw `;` Δ_(W.^c) `|` Kw)
+    /\ (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw 
+    /\ (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c).
   Proof.
     apply L7.
   Qed.
   
   Lemma L8_csbr:
     Aw_s = 'Δ `|` Aw_sp `|` Aw_sm
-    /\  ((Aw_sm * Δ_(W.^c) * E) `<=`  Aw_sp)
-    /\  ((Aw_sp * Δ_(W_s) * Em) `<=`  Aw_sm).
+    /\  ((Aw_sm `;` Δ_(W.^c) `;` E) `<=`  Aw_sp)
+    /\  ((Aw_sp `;` Δ_(W_s) `;` Em) `<=`  Aw_sm).
   Proof.
     apply L8.
   Qed.
@@ -87,7 +87,7 @@ Section Paper.
   Qed.
   
   Lemma L10_csbr_33d: forall (x y:A),
-      let R:= (Δ_(W_s) * Kw * Δ_(W_s)).+
+      let R:= (Δ_(W_s) `;` Kw `;` Δ_(W_s)).+
       in R (x, y)
          -> exists (p q: seq (Eo A O)), exists (x' y':A),
           Active_path W E q x y

@@ -142,7 +142,7 @@ Section Test_rel.
     by aac_reflexivity. 
   Qed.
 
-  Goal (X * Y * Z * T)%classic = ((X * Y) * (Z * T))%classic.
+  Goal (X `;` Y `;` Z `;` T)%classic = ((X `;` Y) `;` (Z `;` T))%classic.
     by aac_reflexivity. 
   Qed.
   
@@ -152,7 +152,7 @@ Section Test2.
 
   Variables (A: Type) (W: set A) (R S T U:relation A).
 
-  Goal (R `|` S `|` 'Δc `|` U)%classic = ((R * 'Δ) `|` 'Δc `|` (U `|` S))%classic.
+  Goal (R `|` S `|` 'Δc `|` U)%classic = ((R `;` 'Δ) `|` 'Δc `|` (U `|` S))%classic.
     by aac_reflexivity. 
   Qed.
 
@@ -164,13 +164,13 @@ Section Test2.
     by aac_reflexivity. 
   Qed.
 
-  Goal ((R `|` S).+ * S * U )%classic = ((S `|` R).+ * (S * U))%classic.
+  Goal ((R `|` S).+ `;` S `;` U )%classic = ((S `|` R).+ `;` (S `;` U))%classic.
     by aac_reflexivity. 
   Qed.
 
-  Hypothesis H: (Δ_(W) =  Δ_(W) * Δ_(W))%classic.
+  Hypothesis H: (Δ_(W) =  Δ_(W) `;` Δ_(W))%classic.
   
-  Goal ((R `|` S).+ * S * Δ_(W) * U )%classic = ((S `|` R).+ * (S * Δ_(W) * Δ_(W) * U))%classic.
+  Goal ((R `|` S).+ `;` S `;` Δ_(W) `;` U )%classic = ((S `|` R).+ `;` (S `;` Δ_(W) `;` Δ_(W) `;` U))%classic.
     rewrite {1}H.
     by aac_reflexivity. 
   Qed.

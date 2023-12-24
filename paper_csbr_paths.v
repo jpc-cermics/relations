@@ -214,7 +214,7 @@ Section Cw_s_implies_active_path.
   
   (* Lemma 10 (33d) *)  
   Lemma Kwcomp: forall (x y:A),
-      let R:= (Δ_(W_s) * Kw * Δ_(W_s))* (Δ_(W_s) * Kw * Δ_(W_s))
+      let R:= (Δ_(W_s) `;` Kw `;` Δ_(W_s)) `;` (Δ_(W_s) `;` Kw `;` Δ_(W_s))
       in R (x, y)
          -> exists (p q: seq (Eo A O)), exists (x' y':A),
           Active_path W E q x y
@@ -243,7 +243,7 @@ Section Cw_s_implies_active_path.
   Qed.
   
   Lemma Kwcomp_1: forall (x y:A),
-      let R:= (Δ_(W_s) * Kw * Δ_(W_s))
+      let R:= (Δ_(W_s) `;` Kw `;` Δ_(W_s))
       in R (x, y)
          -> exists (p q: seq (Eo A O)), exists (x' y':A),
           Active_path W E q x y
@@ -258,7 +258,7 @@ Section Cw_s_implies_active_path.
   Qed.
   
   Lemma Kwcomp_n: forall (n: nat) (x y:A),
-      let R:= (Δ_(W_s) * Kw * Δ_(W_s))^(n.+1) 
+      let R:= (Δ_(W_s) `;` Kw `;` Δ_(W_s))^(n.+1) 
       in R (x, y)
          -> exists (p q: seq (Eo A O)), exists (x' y':A),
           Active_path W E q x y
@@ -281,7 +281,7 @@ Section Cw_s_implies_active_path.
   Qed.
   
   Lemma Kwcomp_tc: forall (x y:A),
-      let R:= (Δ_(W_s) * Kw * Δ_(W_s)).+
+      let R:= (Δ_(W_s) `;` Kw `;` Δ_(W_s)).+
       in R (x, y)
          -> exists (p q: seq (Eo A O)), exists (x' y':A),
           Active_path W E q x y
@@ -293,7 +293,7 @@ Section Cw_s_implies_active_path.
   Qed.
 
   Lemma Kwcomp_tc2: forall (x y:A),
-      let R:= (Δ_(W_s) * Kw * Δ_(W_s)).+
+      let R:= (Δ_(W_s) `;` Kw `;` Δ_(W_s)).+
       in R (x, y) ->  W_s x /\ W_s y.
   Proof.
     move => x y H1 H2.
@@ -367,12 +367,12 @@ Section Active_path_implies_Aw_s.
   
   Lemma Active_path_l2: forall (o1 o2:O) (x y t:A), 
       Active_path W E [::(x,t,o1);(t,y,o2)] x y
-      -> ( ((let R:= E.-1 *Δ_(W.^c)* E in R (x, y))
-            \/ (let R:= E *Δ_(W.^c)* E in R (x, y)))
+      -> ( ((let R:= E.-1 `;` Δ_(W.^c) `;` E in R (x, y))
+            \/ (let R:= E `;` Δ_(W.^c) `;` E in R (x, y)))
            /\ o2 = P) 
          \/ 
-           ( ((let R:= E *Δ_(W_s)* E.-1 in R (x, y))
-              \/ (let R:= E.-1 *Δ_(W.^c)* E.-1 in R (x, y)))
+           ( ((let R:= E `;` Δ_(W_s) `;` E.-1 in R (x, y))
+              \/ (let R:= E.-1 `;` Δ_(W.^c) `;` E.-1 in R (x, y)))
              /\ o2 = N).
   Proof.
     move => o1 o2 x y t. 
@@ -396,65 +396,65 @@ Section Active_path_implies_Aw_s.
     by right;move: H2 => [H2 | H2];[split;[apply I6|] |split;[apply I8|]].
   Qed.
 
-  (* Definition Aw_sp := Bw + Kw + ((Bw + Kw) * Cw_s * Kw). *)
+  (* Definition Aw_sp := Bw + Kw + ((Bw + Kw) `;` Cw_s `;` Kw). *)
   
-  Lemma Last1: (Aw_sp * Ew `<=` Aw_sp)%classic.
+  Lemma Last1: (Aw_sp `;` Ew `<=` Aw_sp)%classic.
   Proof.
     pose proof Bw_ends1 as H1.
     pose proof Kw_ends1 as H2.
-    have H3: (Bw * Ew `|` Kw * Ew `<=` Bw * Ew `|` Kw)%classic
+    have H3: (Bw `;` Ew `|` Kw `;` Ew `<=` Bw `;` Ew `|` Kw)%classic
       by apply union_inc_l.
-    have H4: (Bw * Ew `|` Kw `<=` Bw `|` Kw)%classic
+    have H4: (Bw `;` Ew `|` Kw `<=` Bw `|` Kw)%classic
       by apply union_inc_r.
-    have H5: (Bw * Ew `|` Kw * Ew `<=` Bw `|` Kw)%classic
-      by apply subset_trans with (Bw * Ew `|` Kw)%classic.
-    have H6: (Bw * Ew `|` Kw * Ew 
-             `|` (Bw `|` Kw) * Cw_s * Kw * Ew `<=` Bw `|` Kw `|` (Bw `|` Kw) * Cw_s * Kw * Ew)%classic
+    have H5: (Bw `;` Ew `|` Kw `;` Ew `<=` Bw `|` Kw)%classic
+      by apply subset_trans with (Bw `;` Ew `|` Kw)%classic.
+    have H6: (Bw `;` Ew `|` Kw `;` Ew 
+             `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew `<=` Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew)%classic
       by apply union_inc_r.
-    have H7: ((Bw `|` Kw) * Cw_s * Kw * Ew `<=` (Bw `|` Kw) * Cw_s * Kw)%classic
+    have H7: ((Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew `<=` (Bw `|` Kw) `;` Cw_s `;` Kw)%classic
       by rewrite composeA; apply compose_inc.
-    have H8: (Bw `|` Kw `|` (Bw `|` Kw) * Cw_s * Kw * Ew `<=` Bw `|` Kw `|` (Bw `|` Kw) * Cw_s * Kw)%classic.
+    have H8: (Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew `<=` Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw)%classic.
     by apply union_inc_l.
     
     rewrite /Aw_sp. 
-    rewrite composeDr [((Bw `|` Kw) * Ew)%classic]composeDr.
-    by apply subset_trans with (Bw `|` Kw `|` (Bw `|` Kw) * Cw_s * Kw * Ew)%classic.
+    rewrite composeDr [((Bw `|` Kw) `;` Ew)%classic]composeDr.
+    by apply subset_trans with (Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew)%classic.
   Qed.
   
-  Lemma Last2: (Aw_sp * Δ_(W_s) * E.-1 `<=` Aw_sm)%classic.
+  Lemma Last2: (Aw_sp `;` Δ_(W_s) `;` E.-1 `<=` Aw_sm)%classic.
   Proof.
     by apply E27c.
   Qed.
   
-  Lemma Last3: (Aw_sm * Δ_(W.^c) * E `<=` Aw_sp)%classic.
+  Lemma Last3: (Aw_sm `;` Δ_(W.^c) `;` E `<=` Aw_sp)%classic.
   Proof.
     by apply E27b.
   Qed.
   
-  Lemma Last4: (Aw_sm * Δ_(W.^c) * E.-1 `<=` Aw_sm)%classic.
+  Lemma Last4: (Aw_sm `;` Δ_(W.^c) `;` E.-1 `<=` Aw_sm)%classic.
   Proof.
-    have H1: (Bmw * Δ_(W.^c) * E.-1 `<=` Bmw)%classic.
+    have H1: (Bmw `;` Δ_(W.^c) `;` E.-1 `<=` Bmw)%classic.
     rewrite /Bmw /Bw /Ew.
     rewrite -DeltaE_inverse inverse_compose inverse_star inverse_compose.
     rewrite DeltaE_inverse DeltaE_inverse.
-    pose R:= E.-1 * Δ_(W.^c). 
-    rewrite -/R [R.* * E.-1 * Δ_(W.^c)]composeA -/R. 
+    pose R:= E.-1 `;` Δ_(W.^c). 
+    rewrite -/R [R.* `;` E.-1 `;` Δ_(W.^c)]composeA -/R. 
     rewrite clos_rt_r_clos_t.
     apply composer_inc.
     apply clos_t_clos_rt.
     
-    pose R:= Δ_(W.^c) * E.-1.
+    pose R:= Δ_(W.^c) `;` E.-1.
     rewrite composeA -/R.
     rewrite composeA -/R in H1.
     rewrite /Aw_sm.
-    pose S:= ((Bw `|` Kw) * Cw_s)%classic.
+    pose S:= ((Bw `|` Kw) `;` Cw_s)%classic.
     rewrite -/S.
     rewrite composeDr.
-    have H2: (Bmw * R `|` S * Bmw * R `<=` Bmw `|` S * Bmw * R)%classic
+    have H2: (Bmw `;` R `|` S `;` Bmw `;` R `<=` Bmw `|` S `;` Bmw `;` R)%classic
       by apply union_inc_r.
-    have H3: (Bmw `|` S * Bmw * R `<=` Bmw `|` S * Bmw)%classic
+    have H3: (Bmw `|` S `;` Bmw `;` R `<=` Bmw `|` S `;` Bmw)%classic
       by apply union_inc_l; rewrite composeA; apply compose_inc.
-    by apply subset_trans with (Bmw `|` S * Bmw * R)%classic.
+    by apply subset_trans with (Bmw `|` S `;` Bmw `;` R)%classic.
   Qed.
   
   Lemma L13: forall (n: nat) (p : seq (Eo A O)) (x y:A), 
@@ -513,9 +513,9 @@ Section Active_path_implies_Aw_s.
         clear H8 H9 r H4 H17 H2 H14 y' o H1 H3 q.
         rewrite /Oe_o in H18.
         elim: o2 H16 H18 => [ H1 H2 | H1 H2].
-        ++ have H3: (Aw_sp * Δ_(W.^c) * E) (x, t) by (exists z);split;[exists z | ].
+        ++ have H3: (Aw_sp `;` Δ_(W.^c) `;` E) (x, t) by (exists z);split;[exists z | ].
            by rewrite composeA in H3;left;split;[apply Last1 |].
-        ++ have H3: (Aw_sp * Δ_(W_s) * E.-1) (x, t) by (exists z);split;[exists z | ].
+        ++ have H3: (Aw_sp `;` Δ_(W_s) `;` E.-1) (x, t) by (exists z);split;[exists z | ].
            by right;split;[apply Last2|].
       + move: H11 => /rcons_inj [_ _ H14];rewrite H13 in H14;clear H13.
         exists (rcons q (u, v, o1)),o2, v.
@@ -528,9 +528,9 @@ Section Active_path_implies_Aw_s.
         clear H8 H9 r H4 H17 H2 H14 y' o H1 H3 q.
         rewrite /Oe_o in H18.
         elim: o2 H16 H18 => [ H1 H2 | H1 H2].
-        ++ have H3: (Aw_sm * Δ_(W.^c) * E) (x, t) by (exists z);split;[exists z | ].
+        ++ have H3: (Aw_sm `;` Δ_(W.^c) `;` E) (x, t) by (exists z);split;[exists z | ].
            by left;split;[apply Last3 |].
-        ++ have H3: (Aw_sm * Δ_(W.^c) * E.-1) (x, t) by (exists z);split;[exists z | ].
+        ++ have H3: (Aw_sm `;` Δ_(W.^c) `;` E.-1) (x, t) by (exists z);split;[exists z | ].
            by right;split;[apply Last4 |].
   Qed.
   

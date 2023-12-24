@@ -834,10 +834,10 @@ Section DeploymentPath.
   Qed.     
   
   Lemma  Deployment_path_WS_iff: forall (S: relation A) (W:set A) (p: seq A) (x y: A),
-      Deployment_path (Δ_(W.^c)*S) p x y <-> All W.^c (x::p) /\ Deployment_path S p x y.
+      Deployment_path (Δ_(W.^c) `;` S) p x y <-> All W.^c (x::p) /\ Deployment_path S p x y.
   Proof.
     move => S W p x y.
-    have Hp: (Δ_(W.^c) *S `<=` S)%classic by apply DeltaCsubset.
+    have Hp: (Δ_(W.^c) `;` S `<=` S)%classic by apply DeltaCsubset.
     split.
     - elim: p x y.
       + by move => x y [z [[/= H1 <-] H3]] //. 
@@ -853,10 +853,11 @@ Section DeploymentPath.
   Qed.
   
   Lemma  Deployment_path_SW_iff: forall (S: relation A) (W:set A) (p: seq A) (x y: A),
-      Deployment_path (S*Δ_(W.^c)) p x y <-> All W.^c (rcons p y) /\ Deployment_path S p x y.
+      Deployment_path (S `;` Δ_(W.^c)) p x y 
+      <-> All W.^c (rcons p y) /\ Deployment_path S p x y.
   Proof.
     move => S W p x y.
-    have Hp: (S * Δ_(W.^c) `<=` S)%classic by apply DeltaCsubsetl.
+    have Hp: (S `;` Δ_(W.^c) `<=` S)%classic by apply DeltaCsubsetl.
     split.
     - elim: p x y.
       + by move => x y [z [H3 [/= H1 <-]]] //. 
@@ -967,18 +968,18 @@ Section PathRel_Examples.
   Variables (A: Type) (S: relation A) (W: set A).
 
   Lemma clos_t_to_paths_l : forall (x y:A),
-      (Δ_(W.^c)* S).+ (x, y) ->
+      (Δ_(W.^c) `;` S).+ (x, y) ->
       (exists (p: seq A), (All W.^c (x::p) /\ Deployment_path S p x y)
-                     /\ All ((Δ_(W.^c)*S).+)#_(y) (x::p)).
+                     /\ All ((Δ_(W.^c) `;` S).+)#_(y) (x::p)).
   Proof.
     move => x y; rewrite {1}clos_t_iff_PathRel; move  => [p H]; exists p.
     by split;[apply Deployment_path_WS_iff | apply Deployment_path_All].
   Qed.
   
   Lemma clos_t_to_paths_r : forall (x y:A),
-      (S*Δ_(W.^c)).+ (x, y) ->
+      (S `;` Δ_(W.^c)).+ (x, y) ->
       (exists (p: seq A), (All W.^c (rcons p y) /\ Deployment_path S p x y)
-                     /\ All ((Δ_(W.^c)*S.-1).+)#_(x) (y::(rev p))).
+                     /\ All ((Δ_(W.^c) `;` S.-1).+)#_(x) (y::(rev p))).
   Proof.
     move => x y; rewrite {1}clos_t_iff_PathRel; move  => [p H]; exists p.
     split.
@@ -1304,7 +1305,7 @@ Section Active_paths.
     Proof.
       move => u v [H1 H2]. 
       move: H2 => [w [H2 H3]].
-      have H4: (S * S.* ) (u,w) by (exists v).
+      have H4: (S `;` S.* ) (u,w) by (exists v).
       have H5:  (S.+ `<=` S.*)%classic by apply clos_t_clos_rt.
       have H6: S.* (u, w) by rewrite r_clos_rt_clos_t in H4 ;apply H5 in H4.
       by (exists w).

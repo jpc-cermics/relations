@@ -31,6 +31,8 @@ Notation "R .*" := (clos_rt R)
                      (at level 2, left associativity, format "R .*").
 Reserved Notation "R .-1" (at level 2, left associativity, format "R .-1"). 
 
+Reserved Notation "R `;` U" (at level 51, left associativity, format "R `;` U").
+
 Section Sets_facts.
 
   Variables (T:Type).
@@ -197,7 +199,7 @@ Section Compose.
 
 End Compose. 
 
-Notation "R * U" := (compose R U).
+Notation "R `;` U" := (compose R U).
 
 Section Compose_facts. 
   
@@ -214,8 +216,8 @@ Section Compose_facts.
     move => x [z H1 H2]. 
     by [].
   Qed.
-  
-  Lemma composeA : (R * S) * U = R * (S * U).
+
+  Lemma composeA : (R `;` S) `;` U = R `;` (S `;` U).
   Proof.
     rewrite predeqE => x'.
     split => [ [z [[w /= [? ?]] ?]] | [z [? [ w [? ?]]]]].
@@ -223,7 +225,7 @@ Section Compose_facts.
     by (exists w);split; [ exists z | ].
   Qed.
 
-  Lemma composeDr : (R `|` S) * U = (R * U) `|` (S * U).
+  Lemma composeDr : (R `|` S) `;` U = (R `;` U) `|` (S `;` U).
   Proof.
     rewrite predeqE => x.
     split.
@@ -231,7 +233,7 @@ Section Compose_facts.
     by move => [|] [ z [? ?]];[exists z; split; [ left | ] | exists z; split; [right |]].
   Qed.
   
-  Lemma composeDl : R * (S `|` U) = (R * S) `|` (R * U).
+  Lemma composeDl : R `;` (S `|` U) = (R `;` S) `|` (R `;` U).
   Proof.
     rewrite predeqE => x.
     split.
@@ -241,27 +243,27 @@ Section Compose_facts.
                       by exists z;  split; [ | right]. 
   Qed.
   
-  Lemma compose_inc : S `<=` U ->(R * S) `<=` (R * U). 
+  Lemma compose_inc : S `<=` U ->(R `;` S) `<=` (R `;` U). 
   Proof.
     rewrite /subset => H x [z [H1 H2]].
     by exists z; split; [ | apply H].
   Qed.
   
-  Lemma composer_inc : S `<=` U ->(S * R ) `<=` (U *R). 
+  Lemma composer_inc : S `<=` U ->(S `;` R ) `<=` (U `;` R). 
   Proof.
     rewrite /subset => H x [z [? ?]].
     by exists z; split; [apply H | ].
   Qed.
   
-  Lemma inverse_compose : (R * S).-1 = S.-1 * R.-1.
+  Lemma inverse_compose : (R `;` S).-1 = S.-1 `;` R.-1.
   Proof.
     rewrite predeqE => x.
     by split;move => [z [? ?]]; exists z; split.
   Qed.
   
-  Lemma RRm_inverse : (R * R.-1).-1 = R * R.-1.
+  Lemma RRm_inverse : (R `;` R.-1).-1 = R `;` R.-1.
   Proof.
-    have RRm_sym : symmetric (R * R.-1)
+    have RRm_sym : symmetric (R `;` R.-1)
         by move => x y [z [H1 H2]];exists z; split; [apply H2| apply H1].
     by apply inverse_sym, RRm_sym.
   Qed. 
@@ -273,7 +275,7 @@ End Compose_facts.
 
 Section Delta.
 
-  (** * Simplifier en enlevant le \in ça doit simplifire les preuves qui suivent *)
+  (** `;` Simplifier en enlevant le \in ça doit simplifire les preuves qui suivent *)
   Definition DeltaE (T: Type) (X: set T) : relation T := 
     [set x | X x.1 /\ x.1 = x.2]%classic.
 
@@ -311,7 +313,7 @@ Section Delta_facts.
     by move =>  H [x y] [H1 <-];split;[apply H |].
   Qed.
 
-  Lemma DeltaE_inv :  Δ_(X) * Δ_(X) = Δ_(X).
+  Lemma DeltaE_inv :  Δ_(X) `;` Δ_(X) = Δ_(X).
   Proof.
     rewrite /DeltaE /compose /mkset predeqE /=.
     move => [x y]; split.
@@ -342,7 +344,7 @@ Section Delta_facts.
     by move => [x y] /= [H1 <-].
   Qed.
   
-  Lemma DeltaW_XXXX : forall (X' Y': set T), Δ_(X') * Δ_(Y') = Δ_(X' `&` Y').
+  Lemma DeltaW_XXXX : forall (X' Y': set T), Δ_(X') `;` Δ_(Y') = Δ_(X' `&` Y').
   Proof.
     move => X' Y'.
     rewrite /DeltaE /compose /mkset predeqE.
@@ -357,13 +359,13 @@ Section Delta_facts.
       by move => x;split => [ [? H2] | ?];[rewrite /setC  mksetE in H2 |].
     Qed.
     
-  Lemma DeltaW_Wc : Δ_(X) * Δ_(X.^c) = 'Δc.
+  Lemma DeltaW_Wc : Δ_(X) `;` Δ_(X.^c) = 'Δc.
   Proof.
     rewrite DeltaW_XXXX WWcI /DeltaCE /DeltaE /setC /set0 predeqE. 
     by move => [x y] /=;split => [ [? _] // | [? _] // ].
   Qed.
   
-  Lemma DeltaWc_W : Δ_(X.^c) * Δ_(X) = 'Δc.
+  Lemma DeltaWc_W : Δ_(X.^c) `;` Δ_(X) = 'Δc.
   Proof.
     rewrite DeltaW_XXXX setIC WWcI /DeltaCE /DeltaE /setC /set0 predeqE. 
     by move => [x y]/=;split; move => [H1 <-].
@@ -380,13 +382,13 @@ Section Delta_facts.
     by rewrite unionC; apply DeltaC_union_ideml.
   Qed.
 
-  Lemma DeltaC_compose_absorbl : 'Δc * R = 'Δc.
+  Lemma DeltaC_compose_absorbl : 'Δc `;` R = 'Δc.
   Proof.
     rewrite /compose /DeltaCE /DeltaE /setC /mkset predeqE => x /=.
     by split => [ [z [[? _] _]] | [? _]].
   Qed.
   
-  Lemma DeltaC_compose_absorbr :  R * 'Δc = 'Δc.
+  Lemma DeltaC_compose_absorbr :  R `;` 'Δc = 'Δc.
   Proof.
     rewrite /compose /DeltaCE /DeltaE /setC /mkset predeqE => x /=. 
     by split => [ [z [_ [? _]]] | [? _]].
@@ -414,19 +416,19 @@ Section Delta_facts.
 
   (* XXXX deja vu *)
   Lemma DeltaE_compose : forall (Y: set T), 
-      Δ_(X) * Δ_(Y) = Δ_(X `&` Y).
+      Δ_(X) `;` Δ_(Y) = Δ_(X `&` Y).
   Proof.
     by move => Y'; rewrite DeltaW_XXXX.
   Qed.
   
-  Lemma DeltaE_compose_same : Δ_(X) * Δ_(X) = Δ_(X).
+  Lemma DeltaE_compose_same : Δ_(X) `;` Δ_(X) = Δ_(X).
   Proof.
     have H1: X `&` X = X
       by rewrite /setI /mkset predeqE;move => x;split;[move => [? _] |].
     by rewrite DeltaW_XXXX H1.
   Qed.
   
-  Lemma Delta_idem_l : 'Δ * R = R.  
+  Lemma Delta_idem_l : 'Δ `;` R = R.  
   Proof.
     rewrite /compose predeqE => [[x y]] /=.
     split.
@@ -434,7 +436,7 @@ Section Delta_facts.
     by move => ? ; exists x; split;[ apply Delta_Id |].
   Qed.
   
-  Lemma Delta_idem_r : R * 'Δ = R.  
+  Lemma Delta_idem_r : R `;` 'Δ = R.  
   Proof.
     rewrite /compose /DeltaE /mkset predeqE => [[x y]] /=.
     split.
@@ -442,7 +444,7 @@ Section Delta_facts.
     by move => ?; exists y; split;[| apply Delta_Id].
   Qed.
   
-  Lemma Delta_clos_trans_ends : (R * Δ_(X)).+ =  (R * Δ_(X)).+ * Δ_(X).
+  Lemma Delta_clos_trans_ends : (R `;` Δ_(X)).+ =  (R `;` Δ_(X)).+ `;` Δ_(X).
   Proof.
     rewrite /compose /DeltaE /clos_t /mkset predeqE => [[x' y']]/=.
     split; last by elim => z' [? [? <-]].
@@ -455,7 +457,7 @@ Section Delta_facts.
       by exists z; split;[ apply t_trans with y |split; rewrite -H''4].
   Qed.
   
-  Lemma Delta_clos_trans_starts : (Δ_(X)* R).+ = Δ_(X) * (Δ_(X) * R).+.
+  Lemma Delta_clos_trans_starts : (Δ_(X) `;` R).+ = Δ_(X) `;` (Δ_(X) `;` R).+.
   Proof.
     rewrite /compose /DeltaE /clos_t /mkset predeqE => [[x' y']]/=.
     split; last  by move => [z [[H1 <-] H2]].
@@ -474,7 +476,7 @@ Section Delta_facts.
 
   Lemma R_restrict : forall (x y: T),  
       x \in X /\ y \in X -> 
-      (R (x,y) <-> let DR:= (Δ_(X) * R * Δ_(X)) in DR (x,y)).
+      (R (x,y) <-> let DR:= (Δ_(X) `;` R `;` Δ_(X)) in DR (x,y)).
   Proof.
     rewrite /compose /DeltaE /mkset /=.
     move => x y [/inP H1 /inP H2].
@@ -483,20 +485,20 @@ Section Delta_facts.
   Qed.
 
   Lemma R_restrict_l : forall (x y: T),
-      x \in X -> (R (x,y) <-> let DR:= (Δ_(X) * R) in DR (x,y)).
+      x \in X -> (R (x,y) <-> let DR:= (Δ_(X) `;` R) in DR (x,y)).
   Proof.
     rewrite /compose /DeltaE /mkset /= => [x y /inP ?].
     split => [? | [z [[? ->] ?] ] //].
     by (exists x; split).
   Qed.
   
-  Lemma DeltaCsubset: (Δ_(X) * R `<=` R).
+  Lemma DeltaCsubset: (Δ_(X) `;` R `<=` R).
   Proof.
     rewrite /subset /DeltaE /compose /mkset /=.
     by move => [x y] /= => [[z [[_ <-] H2]]].
   Qed.
   
-  Lemma DeltaCsubsetl: (R * Δ_(X) `<=` R).
+  Lemma DeltaCsubsetl: (R `;` Δ_(X) `<=` R).
   Proof.
     rewrite /subset /DeltaE /compose /mkset /=.
     by move => [x y] /= => [[z [H2 [_ <-]]]].
@@ -523,11 +525,11 @@ Notation "R #_( y )" := (Fset R ([set y]))
                           (at level 3, no associativity, format "R #_( y )").
 
 (* Closure of Y for the relation R and subset W *)
-Notation "Clos( Y | R , W )" :=  (Fset ((Δ_(W.^c) * R).* ) Y)
+Notation "Clos( Y | R , W )" :=  (Fset ((Δ_(W.^c) `;` R).* ) Y)
                                  (at level 3, no associativity, format "Clos( Y | R , W )").    
 
 (* Closure of {y} for the relation R and subset W *)
-Notation "Clos_( y | R , W )" := (Fset ((Δ_(W.^c) * R).* ) ([set y]))
+Notation "Clos_( y | R , W )" := (Fset ((Δ_(W.^c) `;` R).* ) ([set y]))
                                  (at level 3, no associativity, format "Clos_( y | R , W )").    
 
 Section Foreset_facts.
@@ -586,7 +588,7 @@ Section Foreset_facts.
     - by move => H1;rewrite in_setE; apply: H1. 
   Qed.
   
-  Lemma Fset_comp : S # (R # X) = (S * R) # X.
+  Lemma Fset_comp : S # (R # X) = (S `;` R) # X.
   Proof.
     rewrite /Fset /compose /Fset /mkset predeqE /=.
     move => x; split.
@@ -663,7 +665,7 @@ Section Foreset_facts.
   Qed.
   
   Lemma Fset_intersect : forall (x y:T), (exists z, R#_(x) z /\ S#_(y) z)
-                                    <-> let RmR := R.-1 * S in RmR (x,y). 
+                                    <-> let RmR := R.-1 `;` S in RmR (x,y). 
   Proof.
     rewrite /Fset /mkset.
     move => x y.
@@ -691,7 +693,7 @@ Section Foreset_facts.
     split. by apply rt_refl. by [].
   Qed.
 
-  Lemma Fset_restrict : X `<=` Y -> R#X = (R* Δ_(Y))# X.
+  Lemma Fset_restrict : X `<=` Y -> R#X = (R `;` Δ_(Y))# X.
   Proof.
     rewrite /subset /Fset /compose /DeltaE /mkset predeqE /=. 
     move => H x; split. 
@@ -796,7 +798,7 @@ Section Clos_trans_facts.
   Fixpoint iter (T:Type) (R: relation T) (n : nat) : relation T :=
     match n with 
     | 0 => 'Δ
-    | n'.+1 => (iter R n') * R
+    | n'.+1 => (iter R n') `;` R
     end.
   
   Lemma iter1_id: iter R 1 = R.
@@ -811,7 +813,7 @@ Section Clos_trans_facts.
     by apply t_trans with y.
   Qed.
   
-  Lemma iter_compose : forall (n1 n2: nat), iter R (addn n1 n2) = (iter R n1) * (iter R n2).
+  Lemma iter_compose : forall (n1 n2: nat), iter R (addn n1 n2) = (iter R n1) `;` (iter R n2).
   Proof.
     move => n1 n2.
     elim: n2 n1 => [ n1  | n1 H n0]; first by rewrite addn0 Delta_idem_r.
@@ -888,19 +890,21 @@ Section Clos_trans_facts_1.
   Variables (T: Type) (R S Z U: relation T).
 
   Local Lemma clos_trans_inc: forall (V W: relation T), 
-      (forall (n:nat), Z*(V^(n.+1))* U = Z*(W^(n.+1))*U) -> Z*V.+*U `<=` Z*W.+ *U.
+      (forall (n:nat), Z `;` (V^(n.+1)) `;` U = Z `;` (W^(n.+1)) `;` U) 
+      -> Z `;` V.+ `;` U `<=` Z `;` W.+ `;` U.
   Proof.
     move => V W H;rewrite /compose /mkset.
     move => [x y] /= [u [[t [H1 H2]] H3]].
     have [n H4]: exists n, (iter V n.+1) (t, u) by apply: clos_t_iterk.
-    have H5: (Z * iter V n.+1 * U) (x, y) by (exists u; split; [exists t;split | ]).
-    have H6: (Z * iter W n.+1 * U) (x, y) by rewrite -H.
+    have H5: (Z `;` iter V n.+1 `;` U) (x, y) by (exists u; split; [exists t;split | ]).
+    have H6: (Z `;` iter W n.+1 `;` U) (x, y) by rewrite -H.
     move: H6 => [u' [[t' [H'1 H'2]] H'3]].
     by exists u'; split; [exists t'; split;[ | apply: iterk_inc_clos_trans H'2] | ].
   Qed.
   
   Lemma clos_trans_eq:
-    (forall (n:nat), Z*(R^(n.+1))*U = Z*(S^(n.+1))*U) -> Z*R.+*U = Z*S.+*U.
+    (forall (n:nat), Z `;` (R^(n.+1)) `;` U = Z `;` (S^(n.+1)) `;` U)
+    -> Z `;` R.+ `;` U = Z `;` S.+ `;` U.
   Proof.
     by move => H;rewrite predeqE;split;[apply: clos_trans_inc | apply: clos_trans_inc].
   Qed.
@@ -912,7 +916,7 @@ Section Clos_refl_trans_facts.
   Fixpoint sumRk (T:Type) (R: relation T) (n : nat) : relation T :=
     match n with 
     | 0 => 'Δ
-    | n'.+1 => 'Δ `|` (R * (sumRk R n'))
+    | n'.+1 => 'Δ `|` (R `;` (sumRk R n'))
     end.
   
   Variables (T: Type) (R S: relation T) (X Y: set T).
@@ -947,12 +951,12 @@ Section Clos_refl_trans_facts.
     by rewrite /sumRk Delta_idem_r.
   Qed.
   
-  Lemma sumRk_kp1_l : forall (n: nat), sumRk R (n.+1) = 'Δ `|`  (R * (sumRk R n)).
+  Lemma sumRk_kp1_l : forall (n: nat), sumRk R (n.+1) = 'Δ `|`  (R `;` (sumRk R n)).
   Proof.
     by move => n.
   Qed.
   
-  Lemma sumRk_kp1_r : forall (n: nat), sumRk R (n.+1) = 'Δ `|` ((sumRk R n) * R).
+  Lemma sumRk_kp1_r : forall (n: nat), sumRk R (n.+1) = 'Δ `|` ((sumRk R n) `;` R).
   Proof.
     elim => [ | n H]; first by rewrite sumRk_0 Delta_idem_l sumRk_1. 
     rewrite [in LHS]sumRk_kp1_l H composeDl  Delta_idem_r.
@@ -970,12 +974,12 @@ Section Clos_refl_trans_facts.
       (sumRk R n)  `<=` (sumRk R (n.+1)).
   Proof.
     elim => [ | n H]; first by rewrite sumRk_0 sumRk_1; apply union_containsl.
-    have H1: ('Δ `|` R*(sumRk R n)) `<=` ('Δ `|` R*(sumRk R (n.+1)))
+    have H1: ('Δ `|` (R `;` (sumRk R n))) `<=` ('Δ `|` (R `;` (sumRk R (n.+1))))
       by apply union_inc_l;apply compose_inc.
     by rewrite sumRk_kp1_l; rewrite sumRk_kp1_l.
   Qed.
   
-  Lemma sumRk_compose1 : forall (n: nat), sumRk R (n.+1) = (sumRk R n) * ('Δ `|` R). 
+  Lemma sumRk_compose1 : forall (n: nat), sumRk R (n.+1) = (sumRk R n) `;` ('Δ `|` R). 
   Proof.
     move => n.
     have H1:  (sumRk R n)  `<=` (sumRk R (n.+1)) by apply sumRk_inc_sumRkp1.
@@ -993,7 +997,7 @@ Section Clos_refl_trans_facts.
   Qed.
   
   Lemma sumRk_compose : forall (n1 n2: nat),
-      sumRk R (n1 + n2) = (sumRk R n1) * (sumRk R n2).
+      sumRk R (n1 + n2) = (sumRk R n1) `;` (sumRk R n2).
   Proof.
     move => n1 n2; elim: n2 n1 => [ n1  | n1 H n2]. 
     by rewrite addn0 sumRk_0 Delta_idem_r. 
@@ -1016,7 +1020,7 @@ Section Clos_refl_trans_facts.
     by exists (addn n1 n2); rewrite sumRk_compose;exists y;split.
   Qed.
 
-  Lemma clos_t_decomp_rt: R `|` (R * R.+) = R.+.
+  Lemma clos_t_decomp_rt: R `|` (R `;` R.+) = R.+.
   Proof.
     rewrite predeqE => [[x' y']]. split.
     - move => [H1| [z [H1 H2]]].
@@ -1026,13 +1030,13 @@ Section Clos_refl_trans_facts.
       elim => x y.
       + by left.
       + move => z H1 [H2|[z' [H2 H5]]] H3 [H4|[z'' [H4 H6]]].
-        * by right; exists y; split.
-        * by right; exists y; split.
-        * by right; exists z'; split; [ | apply t_trans with y].
-        * by right; exists z'; split; [ | apply t_trans with y].
+        by right; exists y; split.
+        by right; exists y; split.
+        by right; exists z'; split; [ | apply t_trans with y].
+        by right; exists z'; split; [ | apply t_trans with y].
   Qed.
   
-  Lemma clos_t_decomp_2: R.+ `|` (R.+ * R.+) = R.+.
+  Lemma clos_t_decomp_2: R.+ `|` (R.+ `;` R.+) = R.+.
   Proof.
     rewrite predeqE => [[x' y']]. split;rewrite /clos_t /setU /compose /mkset /=.
     by move => [H1| [z [H1 H2]]]; [ | by apply t_trans with z].
@@ -1044,7 +1048,7 @@ Section Clos_refl_trans_facts.
     by exists z'; split; [ | apply t_trans with y].
   Qed.
   
-  Lemma clos_t_decomp_rt_r: R `|` (R.+ * R) = R.+.
+  Lemma clos_t_decomp_rt_r: R `|` (R.+ `;` R) = R.+.
   Proof.
     rewrite predeqE => [[x' y']]. split;rewrite /clos_t /setU /compose /mkset /=.
     - move => [H1| [z [H1 H2]]]; first by apply t_step.
@@ -1073,12 +1077,12 @@ Section Clos_refl_trans_facts.
       by right; apply t_trans with y0.    
   Qed.
 
-  Lemma r_clos_rt_clos_t: R * R.* = R.+.
+  Lemma r_clos_rt_clos_t: R `;` R.* = R.+.
   Proof.
     by rewrite -DuT_eq_Tstar composeDl Delta_idem_r clos_t_decomp_rt.
   Qed.
   
-  Lemma clos_rt_r_clos_t: R.* * R = R.+.
+  Lemma clos_rt_r_clos_t: R.* `;` R = R.+.
   Proof.
     by rewrite -DuT_eq_Tstar composeDr Delta_idem_l clos_t_decomp_rt_r.
   Qed.
@@ -1088,20 +1092,20 @@ End Clos_refl_trans_facts.
 Section Clos_refl_trans_facts1.
   
   Lemma L1 : forall (T: Type) (R S: relation T),
-      R.* * S.* = ('Δ `|` R.+) * ('Δ `|` S.+ ).
+      R.* `;` S.* = ('Δ `|` R.+) `;` ('Δ `|` S.+ ).
   Proof.
     by move => T R S; rewrite !DuT_eq_Tstar.
   Qed.
   
   Lemma L2 : forall (T: Type) (R S: relation T),
-      R.* * S.* = 'Δ `|` R.+ `|` S.+ `|` R.+ * S.+. 
+      R.* `;` S.* = 'Δ `|` R.+ `|` S.+ `|` (R.+ `;` S.+). 
   Proof.
     move => T R S.
     by rewrite -!DuT_eq_Tstar
          !composeDl !composeDr DeltaE_inv Delta_idem_l Delta_idem_r -unionA.
   Qed.
 
-  Lemma compose_rt_rt : forall (T: Type) (R: relation T),  R.* * R.* = R.*. 
+  Lemma compose_rt_rt : forall (T: Type) (R: relation T),  R.* `;` R.* = R.*. 
   Proof.
     by move => T R;rewrite L2 unionA clos_t_decomp_2 unionA union_RR DuT_eq_Tstar.
   Qed.
@@ -1111,36 +1115,36 @@ End Clos_refl_trans_facts1.
 Section Clos_Fset.
 
   Lemma E30 : forall (T:Type) (R: relation T) (X Y: set T),
-      'Δ#X `|` R#Y = 'Δ#X `|` (Δ_(X.^c)*R)#Y.
+      'Δ#X `|` R#Y = 'Δ#X `|` (Δ_(X.^c) `;` R)#Y.
   Proof.
     by move => A R X Y; rewrite Fset_D Union_Setminus -Fset_DCE Fset_comp.
   Qed.
   
   Lemma Fset_n : forall (T:Type) (R: relation T) (Y:set T) (n : nat),
-      (sumRk R n)#Y `<=` (Δ_(Y.^c) * R).*#Y.
+      (sumRk R n)#Y `<=` (Δ_(Y.^c) `;` R).*#Y.
   Proof.
     move => T R Y n x H.
-    have H0: forall (n':nat), (sumRk R n') # Y = (sumRk ( Δ_(Y.^c) * R) n') # Y
+    have H0: forall (n':nat), (sumRk R n') # Y = (sumRk ( Δ_(Y.^c) `;` R) n') # Y
         by elim => [ | n' H'];[rewrite /sumRk 
                              |rewrite -!Fset_union_rel -!/sumRk -!Fset_comp 
                               -[in RHS]H' !Fset_comp -[in RHS]E30].
     
-    have H1: ((sumRk R n) # Y) `<=` ((sumRk (Δ_(Y.^c) * R) n) # Y)
+    have H1: ((sumRk R n) # Y) `<=` ((sumRk (Δ_(Y.^c) `;` R) n) # Y)
       by move => x' H1;rewrite -H0.
-    have H2: ((sumRk (Δ_(Y.^c) * R) n) # Y) `<=` ((Δ_(Y.^c) * R).* # Y)
+    have H2: ((sumRk (Δ_(Y.^c) `;` R) n) # Y) `<=` ((Δ_(Y.^c) `;` R).* # Y)
       by move => H2; apply: Fset_inc; apply: sumRk_inc_clos_refl_trans.
     by apply: H2; apply: H1.
   Qed.
 
   Lemma Fset_rt: forall (T: Type) (R: relation T) (Y:set T),
-      (Δ_(Y.^c)*R).*#Y = R.*#Y.
+      (Δ_(Y.^c) `;` R).*#Y = R.*#Y.
   Proof.
     move => T R Y.
-    have H0: (Δ_(Y.^c) * R).* `<=`  (R.* )
+    have H0: (Δ_(Y.^c) `;` R).* `<=`  (R.* )
       by apply: clos_refl_trans_inc; move => [x y] [z [ [_ /= ->] H2]]. 
-    have E29_1:  (Δ_(Y.^c)* R).*#Y `<=` R.*#Y
+    have E29_1:  (Δ_(Y.^c) `;` R).*#Y `<=` R.*#Y
       by apply Fset_inc.
-    have E29_2:  R.*#Y `<=` (Δ_(Y.^c)*R).*#Y.
+    have E29_2:  R.*#Y `<=` (Δ_(Y.^c) `;` R).*#Y.
     move => x [z [H1 H2]];
            suff: exists n : nat, sumRk R n (x, z); last by apply: clos_rt_sumRk.
     by move => [n H3];(suff: (Fset (sumRk R n) Y) x; 
@@ -1158,7 +1162,7 @@ Section Relation_restricted.
   Definition Restrict (T:Type) (R: relation T) (X: set T) := 
     [ set x | X x.1 /\ X x.2 /\ R x]%classic.
   
-  Lemma Rest (T:Type) (X: set T) (R: relation T) : (Restrict R X) = Δ_(X) * R * Δ_(X).
+  Lemma Rest (T:Type) (X: set T) (R: relation T) : (Restrict R X) = Δ_(X) `;` R `;` Δ_(X).
   Proof.
     rewrite predeqE => [[x y]].
     split => [[/= H1 [H2 H3]] | [z [[t [[/= H1 H'1] H2]] [/= H3 H'3]]]].
