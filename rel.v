@@ -37,7 +37,7 @@ Section Sets_facts.
 
   Variables (T:Type).
 
-  (* usefull to ease changes mixed with moves *)
+  (* usefull to ease moves with views*)
   Lemma inP: forall (x:T) (X: set T), x \in X <-> X x. 
   Proof.
     by move => x X; rewrite in_setE.

@@ -226,11 +226,13 @@ Section Seq_lift.
   Qed.
   
   (* Ppath form sequence of nodes *)
+  (* begin snippet Lift:: no-out *)  
   Fixpoint Lift (p: seq A): seq (T2 A) := 
     match p with 
     | x :: [:: y & p] as p1 => (x,y)::(Lift p1)
     | _ => @nil (prod A A)
     end.
+  (* end snippet Lift *)  
 
   Section Lift_seq_props.
     
