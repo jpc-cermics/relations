@@ -1,6 +1,8 @@
 SHELL=/bin/sh
 
-PDF= tuto.pdf
+PDF= \
+	Conditional_Separation_Binary_Relation.pdf \
+	tuto.pdf \
 
 all: movies $(PDF)
 

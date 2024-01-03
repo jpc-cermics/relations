@@ -192,7 +192,7 @@ and the \emph{reflexive and transitive closure} is
 A \emph{partial equivalence relation} is a symmetric and transitive binary
 relation (generally denoted by~$\sim$ or~$\equiv$).
 An \emph{equivalence relation} is a reflexive, symmetric and transitive binary
-relation.
+relation. 
 
 \cite{Gonthier-Mahboubi-Tassi:2016}
 \cite{MathComp:2022}
@@ -256,65 +256,78 @@ when no two edges have the same endpoints.
 In graph theory, one finds the notions of path, chain and walk. 
 To avoid ambiguities,
 we formally define an \EdgePath\ in $(\VERTEX,\EDGE)$ (in our sense) 
-as the classical notion of path in a graph~\citep{Diestel}
-
+as the classical notion of path in a graph~\citep{Diestel}.
 We also define an \undirectedEdgePath\ in $(\VERTEX,\EDGE)$ (in our sense)
 as what corresponds to chain path in~\citep{Lauritzen-et-al-1990}. 
 \medskip
 
-\noindent $\bullet$
-An \emph{\EdgePath} of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$ is a
-sequence 
-\( \path=\bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \in \SetProd{\EDGE}{n} \)
-of $n$~edges such that
-\( \head{\vertex_i}=\tail{\vertex_{i+1}} \), $i\in\ic{1,n{-}1}$ or, equivalently, is a sequence
-\( \path=\bseqa{ \np{\vertex_i,\vertex_{i+1}} }{i\in\ic{1,n}} \in \SetProd{\EDGE}{n} \).
-% 
+\noindent $\bullet$ Definition of (edge) paths. We first introduce some notations.
+
+For any set ${\Set}$, we denote by $\Sequence_n(\Set)$ the set of sequences of
+length $n$ of elements of the set~$\Set$, $\Sequence_n(\Set)= \SetProd{\Set}{n}$
+and by $\Sequence_{\ge n}(\Set)$ the set of finite sequences of length greater or equal
+to $n$ of elements of the set $\Set$, that is the disjoint unions
+$\sqcup_{k\ge n} \Sequence_k(\Set)$.
+
+Now, for $n\ge 2$, we consider a lift operator $\Lift_n: \Sequence_{n}(\VERTEX)\to 
+\Sequence_{n{-}1}(\VERTEX{\times}\VERTEX)$ transforming a sequence of nodes of length $n$
+into a sequence of edges of length $n{-}1$ as follows 
+\begin{align}
+  \forall (\vertex_1,\dots, \vertex_n)\in \SetProd{\VERTEX}{n}
+  \eqsepv
+  \Lift^n(\vertex_1,\dots, \vertex_n) = \bp{\np{\vertex_1, \vertex_2},\np{\vertex_2, \vertex_3},\dots,
+  \np{\vertex_{n-1},\vertex_n}}
+  \eqfinp
+\end{align}
+
+The set of \emph{\EdgePath} of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$ is defined by
+\begin{equation}
+  \PATH^n\np{\OrientedGraph} =
+  \Lift_n \bp{ \Sequence_{n+1}(\VERTEX)} \cap \Sequence_{n}(\EDGE)
+  \subset \Sequence_{n}(\VERTEX{\times}\VERTEX))
+  \eqfinp
+\end{equation}
+It easily follows from the definition of $\PATH^n\np{\OrientedGraph}$ that we also have
+\begin{align}
+  \PATH^n\np{\OrientedGraph} %    \PATH^n\np{\graph}
+  &=
+    \Bset{ \bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \in \SetProd{\EDGE}{n} }
+    { \head{\vertex_i}=\tail{\vertex_{i+1}} \text{ for } i\in\ic{1,n{-}1}}
+    \subset \SetProd{\EDGE}{n}
+    \eqfinp
+\end{align}
+Then, using the sequence of mapping $\nseqa{\Lift_n}{n\ge 2}$ we define a lift operator
+$\Lift: \Sequence_{\ge 2}(\VERTEX) \to \Sequence_{\ge 1}(\VERTEX{\times}\VERTEX)$ such that for all $n \ge 2$ the restriction of
+$\Lift$ to the set $\Sequence_{n}(\VERTEX)$ coincide with the $\Lift_n$ mapping, that is ${\Lift}_{\vert\Sequence_n(\VERTEX)}= \Lift_n$.
+The set of finite (edge) paths of length greater of equal to $1$ is defined by
+\begin{align}
+  \PATH^{\ge 1}\np{\OrientedGraph}
+  &=
+    \Lift\bp{ \Sequence_{\ge 2}(\VERTEX)} \cap \Sequence_{\ge 1}(\EDGE)
+    \subset \Sequence_{\ge 1}(\VERTEX{\times}\VERTEX))
+  \eqfinv
+\end{align}
+which coincide with the set $\bigcup_{n\ge 1} \PATH^n\np{\OrientedGraph}$ as it easily follows that
+$\PATH^{\ge 1}\np{\OrientedGraph} = \bigcup_{n\ge 1} \PATH^n\np{\OrientedGraph}$
+
 The first element~$\tail{\vertex_1}$ of an \EdgePath\
 \( \path=\bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \) 
 is the \emph{tail of the \EdgePath}, 
 whereas the last one~$\head{\vertex_n}$ is the \emph{head of the \EdgePath}.
 Both tail and head are called \emph{endpoints} of the \EdgePath. 
-% 
-We denote by
-\begin{subequations}
-  \begin{align}
-    \PATH^n\np{\OrientedGraph} %    \PATH^n\np{\graph}
-    &=
-      \Bset{ \bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \in \SetProd{\EDGE}{n} }
-      { \head{\vertex_i}=\tail{\vertex_{i+1}} \text{ for } i\in\ic{1,n{-}1}}
-      \subset \SetProd{\EDGE}{n}
-      \intertext{the set of (edge) paths of length~$n$
-      ($n\ge 1$) relative to the graph~$\npOrientedGraph$, and by}
-      \PATH\np{\OrientedGraph}
-    &=
-      \bigcup_{n\ge 0} \PATH^n\np{\OrientedGraph}
-      \subset \VERTEX^2 \cup \bigcup_{n\ge 1} \SetProd{\EDGE}{n}
-      \label{eq:PATHOrientedGraph}
-  \end{align}
-  the set of finite \EdgePaths\ relative to the graph~$\npOrientedGraph$,
-  where $\PATH^0\np{\OrientedGraph}$, made of what we call \emph{paths of length~$0$}, is defined by
-  \begin{equation}
-    \PATH^0\np{\OrientedGraph}=
-    \bset{ \np{\vertex,\vertex}}{ \vertex \in \VERTEX \text{ and }
-      \np{\vertex,\vertex} \not\in \EDGE}
-    = \Delta \cap \Complementary{\EDGE} \subset \VERTEX^2  
-    \eqfinp
-  \end{equation}
-  Thus, by definition, we have that
-  \begin{equation}
-    \PATH^0\np{\OrientedGraph} \cup \PATH^1\np{\OrientedGraph}
-    \supset 
-    \bp{ \Delta \cap \Complementary{\EDGE} } \cup  \bp{ \Delta \cap \EDGE }
-    = \Delta
-    \eqfinv
-  \end{equation}
-  so that \EdgePaths\ of length~0 or~1  contain the diagonal~$\Delta$. 
-\end{subequations}
+
 We denote by $\cardinal{\path}$ the length of a path $\path \in
 \PATH\np{\OrientedGraph}$.
 An \emph{\EdgeSubPath} of the \EdgePath~$\path$ is an \EdgePath\ obtained by a
-subsequence of consecutive indices. 
+subsequence of consecutive indices.
+
+We describe the coq formalization of (edge) paths. A graph $(\VERTEX,\EDGE)$ is given by a type \texttt{T: Type} and a relation on \texttt{T} which is
+a set in $T*T$, $\EDGE:\texttt{set T*T}$ using the set definition of mathcomp analysis. We then directly define the List operator $\Lift$ as follows.
+
+{\small 
+\inputsnippets{erel3/Lift.tex}
+}
+
 \medskip
 
 \noindent $\bullet$
