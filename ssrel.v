@@ -75,9 +75,9 @@ Section Transitive_Closure.
     | tn1_trans (y z:T) : R (y,z) -> clos_trans_n1 x y -> clos_trans_n1 x z.
 
   (* transitive closure as set *)
-  Definition clos_t := [set x: T * T | clos_trans x.1 x.2]%classic.
-  Definition clos_t_1n := [set x: T * T | clos_trans_1n x.1 x.2]%classic.
-  Definition clos_t_n1 := [set x: T * T | clos_trans_n1 x.1 x.2]%classic.
+  Definition clos_t := [set x: T * T | clos_trans x.1 x.2].
+  Definition clos_t_1n := [set x: T * T | clos_trans_1n x.1 x.2].
+  Definition clos_t_n1 := [set x: T * T | clos_trans_n1 x.1 x.2].
   
   Lemma clos_t_t1n_iff : clos_t =  clos_t_1n.
   Proof.
@@ -113,7 +113,7 @@ Section Reflexive_Closure.
     | r_step (y:T) : R (x,y) -> clos_refl x y
     | r_refl : clos_refl x x.
 
-  Definition clos_r := [set x: T * T | clos_refl x.1 x.2]%classic.
+  Definition clos_r := [set x: T * T | clos_refl x.1 x.2].
   
 End Reflexive_Closure.
 
@@ -144,11 +144,11 @@ Section Reflexive_Transitive_Closure.
     R (y,z) -> clos_refl_trans_n1 x y -> clos_refl_trans_n1 x z.
 
   (* begin snippet clos_rt:: no-out *)  
-  Definition clos_rt := [set x: T *T | clos_refl_trans x.1 x.2]%classic.
+  Definition clos_rt := [set x: T *T | clos_refl_trans x.1 x.2].
   (* end snippet clos_rt *)  
 
-  Definition clos_rt_1n := [set x: T *T | clos_refl_trans_1n x.1 x.2]%classic.
-  Definition clos_rt_n1 := [set x: T *T | clos_refl_trans_n1 x.1 x.2]%classic.
+  Definition clos_rt_1n := [set x: T *T | clos_refl_trans_1n x.1 x.2].
+  Definition clos_rt_n1 := [set x: T *T | clos_refl_trans_n1 x.1 x.2].
   
   Lemma clos_rt_rt1n_iff : clos_rt = clos_rt_1n.
   Proof.
@@ -244,9 +244,9 @@ Section Reflexive_Symmetric_Transitive_Closure.
     | rstn1_trans (y z:T) : R (y,z) \/ R (z,y) ->
          clos_refl_sym_trans_n1 x y -> clos_refl_sym_trans_n1 x z.
   
-  Definition clos_rst := [set x: T *T | clos_refl_sym_trans x.1 x.2]%classic.
-  Definition clos_rst_1n := [set x: T *T | clos_refl_sym_trans_1n x.1 x.2]%classic.
-  Definition clos_rst_n1 := [set x: T *T | clos_refl_sym_trans_n1 x.1 x.2]%classic.
+  Definition clos_rst := [set x: T *T | clos_refl_sym_trans x.1 x.2].
+  Definition clos_rst_1n := [set x: T *T | clos_refl_sym_trans_1n x.1 x.2].
+  Definition clos_rst_n1 := [set x: T *T | clos_refl_sym_trans_n1 x.1 x.2].
   
   Lemma clos_rst_rstn1_iff : clos_rst = clos_rst_n1. 
   Proof.
@@ -306,13 +306,13 @@ Section Properties.
 
   Variables (T: Type) (R : relation T).
     
-  Lemma clos_rt_clos_rst : ((clos_rt R) `<=` (clos_rst R))%classic.
+  Lemma clos_rt_clos_rst : ((clos_rt R) `<=` (clos_rst R)).
   Proof.
     rewrite /clos_rt /clos_rst /mkset => xy.
     by elim => [| | x y z _ ? _ ? ];[constructor|apply rst_refl|apply rst_trans with y].
   Qed.
 
-  Lemma clos_r_clos_rt : ((clos_r R) `<=` (clos_rt R))%classic.
+  Lemma clos_r_clos_rt : ((clos_r R) `<=` (clos_rt R)).
   Proof.
     by rewrite /clos_r /clos_rt /mkset => xy; elim => [x y |];constructor.
   Qed.
@@ -331,7 +331,7 @@ Section Properties.
   Qed.
     
   Lemma clos_rst_idempotent :
-    ((clos_rst (clos_rst R)) `<=` (clos_rst R))%classic.
+    ((clos_rst (clos_rst R)) `<=` (clos_rst R)).
   Proof.
     rewrite /clos_rst/mkset => xy.
     by elim => [// |x | x y _ | x y z _ H1 _ H2];
@@ -343,7 +343,7 @@ Section Properties.
     constructor => [x | x y z];[apply rt_refl | apply rt_trans].
   Qed.
   
-  Lemma clos_rt_idempotent : ((clos_rt (clos_rt R)) `<=` (clos_rt R))%classic. 
+  Lemma clos_rt_idempotent : ((clos_rt (clos_rt R)) `<=` (clos_rt R)). 
   Proof.
     rewrite /clos_rt /mkset => xy.
     by elim => [//| x' | x' y' z' _ H1 _ H2];[apply: rt_refl | apply: (rt_trans H1 H2)].

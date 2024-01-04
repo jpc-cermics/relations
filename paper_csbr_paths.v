@@ -469,10 +469,10 @@ Section Active_path_implies_Aw_s.
       pose proof seq_rcrc0 H1 as [[[u v] o1] [[[z t] o2] H4]].
       rewrite H4 in H2.
       pose proof Active_path_cc_ht H2 as [H5 H6].
-      rewrite /Oe_h /last /Oe_t in H5 H6.
+      rewrite /last /= in H5 H6.
       rewrite H5 H6.
       pose proof Active_path_cc_a H2 as [H7 [H8 [H9 H10]]].
-      rewrite /ComposeOe /Oe_t /Oe_h /mkset /fst /snd in H9.
+      rewrite /ComposeOe /mkset /fst /snd in H9.
       rewrite H9 H5 H6 in H2 *.
       exists [:: (u, v, o1)],o2,z.
       split; first by [].
@@ -494,12 +494,12 @@ Section Active_path_implies_Aw_s.
       move: H9 => /eqP H9.
       have H10: exists (r : seq (Eo A O)) (o : O) (y' : A),
           (rcons q (u,v,o1)) = rcons r (y',v , o) 
-          /\ (Aw_sp ((Oe_h (head (u,v,o1) q)), v) /\ o = P 
-              \/ Aw_sm ((Oe_h (head (u,v,o1) q)), v) /\ o = N)
+          /\ (Aw_sp ((head (u,v,o1) q).1.1, v) /\ o = P 
+              \/ Aw_sm ((head (u,v,o1) q).1.1, v) /\ o = N)
           by apply Hr.
       clear Hr.
       rewrite -H5 in H2 H10 *;clear H5.
-      rewrite /Oe_t in H6;rewrite H6; clear H6 y.
+      rewrite /= in H6;rewrite H6; clear H6 y.
       move: H10 => [r [o [y' [H11 [[H12 H13] | [H12 H13]]]]]].
       
       + move: H11 => /rcons_inj [_ _ H14];rewrite H13 in H14;clear H13.
@@ -511,7 +511,6 @@ Section Active_path_implies_Aw_s.
         rewrite H14 in H2 H18 H15 *.
         rewrite H17 in H15 H2 H18 H12 *.
         clear H8 H9 r H4 H17 H2 H14 y' o H1 H3 q.
-        rewrite /Oe_o in H18.
         elim: o2 H16 H18 => [ H1 H2 | H1 H2].
         ++ have H3: (Aw_sp `;` Δ_(W.^c) `;` E) (x, t) by (exists z);split;[exists z | ].
            by rewrite composeA in H3;left;split;[apply Last1 |].
@@ -526,7 +525,6 @@ Section Active_path_implies_Aw_s.
         rewrite H14 in H2 H18 H15 *.
         rewrite H17 in H15 H2 H18 H12 *.
         clear H8 H9 r H4 H17 H2 H14 y' o H1 H3 q.
-        rewrite /Oe_o in H18.
         elim: o2 H16 H18 => [ H1 H2 | H1 H2].
         ++ have H3: (Aw_sm `;` Δ_(W.^c) `;` E) (x, t) by (exists z);split;[exists z | ].
            by left;split;[apply Last3 |].
@@ -542,7 +540,7 @@ Section Active_path_implies_Aw_s.
                  (* p = [::]*)first by rewrite L9 E27a;left;left;rewrite Delta_Id.
     elim: p => [[H1 [H2 H3]] | [[x2 y2] o2]  p _ H1].
     (* p = [::(x',y',o)] *)
-    rewrite /Oe_h /Oe_t in H1 H2;rewrite -H1 -H2;clear H1 H2.
+    rewrite /= in H1 H2;rewrite -H1 -H2;clear H1 H2.
     by case: o1 H3 => [ ? | ?];[ apply E_inc_Aw | apply Einv_inc_Aw].
     (* general case *)
     pose q:= [:: (x1, y1, o1), (x2, y2, o2) & p].
