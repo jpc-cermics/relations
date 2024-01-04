@@ -26,14 +26,10 @@ Local Open Scope classical_set_scope.
 Section Types.
   (** * Needed Types *)
   Variables (T O: Type).
-  Definition T2 := (prod T T).
-  Definition he (t: T * T):= let (x,y):= t in x.
-  Definition ta (t: T * T):= let (x,y):= t in y.
-
   Definition Eo (Z: Type) := prod (prod T T) Z.
-  Definition Oe_o (oe: Eo O) := let (x,o) := oe in o.
-  Definition Oe_h (oe: Eo O) := let (x,o) := oe in let (h,t):=x in h.
-  Definition Oe_t (oe: Eo O) := let (x,o) := oe in let (h,t):=x in t.
+  Definition Oe_o (oe: Eo O) := oe.2. (* let (x,o) := oe in o. *)
+  Definition Oe_h (oe: Eo O) := oe.1.1. (* let (x,o) := oe in let (h,t):=x in h. *)
+  Definition Oe_t (oe: Eo O) := oe.1.2. (* let (x,o) := oe in let (h,t):=x in t. *)
   
 End Types.
 
