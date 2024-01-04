@@ -351,6 +351,7 @@ $n{-}1$ as follows
   \Lifto_n(v,o) = \bp{\np{\vertex_1, \vertex_2,o_1},\dots,
   \np{\vertex_{n-1},\vertex_n,o_{n-1}}}
   \eqfinp
+  \label{def:Lifto}
 \end{align}
 Proceeding as in the previous paragraph, using the sequence of mapping
 $\nseqa{\Lifto_n}{n\ge 2}$ we define a lift operator
@@ -375,6 +376,7 @@ where the relation $\EDGEo$ on the set $\EDGE\times\Orientation$ is defined by
   \iff (\vertex, \vertexbis) \in \EDGE^{(o)},
   \text{ with } \EDGE^{(+1)}= \EDGE \eqsepv \EDGE^{(-1)}= \Converse{\EDGE}
   \eqfinp
+  \label{def:Eo_relation}
 \end{align}
 
 The set of finite \undirectedEdgePaths\footnote{%
@@ -410,6 +412,21 @@ The set of finite \undirectedEdgePaths\footnote{%
 An \emph{\undirectedEdgeSubPath} of the \undirectedEdgePath~$\UndirectedPath
 \in\UPATH\np{\OrientedGraph}$ is an \undirectedEdgePath\ obtained by a
 subsequence of consecutive indices. 
+
+The coq formalization of \undirectedEdgePaths\ paths of size greater or equal to
+one follows the same path as the one used for (edge) paths except that we use
+the oriented lift operator defined in Equation~\eqref{def:Lifto} implemented as 
+follows in Coq
+{\small \inputsnippets{erel3/pair.tex,erel3/LiftO.tex}}
+Moreover, we have to
+check that elements of paths satisfy the $\EDGEo$ relation defined in
+Equation~\eqref{def:Eo_relation}. For that purpose,  the mapping \texttt{Oedge} is used to
+construct a relation $\EDGEo$ given a relation $\EDGE$
+{\small \inputsnippets{erel3/Oedge.tex}
+Finally, the set of
+\undirectedEdgePaths\ paths of size greater or equal to one,
+$\UPATH^{\ge 1}\np{\OrientedGraph}$ is defined by
+\inputsnippets{erel3/EoPath1.tex}
 
 \medskip
 

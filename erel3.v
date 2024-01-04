@@ -436,13 +436,11 @@ Section Seq_liftO.
   Definition O_rev (o:O) := match o with | P => N | N => P end.
   
   (* Oedge as a subset of (prod A A) O) *)
+  (* begin snippet Oedge:: no-out *)  
   Definition Oedge (S: relation T) :=
-    fun (oe: Eo T O) =>
-      match oe with
-      | (e,P) => S e
-      | (e,N) => S.-1 e
-      end.
-  
+    fun (oe: Eo T O) => match oe with | (e,P) => S e | (e,N) => S.-1 e end.
+  (* end snippet Oedge *)
+
   Lemma Oedge_rev: forall (S: relation T) (x y: T),
       Oedge S (x,y,P) = Oedge S (y,x,N).
   Proof.
@@ -454,14 +452,15 @@ Section Seq_liftO.
   Proof.
     by move => S x y; elim. 
   Qed.
-  
+
+  (* begin snippet pair:: no-out *)  
   Fixpoint pair (spa: seq (T * T)) (so: seq O):= 
     match spa, so with 
     | pa::spa, o::so => (pa,o)::(pair spa so)
     | pa::spa, [::] => (pa,P)::(pair spa [::])
     |  _ , _ => @nil (Eo T O)
     end.
-
+  (* end snippet pair *)  
   Lemma pair_c: forall (spa: seq (T * T)) (so: seq O) (pa: T * T),
       pair (pa::spa) so = (pa,head P so )::(pair spa (behead so)).
   Proof.
@@ -548,8 +547,10 @@ Section Seq_liftO.
     by elim => [ // | pa spa Hr o ];rewrite pair_c pair_o_c Hr.
   Qed.
 
-    
+  (* begin snippet LiftO:: no-out *)  
   Definition LiftO (sa: seq T) (so: seq O) := pair (Lift sa) so.
+  (* end snippet LiftO *)  
+  
   Definition Lifto (sa: seq T) (o: O) := pair_o (Lift sa) o.
   
   Section LiftO_seq_props.
@@ -597,7 +598,8 @@ Section Seq_liftO.
     
   End LiftO_seq_props.
   
-  (** Lifto properties herited from Lift *) 
+  Section Lifto_seq_props.
+    (** Lifto properties herited from Lift *) 
   Lemma Lifto_c: forall (p:seq T) (o:O) (x y: T),
       Lifto [::x, y & p] o = (x,y,o)::(Lifto [::y & p] o).
   Proof.
@@ -691,24 +693,14 @@ Section Seq_liftO.
     by rewrite size_nseq.
   Qed.
 
-  (* subset of AxAxO induced by a relation and orientation *)
-  
-  Definition AllOS (S: relation T) (seo: seq (Eo T O)) := All (Oedge S) seo.
-  
-  Definition SeqORel (S: relation T) (sa: seq T) (so:seq O) := AllOS S (LiftO sa so).
+  End Lifto_seq_props.
 
-  (** * We obtain all the extended path joining x to y in the graph (T,S) *)
-  Definition EoPath (S: relation T) (x y: T) (sa: seq T) (so:seq O):=
-    SeqORel S (x::(rcons sa y)) so.
-
-  (** * The elements of union_[n>=1] U^n(A,E) (2c) of the paper are the 
-   *  sequences q in A*A*O such that there exists x,y,p and so such that 
-   *  q= LiftO (x::rcons p y) so satisfying AllOS S q.
-   *  
-   *  We have two ways to see that q is a chain of size >=1. 
-   *  q = Lift (x::rcons p y) or [ size q = 1 /\ Lift q satisfy AllS Compose
-   *)
-    
+  (* begin snippet EoPath1:: no-out *)  
+  Definition EoPath1 (S: relation T):= 
+    [set po | All (Oedge S) (LiftO po.1 po.2) /\ length(po.1) >= 2 
+              /\ length(po.2) = length(po.1)-1].
+  (* end snippet EoPath1 *)
+  
 End Seq_liftO.
 
 Section DeploymentPath.
