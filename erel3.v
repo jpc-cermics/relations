@@ -952,48 +952,6 @@ Section PathRel_Examples.
   
 End PathRel_Examples.
 
-(*
-Section Path_in_prod_A_A.
-  (** * paths in prod A A THIS SECTION IS OBSOLETE 
-   *  i.e. replaces by previous stuffs 
-   *)
-  Variables (A: Type).
-  
-  (* Ppath form sequence of nodes *)
-  Fixpoint Ppath_from_nodes (p: seq T) := 
-    match p with 
-    | x :: [:: y & p] as p1 => (x,y)::(Ppath_from_nodes p1)
-    | _ => @nil (prod A A)
-    end.
-  
-  Lemma Ppath_from_nodes_eq: forall  (p:seq T) (x y: T),
-      Ppath_from_nodes [::x,y & p] = [::(x,y) & Ppath_from_nodes [::y & p]].
-  Proof.
-    by move => p x y;split;elim: p x y;move => x y //=;move => z p Hr x1 y1 //= H1.
-  Qed.
-  
-  Fixpoint Ppath_to_nodes (p: seq (T * T)) (x: T):= 
-    match p with 
-    | [::] => [::x]
-    | [::(x,y) & p1 ] => [::x & Ppath_to_nodes p1 y]
-    end.
-  
-  Lemma Ppath_to_nodes_eq: forall (p: seq (T * T)) (x y: T),
-      Ppath_to_nodes ((x, y) :: p) x = [::x & Ppath_to_nodes p y].
-  Proof.
-    by [].
-  Qed.
-  
-  Lemma Nodes_to_nodes: forall (p : seq T) (x y: T),
-      Ppath_to_nodes (Ppath_from_nodes [::x,y & p]) x = [::x,y & p].
-  Proof.
-    elim => [// | y p Hr x' x].
-    by rewrite Ppath_from_nodes_eq Ppath_to_nodes_eq Hr.
-  Qed.
-
-End Path_in_prod_A_A.
-*) 
-
 Section Active_relation.
   (** * relation on EO where EO = (AxA)xO
    * this section is to be merged with previous stuffs 
@@ -1009,7 +967,6 @@ Section Active_relation.
   Lemma ComposeOe_eq: forall (x y z t: T) (o1 o2:O),
       ComposeOe ((x,y,o1), (z,t,o2)) <-> y = z.
   Proof. by []. Qed.
-         
 
   (* Active as a relation on Eo) *)
   Definition ActiveOe (W: set T) (S: relation T) := 
