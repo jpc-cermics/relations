@@ -1,7 +1,8 @@
 ;;; Directory Local Variables
 ;;; For more information see (info "(emacs) Directory Variables")
-
 ;; see https://www.compart.com/en/unicode/U+xxxx
+
+;; sum([2 2 0 8].* [16^3,16.^2,16^1,1]) -> 8712
 
 ((coq-mode
   (company-coq-dir-local-symbols .
@@ -13,4 +14,5 @@
     ("^\\+" . ?⁺) ;; ⁺ U+207A
     ("^\\-" . ?⁻) ;; ⁻ U+207B
     ("`;`" . 8857 )  ;;  U+2299
+    ("\\in" . 8712 )  ;;  U+2208 or U+220A
 ))))

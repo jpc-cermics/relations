@@ -43,7 +43,7 @@ Section Sets_facts.
     by move => x X; rewrite in_setE.
   Qed.
   
-  Lemma notempty_exists: forall (X: set T), (exists z, z \in X) <-> (X != set0)%classic.
+  Lemma notempty_exists: forall (X: set T), (exists z, z \in X) <-> (X != set0).
   Proof.
     by move => X; rewrite set0P;split;move => [z /inP H1]; exists z. 
   Qed.
@@ -192,10 +192,10 @@ Notation "R .-1" := (@inverse _ R).
 Section Compose.
   
   Definition compose (T: Type) (R U: relation T): relation T := 
-    [set x | exists (z: T), R (x.1,z) /\ U (z,x.2)]%classic.
+    [set x | exists (z: T), R (x.1,z) /\ U (z,x.2)].
 
   Definition compose' (T: Type) (R U: relation T): relation T := 
-    [set xy | exists2 z, R (xy.1, z) & U (z, xy.2)]%classic.
+    [set xy | exists2 z, R (xy.1, z) & U (z, xy.2)].
 
 End Compose. 
 
@@ -277,7 +277,7 @@ Section Delta.
 
   (** `;` Simplifier en enlevant le \in ça doit simplifire les preuves qui suivent *)
   Definition DeltaE (T: Type) (X: set T) : relation T := 
-    [set x | X x.1 /\ x.1 = x.2]%classic.
+    [set x | X x.1 /\ x.1 = x.2].
 
   Definition DeltaCE (T: Type) (X: set T) : relation T := 
     DeltaE (~` X).
@@ -512,7 +512,7 @@ End Delta_facts.
 Section Foresets.
 
   Definition Fset (T:Type) (R: relation T) (Y: set T) : set T :=
-    [set x | exists (y: T), R (x,y) /\ Y y]%classic.
+    [set x | exists (y: T), R (x,y) /\ Y y].
     
 End Foresets.
 
@@ -1160,7 +1160,7 @@ End Clos_Fset.
 Section Relation_restricted.
 
   Definition Restrict (T:Type) (R: relation T) (X: set T) := 
-    [ set x | X x.1 /\ X x.2 /\ R x]%classic.
+    [ set x | X x.1 /\ X x.2 /\ R x].
   
   Lemma Rest (T:Type) (X: set T) (R: relation T) : (Restrict R X) = Δ_(X) `;` R `;` Δ_(X).
   Proof.

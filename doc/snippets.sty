@@ -22,9 +22,9 @@
 
 \newcommand{\inputsnippets}[1]
   {{\setlength{\itemsep}{1pt}\setlength{\parsep}{0pt}% Adjust spacing
-    \alectryon@copymacros\begin{io}
+      {\small \alectryon@copymacros\begin{io}
       \forcsvlist{\item\@inputsnippet}{#1}
-    \end{io}}}
+    \end{io}}}}
 \let\input@old\input % Save definition of \input
 \newcommand{\@inputsnippet}[1]
   {{\renewenvironment{alectryon}{}{}% Skip \begin{alectryon} included in snippet

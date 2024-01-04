@@ -192,17 +192,8 @@ and the \emph{reflexive and transitive closure} is
 A \emph{partial equivalence relation} is a symmetric and transitive binary
 relation (generally denoted by~$\sim$ or~$\equiv$).
 An \emph{equivalence relation} is a reflexive, symmetric and transitive binary
-relation. 
-
-\cite{Gonthier-Mahboubi-Tassi:2016}
-\cite{MathComp:2022}
-
-{\small 
-\inputsnippets{ssrel/relation.tex}
-\inputsnippets{ssrel/clos_refl_trans.tex}
-\inputsnippets{ssrel/clos_rt.tex}
-}
-
+relation. XXXX \cite{Gonthier-Mahboubi-Tassi:2016} \cite{MathComp:2022}
+\inputsnippets{ssrel/relation.tex,ssrel/clos_refl_trans.tex,ssrel/clos_rt.tex}
 \subsubsection{Extended-oriented paths in a (directed simple) graph (permitting loops)}
 
 Let $\VERTEX$ be a nonempty set (finite or not), whose elements are called \emph{vertices}.  Let
@@ -266,16 +257,17 @@ as what corresponds to chain path in~\citep{Lauritzen-et-al-1990}.
 For any set ${\Set}$, we denote by $\Sequence_n(\Set)$ the set of sequences of
 length $n$ of elements of the set~$\Set$, $\Sequence_n(\Set)= \SetProd{\Set}{n}$
 and by $\Sequence_{\ge n}(\Set)$ the set of finite sequences of length greater or equal
-to $n$ of elements of the set $\Set$, that is the disjoint unions
+to $n$ of elements of the set $\Set$, that is the disjoint union
 $\sqcup_{k\ge n} \Sequence_k(\Set)$.
 
-Now, for $n\ge 2$, we consider a lift operator $\Lift_n: \Sequence_{n}(\VERTEX)\to 
-\Sequence_{n{-}1}(\VERTEX{\times}\VERTEX)$ transforming a sequence of nodes of length $n$
-into a sequence of edges of length $n{-}1$ as follows 
+Now, for $n\ge 2$, we consider a lift operator $\Lift_n: \Sequence_{n}(\Set)\to 
+\Sequence_{n{-}1}(\Set{\times}\Set)$ transforming a sequence of elements of
+$\Set$ of length $n$
+into a sequence of oriented pairs in $\Set\times\Set$ of length $n{-}1$ as follows 
 \begin{align}
-  \forall (\vertex_1,\dots, \vertex_n)\in \SetProd{\VERTEX}{n}
+  \forall (\vertex_1,\dots, \vertex_n)\in \SetProd{\Set}{n}
   \eqsepv
-  \Lift^n(\vertex_1,\dots, \vertex_n) = \bp{\np{\vertex_1, \vertex_2},\np{\vertex_2, \vertex_3},\dots,
+  \Lift_n(\vertex_1,\dots, \vertex_n) = \bp{\np{\vertex_1, \vertex_2},\np{\vertex_2, \vertex_3},\dots,
   \np{\vertex_{n-1},\vertex_n}}
   \eqfinp
 \end{align}
@@ -284,31 +276,31 @@ The set of \emph{\EdgePath} of length~$n$ ($n\ge 1$) relative to the graph~$\npO
 \begin{equation}
   \PATH^n\np{\OrientedGraph} =
   \Lift_n \bp{ \Sequence_{n+1}(\VERTEX)} \cap \Sequence_{n}(\EDGE)
-  \subset \Sequence_{n}(\VERTEX{\times}\VERTEX))
+  \text{ and satisfy } \PATH^n\np{\OrientedGraph} \subset \Sequence_{n}(\EDGE) \subset \Sequence_{n}(\VERTEX{\times}\VERTEX))
   \eqfinp
 \end{equation}
-It easily follows from the definition of $\PATH^n\np{\OrientedGraph}$ that we also have
+It easily follows from the definition of $\PATH^n\np{\OrientedGraph}$ that we also have and equivalent definition
 \begin{align}
   \PATH^n\np{\OrientedGraph} %    \PATH^n\np{\graph}
   &=
     \Bset{ \bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \in \SetProd{\EDGE}{n} }
     { \head{\vertex_i}=\tail{\vertex_{i+1}} \text{ for } i\in\ic{1,n{-}1}}
-    \subset \SetProd{\EDGE}{n}
     \eqfinp
 \end{align}
 Then, using the sequence of mapping $\nseqa{\Lift_n}{n\ge 2}$ we define a lift operator
-$\Lift: \Sequence_{\ge 2}(\VERTEX) \to \Sequence_{\ge 1}(\VERTEX{\times}\VERTEX)$ such that for all $n \ge 2$ the restriction of
-$\Lift$ to the set $\Sequence_{n}(\VERTEX)$ coincide with the $\Lift_n$ mapping, that is ${\Lift}_{\vert\Sequence_n(\VERTEX)}= \Lift_n$.
-The set of finite (edge) paths of length greater of equal to $1$ is defined by
+$\Lift: \Sequence_{\ge 2}(\Set) \to \Sequence_{\ge 1}(\Set{\times}\Set)$ such that for all $n \ge 2$ the restriction of
+$\Lift$ to the set $\Sequence_{n}(\Set)$ coincide with the $\Lift_n$ mapping, that is ${\Lift}_{\vert\Sequence_n(\Set)}= \Lift_n$.
+The set of finite (edge) paths of length greater of equal to $1$ relative to the graph~$\npOrientedGraph$ is defined by
 \begin{align}
   \PATH^{\ge 1}\np{\OrientedGraph}
   &=
     \Lift\bp{ \Sequence_{\ge 2}(\VERTEX)} \cap \Sequence_{\ge 1}(\EDGE)
-    \subset \Sequence_{\ge 1}(\VERTEX{\times}\VERTEX))
-  \eqfinv
+    \text{ and satisfy } \PATH^{\ge 1}\np{\OrientedGraph}  \subset \Sequence_{\ge 1}(\EDGE)  \subset \Sequence_{\ge 1}(\VERTEX{\times}\VERTEX))
+    \eqfinv
+    \label{def:epaths_gt1}
 \end{align}
 which coincide with the set $\bigcup_{n\ge 1} \PATH^n\np{\OrientedGraph}$ as it easily follows that
-$\PATH^{\ge 1}\np{\OrientedGraph} = \bigcup_{n\ge 1} \PATH^n\np{\OrientedGraph}$
+$\PATH^{\ge 1}\np{\OrientedGraph} = \bigcup_{n\ge 1} \PATH^n\np{\OrientedGraph}$.
 
 The first element~$\tail{\vertex_1}$ of an \EdgePath\
 \( \path=\bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \) 
@@ -322,68 +314,78 @@ An \emph{\EdgeSubPath} of the \EdgePath~$\path$ is an \EdgePath\ obtained by a
 subsequence of consecutive indices.
 
 We describe the coq formalization of (edge) paths. A graph $(\VERTEX,\EDGE)$ is given by a type \texttt{T: Type} and a relation on \texttt{T} which is
-a set in $T*T$, $\EDGE:\texttt{set T*T}$ using the set definition of mathcomp analysis. We then directly define the List operator $\Lift$ as follows.
+a set in $T*T$, $\EDGE:\texttt{set T*T}$ using the (classical) set definition of mathcomp analysis. We then directly define the \texttt{Lift} operator $\Lift$ as follows.
 
 {\small 
 \inputsnippets{erel3/Lift.tex}
 }
+Checking that all the elements of a sequence \texttt{(p: seq T)} belongs to a set \texttt{(X: set T)} is done by an inductive predicate \texttt{All}.
+Then, we prove in a lemma that the inductive predicate \texttt{All} can be equivalently defined with the help of the function
+\texttt{all} of mathcomp sequence library \texttt{seq.v}.
+{\small
+  \inputsnippets{erel3/All_notation.tex, erel3/All_with_all.tex}}
+\medskip
+Finally, the set of finite (edge) paths of length greater of equal to $1$, $\PATH^{\ge 1}\np{\OrientedGraph}$ defined in Equation~\eqref{def:epaths_gt1} is defined by
+{\small
+  \inputsnippets{erel3/EPath1.tex}
+}
+Thus in the Coq implementation an (edge) path is given as a node path \texttt{p} satisfying a predicate \texttt{All (Lifp p)}.
 
 \medskip
+\noindent $\bullet$ Definition of \emph{\undirectedEdgePath}. To define
+\emph{\undirectedEdgePath}, we consider a finite set ${\Orientation}=\na{-1,+1}$
+taking two possible values and implemented in Coq a an inductive type taking two
+values \texttt{N} and \texttt{P} which will serve as an orientation
+specification of an edge {\small \inputsnippets{erel3/O.tex}} Now, for $n\ge 2$,
+we consider an oriented lift operator
+$\Lifto_n: \Sequence_{n}(\Set)\times\Sequence_{n-1}(\Orientation) \to
+\Sequence_{n{-}1}(\Set{\times}\Set{\times}\Orientation)$ transforming a sequence of elements
+of $\Set$ of length $n$ and a sequence of orientations of length $n{-}1$ into a
+sequence of oriented triples in $\Set{\times}\Set{\times}\Orientation$ of length
+$n{-}1$ as follows
+\begin{align}
+  \forall \vertex\in \Sequence_n(\Set)
+  \eqsepv
+  \forall o\in \Sequence_{n-1}(\Orientation)
+  \eqsepv
+  \Lifto_n(v,o) = \bp{\np{\vertex_1, \vertex_2,o_1},\dots,
+  \np{\vertex_{n-1},\vertex_n,o_{n-1}}}
+  \eqfinp
+\end{align}
+Proceeding as in the previous paragraph, using the sequence of mapping
+$\nseqa{\Lifto_n}{n\ge 2}$ we define a lift operator
+$$\Lifto: \sqcup_{n\ge 2} \Sequence_{n}(\Set){\times}\Sequence_{n-1}(\Orientation)
+\to \Sequence_{\ge 1}(\Set{\times}\Set{\times}\Orientation)$$ such that for all
+$n \ge 2$ the restriction of $\Lifto$ to the set
+$\Sequence_{n}(\Set){\times}\Sequence_{n-1}(\Orientation)$ coincide with the
+$\Lifto_n$ mapping. 
 
-\noindent $\bullet$
-An \emph{\undirectedEdgePath} of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$
-is a couple 
-\( \UndirectedPath= \np{\path,\orient} \in 
-\SetProd{(\EDGE \cup \Converse{\EDGE})}{n} \times \na{-1,+1}^n \),
-where \( \path=\bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \) 
-and $\orient = \sequence{\orient_i}{i\in\ic{1,n}} \in \na{-1,+1}^n$
-are such that, for all $i\in\ic{1,n{-}1}$, we have \( \head{\vertex_i}=\tail{\vertex_{i+1}}
-\) and 
-either $\np{\tail{\vertex_i},\head{\vertex_i}}\in \EDGE$ if $\orient_i={+1}$
-or $\np{\tail{\vertex_i},\head{\vertex_i}}\in \Converse{\EDGE}$ if $\orient_i={-1}$.
-We denote 
-\begin{subequations}
-  \begin{align}
-    \EDGE^{(+1)}
-    &= \EDGE \eqsepv \EDGE^{(-1)}= \Converse{\EDGE}
-      \intertext{and we introduce (for $n\ge 1$)}
-      % \\
-    \UPATH^n\np{\OrientedGraph}
-    &= \Big\{ \np{\path,\orient} \in \SetProd{(\EDGE\cup\Converse{\EDGE})}{n} \times
-      \na{-1,+1}^n \, \big\vert 
-      \nonumber
-    \\
-    & 
-      \qquad \path=\sequence{\path_i}{i\in\ic{1,n}} \in\PATH^n\np{\UnorientedGraph} \text{ and } \path_i \in
-      \EDGE^{(\orient_i)} \text{ for } i\in\ic{1,n} \Big\}
-      \label{eq:undirected_(edge)_paths_of_length_n}
-    \\
-    &\subset  \SetProd{\np{\EDGE\cup \Converse{\EDGE}}}{n} \times \na{-1,+1}^n
-      \nonumber 
-      \intertext{the set of \undirectedEdgePaths\
-      of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$, and by}
-      \UPATH\np{\OrientedGraph}
-    &=
-      \bigcup_{n\ge 0} \UPATH^n\np{\OrientedGraph}
-      \subset \bp{ \VERTEX^2\times\na{+1} } \cup \bigcup_{n\ge 1} \Bp{ 
-      \SetProd{(\EDGE\cup\Converse{\EDGE})}{n} \times \na{-1,+1}^n }
-      \label{eq:undirectedEdgePaths}
-  \end{align}
-  % with the notation $\EDGE^{(+1)} = \EDGE$ and $\EDGE^{(-1)}= \Converse{\EDGE}$ and by
-  % $\UPATH\np{\OrientedGraph}= \bigcup_{n\ge 1} \UPATH^n\np{\OrientedGraph}$
-  the set of finite \undirectedEdgePaths\footnote{%
-    It is to be noted that an \undirectedEdgePath\ is \emph{not a path in the graph
-      $\npOrientedGraph$}, neither in the undirected graph $\npUnorientedGraph$.
-    % Following an \undirectedEdgePath\ is just as following a route with your car in a town allowing yourself to take one way
-    % road in the forbidden direction. 
-    However, considering a couple $(\path,\orient)\in \UPATH^n\np{\OrientedGraph}$, we obtain that
-    $\path \in \PATH^n\np{\UnorientedGraph}$, % with $\hat{\EDGE}= \EDGE \cup \Converse{\EDGE}$, 
-    that is, $\path$ is an (edge) path in the unoriented graph
-    \( \npUnorientedGraph \).
-    % \hat\graph = (\VERTEX, \EDGE \cup \Converse{\EDGE})$.
-    We thus obtain a natural surjection
-    $(\path,\orient)\mapsto \path$
-    % $\injection_{\UPATH}: (\path,\orient)\mapsto \path$ 
+The set of \emph{\undirectedEdgePath} of length~$n$ ($n\ge 1$) relative to the
+graph~$\npOrientedGraph$ is defined by
+\begin{equation}
+  \UPATH^n\np{\OrientedGraph} =
+  \Lifto_n \bp{ \Sequence_{n+1}(\VERTEX){\times}\Sequence_{n}(\Orientation)}
+  \cap \Sequence_{n}(\EDGEo)
+  \text{ and satisfy } \PATH^n\np{\OrientedGraph} \subset \Sequence_{n}(\EDGEo)
+  \eqfinv
+\end{equation}
+where the relation $\EDGEo$ on the set $\EDGE\times\Orientation$ is defined by 
+\begin{align}
+  (\vertex,\vertexbis,o) \in \EDGEo
+  \iff (\vertex, \vertexbis) \in \EDGE^{(o)},
+  \text{ with } \EDGE^{(+1)}= \EDGE \eqsepv \EDGE^{(-1)}= \Converse{\EDGE}
+  \eqfinp
+\end{align}
+
+The set of finite \undirectedEdgePaths\footnote{%
+  It is to be noted that an \undirectedEdgePath\ is \emph{not a path in the graph
+    $\npOrientedGraph$}, neither in the undirected graph $\npUnorientedGraph$.
+  However, considering a couple $(\path,\orient)\in \UPATH^n\np{\OrientedGraph}$, we obtain that
+  $\path \in \PATH^n\np{\UnorientedGraph}$,
+  that is, $\path$ is an (edge) path in the unoriented graph
+  \( \npUnorientedGraph \).
+  We thus obtain a natural surjection
+  $(\path,\orient)\mapsto \path$
     from $\UPATH\np{\OrientedGraph}$ to $\PATH\np{\UnorientedGraph}$.
     This canonical surjection is not necessary injective because
     a path in $\PATH\np{\UnorientedGraph}$ that has an edge in $\EDGE \cap \Converse{\EDGE}$
@@ -393,41 +395,18 @@ We denote
     the graph~\( \npOrientedGraph \) is directed,
     that is, when $\EDGE \cap \Converse{\EDGE}=\emptyset$, that is, 
     when no two edges have the same endpoints. 
-    % For $\path\in \PATH_{\hat{\EDGE}}\np{\UnorientedGraph}$, we have that
-    % For $\path\in \PATH\np{\UnorientedGraph}$, we have that
-    % \( \injection_{\UPATH}^{-1}(\path)
-    % =  \bset{ (\path,\orient) }{ \orient \in \na{-1,+1}^{\cardinal{\path}}} \).
-    % \begin{equation}
-    %   \injection_{\UPATH}^{-1}(\path)
-    %   =  \bset{ (\path,\orient) }{ \orient \in \na{-1,+1}^{\cardinal{\path}}}
-    %   \eqfinp
-    % \end{equation}
   }
-  relative to the graph~$\npOrientedGraph$, where
-  $\UPATH^{n}\np{\OrientedGraph}$ for $n\ge 1$ is defined
-  by~\eqref{eq:undirected_(edge)_paths_of_length_n}
-  and $\UPATH^{0}\np{\OrientedGraph}$, the set of \undirectedEdgePaths\ of length~$0$,  is defined by
-  \begin{equation}
-    \UPATH^0\np{\OrientedGraph}=
-    \Bset{ \bp{\np{\vertex,\vertex},+1}\in (\VERTEX{\times}\VERTEX)\times \na{+1}}{ \np{\vertex,\vertex} \not\in \EDGE}
-    = \bp{ \Delta \cap \Complementary{\EDGE} } \times \na{+1}
+  relative to the graph~$\npOrientedGraph$ 
+  is defined by
+\begin{align}
+  \UPATH^{\ge 1}\np{\OrientedGraph}
+  &=
+    \Lifto \bp{\sqcup_{n\ge 2} \Sequence_{n}(\Set){\times}\Sequence_{n-1}(\Orientation)}
+    \cap \Sequence_{\ge 1}(\EDGEo)
+    \text{ and satisfy } \UPATH^{\ge 1}\np{\OrientedGraph}  \subset \Sequence_{\ge 1}(\EDGEo) 
     \eqfinp
-    \label{eq:undirectedEdgePaths_of_length0}
-  \end{equation}
-  Thus, by definition, we have that
-  \begin{equation}
-    \UPATH^0\np{\OrientedGraph} \cup \UPATH^1\np{\OrientedGraph}
-    \supset 
-    \bp{ \Delta \cap \Complementary{\EDGE} } \times \na{+1}
-    \cup  \bp{ \Delta \cap \EDGE } \times \na{+1}
-    = \Delta\times \na{+1}
-    \eqfinv
-    \label{eq:undirectedEdgePaths_of_length0or1}
-  \end{equation}
-  so that \undirectedEdgePaths\ of length~0 or~1 contain \( \Delta\times \na{+1}
-  \). 
-\end{subequations}
-% 
+    \label{def:epaths_gt1}
+\end{align}
 An \emph{\undirectedEdgeSubPath} of the \undirectedEdgePath~$\UndirectedPath
 \in\UPATH\np{\OrientedGraph}$ is an \undirectedEdgePath\ obtained by a
 subsequence of consecutive indices. 

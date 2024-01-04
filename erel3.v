@@ -21,6 +21,8 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+Local Open Scope classical_set_scope.
+
 Section Types.
   (** * Needed Types *)
   Variables (T O: Type).
@@ -117,7 +119,7 @@ End Wip.
 
 Section All.
   (** * all the elements of a sequence belong to a set
-   * very similar to all (in seq.v) except that we use Prop here not bool.
+   * an equivalent formulation using all is below.
    *)
 
   Variables (T: Type). 
@@ -128,20 +130,24 @@ Section All.
     | [::] => True
     | x1::p1 => All X p1 /\ X x1
     end.
-
-  Notation "p [∈] X" := (All X p) (at level 4, no associativity).
+  
+  (* begin snippet All_notation:: no-out *)  
+  Notation "p [\in] X" := (All X p) (at level 4, no associativity).
+  (* end snippet All_notation *)  
 
   Lemma All_cons: forall (X: set T) (p: seq T) (x: T),
-      ((x::p) [∈]  X)  <->  p [∈] X /\ X x.
+      ((x::p) [\in]  X)  <->  p [\in] X /\ X x.
   Proof.
     move => X p x.
     by split;[elim : p x => [ x // | y p H1 x [H2 H2']];split;[ apply H1 |] | ].
   Qed.
   
   (* using a boolean version *)
+  (* begin snippet All_with_all:: no-out *)  
   Lemma All_iff_all: forall (X: set T) (p: seq T), 
-      (p [∈]  X) <-> all (fun x => x \in X) p.
+      (p [\in]  X) <-> all (fun x => x \in X) p.
   Proof.
+    (* end snippet All_with_all:: no-out *)  
     move => X p;split.
     - elim:p => [? // | x p H1 /All_cons [/H1 H2 H3] //].
       rewrite -in_setE /= in H3. 
@@ -150,15 +156,15 @@ Section All.
     - elim:p => [? // | x p H1]. 
       by rewrite All_cons /all => /andP [? /H1 ?];split;[|rewrite -in_setE].
   Qed.
-  
+
   Lemma All_eq_all: forall (X: set T) (p: seq T), 
-      (p [∈]  X) = all (fun x => x \in X) p.
+      (p [\in]  X) = all (fun x => x \in X) p.
   Proof.
     by move => X p;rewrite propeqP;apply  All_iff_all.
   Qed.
 
   Lemma All_eq_all': forall (X: set T) (p: seq T), 
-      (p [∈]  X) = all (fun x => x \in X) p.
+      (p [\in]  X) = all (fun x => x \in X) p.
   Proof.
     move => X. 
     elim => [ | x p H1]; first by rewrite /All trueE.
@@ -168,7 +174,7 @@ Section All.
   Qed.
   
   Lemma All_subset: forall (X Y: set T) (p: seq T),
-      (X `<=` Y)%classic ->  (p [∈]  X) -> (p [∈] Y).
+      (X `<=` Y)%classic ->  (p [\in]  X) -> (p [\in] Y).
   Proof.
     move => X Y; elim => [ // | x p1]. 
     by move => H1 H2 /All_cons [? ?];rewrite All_cons;split; [apply: H1| apply: H2].
@@ -338,120 +344,85 @@ Section Seq_lift.
     
   End Lift_seq_props.
 
-  Definition SeqRel (S: relation T) (p: seq T) := All S (Lift p).
+  (* The definition of (edge) paths of length greater or equal to one *)
   
-  Definition Path (S: relation T) (x y: T) (p: seq T) := SeqRel S (x::(rcons p y)).
+  (* begin snippet EPath1:: no-out *)  
+  Definition EPath1 (S: relation T):=[set p | All S (Lift p) /\ length(p) >= 2].
+  (* end snippet EPath1 *)
   
-  (** * The elements of P^n(A,E) (1a) of the paper are the 
-   *  sequences q in A*A such that there exists x,y,p such that 
-   *  q= Lift (x::rcons p y) satisfying AllS S q.
-   *  
-   *  We have two ways to see that q is a chain of size >=1. 
-   *  q = Lift (x::rcons p y) or [ size q = 1 /\ Lift q satisfy AllS Compose]
-   *
-   * 
-   * a sequence q in A*A of size > 0 is a chain if it is obtained 
-   * as q Lift (x::(rcons p y))
-   * or if performing a new Lift which gives a sequence in (A*A)^2 
-   * the lifted sequence satisfy All Compose 
-   * this is explored in next Section 
-   *)
-  
-  (* Check that successive elements of a sequence are related by a Relation
-   * without lifting the sequence. 
-   * Then we prove that AllS S (Lift p ) <-> Chain S p.
-   *)
-  
-  Inductive ChainI (S: relation T): seq T -> Prop :=
-  | pp_void : ChainI S [::]
+  (* an equivalent definition not using the lift operation *)
+  Inductive EPath (S: relation T): seq T -> Prop :=
+  | pp_void : EPath S [::]
   | pp_two (x: T) (ep: seq T) : 
-    ChainI S ep ->
+    EPath S ep ->
     ep = [::] \/ (exists (y: T), exists (ep1: seq T), ep = [::y & ep1] /\ S (x,y))
-    -> ChainI S ([:: x & ep]).
+    -> EPath S ([:: x & ep]).
   
-  Lemma ChainI_2: forall (S:relation T) (p: seq T) (x y: T),
-      All S (Lift (x::(rcons p y))) <-> ChainI S (x::(rcons p y)).
-  Proof.
-    split.
-    - elim: p x y => [ //= x y | z p Hr x y ].
-      + move => [_ H2].
-        by apply pp_two;[ apply pp_two;[constructor | left] | right; exists y, [::]].
-      + rewrite rcons_cons Lift_c All_cons;
-        by move => [H1 H2];apply pp_two;[ apply Hr | right; exists z, (rcons p y)].
-    - move => H.
-      elim/ChainI_ind: H => [// | x' y' ep H1 [-> // | [y1 [ep1 [H2 H3]]]]].
-      by rewrite H2 in H1 *; rewrite Lift_c //.
-  Qed.
+  Definition EPath1' (S: relation T) := [set p: seq T | EPath S p /\ length(p) >= 2].
+
+  Section EPath1_EPath1'.
+
+    Lemma Epath_equiv_rc: forall (S:relation T) (p: seq T) (x y: T),
+        All S (Lift (x::(rcons p y))) <-> EPath S (x::(rcons p y)).
+    Proof.
+      split.
+      - elim: p x y => [ //= x y | z p Hr x y ].
+        + move => [_ H2].
+          by apply pp_two;[ apply pp_two;[constructor | left] | right; exists y, [::]].
+        + rewrite rcons_cons Lift_c All_cons;
+            by move => [H1 H2];apply pp_two;[ apply Hr | right; exists z, (rcons p y)].
+      - move => H.
+        elim/EPath_ind: H => [// | x' y' ep H1 [-> // | [y1 [ep1 [H2 H3]]]]].
+        by rewrite H2 in H1 *; rewrite Lift_c //.
+    Qed.
   
-  Lemma Chain_equiv: forall (S:relation T) (p: seq T),
-      All S (Lift p ) <-> ChainI S p.
-  Proof.
-    move => S.
-    have Chain_0: All S (Lift [::]) <-> ChainI S [::] 
-      by split => H;[apply pp_void | ].
-    have Chain_1: forall (z: T), All S (Lift ([::z])) <-> ChainI S [::z]
-        by split => H;[ apply pp_two;[apply pp_void | left] | ].
-    split;match goal with 
-          | _ => elim: p => [|x p ];[|elim: p => [H1 | y p _ H1 ]];
-                          try rewrite lastI;apply (Chain_0 , Chain_1, ChainI_2)
-          end.
-  Qed.
-  
-  (* (x :: (rcons p y)) is a path for the relation S or the graph (A,S) *)
-  Fixpoint ChainF (S: relation T) (p: seq T) (x y: T) :=
-    match p with
-    | [::] => S (x, y)
-    | x1::p1 => S (x, x1) /\ ChainF S p1 x1 y
-    end.
-  
-  (* utility *)
-  Lemma ChainF_c: forall (S: relation T) (p: seq T) (x y z: T),
-      ChainF S (z::p) x y <->  S (x, z) /\ ChainF S p z y.
-  Proof.
-    by move => S p x y z; split;move => [H1 H2];[split| ].
-  Qed.
-  
-  (** what is the link between a Ppath and Deployment path ? *) 
-  Lemma ChainF_AllS: forall (S: relation T) (p: seq T) (x y: T), 
-      ChainF S p x y <-> All S (Lift (x::(rcons p y))).
-  Proof. 
-    move => S p x y;split.
-    elim: p x y => [ // | z p H1] x y /ChainF_c [H2 H3].
-    by rewrite rcons_cons Lift_c All_cons;split;[apply H1 | ].
-    elim: p x y => [ |x p H1 ] z y; first by move => [_ H1].
-    rewrite rcons_cons Lift_c All_cons ChainF_c. 
-    by move => [H2 H3];split; [ | apply H1].
-  Qed.
-  
+    Lemma Epath_equiv: forall (S:relation T) (p: seq T),
+        All S (Lift p ) <-> EPath S p.
+    Proof.
+      move => S.
+      have Chain_0: All S (Lift [::]) <-> EPath S [::] 
+        by split => H;[apply pp_void | ].
+      have Chain_1: forall (z: T), All S (Lift ([::z])) <-> EPath S [::z]
+          by split => H;[ apply pp_two;[apply pp_void | left] | ].
+      split;match goal with 
+            | _ => elim: p => [|x p ];[|elim: p => [H1 | y p _ H1 ]];
+                            try rewrite lastI;apply (Chain_0 , Chain_1, Epath_equiv_rc)
+            end.
+    Qed.
+
+    Lemma Epath_eq: forall (S:relation T),  EPath1 S = EPath1' S.
+    Proof.
+      move => S.
+      rewrite /EPath1 /EPath1' /mkset predeqE => p.
+      split => [[H1 H2] | [H1 H2]].
+      by split;[rewrite -Epath_equiv |].
+      by split;[rewrite Epath_equiv |].
+    Qed.
+
+  End EPath1_EPath1'.
+
 End Seq_lift.
 
 Section Lift2.
   (** using twice Lifted sequences or just Chain on lifted equences *)
   
   Variables (T: Type).
-  Definition Lift2 := @Lift (T * T).
 
-  Definition ComposeAA  := 
-    [set ppa : (T * T)*(T * T) | (ppa.1).2 = (ppa.2).1]%classic.
+  (* A relation on (T*T) *)
+  Definition ComposeTT  := [set ppa : (T * T)*(T * T) | (ppa.1).2 = (ppa.2).1].
 
-  (** sanity check *)
-  Lemma Ppath_from_nodes_iff: forall (p:seq T) (x y: T),
-      ChainI ComposeAA  (Lift [::x, y & p]).
+  (** sanity check: lifted sequence  *)
+  Lemma Lift_and_ComposeTT: forall (p:seq T) (x y: T),
+      EPath ComposeTT (Lift [::x, y & p]).
   Proof.
     elim => [ x y | y p Hr z x];first by constructor;constructor.
     by rewrite Lift_c;apply pp_two;[ | right; exists (x,y), (Lift [::y &p])].
   Qed.
-
-  Lemma Ppath_from_nodes_iff': forall (p:seq T) (x y: T),
-      ChainI ComposeAA  (Lift [::x, y & p]).
+  
+  Lemma Lift_and_composeTT': forall (p:seq T) (x y: T),
+      All ComposeTT (Lift (Lift [:: x, y & p])).
   Proof.
-    move => p x y.
-    rewrite -Chain_equiv.
-    elim: p x y => [ x y // | y p Hr z x].
-    elim: p x y Hr => [ x y // | y p Hr' z' x H1].
-    rewrite Lift_c Lift_c Lift_c Lift_c All_cons  -Lift_c  -Lift_c.
-    split. apply H1.
-    by [].
+    move => p x y;rewrite Epath_equiv; apply Lift_and_ComposeTT.
   Qed.
   
 End Lift2.
@@ -461,7 +432,9 @@ Section Seq_liftO.
   
   Variables (T: Type).
   (* orientation  *)
+  (* begin snippet O:: no-out *)
   Inductive O := | P | N.
+  (* end snippet O *)
   Definition O_rev (o:O) := match o with | P => N | N => P end.
   
   (* Oedge as a subset of (prod A A) O) *)
