@@ -120,10 +120,71 @@ Section Wip.
            
 End Wip.
 
+Section all.
+  (** * utility lemmata for seq function all *)
+
+  Variables (T: Type). 
+  
+  (* begin snippet all_notation:: no-out *)  
+  Notation "p (\in) X" := (all (fun x => x \in X) p) (at level 4, no associativity).
+  (* end snippet all_notation *)  
+
+  Lemma all_cons: forall (X: set T) (p: seq T) (x: T),
+      ((x::p) (\in)  X) <-> p (\in) X /\ X x.
+  Proof.
+    move => X p x;split. 
+    - elim : p x => [ x /= | y p H1 x /andP [H2 /andP [H3 H4]]].
+      by move => /andP [/inP H1 _].
+      have [H5 H6]: p (\in) X /\ X x by apply: H1; apply /andP.
+      by split;[apply/andP;split |].
+    - move => [H1 H2].
+      apply/andP.  split. by apply mem_set. by [].
+  Qed.
+  
+  Lemma all_subset: forall (X Y: set T) (p: seq T),
+      (X `<=` Y) -> (p (\in)  X) -> (p (\in) Y).
+  Proof.
+    move => X Y; elim => [ // | x p H1 H2 /andP [H3 H4]]. 
+    apply/andP;split.
+    by apply: mem_set;apply: H2; apply set_mem. 
+    by apply H1.
+  Qed.
+  
+  Lemma all_rcons: forall (X: set T) (p: seq T) (x: T),
+      (rcons p x) (\in) X <-> p (\in) X /\ X x.
+  Proof.
+    move => X;elim => [x /= | x' p H1 x];split.
+    by move => /andP [H1 _];split;[ | apply: set_mem].
+    by move => [_ H1]; apply/andP; rewrite mem_set //.
+    by rewrite rcons_cons;move => /andP [? /H1 [? ?]];split;[apply/andP;split |].
+    by move => [/andP [H2 H3] H4];rewrite rcons_cons;
+              apply/andP;split;[ | rewrite H1; split].
+  Qed. 
+  
+  Lemma all_rev: forall (X: set T) (p: seq T),
+      p (\in) X <->  (rev p) (\in) X.
+  Proof.
+    move => X.
+    have H1: forall (p':seq T), p' (\in) X ->  (rev p') (\in) X
+        by elim => [// | x' p H1 /all_cons [H2 H3]];
+                  rewrite rev_cons all_rcons;split;[apply H1 |].
+    by split => [ | ?];[ apply H1 | rewrite -[p]revK; apply H1].
+  Qed. 
+    
+  Lemma all_cat: forall (X: set T) (p q: seq T),
+    (p++q) (\in) X <-> p (\in) X /\ q (\in) X.
+  Proof.
+    split. 
+    - elim: p q => [q // | x p Hr q H1];rewrite cat_cons all_cons in H1. 
+      by move: H1 => [/Hr [H1 H2] H3]; rewrite all_cons.
+    - elim: p q => [q [_ H1] //| x p Hr q [/all_cons [H1 H2] H3]].
+      by rewrite cat_cons all_cons;split;[apply Hr | ].
+  Qed. 
+  
+End all.
+
 Section All.
-  (** * all the elements of a sequence belong to a set
-   * an equivalent formulation using all is below.
-   *)
+  (** * Old version using the inductive All *)
 
   Variables (T: Type). 
   
@@ -145,7 +206,6 @@ Section All.
     by split;[elim : p x => [ x // | y p H1 x [H2 H2']];split;[ apply H1 |] | ].
   Qed.
   
-  (* using a boolean version *)
   (* begin snippet All_with_all:: no-out *)  
   Lemma All_iff_all: forall (X: set T) (p: seq T), 
       (p [\in]  X) <-> all (fun x => x \in X) p.
@@ -165,16 +225,6 @@ Section All.
   Proof.
     by move => X p;rewrite propeqP;apply  All_iff_all.
   Qed.
-
-  Lemma All_eq_all': forall (X: set T) (p: seq T), 
-      (p [\in]  X) = all (fun x => x \in X) p.
-  Proof.
-    move => X. 
-    elim => [ | x p H1]; first by rewrite /All trueE.
-    rewrite propeqP;split => [ /All_cons [H2 /inP H3] | /andP [/inP H2 H3]].
-    by rewrite /all H3 /= -H1.
-    by rewrite All_cons;split;[rewrite H1|].
-  Qed.
   
   Lemma All_subset: forall (X Y: set T) (p: seq T),
       (X `<=` Y)%classic ->  (p [\in]  X) -> (p [\in] Y).
@@ -190,7 +240,7 @@ Section All.
     by rewrite rcons_cons; move => [/H1 [? ?] ?];split;[split | ].
     by move => [[? ?] ?];rewrite rcons_cons;split;[apply H1|].
   Qed. 
-  
+
   Lemma All_rev: forall (X: set T) (p: seq T),
       All X p <->  All X (rev p).
   Proof.
@@ -211,9 +261,6 @@ Section All.
   Qed. 
   
 End All.
-
-
-Check All.
 
 Section All2. 
 
