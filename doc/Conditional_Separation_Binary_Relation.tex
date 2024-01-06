@@ -194,6 +194,27 @@ relation (generally denoted by~$\sim$ or~$\equiv$).
 An \emph{equivalence relation} is a reflexive, symmetric and transitive binary
 relation. XXXX \cite{Gonthier-Mahboubi-Tassi:2016} \cite{MathComp:2022}
 \inputsnippets{ssrel/relation.tex,ssrel/clos_refl_trans.tex,ssrel/clos_rt.tex}
+
+
+\subsubsection{Notations} 
+
+\begin{itemize}
+  \item graph~\( \npOrientedGraph \).
+  \item Relations on $\VERTEX$ are defined with caligraphic letters as in~${\cal R}$
+  \item Product space $\VERTEX_{(2)} = \VERTEX{\times}\VERTEX$. $\VERTEX_{(4)} = (\VERTEX{\times}\VERTEX)_{(2)}$
+  \item Relations on $\VERTEX$ are subsets of $\VERTEX_{(2)}$ and denoted as~${\cal R}_{(2)}$. Note that
+    $\VERTEX_{(2)}$ is indeed also a relation on $\VERTEX$.
+  \item Sequences ${\mathbb S}[\VERTEX]$, with also ${\mathbb S}_{\ge k}[\VERTEX]$ and ${\mathbb S}_{k}[\VERTEX]$.
+  \item Sequences ${\mathbb S}[\VERTEX_{(2)}]$, with also ${\mathbb S}_{\ge k}[\VERTEX_{2}]$ and ${\mathbb S}_{k}[\VERTEX_{(2)}]$.
+  \item Lift operator $\Lift: {\mathbb S}[\VERTEX] \to {\mathbb S}[\VERTEX{\times}\VERTEX]$
+  \item Lift operator $\Lift_{(2)}: {\mathbb S}[\VERTEX_{(2)}] \to {\mathbb S}[(\VERTEX{\times}\VERTEX)_{(2)}]$.
+  \item Given a set $\Set$ and a subset $\Setbis$ of $\Set$
+    Then ${\mathbb S}[\Set,\Setbis]$ is the subset of ${\mathbb S}[\Set]$.
+  \item Given a set $\Set$ and a relation ${\cal R}$ on $\Set$.
+    Then, ${\mathbb L}[\Set;{\cal R}]= {\cal L}\bp{{\mathbb S}[\Set]} \cap {\mathbb S}[\Set_{(2)},\cal R]$
+
+\end{itemize}
+
 \subsubsection{Extended-oriented paths in a (directed simple) graph (permitting loops)}
 
 Let $\VERTEX$ be a nonempty set (finite or not), whose elements are called \emph{vertices}.  Let

@@ -23,15 +23,20 @@ Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
 
+(* Notation used 
+ * st is a sequence of elements of Type T
+ * Variables (st: seq T).
+ * stt is a sequence of elements of the product Type T*T 
+ * Variables (stt: seq (T*T)).
+ * On veut manipuler des relations sur T et des relations sur T*T 
+ * Variables (R_T: relation T)
+ * Variables (R_T2: relation T*T)
+ *)
+
 Section Types.
   (** * Needed Types *)
   Variables (T O: Type).
   Definition Eo (Z: Type) := prod (prod T T) Z.
-  (* 
-  Definition Oe_o (oe: Eo O) := oe.2. (* let (x,o) := oe in o. *)
-  Definition Oe_h (oe: Eo O) := oe.1.1. (* let (x,o) := oe in let (h,t):=x in h. *)
-  Definition Oe_t (oe: Eo O) := oe.1.2. (* let (x,o) := oe in let (h,t):=x in t. *)
-  *) 
 
 End Types.
 
@@ -128,7 +133,7 @@ Section All.
     | [::] => True
     | x1::p1 => All X p1 /\ X x1
     end.
-  
+
   (* begin snippet All_notation:: no-out *)  
   Notation "p [\in] X" := (All X p) (at level 4, no associativity).
   (* end snippet All_notation *)  
@@ -207,20 +212,30 @@ Section All.
   
 End All.
 
-Section Seq_lift. 
-  (** * from seq: A to seq: A*A
-   * some properties of p in seq T are easier to verify on the lifted
-   * sequence Lift p or on the Lift^2 p sequence. 
-   *)
-    
-  Variables (T: Type).
 
-  Definition h (a: T * T):= let (x,y):= a in x.
-  Definition l (a: T * T):= let (x,y):= a in y.
-  Definition pair_rev (a: T * T):=  let (x,y):= a in (y,x).
+Check All.
+
+Section All2. 
+
+  Variables (T: Type).
+  Definition pair_rev (tt: T * T):=  (tt.2, tt.1). 
   
   Lemma AllS_inv: forall (S: relation T) (spa: seq (T * T)), 
       All S spa <-> All S.-1 (map pair_rev spa).
+  Proof.
+    move => S;elim => [ // | [x y] spa Hr].
+    by rewrite map_cons !All_cons Hr.
+  Qed.
+
+End All2.
+
+Section Seq_lift. 
+  (** * Lift properties *) 
+    
+  Variables (T: Type).
+    
+  Lemma AllS_inv': forall (S: relation T) (spa: seq (T * T)), 
+      All S spa <-> All S.-1 (map (@pair_rev T) spa).
   Proof.
     move => S;elim => [ // | [x y] spa Hr].
     by rewrite map_cons !All_cons Hr.
@@ -299,7 +314,7 @@ Section Seq_lift.
     Qed.
  
     Lemma Lift_rev: forall (p:seq T), 
-        Lift (rev p) = map pair_rev (rev (Lift p)). 
+        Lift (rev p) = map (@pair_rev T) (rev (Lift p)). 
     Proof.
       elim => [// | x p Hr ];elim: p x Hr => [// | x' p _ x H1].
       by rewrite rev_cons rev_cons Lift_rcrc 
@@ -676,7 +691,6 @@ Section Seq_liftO.
         by rewrite rcons_cons Lifto_c -!rcons_cons Lifto_rcrc -rcons_cat.
   Qed.
   
-  (** XXX écrire les deux autres *) 
   Lemma Lifto_inv1: forall (p: seq T) (x y: T),
       UnLiftO_A (Lifto (x::(rcons p y)) N) x = x::(rcons p y).
   Proof.
