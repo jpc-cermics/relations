@@ -33,6 +33,10 @@ Local Open Scope classical_set_scope.
  * Variables (R_T2: relation T*T)
  *)
 
+(* begin snippet all_notation:: no-out *)  
+Notation "p (\in) X" := (all (fun x => x \in X) p) (at level 4, no associativity).
+(* end snippet all_notation *)  
+
 Section Types.
   (** * Needed Types *)
   Variables (T O: Type).
@@ -125,20 +129,22 @@ Section all.
 
   Variables (T: Type). 
   
-  (* begin snippet all_notation:: no-out *)  
-  Notation "p (\in) X" := (all (fun x => x \in X) p) (at level 4, no associativity).
-  (* end snippet all_notation *)  
+  Lemma allP: forall (X:set T) (p:seq T) (x:T), 
+      X x /\ p (\in) X <->  (x \in X) && (p (\in) X).
+  Proof.
+    by move => X p x;split => [[/mem_set -> ->] // | /andP [/set_mem H1 H2]].
+  Qed.
+  
+  Lemma all_cons': forall (X: set T) (p: seq T) (x: T),
+      ((x::p) (\in) X) <-> (x \in X) && p (\in) X.
+  Proof.
+    by move => X p x;split. 
+  Qed.
 
   Lemma all_cons: forall (X: set T) (p: seq T) (x: T),
-      ((x::p) (\in)  X) <-> p (\in) X /\ X x.
+      ((x::p) (\in)  X) <->  X x /\ p (\in) X.
   Proof.
-    move => X p x;split. 
-    - elim : p x => [ x /= | y p H1 x /andP [H2 /andP [H3 H4]]].
-      by move => /andP [/inP H1 _].
-      have [H5 H6]: p (\in) X /\ X x by apply: H1; apply /andP.
-      by split;[apply/andP;split |].
-    - move => [H1 H2].
-      apply/andP.  split. by apply mem_set. by [].
+    by move => X p x;rewrite all_cons' allP.
   Qed.
   
   Lemma all_subset: forall (X Y: set T) (p: seq T),
@@ -153,38 +159,32 @@ Section all.
   Lemma all_rcons: forall (X: set T) (p: seq T) (x: T),
       (rcons p x) (\in) X <-> p (\in) X /\ X x.
   Proof.
-    move => X;elim => [x /= | x' p H1 x];split.
-    by move => /andP [H1 _];split;[ | apply: set_mem].
-    by move => [_ H1]; apply/andP; rewrite mem_set //.
-    by rewrite rcons_cons;move => /andP [? /H1 [? ?]];split;[apply/andP;split |].
-    by move => [/andP [H2 H3] H4];rewrite rcons_cons;
-              apply/andP;split;[ | rewrite H1; split].
-  Qed. 
-  
-  Lemma all_rev: forall (X: set T) (p: seq T),
-      p (\in) X <->  (rev p) (\in) X.
-  Proof.
-    move => X.
-    have H1: forall (p':seq T), p' (\in) X ->  (rev p') (\in) X
-        by elim => [// | x' p H1 /all_cons [H2 H3]];
-                  rewrite rev_cons all_rcons;split;[apply H1 |].
-    by split => [ | ?];[ apply H1 | rewrite -[p]revK; apply H1].
+    by move => X p x;rewrite all_rcons andC allP.
   Qed. 
     
+  Lemma all_rev': forall (X: set T) (p: seq T),
+      p (\in) X <->  (rev p) (\in) X.
+  Proof.
+    by move => X p;rewrite all_rev.
+  Qed. 
+  
   Lemma all_cat: forall (X: set T) (p q: seq T),
     (p++q) (\in) X <-> p (\in) X /\ q (\in) X.
   Proof.
-    split. 
-    - elim: p q => [q // | x p Hr q H1];rewrite cat_cons all_cons in H1. 
-      by move: H1 => [/Hr [H1 H2] H3]; rewrite all_cons.
-    - elim: p q => [q [_ H1] //| x p Hr q [/all_cons [H1 H2] H3]].
-      by rewrite cat_cons all_cons;split;[apply Hr | ].
-  Qed. 
-  
+    move => X p q;rewrite all_cat;split. 
+    by move => /andP.
+    by move => [-> ->].
+  Qed.
+
 End all.
 
 Section All.
-  (** * Old version using the inductive All *)
+  (** * version using the inductive All *)
+  (* we keep this definition and associated lemmas 
+   * as the rest of the proofs were using All 
+   * and switching to all would require changing the 
+   * proofs
+   *)
 
   Variables (T: Type). 
   
@@ -227,43 +227,33 @@ Section All.
   Qed.
   
   Lemma All_subset: forall (X Y: set T) (p: seq T),
-      (X `<=` Y)%classic ->  (p [\in]  X) -> (p [\in] Y).
+      (X `<=` Y) ->  (p [\in]  X) -> (p [\in] Y).
   Proof.
-    move => X Y; elim => [ // | x p1]. 
-    by move => H1 H2 /All_cons [? ?];rewrite All_cons;split; [apply: H1| apply: H2].
+    move => X Y p;rewrite !All_eq_all; apply all_subset.
   Qed.
   
   Lemma All_rcons: forall (X: set T) (p: seq T) (x: T),
       All X (rcons p x) <->  All X p /\ X x.
   Proof.
-    move => X;elim => [// | x' p H1 x];split.
-    by rewrite rcons_cons; move => [/H1 [? ?] ?];split;[split | ].
-    by move => [[? ?] ?];rewrite rcons_cons;split;[apply H1|].
+    move => X Y p;rewrite !All_eq_all; apply all_rcons.
   Qed. 
 
   Lemma All_rev: forall (X: set T) (p: seq T),
       All X p <->  All X (rev p).
   Proof.
-    move => X.
-    have H1: forall (p':seq T), All X p' ->  All X (rev p')
-        by elim => [// | x' p H1 [? ?]];
-                  rewrite rev_cons All_rcons; split;[ apply H1 | ].
-    by split => [ | ?];[ apply H1 | rewrite -[p]revK; apply H1].
-  Qed. 
+    move => X p;rewrite !All_eq_all; apply all_rev'.
+  Qed.
 
   Lemma All_cat: forall (X: set T) (p q: seq T),
       All X (p++q) <->  All X p /\ All X q.
   Proof.
-    split. 
-    by elim: p q => [q // | x p Hr q [/Hr [H1 H2] H3]]. 
-    by elim: p q => [q [_ H1] //| x p Hr q [/All_cons [H1 H2] H3]];
-                   rewrite cat_cons All_cons;split;[apply Hr | ].
+    move => X p q;rewrite !All_eq_all; apply all_cat.
   Qed. 
   
 End All.
 
 Section All2. 
-
+  (** * some properties of all for sequences seq (T*T) *)
   Variables (T: Type).
   Definition pair_rev (tt: T * T):=  (tt.2, tt.1). 
   
@@ -272,6 +262,26 @@ Section All2.
   Proof.
     move => S;elim => [ // | [x y] spa Hr].
     by rewrite map_cons !All_cons Hr.
+  Qed.
+
+  Lemma all_inv: forall (S: relation T) (spa: seq (T * T)), 
+      spa (\in) S <-> (map pair_rev spa) (\in) S.-1. 
+  Proof.
+    move => S;elim => [ // | [x y] spa Hr].
+    by rewrite map_cons !all_cons Hr.
+  Qed.
+
+  Lemma allI: forall (R S: relation T) (spa: seq (T * T)), 
+      spa (\in) (R `&` S) <-> spa (\in) R && spa (\in) S. 
+  Proof.
+    move => R S spa. 
+    have H1: (R `&` S) `<=` S by apply intersectionSr.
+    have H2: (R `&` S) `<=` R by apply intersectionSl.
+    split => [H3 | ]. 
+    by apply/andP;split;[apply: (all_subset H2 H3)| apply: (all_subset H1 H3)].
+    elim: spa => [// |  x spa Hr /andP H3].
+    move: H3; rewrite !all_cons => [[[H3 H4] [H5 H6]]].
+    by split;[rewrite /setI /mkset | apply Hr;apply/andP].
   Qed.
 
 End All2.
@@ -811,6 +821,15 @@ Section DeploymentPath.
       rewrite rcons_cons; move => [H2 /Dpe [H3 H4]].
       by split;[ | apply H1;split].
   Qed.
+
+  (* utility *)
+  Lemma Dpe_rev': forall (p: seq T) (x y z: T),
+      Lift (x::(rcons (rcons p z) y)) 
+      = (Lift (x::(rcons p z))) ++ [::(z,y)].
+  Proof.
+    move => p x y z. 
+    by rewrite -2!rcons_cons Lift_rcrc -cat_rcons cats0.
+  Qed.
   
   (* concatenate deployment paths
    * note that ((rcons p y) ++ q) = p ++ y::q) by cat_rcons
@@ -842,15 +861,7 @@ Section DeploymentPath.
   Qed.
   
   Lemma  Deployment_path_incl: forall (S R: relation T) (p: seq T) (x y: T),
-      (S `<=` R)%classic -> Deployment_path S p x y -> Deployment_path R p x y.
-  Proof.
-    move => S R.
-    elim => [x y H1 H2 | z p H1 x y H2 /Dpe [H3 H4]]; first by apply H1.
-    by split;[apply H2 |apply H1].
-  Qed.     
-  
-  Lemma  Deployment_path_incl': forall (S R: relation T) (p: seq T) (x y: T),
-      (S `<=` R)%classic -> Deployment_path S p x y -> Deployment_path R p x y.
+      (S `<=` R) -> Deployment_path S p x y -> Deployment_path R p x y.
   Proof.
     move => S R p x y H1.
     by rewrite !Dpe_AllS ;apply All_subset.
@@ -860,7 +871,7 @@ Section DeploymentPath.
       Deployment_path (Δ_(W.^c) `;` S) p x y <-> All W.^c (x::p) /\ Deployment_path S p x y.
   Proof.
     move => S W p x y.
-    have Hp: (Δ_(W.^c) `;` S `<=` S)%classic by apply DeltaCsubset.
+    have Hp: (Δ_(W.^c) `;` S `<=` S) by apply DeltaCsubset.
     split.
     - elim: p x y.
       + by move => x y [z [[/= H1 <-] H3]] //. 
@@ -880,7 +891,7 @@ Section DeploymentPath.
       <-> All W.^c (rcons p y) /\ Deployment_path S p x y.
   Proof.
     move => S W p x y.
-    have Hp: (S `;` Δ_(W.^c) `<=` S)%classic by apply DeltaCsubsetl.
+    have Hp: (S `;` Δ_(W.^c) `<=` S) by apply DeltaCsubsetl.
     split.
     - elim: p x y.
       + by move => x y [z [H3 [/= H1 <-]]] //. 
@@ -943,7 +954,7 @@ Section PathRel.
   
   (* relation based on paths: take care that the path p depends on (x,y) *)
   Definition PathRel_n (S: relation T) (n:nat) :=
-    [set x | (exists (p: seq T), size(p)=n /\ Deployment_path S p x.1 x.2)]%classic.
+    [set x | (exists (p: seq T), size(p)=n /\ Deployment_path S p x.1 x.2)].
 
   (* composition and existence of paths coincide *)
   Lemma Itern_iff_PathReln : forall (n:nat), S^(n.+1) =  PathRel_n S n.
@@ -966,7 +977,7 @@ Section PathRel.
   
   (* relation based on paths: take care that the path p depends on (x,y) *)
   Definition PathRel (S: relation T) := 
-    [set x | (exists (p: seq T), Deployment_path S p x.1 x.2)]%classic.
+    [set x | (exists (p: seq T), Deployment_path S p x.1 x.2)].
   
   (* R.+ =  PathRel R *)
   Lemma clos_t_iff_PathRel: S.+ =  PathRel S.
@@ -1038,7 +1049,7 @@ Section Active_relation.
         | (N,N,v) => W.^c v
         | (N,P,v) => W.^c v
         | (P,N,v) => (Fset S.* W) v
-        end]%classic.
+        end].
   
   Lemma ActiveOeT: forall (W: set T) (S: relation T) (x u v z t: T) (o1 o2 o3 o4:O),
       (Fset S.* W) x 
@@ -1288,7 +1299,7 @@ Section Active_paths.
       move => u v [H1 H2]. 
       move: H2 => [w [H2 H3]].
       have H4: (S `;` S.* ) (u,w) by (exists v).
-      have H5:  (S.+ `<=` S.*)%classic by apply clos_t_clos_rt.
+      have H5:  (S.+ `<=` S.*) by apply clos_t_clos_rt.
       have H6: S.* (u, w) by rewrite r_clos_rt_clos_t in H4 ;apply H5 in H4.
       by (exists w).
     Qed.

@@ -129,6 +129,22 @@ Section Union_facts.
 
 End Union_facts.
 
+Section Intersection_facts.
+  (** * union of relations using set unions *)
+  Variables (T: Type) (R S U: relation T).
+
+  Lemma intersectionSr: R `&` S `<=` S. 
+  Proof. 
+    by rewrite /setI /mkset /subset => [t [H1 H2]]. 
+  Qed.
+  
+  Lemma intersectionSl: R `&` S `<=` R. 
+  Proof. 
+    by rewrite /setI /mkset /subset => [t [H1 H2]]. 
+  Qed.
+
+End Intersection_facts.
+
 Section Inverse.
   
   Variables (T: Type) (R S: relation T).
@@ -282,10 +298,20 @@ Section Delta.
   Definition DeltaCE (T: Type) (X: set T) : relation T := 
     DeltaE (~` X).
   
+  Definition Lr (T: Type) (X: set T) : relation T := [set x | X x.1].
+  Definition Rr (T: Type) (X: set T) : relation T := [set x | X x.2].
+
 End Delta.
 
 Notation "Δ_( W )" := (@DeltaE _ W) 
                         (at level 2, no associativity, format "Δ_( W )").
+
+Notation "L_( W )" := (@Lr _ W)
+                        (at level 2, no associativity, format "L_( W )").
+
+Notation "R_( W )" := (@Rr _ W)
+                        (at level 2, no associativity, format "R_( W )").
+
 Notation "W .^c" := (~` W) 
                       (at level 2, left associativity, format "W .^c").
 Notation "'Δ" := (DeltaE setT) (at level 2, no associativity).
@@ -354,11 +380,23 @@ Section Delta_facts.
   Qed.
 
   Lemma WWcI: X `&` X.^c = set0.
-    Proof.
-      rewrite /mkset predeqE.
-      by move => x;split => [ [? H2] | ?];[rewrite /setC  mksetE in H2 |].
-    Qed.
-    
+  Proof.
+    rewrite /mkset predeqE.
+    by move => x;split => [ [? H2] | ?];[rewrite /setC  mksetE in H2 |].
+  Qed.
+  
+  Lemma DeltaLco : Δ_(X) `;` R = L_(X) `&` R.
+  Proof.
+    rewrite /Lr /DeltaE /compose /mkset /setI predeqE /= => [[x y]] /=.
+    by split => [[z [[? <-] ?]] | [? ?]];[ | exists x].
+  Qed.
+
+  Lemma DeltaRco : R `;` Δ_(X) = R `&` R_(X).
+  Proof.
+    rewrite /Rr /DeltaE /compose /mkset /setI predeqE /= => [[x y]] /=.
+    by split => [[z [? [? <-]]] | [? ?]];[ | exists y].
+  Qed.
+  
   Lemma DeltaW_Wc : Δ_(X) `;` Δ_(X.^c) = 'Δc.
   Proof.
     rewrite DeltaW_XXXX WWcI /DeltaCE /DeltaE /setC /set0 predeqE. 
