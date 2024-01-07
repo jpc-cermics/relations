@@ -124,6 +124,129 @@ Section Wip.
            
 End Wip.
 
+Section Seq_lift. 
+  (** * Lift properties *) 
+    
+  Variables (T: Type).
+  Definition pair_rev (tt: T * T):=  (tt.2, tt.1). 
+
+  (* begin snippet Lift:: no-out *)  
+  Fixpoint Lift (p: seq T): seq (T * T) := 
+    match p with 
+    | x :: [:: y & p] as p1 => (x,y)::(Lift p1)
+    | _ => @nil (prod T T)
+    end.
+  (* end snippet Lift *)  
+
+  Section Lift_seq_props.
+    
+    Lemma Lift_c: forall  (p:seq T) (x y: T),
+        Lift [::x,y & p] = [::(x,y) & Lift [::y & p]].
+    Proof.
+      by move => p x y; split.
+    Qed.
+    
+    Lemma Lift_crc: forall  (p:seq T) (x y: T),
+        Lift (x::(rcons p y)) = (x,(head y p))::(Lift (rcons p y)).
+    Proof.
+      by move => p x y; rewrite headI Lift_c. 
+    Qed.
+    
+    Lemma Lift_rcrc: forall  (p:seq T) (x y: T),
+        Lift (rcons (rcons p x) y) =  rcons (Lift (rcons p x)) (x,y).
+    Proof.
+      have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
+      elim => [ x y // | z p Hr x y ].
+      rewrite [in RHS]rcons_cons [in RHS]Lift_crc [in RHS]rcons_cons -[in RHS]Hr.
+      by rewrite ![in LHS]rcons_cons [in LHS]Lift_crc H1. 
+    Qed.
+    
+    Lemma Lift_rcc: forall (p:seq T) (x y: T),
+        Lift (rcons (x::p) y) = rcons (Lift (x::p)) (last x p,y).
+    Proof.
+      by move => p x y;rewrite lastI Lift_rcrc.
+    Qed.
+    
+    Lemma Lift_last: forall (p:seq T) (x y: T),
+        last (x, head y p) (Lift (rcons p y)) = (last x p, y).
+    Proof.
+      by elim/last_ind => [x y // | p z Hr x y ];rewrite Lift_rcrc !last_rcons.
+    Qed.
+
+    Lemma Lift_head: forall (p:seq T) (x y: T),
+        head (x, last y p) (Lift (x::p)) = (x,head y p).
+    Proof.
+      have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
+      by elim/last_ind => [x y // | p z Hr x y ];rewrite Lift_crc H1 last_rcons.
+    Qed.
+    
+    Lemma Lift_cat_rc: forall (p q:seq T) (y z: T),
+        Lift ((rcons p y) ++ (rcons q z)) =
+          Lift (rcons p y) ++ Lift (y::rcons q z).
+    Proof.
+      have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
+      elim => [q y z // | t p Hr q y z].
+      rewrite rcons_cons cat_cons -rcons_cat Lift_crc rcons_cat Hr. 
+      have H2: head z (rcons p y ++ q) = head y p
+        by elim/last_ind: q y z => [y z | q z' Hr' y z];
+                                  [rewrite cats0 H1 | rewrite -rcons_cat H1 Hr'].
+      by rewrite H2 -cat_cons -Lift_crc.
+    Qed.
+    
+    Lemma Lift_cat_crc: forall (p q:seq T) (x y z: T),
+        Lift (x::(rcons p y) ++ (rcons q z)) =
+          Lift(x::(rcons p y)) ++ Lift (y::rcons q z).
+    Proof.
+      elim => [q x y z // | t p Hr q x y z].
+      by rewrite Lift_crc [in RHS]cat_cons -Lift_cat_rc.
+    Qed.
+    
+    Lemma Lift_rev: forall (p:seq T), 
+        Lift (rev p) = map pair_rev (rev (Lift p)). 
+    Proof.
+      elim => [// | x p Hr ];elim: p x Hr => [// | x' p _ x H1].
+      by rewrite rev_cons rev_cons Lift_rcrc 
+         -rev_cons H1 Lift_c rev_cons map_rcons /pair_rev.
+    Qed.
+    
+    (** Left inverse of Lift when p is not the nil list *)
+    Fixpoint UnLift (p: seq (T * T)) (x: T):= 
+      match p with 
+      | [::] => [::x]
+      | [::(x,y) & p1 ] => [::x & UnLift p1 y]
+      end.
+
+    Lemma UnLift_c: forall (p: seq (T * T)) (x y z: T),
+        UnLift ((x, y) :: p) z = [::x & UnLift p y].
+    Proof.
+      by [].
+    Qed.
+
+    (** sanity check *)
+    Lemma Lift_inv: forall (p : seq T) (x y: T),
+        UnLift (Lift [::x,y & p]) x = [::x,y & p].
+    Proof.
+      by elim => [// | y p Hr x' x];rewrite Lift_c UnLift_c Hr.
+    Qed.
+
+    Lemma Lift_inv1: forall (p : seq T) (x y: T),
+        UnLift (Lift (x::(rcons p y))) x = (x::(rcons p y)).
+    Proof.
+      by elim => [// | y p Hr x' x];rewrite Lift_c UnLift_c Hr.
+    Qed.
+    
+    Lemma Lift_inv2: forall (p : seq T) (x: T),
+        p <> [::] ->  UnLift (Lift p) (head x p) = p.
+    Proof.
+      elim => [ // | y p _ x _]. 
+      elim: p x y => [ //= | z p  Hr x y].
+      by rewrite Lift_c UnLift_c Hr.
+    Qed.
+    
+  End Lift_seq_props.
+
+End Seq_lift.
+
 Section all.
   (** * utility lemmata for seq function all *)
 
@@ -182,10 +305,9 @@ Section all2.
   (** * all for seq (T *T) *)
 
   Variables (T: Type).
-  Definition pair_rev (tt: T * T):=  (tt.2, tt.1). 
   
   Lemma all_inv: forall (S: relation T) (spa: seq (T * T)), 
-      spa (\in) S <-> (map pair_rev spa) (\in) S.-1. 
+      spa (\in) S <-> (map (@pair_rev T) spa) (\in) S.-1. 
   Proof.
     move => S;elim => [ // | [x y] spa Hr].
     by rewrite map_cons !all_cons Hr.
@@ -299,127 +421,11 @@ Section All2.
 
 End All2.
 
-Section Seq_lift. 
+Section Seq_lift1. 
   (** * Lift properties *) 
     
   Variables (T: Type).
   
-  (* Ppath form sequence of nodes *)
-  (* begin snippet Lift:: no-out *)  
-  Fixpoint Lift (p: seq T): seq (T * T) := 
-    match p with 
-    | x :: [:: y & p] as p1 => (x,y)::(Lift p1)
-    | _ => @nil (prod T T)
-    end.
-  (* end snippet Lift *)  
-
-  Section Lift_seq_props.
-    
-    Lemma Lift_c: forall  (p:seq T) (x y: T),
-        Lift [::x,y & p] = [::(x,y) & Lift [::y & p]].
-    Proof.
-      by move => p x y; split.
-    Qed.
-    
-    Lemma Lift_crc: forall  (p:seq T) (x y: T),
-        Lift (x::(rcons p y)) = (x,(head y p))::(Lift (rcons p y)).
-    Proof.
-      by move => p x y; rewrite headI Lift_c. 
-    Qed.
-    
-    Lemma Lift_rcrc: forall  (p:seq T) (x y: T),
-        Lift (rcons (rcons p x) y) =  rcons (Lift (rcons p x)) (x,y).
-    Proof.
-      have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
-      elim => [ x y // | z p Hr x y ].
-      rewrite [in RHS]rcons_cons [in RHS]Lift_crc [in RHS]rcons_cons -[in RHS]Hr.
-      by rewrite ![in LHS]rcons_cons [in LHS]Lift_crc H1. 
-    Qed.
-    
-    Lemma Lift_rcc: forall (p:seq T) (x y: T),
-        Lift (rcons (x::p) y) = rcons (Lift (x::p)) (last x p,y).
-    Proof.
-      by move => p x y;rewrite lastI Lift_rcrc.
-    Qed.
-    
-    Lemma Lift_last: forall (p:seq T) (x y: T),
-        last (x, head y p) (Lift (rcons p y)) = (last x p, y).
-    Proof.
-      by elim/last_ind => [x y // | p z Hr x y ];rewrite Lift_rcrc !last_rcons.
-    Qed.
-
-    Lemma Lift_head: forall (p:seq T) (x y: T),
-        head (x, last y p) (Lift (x::p)) = (x,head y p).
-    Proof.
-      have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
-      by elim/last_ind => [x y // | p z Hr x y ];rewrite Lift_crc H1 last_rcons.
-    Qed.
-    
-    Lemma Lift_cat_rc: forall (p q:seq T) (y z: T),
-        Lift ((rcons p y) ++ (rcons q z)) =
-          Lift (rcons p y) ++ Lift (y::rcons q z).
-    Proof.
-      have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
-      elim => [q y z // | t p Hr q y z].
-      rewrite rcons_cons cat_cons -rcons_cat Lift_crc rcons_cat Hr. 
-      have H2: head z (rcons p y ++ q) = head y p
-        by elim/last_ind: q y z => [y z | q z' Hr' y z];
-                                  [rewrite cats0 H1 | rewrite -rcons_cat H1 Hr'].
-      by rewrite H2 -cat_cons -Lift_crc.
-    Qed.
-    
-    Lemma Lift_cat_crc: forall (p q:seq T) (x y z: T),
-        Lift (x::(rcons p y) ++ (rcons q z)) =
-          Lift(x::(rcons p y)) ++ Lift (y::rcons q z).
-    Proof.
-      elim => [q x y z // | t p Hr q x y z].
-      by rewrite Lift_crc [in RHS]cat_cons -Lift_cat_rc.
-    Qed.
- 
-    Lemma Lift_rev: forall (p:seq T), 
-        Lift (rev p) = map (@pair_rev T) (rev (Lift p)). 
-    Proof.
-      elim => [// | x p Hr ];elim: p x Hr => [// | x' p _ x H1].
-      by rewrite rev_cons rev_cons Lift_rcrc 
-         -rev_cons H1 Lift_c rev_cons map_rcons /pair_rev.
-    Qed.
-    
-    (** Left inverse of Lift when p is not the nil list *)
-    Fixpoint UnLift (p: seq (T * T)) (x: T):= 
-      match p with 
-      | [::] => [::x]
-      | [::(x,y) & p1 ] => [::x & UnLift p1 y]
-      end.
-
-    Lemma UnLift_c: forall (p: seq (T * T)) (x y z: T),
-        UnLift ((x, y) :: p) z = [::x & UnLift p y].
-    Proof.
-      by [].
-    Qed.
-
-    (** sanity check *)
-    Lemma Lift_inv: forall (p : seq T) (x y: T),
-        UnLift (Lift [::x,y & p]) x = [::x,y & p].
-    Proof.
-      by elim => [// | y p Hr x' x];rewrite Lift_c UnLift_c Hr.
-    Qed.
-
-    Lemma Lift_inv1: forall (p : seq T) (x y: T),
-        UnLift (Lift (x::(rcons p y))) x = (x::(rcons p y)).
-    Proof.
-      by elim => [// | y p Hr x' x];rewrite Lift_c UnLift_c Hr.
-    Qed.
-    
-    Lemma Lift_inv2: forall (p : seq T) (x: T),
-        p <> [::] ->  UnLift (Lift p) (head x p) = p.
-    Proof.
-      elim => [ // | y p _ x _]. 
-      elim: p x y => [ //= | z p  Hr x y].
-      by rewrite Lift_c UnLift_c Hr.
-    Qed.
-    
-  End Lift_seq_props.
-
   (* The definition of (edge) paths of length greater or equal to one *)
   
   (* begin snippet EPath1:: no-out *)  
@@ -477,7 +483,7 @@ Section Seq_lift.
 
   End EPath1_EPath1'.
 
-End Seq_lift.
+End Seq_lift1.
 
 Section Lift2.
   (** using twice Lifted sequences or just Chain on lifted equences *)
