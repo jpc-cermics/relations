@@ -376,12 +376,6 @@ Section All.
     by move => X p;rewrite propeqP;apply  All_iff_all.
   Qed.
   
-  Lemma All_subset: forall (X Y: set T) (p: seq T),
-      (X `<=` Y) ->  (p [\in]  X) -> (p [\in] Y).
-  Proof.
-    move => X Y p;rewrite !All_eq_all; apply all_subset.
-  Qed.
-  
   Lemma All_rcons: forall (X: set T) (p: seq T) (x: T),
       All X (rcons p x) <->  All X p /\ X x.
   Proof.
@@ -391,14 +385,8 @@ Section All.
   Lemma All_rev: forall (X: set T) (p: seq T),
       All X p <->  All X (rev p).
   Proof.
-    move => X p;rewrite !All_eq_all; apply all_rev'.
+    by move => X p;rewrite 2!All_eq_all all_rev'.
   Qed.
-
-  Lemma All_cat: forall (X: set T) (p q: seq T),
-      All X (p++q) <->  All X p /\ All X q.
-  Proof.
-    move => X p q;rewrite !All_eq_all; apply all_cat.
-  Qed. 
   
 End All.
 
@@ -828,7 +816,7 @@ Section DeploymentPath.
     move => S p x y z;rewrite 2!Dpe_AllS.
     have -> : Lift (x::(rcons (rcons p z) y)) = (Lift (x::(rcons p z))) ++ [::(z,y)]
       by rewrite -2!rcons_cons Lift_rcrc -cat_rcons cats0.
-    rewrite All_cat andC.  
+    rewrite All_eq_all all_cat andC -!All_eq_all.  
     have -> : All S [:: (z, y)] <-> S (z, y)
       by rewrite All_cons;split => [[_ H1] // | H1]; split.
     by [].
@@ -839,14 +827,14 @@ Section DeploymentPath.
       <-> Deployment_path S p x y /\ Deployment_path S q y z.
   Proof.
     move => S p q x y z.
-    by rewrite !Dpe_AllS -All_cat -Lift_cat_crc rcons_cat.
+    by rewrite !Dpe_AllS 3!All_eq_all -all_cat -Lift_cat_crc rcons_cat.
   Qed.
   
   Lemma  Deployment_path_incl: forall (S R: relation T) (p: seq T) (x y: T),
       (S `<=` R) -> Deployment_path S p x y -> Deployment_path R p x y.
   Proof.
     move => S R p x y H1.
-    by rewrite !Dpe_AllS ;apply All_subset.
+    by rewrite !Dpe_AllS !All_eq_all; apply all_subset.
   Qed.     
   
   Lemma allLr: forall (X: set T) (x y: T) (p: seq T),
