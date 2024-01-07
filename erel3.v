@@ -178,6 +178,34 @@ Section all.
 
 End all.
 
+Section all2.
+  (** * all for seq (T *T) *)
+
+  Variables (T: Type).
+  Definition pair_rev (tt: T * T):=  (tt.2, tt.1). 
+  
+  Lemma all_inv: forall (S: relation T) (spa: seq (T * T)), 
+      spa (\in) S <-> (map pair_rev spa) (\in) S.-1. 
+  Proof.
+    move => S;elim => [ // | [x y] spa Hr].
+    by rewrite map_cons !all_cons Hr.
+  Qed.
+
+  Lemma allI: forall (R S: relation T) (spa: seq (T * T)), 
+      spa (\in) (R `&` S) <-> spa (\in) R && spa (\in) S. 
+  Proof.
+    move => R S spa. 
+    have H1: (R `&` S) `<=` S by apply intersectionSr.
+    have H2: (R `&` S) `<=` R by apply intersectionSl.
+    split => [H3 | ]. 
+    by apply/andP;split;[apply: (all_subset H2 H3)| apply: (all_subset H1 H3)].
+    elim: spa => [// |  x spa Hr /andP H3].
+    move: H3; rewrite !all_cons => [[[H3 H4] [H5 H6]]].
+    by split;[rewrite /setI /mkset | apply Hr;apply/andP].
+  Qed.
+  
+End all2.
+
 Section All.
   (** * version using the inductive All *)
   (* we keep this definition and associated lemmas 
@@ -255,33 +283,18 @@ End All.
 Section All2. 
   (** * some properties of all for sequences seq (T*T) *)
   Variables (T: Type).
-  Definition pair_rev (tt: T * T):=  (tt.2, tt.1). 
   
-  Lemma AllS_inv: forall (S: relation T) (spa: seq (T * T)), 
-      All S spa <-> All S.-1 (map pair_rev spa).
+  Lemma All_inv: forall (S: relation T) (spa: seq (T * T)), 
+      All S spa <-> All S.-1 (map (@pair_rev T) spa).
   Proof.
-    move => S;elim => [ // | [x y] spa Hr].
-    by rewrite map_cons !All_cons Hr.
+    by move => S spa;rewrite 2!All_eq_all; rewrite all_inv.
   Qed.
 
-  Lemma all_inv: forall (S: relation T) (spa: seq (T * T)), 
-      spa (\in) S <-> (map pair_rev spa) (\in) S.-1. 
+  Lemma AllI: forall (R S: relation T) (spa: seq (T * T)), 
+      All (R `&` S) spa <-> All R spa /\ All S spa.
   Proof.
-    move => S;elim => [ // | [x y] spa Hr].
-    by rewrite map_cons !all_cons Hr.
-  Qed.
-
-  Lemma allI: forall (R S: relation T) (spa: seq (T * T)), 
-      spa (\in) (R `&` S) <-> spa (\in) R && spa (\in) S. 
-  Proof.
-    move => R S spa. 
-    have H1: (R `&` S) `<=` S by apply intersectionSr.
-    have H2: (R `&` S) `<=` R by apply intersectionSl.
-    split => [H3 | ]. 
-    by apply/andP;split;[apply: (all_subset H2 H3)| apply: (all_subset H1 H3)].
-    elim: spa => [// |  x spa Hr /andP H3].
-    move: H3; rewrite !all_cons => [[[H3 H4] [H5 H6]]].
-    by split;[rewrite /setI /mkset | apply Hr;apply/andP].
+    move => R S spa;rewrite 3!All_eq_all allI.
+    by split => [/andP [? ?] // | [? ?]]; apply/andP.
   Qed.
 
 End All2.
@@ -290,13 +303,6 @@ Section Seq_lift.
   (** * Lift properties *) 
     
   Variables (T: Type).
-    
-  Lemma AllS_inv': forall (S: relation T) (spa: seq (T * T)), 
-      All S spa <-> All S.-1 (map (@pair_rev T) spa).
-  Proof.
-    move => S;elim => [ // | [x y] spa Hr].
-    by rewrite map_cons !All_cons Hr.
-  Qed.
   
   (* Ppath form sequence of nodes *)
   (* begin snippet Lift:: no-out *)  
@@ -813,46 +819,16 @@ Section DeploymentPath.
   Lemma Dpe_rev: forall (S: relation T) (p: seq T) (x y z: T),
       Deployment_path S (rcons p z) x y <->  S (z, y) /\ Deployment_path S p x z.
   Proof.
-    move => S p x y z; split.
-    - elim: p x y z => [ x y z [H1 H2] // | z' p H1 x y z ].
-      rewrite rcons_cons => /Dpe [H2 /H1 [H3 H4]].
-      by split;[ | split].
-    - elim: p x y z => [ x y z [H1 H2] // | z' p H1 x y z ].
-      rewrite rcons_cons; move => [H2 /Dpe [H3 H4]].
-      by split;[ | apply H1;split].
+    move => S p x y z;rewrite 2!Dpe_AllS.
+    have -> : Lift (x::(rcons (rcons p z) y)) = (Lift (x::(rcons p z))) ++ [::(z,y)]
+      by rewrite -2!rcons_cons Lift_rcrc -cat_rcons cats0.
+    rewrite All_cat andC.  
+    have -> : All S [:: (z, y)] <-> S (z, y)
+      by rewrite All_cons;split => [[_ H1] // | H1]; split.
+    by [].
   Qed.
 
-  (* utility *)
-  Lemma Dpe_rev': forall (p: seq T) (x y z: T),
-      Lift (x::(rcons (rcons p z) y)) 
-      = (Lift (x::(rcons p z))) ++ [::(z,y)].
-  Proof.
-    move => p x y z. 
-    by rewrite -2!rcons_cons Lift_rcrc -cat_rcons cats0.
-  Qed.
-  
-  (* concatenate deployment paths
-   * note that ((rcons p y) ++ q) = p ++ y::q) by cat_rcons
-   *)
-  
   Lemma Deployment_path_cat: forall (S: relation T) (p q: seq T) (x y z: T),
-      Deployment_path S ((rcons p y) ++ q) x z
-      <-> Deployment_path S p x y /\ Deployment_path S q y z.
-  Proof.
-    split;move: p q x y z.
-    - elim => [ q x y z // |  t p Hr q u v w].
-      rewrite rcons_cons cat_cons.
-      move => /Dpe [H1 H2].
-      have [H3 H4]: Deployment_path S p t v /\ Deployment_path S q v w by apply Hr.
-      by split;[ split| ].
-    - elim => [q x y z //= H1 |  z' p H1].
-      elim => [x y z [/Dpe [H2 H3] //= H4] | t q1 H2 x y z [/Dpe [H3 H'3] /Dpe [H4 H'4]]].
-      by split;[ | rewrite cats0 Dpe_rev; split].
-      by rewrite rcons_cons cat_cons;split;[ |apply H1;split;[ | split]].
-  Qed.
-  
-  (** shorter proof with AllS *)
-  Lemma Deployment_path_cat': forall (S: relation T) (p q: seq T) (x y z: T),
       Deployment_path S ((rcons p y) ++ q) x z
       <-> Deployment_path S p x y /\ Deployment_path S q y z.
   Proof.
@@ -867,23 +843,38 @@ Section DeploymentPath.
     by rewrite !Dpe_AllS ;apply All_subset.
   Qed.     
   
+  Lemma allLr: forall (X: set T) (x y: T) (p: seq T),
+      (Lift (x::(rcons p y))) (\in) L_(X) <-> (x::p) (\in) X.
+  Proof.
+    move => X x y p.
+    elim: p x. 
+    - rewrite /= /Lr; split => [/andP [/inP H1 _] | /andP [/inP H1 _]].
+      by rewrite /mkset /= in H1;apply mem_set in H1;rewrite H1.
+      by apply/andP;split;[ apply/inP;rewrite /mkset /= |].
+    - move => z p Hr x; rewrite rcons_cons Lift_c 2!all_cons.
+      split => [ [? /Hr ?] // | [? ?]].
+      by split;[| apply Hr].
+  Qed.
+  
   Lemma  Deployment_path_WS_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
-      Deployment_path (Δ_(W.^c) `;` S) p x y <-> All W.^c (x::p) /\ Deployment_path S p x y.
+      Deployment_path (Δ_(W.^c) `;` S) p x y <->
+        All W.^c (x::p) /\ Deployment_path S p x y.
   Proof.
     move => S W p x y.
-    have Hp: (Δ_(W.^c) `;` S `<=` S) by apply DeltaCsubset.
-    split.
-    - elim: p x y.
-      + by move => x y [z [[/= H1 <-] H3]] //. 
-      + move => z p  H1 x y /Dpe [[x' [[H4 H5] H6]] H7]. 
-        rewrite All_cons Dpe.
-        apply H1 in H7.
-        move: H7 => [H7 H8].
-        by split;[ split;[ |]
-                 | split;[rewrite /= in H5; rewrite H5 |]].
-    -  elim:p x y=> [x y // [[_ H1] /= H2] | z p H1 x y [/All_cons [H2 H'2] /Dpe [H3 H4]]].
-       by (exists x); split;[split;[|] |].
-       by apply Dpe;split;[(exists x);split;[split;[|] |] | apply H1].
+    by rewrite !Dpe_AllS DeltaLco AllI !All_iff_all allLr.
+  Qed.
+
+  Lemma allRr: forall (X: set T) (x y: T) (p: seq T),
+      (Lift (x::(rcons p y))) (\in) R_(X) <-> (rcons p y) (\in) X.
+  Proof.
+    move => X x y p.
+    elim: p x. 
+    - rewrite /= /Rr; split => [/andP [/inP H1 _] | /andP [/inP H1 _]].
+      by rewrite /mkset /= in H1;apply mem_set in H1;rewrite H1.
+      by apply/andP;split;[ apply/inP;rewrite /mkset /= |].
+    - move => z p Hr x; rewrite rcons_cons Lift_c 2!all_cons.
+      split => [ [? /Hr ?] // | [? ?]].
+      by split;[| apply Hr].
   Qed.
   
   Lemma  Deployment_path_SW_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
@@ -891,42 +882,15 @@ Section DeploymentPath.
       <-> All W.^c (rcons p y) /\ Deployment_path S p x y.
   Proof.
     move => S W p x y.
-    have Hp: (S `;` Δ_(W.^c) `<=` S) by apply DeltaCsubsetl.
-    split.
-    - elim: p x y.
-      + by move => x y [z [H3 [/= H1 <-]]] //. 
-      + move => z p  H1 x y /Dpe [[x' [H6 [H4 H5]]] H7]. 
-        rewrite All_cons Dpe.
-        apply H1 in H7.
-        move: H7 => [H7 H8].
-        rewrite /= in H4 H5 H6.
-        by split;[ split;[ | rewrite -H5]
-                 | split;[ rewrite -H5 |]].
-    -  elim:p x y=> [x y // [[_ H1] /= H2] | z p H1 x y [/All_cons [H2 H'2] /Dpe [H3 H4]]].
-       by (exists y);split;[ |split;[ |]].
-       by apply Dpe;split;[(exists z);split;[ | split;[|]] | apply H1].
+    by rewrite !Dpe_AllS DeltaRco AllI !All_iff_all allRr andC.
   Qed.
   
   Lemma  Deployment_path_rev: forall (S: relation T) (p: seq T) (x y: T),
       Deployment_path S p x y <->  Deployment_path S.-1 (rev p) y x.
   Proof.
-    have H1: forall (S': relation T) (p': seq T) (x' y': T),
-        Deployment_path S' p' x' y' ->  Deployment_path S'.-1 (rev p') y' x'
-        by move => S;elim => [ x y //|z p1 H1 x y /Dpe [H3 H4]];
-                           rewrite  rev_cons Dpe_rev /inverse;
-                             by split;[ | apply H1].
-    move => S p x y; split => [H2 | H2 ].
-    by apply H1.
-    by rewrite -[p]revK -[S]inverse_inverse;apply H1.
-  Qed.     
-
-  (** Other proof with AllS *)
-  Lemma  Deployment_path_rev': forall (S: relation T) (p: seq T) (x y: T),
-      Deployment_path S p x y <->  Deployment_path S.-1 (rev p) y x.
-  Proof.
     split;rewrite !Dpe_AllS;move => H1.
-    by rewrite -rev_cons -rev_rcons Lift_rev -AllS_inv All_rev revK rcons_cons.  
-    by rewrite AllS_inv All_rev -map_rev -rcons_cons -Lift_rev rev_rcons rev_cons.
+    by rewrite -rev_cons -rev_rcons Lift_rev -All_inv All_rev revK rcons_cons.  
+    by rewrite All_inv All_rev -map_rev -rcons_cons -Lift_rev rev_rcons rev_cons.
   Qed.     
   
   Lemma Deployment_path_All: forall (S: relation T) (p: seq T) (x y: T),
