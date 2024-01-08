@@ -111,7 +111,7 @@ Section Bmw_implies_active_path.
     rewrite /Bmw /inverse /Bw -DuT_eq_Tstar.
     move => x y [x1 [/= H1 [/Delta_Id <- | H2]]];first by (exists [::]).
     pose proof (clos_t_to_paths_l H2) as [p [[[H3 H3'] H4] H5]]. 
-    apply Deployment_path_rev in H4.
+    apply AllLift_rev in H4.
     exists (rcons (rev p) x1); split.
     apply Deployment_to_Active_path.
     split. 
@@ -140,7 +140,7 @@ Section Bmw_implies_active_path.
     move => x y [[x1 [H1 H2]] H3]. 
     have H4: Ew.+ (y, x) by rewrite -r_clos_rt_clos_t;exists x1;split;[exists y;split | ].
     pose proof clos_t_to_paths_l H4 as [p [[[H6 H6'] H7] H8]].
-    apply Deployment_path_rev in H7.
+    apply AllLift_rev in H7.
     (exists (rev p));rewrite -Deployment_to_Active_path -rev_cons.
     by rewrite 2!All_eq_all -2!all_rev' -2!All_eq_all.
   Qed.

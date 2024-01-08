@@ -36,6 +36,7 @@ Local Open Scope classical_set_scope.
 (* begin snippet all_notation:: no-out *)  
 Notation "p (\in) X" := (all (fun x => x \in X) p) (at level 4, no associativity).
 (* end snippet all_notation *)  
+Reserved Notation "p [\in] X" (at level 4, no associativity).
 
 Section Types.
   (** * Needed Types *)
@@ -253,7 +254,7 @@ Section all.
   Variables (T: Type). 
   
   Lemma allP: forall (X:set T) (p:seq T) (x:T), 
-      X x /\ p (\in) X <->  (x \in X) && (p (\in) X).
+      X x /\ p (\in) X <-> (x \in X) && (p (\in) X).
   Proof.
     by move => X p x;split => [[/mem_set -> ->] // | /andP [/set_mem H1 H2]].
   Qed.
@@ -366,14 +367,98 @@ Section all2.
 
 End all2.
 
+Section allL.
+  (** *  all on a lifted sequence 
+   * et on voit que c'est un AllS pour un Lift 
+   * ce qui fait que la discussion au dessus doit s'appliquer 
+   * Il faut voir avec quelle équivalence les preuves sont les + simples.
+   *)
+  
+  Variables (T: Type).
+  Definition allL (R: relation T) (p: seq T) (x y:T) := 
+    all (fun x => x \in R) (Lift (x::(rcons p y))).
+
+  Lemma allL_c: forall (S: relation T) (p: seq T) (x y z: T),
+      allL S (z::p) x y <-> ((x, z) \in S) && allL S p z y.
+  Proof.
+    by move => S p x y z;split;[rewrite /allL rcons_cons Lift_c all_cons |].
+  Qed.
+
+  Lemma allL_rc: forall (S: relation T) (p: seq T) (x y z: T),
+      allL S (rcons p z) x y <-> ((z,y) \in S) && allL S p x z.
+  Proof.
+    move => S p x y z;split.
+    by rewrite /allL -rcons_cons Lift_rcc all_rcons last_rcons;move => [-> /inP ->].
+    by move => /andP [/inP ? ?];rewrite /allL -rcons_cons Lift_rcc all_rcons last_rcons. 
+  Qed.
+  
+  Lemma allL_cat: forall (S: relation T) (p q: seq T) (x y z: T),
+      allL S ((rcons p y) ++ q) x z <-> allL S p x y && allL S q y z.
+  Proof.
+  Admitted.
+  
+  Lemma allL_incl: forall (S R: relation T) (p: seq T) (x y: T),
+      (S `<=` R) -> allL S p x y -> allL R p x y.
+  Proof.
+    by move => S R p x y H1 H2;apply all_subset with S.
+  Qed.
+  
+  Lemma allL_WS_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
+      allL (Δ_(W.^c) `;` S) p x y <-> all (fun x => x \in W.^c) (x::p) && allL S p x y.
+  Proof.
+    move => S W p x y.
+    have H1: (L_(W.^c) `&` S) `<=` S by apply intersectionSr.
+    have H2: (L_(W.^c) `&` S) `<=` L_(W.^c) by apply intersectionSl.
+    pose proof (@all_subset (T*T) (L_(W.^c) `&` S) L_(W.^c)) as H3.
+    pose proof (@all_subset (T*T) (L_(W.^c) `&` S) S) as H4.    
+    rewrite DeltaLco /allL allI.
+    by split => /andP [/allLr H5 H6];[apply /andP | apply /andP].
+  Qed.
+  
+  Lemma allL_SW_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
+      allL (S `;` Δ_(W.^c)) p x y <-> all (fun x => x \in W.^c) (rcons p y) && allL S p x y.
+  Proof.
+    move => S W p x y.
+    have H1: (S `&` L_(W.^c)) `<=` S by apply intersectionSl.
+    have H2: (S `&` L_(W.^c)) `<=` L_(W.^c) by apply intersectionSr.
+    pose proof (@all_subset (T*T) (L_(W.^c) `&` S) L_(W.^c)) as H3.
+    pose proof (@all_subset (T*T) (L_(W.^c) `&` S) S) as H4.    
+    rewrite DeltaRco /allL allI; split => /andP [H5 H6]. 
+    by rewrite allRr in H6; apply /andP; split. 
+    by apply /andP; split;[| rewrite allRr].
+  Qed.
+  
+  Lemma allL_rev: forall (S: relation T) (p: seq T) (x y: T),
+      allL S p x y <->  allL S.-1 (rev p) y x.
+  Proof.
+    move => S p x y. 
+    have H1: (y :: rcons (rev p) x) = rev (x::(rcons p y)) by rewrite rev_cons rev_rcons -rcons_cons.
+    by rewrite /allL all_rev' all_inv H1 Lift_rev.
+  Qed.
+  
+  Lemma allL_All: forall (S: relation T) (p: seq T) (x y: T),
+      allL S p x y -> all (fun x => x \in (S.+)#_(y)) (x::p).
+  Proof.
+    move => S p x y.
+    elim: p x. 
+    by move => x;rewrite /allL /= => /andP [/inP H1 _];apply /andP;split;[apply mem_set;apply Fset_t1|].
+    move => z p Hr x;rewrite allL_c => /andP [/inP H1 /Hr H2].
+    move: (H2);rewrite all_cons => [[H3 H4]].
+    by rewrite all_cons;split;[ apply Fset_t2; exists z |].
+  Qed.
+  
+End allL.
+
 Section All.
   (** * version using the inductive All *)
-  (* we keep this definition and associated lemmas 
-   * as the rest of the proofs were using All 
-   * and switching to all would require changing the 
-   * proofs
+  (* we keep this definition used in many lemmata 
+   * we prove that it is equivalent to
+   *  (all (fun x => x \in X) p) 
+   * In the proofs of lemmata enouced with All 
+   * All_eq_all is used to get rid of All and just use 
+   * lemmata refering to all
    *)
-
+  
   Variables (T: Type). 
   
   (* True if all the elements of p are in X *)
@@ -402,24 +487,91 @@ Section All.
   
 End All.
 
-Section All2. 
-  (** * some properties of all for sequences seq (T*T) *)
-  Variables (T: Type).
+Notation "p [\in] X" := (All X p) (at level 4, no associativity).
+
+Section All_Lifted.
+
+  (** * Ici on regarde Deployment paths from x to y for a relation 
+   * et on voit que c'est un AllS pour un Lift 
+   * ce qui fait que la discussion au dessus doit s'appliquer 
+   * Il faut voir avec quelle équivalence les preuves sont les + simples.
+   *)
   
-  Lemma All_inv: forall (S: relation T) (spa: seq (T * T)), 
-      All S spa <-> All S.-1 (map (@pair_rev T) spa).
-  Proof.
-    by move => S spa;rewrite 2!All_eq_all; rewrite all_inv.
+  Variables (T: Type).
+          
+  (* (x :: (rcons p y)) is a path for the relation S or the graph (A,S) *)
+  Fixpoint AllLift (S: relation T) (p: seq T) (x y: T) :=
+    match p with
+    | [::] => S (x, y)
+    | x1::p1 => S (x, x1) /\ AllLift S p1 x1 y
+    end.
+
+  (** what is the link between a Ppath and Deployment path ? *) 
+  Lemma Dpe_AllS: forall (S: relation T) (p: seq T) (x y: T), 
+      AllLift S p x y <-> All S (Lift (x::(rcons p y))).
+  Proof. 
+    move => S p x y;split.
+    elim: p x y => [ // | z p H1] x y [H2 H3].
+    by rewrite rcons_cons Lift_c All_eq_all all_cons 
+         andC -All_eq_all;split;[apply H1 | ].
+    elim: p x y => [ |x p H1 ] z y; first by move => [_ H1].
+    rewrite rcons_cons Lift_c All_eq_all all_cons andC -All_eq_all.
+    by move => [H2 H3];split; [ | apply H1].
   Qed.
 
-  Lemma AllI: forall (R S: relation T) (spa: seq (T * T)), 
-      All (R `&` S) spa <-> All R spa /\ All S spa.
+  Lemma Dpe: forall (S: relation T) (p: seq T) (x y z: T),
+      AllLift S (z::p) x y <->  S (x, z) /\ AllLift S p z y.
   Proof.
-    move => R S spa;rewrite 3!All_eq_all allI.
-    by split => [/andP [? ?] // | [? ?]]; apply/andP.
+    by move => S p x y z; split;move => [H1 H2];[split| ].
   Qed.
-
-End All2.
+  
+  Lemma Dpe_rev: forall (S: relation T) (p: seq T) (x y z: T),
+      AllLift S (rcons p z) x y <-> S (z, y) /\ AllLift S p x z.
+  Proof.
+    move => S p x y z. rewrite 2!Dpe_AllS 2!All_eq_all allL_rc /allL. 
+    by split => [ /andP [/inP ? ?] // | [/inP ? ?] ];apply/andP.
+  Qed.
+  
+  Lemma AllLift_cat: forall (S: relation T) (p q: seq T) (x y z: T),
+      AllLift S ((rcons p y) ++ q) x z
+      <-> AllLift S p x y /\ AllLift S q y z.
+  Proof.
+    by move => S p q x y z;rewrite !Dpe_AllS 3!All_eq_all -all_cat -Lift_cat_crc rcons_cat.
+  Qed.
+  
+  Lemma AllLift_incl: forall (S R: relation T) (p: seq T) (x y: T),
+      (S `<=` R) -> AllLift S p x y -> AllLift R p x y.
+  Proof.
+    by move => S R p x y H1;rewrite !Dpe_AllS !All_eq_all; apply all_subset.
+  Qed.     
+  
+  Lemma AllLift_WS_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
+      AllLift (Δ_(W.^c) `;` S) p x y <-> All W.^c (x::p) /\ AllLift S p x y.
+  Proof.
+    move => S W p x y;rewrite 2!Dpe_AllS 3!All_eq_all allL_WS_iff. 
+    by split => [ /andP [? ?] // | [? ?]]; apply/andP.
+  Qed.
+  
+  Lemma AllLift_SW_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
+      AllLift (S `;` Δ_(W.^c)) p x y <-> All W.^c (rcons p y) /\ AllLift S p x y.
+  Proof.
+    move => S W p x y;rewrite 2!Dpe_AllS 3!All_eq_all allL_SW_iff. 
+    by split => [ /andP [? ?] // | [? ?]]; apply/andP.
+  Qed.
+  
+  Lemma AllLift_rev: forall (S: relation T) (p: seq T) (x y: T),
+      AllLift S p x y <-> AllLift S.-1 (rev p) y x.
+  Proof.
+    by move => S p x y;rewrite 2!Dpe_AllS 2!All_eq_all allL_rev.
+  Qed.     
+  
+  Lemma AllLift_All: forall (S: relation T) (p: seq T) (x y: T),
+      AllLift S p x y -> All (S.+)#_(y) (x::p).
+  Proof.
+    by move => S p x y;rewrite Dpe_AllS 2!All_eq_all; move => H1; apply allL_All.
+  Qed.
+  
+End All_Lifted.
 
 Section Seq_lift1. 
   (** * Lift properties *) 
@@ -786,112 +938,11 @@ Section Seq_liftO.
   
 End Seq_liftO.
 
-Section DeploymentPath.
-  (** * Ici on regarde Deployment paths from x to y for a relation 
-   * et on voit que c'est un AllS pour un Lift 
-   * ce qui fait que la discussion au dessus doit s'appliquer 
-   * Il faut voir avec quelle équivalence les preuves sont les + simples.
-   *)
-  
-  Variables (T: Type).
-          
-  (* (x :: (rcons p y)) is a path for the relation S or the graph (A,S) *)
-  Fixpoint Deployment_path (S: relation T) (p: seq T) (x y: T) :=
-    match p with
-    | [::] => S (x, y)
-    | x1::p1 => S (x, x1) /\ Deployment_path S p1 x1 y
-    end.
-
-  (* utility *)
-  Lemma Dpe: forall (S: relation T) (p: seq T) (x y z: T),
-      Deployment_path S (z::p) x y <->  S (x, z) /\ Deployment_path S p z y.
-  Proof.
-    by move => S p x y z; split;move => [H1 H2];[split| ].
-  Qed.
-
-  (** what is the link between a Ppath and Deployment path ? *) 
-  Lemma Dpe_AllS: forall (S: relation T) (p: seq T) (x y: T), 
-      Deployment_path S p x y <-> All S (Lift (x::(rcons p y))).
-  Proof. 
-    move => S p x y;split.
-    elim: p x y => [ // | z p H1] x y /Dpe [H2 H3].
-    by rewrite rcons_cons Lift_c All_eq_all all_cons 
-         andC -All_eq_all;split;[apply H1 | ].
-    elim: p x y => [ |x p H1 ] z y; first by move => [_ H1].
-    rewrite rcons_cons Lift_c All_eq_all all_cons andC -All_eq_all Dpe. 
-    by move => [H2 H3];split; [ | apply H1].
-  Qed.
-  
-  (* utility *)
-  Lemma Dpe_rev: forall (S: relation T) (p: seq T) (x y z: T),
-      Deployment_path S (rcons p z) x y <->  S (z, y) /\ Deployment_path S p x z.
-  Proof.
-    move => S p x y z;rewrite 2!Dpe_AllS.
-    have -> : Lift (x::(rcons (rcons p z) y)) = (Lift (x::(rcons p z))) ++ [::(z,y)]
-      by rewrite -2!rcons_cons Lift_rcrc -cat_rcons cats0.
-    rewrite All_eq_all all_cat andC -!All_eq_all.  
-    have -> : All S [:: (z, y)] <-> S (z, y)
-      by rewrite All_eq_all all_cons andC -All_eq_all;split => [[_ H1] // | H1];split.
-    by [].
-  Qed.
-  
-  Lemma Deployment_path_cat: forall (S: relation T) (p q: seq T) (x y z: T),
-      Deployment_path S ((rcons p y) ++ q) x z
-      <-> Deployment_path S p x y /\ Deployment_path S q y z.
-  Proof.
-    move => S p q x y z.
-    by rewrite !Dpe_AllS 3!All_eq_all -all_cat -Lift_cat_crc rcons_cat.
-  Qed.
-  
-  Lemma  Deployment_path_incl: forall (S R: relation T) (p: seq T) (x y: T),
-      (S `<=` R) -> Deployment_path S p x y -> Deployment_path R p x y.
-  Proof.
-    move => S R p x y H1.
-    by rewrite !Dpe_AllS !All_eq_all; apply all_subset.
-  Qed.     
-  
-  Lemma  Deployment_path_WS_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
-      Deployment_path (Δ_(W.^c) `;` S) p x y <->
-        All W.^c (x::p) /\ Deployment_path S p x y.
-  Proof.
-    move => S W p x y.
-    by rewrite 2!Dpe_AllS DeltaLco AllI 3!All_eq_all allLr.
-  Qed.
-  
-  Lemma  Deployment_path_SW_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
-      Deployment_path (S `;` Δ_(W.^c)) p x y 
-      <-> All W.^c (rcons p y) /\ Deployment_path S p x y.
-  Proof.
-    move => S W p x y.
-    by rewrite 2!Dpe_AllS DeltaRco AllI 3!All_eq_all allRr andC.
-  Qed.
-  
-  Lemma  Deployment_path_rev: forall (S: relation T) (p: seq T) (x y: T),
-      Deployment_path S p x y <->  Deployment_path S.-1 (rev p) y x.
-  Proof.
-    split;rewrite 2!Dpe_AllS 2!All_eq_all;move => H1.
-    by rewrite -rev_cons -rev_rcons Lift_rev -all_inv all_rev' revK rcons_cons.  
-    by rewrite all_inv all_rev' -map_rev -rcons_cons -Lift_rev rev_rcons rev_cons.
-  Qed.     
-  
-  Lemma Deployment_path_All: forall (S: relation T) (p: seq T) (x y: T),
-      Deployment_path S p x y -> All (S.+)#_(y) (x::p).
-  Proof.
-    move => S.
-    elim => [  x y /= H1 | z p Hr x y /Dpe [H1 H2]];
-           first by split;[ | apply Fset_t1].
-    split; first by apply Hr. 
-    apply Fset_t2;exists z;split. 
-    by [].
-    by have [H3 H3']: All S.+#_(y) (z :: p) by apply Hr.
-  Qed.
-  
-End DeploymentPath.
 
 Section PathRel.
   (** * transitive closure and paths
    * the main result here is that the relation in AxA obtained 
-   * by fun (x y : T) => (exists (p: seq T), Deployment_path S p x y)
+   * by fun (x y : T) => (exists (p: seq T), AllLift S p x y)
    * is the relation S.+ the transitive closure of S 
    *)
 
@@ -899,7 +950,7 @@ Section PathRel.
   
   (* relation based on paths: take care that the path p depends on (x,y) *)
   Definition PathRel_n (S: relation T) (n:nat) :=
-    [set x | (exists (p: seq T), size(p)=n /\ Deployment_path S p x.1 x.2)].
+    [set x | (exists (p: seq T), size(p)=n /\ AllLift S p x.1 x.2)].
 
   (* composition and existence of paths coincide *)
   Lemma Itern_iff_PathReln : forall (n:nat), S^(n.+1) =  PathRel_n S n.
@@ -915,14 +966,14 @@ Section PathRel.
       elim: p H1 H2 => [ // | z p' _ H1].
       rewrite /size -/size -/addn1 in H1. 
       apply succn_inj in H1.
-      rewrite /Deployment_path -/Deployment_path. 
+      rewrite /AllLift -/AllLift. 
       move => [H2 H3].
       by exists z;split;[ | (exists p');split].
   Qed.
   
   (* relation based on paths: take care that the path p depends on (x,y) *)
   Definition PathRel (S: relation T) := 
-    [set x | (exists (p: seq T), Deployment_path S p x.1 x.2)].
+    [set x | (exists (p: seq T), AllLift S p x.1 x.2)].
   
   (* R.+ =  PathRel R *)
   Lemma clos_t_iff_PathRel: S.+ =  PathRel S.
@@ -948,23 +999,23 @@ Section PathRel_Examples.
 
   Lemma clos_t_to_paths_l : forall (x y: T),
       (Δ_(W.^c) `;` S).+ (x, y) ->
-      (exists (p: seq T), (All W.^c (x::p) /\ Deployment_path S p x y)
+      (exists (p: seq T), (All W.^c (x::p) /\ AllLift S p x y)
                      /\ All ((Δ_(W.^c) `;` S).+)#_(y) (x::p)).
   Proof.
     move => x y; rewrite {1}clos_t_iff_PathRel; move  => [p H]; exists p.
-    by split;[apply Deployment_path_WS_iff | apply Deployment_path_All].
+    by split;[apply AllLift_WS_iff | apply AllLift_All].
   Qed.
   
   Lemma clos_t_to_paths_r : forall (x y: T),
       (S `;` Δ_(W.^c)).+ (x, y) ->
-      (exists (p: seq T), (All W.^c (rcons p y) /\ Deployment_path S p x y)
+      (exists (p: seq T), (All W.^c (rcons p y) /\ AllLift S p x y)
                      /\ All ((Δ_(W.^c) `;` S.-1).+)#_(x) (y::(rev p))).
   Proof.
     move => x y; rewrite {1}clos_t_iff_PathRel; move  => [p H]; exists p.
     split.
-    by apply Deployment_path_SW_iff. 
-    by rewrite Deployment_path_rev inverse_compose DeltaE_inverse in H;
-    apply Deployment_path_All.
+    by apply AllLift_SW_iff. 
+    by rewrite AllLift_rev inverse_compose DeltaE_inverse in H;
+    apply AllLift_All.
   Qed.
   
 End PathRel_Examples.
@@ -1021,7 +1072,7 @@ Section Active_paths.
   Definition EO := Eo T O.
   
   (* Active is now almost expressed as a transitive closure 
-   * on an lifted space (A * A) * O as it uses Deployment_path *)
+   * on an lifted space (A * A) * O as it uses AllLift *)
   Definition Active_path
     (W: set T) (S: relation T) (p: seq EO) (x y: T) :=
     match p with 
@@ -1029,7 +1080,7 @@ Section Active_paths.
     | [::eo1] => eo1.1.1 = x /\  eo1.1.2 = y /\  Oedge S eo1 
     | eo1 :: [:: eo2 & p]
       => eo1.1.1 = x /\ (last eo2 p).1.2 = y 
-        /\ Deployment_path (ActiveOe W S) (belast eo2 p) eo1 (last eo2 p)
+        /\ AllLift (ActiveOe W S) (belast eo2 p) eo1 (last eo2 p)
     end.
   
   Definition R_o (S: relation T) (o:O):= match o with | P => S | N=> S.-1 end.
@@ -1066,7 +1117,7 @@ Section Active_paths.
   
   Lemma Active_path_crc: forall  (p: seq EO) (eo1 eo2:  EO),
       Active_path W S (eo1::(rcons p eo2)) eo1.1.1 eo2.1.2
-      <-> Deployment_path (ActiveOe W S) p eo1 eo2.
+      <-> AllLift (ActiveOe W S) p eo1 eo2.
   Proof.
     elim => [ | eo p H1] eo1 eo2;
            first by split;[move => [_ [_ /= H2]] |move => H1;split;[ |split]].
@@ -1171,7 +1222,7 @@ Section Active_paths.
         rewrite rcons_cons cat_cons -rcons_cons -rcons_cat in H3.
         pose proof Active_path_crc_ht H3 as [H4 H5].
         move: H3; rewrite -H4 -H5.
-        move => /Active_path_crc /Deployment_path_cat [H6 /Dpe [H7 H8]].
+        move => /Active_path_crc /AllLift_cat [H6 /Dpe [H7 H8]].
         by rewrite rcons_cons Active_path_crc Active_path_crc.
   Qed.
   
@@ -1202,7 +1253,7 @@ Section Active_paths.
         rewrite -H5-H6 Active_path_crc in H3.
         rewrite -H7 -H8 Active_path_crc in H4.
         rewrite -rcons_cons -{1}cat_rcons -/rcons -rcons_cat.
-        by rewrite -H5 -H8 Active_path_crc Deployment_path_cat Dpe_rev.
+        by rewrite -H5 -H8 Active_path_crc AllLift_cat Dpe_rev.
   Qed.
 
   Lemma Active_path_iff: forall (p q: seq EO) (eop eoq :EO) (x y z: T),
@@ -1383,7 +1434,7 @@ Section Active.
   
   Lemma Deployment_to_Active_path:
     forall (W: set T) (S: relation T) (p: seq T) (x y: T) (o:O),
-      ( All W.^c p /\ Deployment_path (R_o S o) p x y )
+      ( All W.^c p /\ AllLift (R_o S o) p x y )
         <-> Active_path W S (Lifto (x::(rcons p y)) o ) x y.
   Proof.
     split.
@@ -1415,17 +1466,18 @@ Section Active.
   Qed.
   
   Lemma Deployment_to_Active: forall (W: set T) (S: relation T) (p: seq T) (x y: T),
-      (All W.^c p /\ Deployment_path S p x y) -> Active W S x y.
+      (All W.^c p /\ AllLift S p x y) -> Active W S x y.
   Proof.
     move => W S p x y [H1 H2].
     by exists (Lifto (x::(rcons p y)) P); apply Deployment_to_Active_path;split.
   Qed.
 
   Lemma Deployment_inv_to_Active: forall (W: set T) (S: relation T) (p: seq T) (x y: T),
-      (All W.^c p /\ Deployment_path S.-1 p x y) -> Active W S x y.
+      (All W.^c p /\ AllLift S.-1 p x y) -> Active W S x y.
   Proof.
     move => W S p x y [H1 H2].
     by exists (Lifto (x::(rcons p y)) N); apply Deployment_to_Active_path;split.
   Qed.
 
 End Active. 
+
