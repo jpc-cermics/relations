@@ -1,3 +1,4 @@
+_build
 *.glob
 *.vo*
 *.aux
@@ -5,4 +6,3 @@
 imp*.ml*
 .Makefile.coq.d
 Makefile.coq*
-TAGS
