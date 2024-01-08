@@ -326,6 +326,44 @@ Section all2.
     by split;[rewrite /setI /mkset | apply Hr;apply/andP].
   Qed.
   
+  Lemma allRr: forall (X: set T) (x y: T) (p: seq T),
+      (Lift (x::(rcons p y))) (\in) R_(X) <-> (rcons p y) (\in) X.
+  Proof.
+    move => X x y p.
+    elim: p x. 
+    - rewrite /= /Rr; split => [/andP [/inP H1 _] | /andP [/inP H1 _]].
+      by rewrite /mkset /= in H1;apply mem_set in H1;rewrite H1.
+      by apply/andP;split;[ apply/inP;rewrite /mkset /= |].
+    - move => z p Hr x; rewrite rcons_cons Lift_c 2!all_cons.
+      split => [ [? /Hr ?] // | [? ?]].
+      by split;[| apply Hr].
+  Qed.
+
+  Lemma allLr: forall (X: set T) (x y: T) (p: seq T),
+      (Lift (x::(rcons p y))) (\in) L_(X) <-> (x::p) (\in) X.
+  Proof.
+    move => X x y p.
+    elim: p x. 
+    - rewrite /= /Lr; split => [/andP [/inP H1 _] | /andP [/inP H1 _]].
+      by rewrite /mkset /= in H1;apply mem_set in H1;rewrite H1.
+      by apply/andP;split;[ apply/inP;rewrite /mkset /= |].
+    - move => z p Hr x; rewrite rcons_cons Lift_c 2!all_cons.
+      split => [ [? /Hr ?] // | [? ?]].
+      by split;[| apply Hr].
+  Qed.
+  
+  Lemma allDl: forall (X: set T) (S: relation T) (x y: T) (p: seq T),
+      (Lift (x::(rcons p y))) (\in) (Δ_(X)`;`S) -> (x::p) (\in) X.
+  Proof.
+    by move => X S x y p;rewrite DeltaLco allI => /andP [/allLr H1 _].
+  Qed.
+
+  Lemma allDr: forall (X: set T) (S: relation T) (x y: T) (p: seq T),
+      (Lift (x::(rcons p y))) (\in) (S`;`Δ_(X)) -> (rcons p y) (\in) X.
+  Proof.
+    by move => X S x y p;rewrite DeltaRco allI => /andP [_ /allRr H1].
+  Qed.
+
 End all2.
 
 Section All.
@@ -355,12 +393,11 @@ Section All.
     move => X p x.
     by split;[elim : p x => [ x // | y p H1 x [H2 H2']];split;[ apply H1 |] | ].
   Qed.
-  
-  (* begin snippet All_with_all:: no-out *)  
+
+  (* just used by next Lemma *)
   Lemma All_iff_all: forall (X: set T) (p: seq T), 
-      (p [\in]  X) <-> all (fun x => x \in X) p.
+      (p [\in]  X) <-> p (\in) X. 
   Proof.
-    (* end snippet All_with_all:: no-out *)  
     move => X p;split.
     - elim:p => [? // | x p H1 /All_cons [/H1 H2 H3] //].
       rewrite -in_setE /= in H3. 
@@ -370,9 +407,11 @@ Section All.
       by rewrite All_cons /all => /andP [? /H1 ?];split;[|rewrite -in_setE].
   Qed.
 
+  (* begin snippet All_with_all:: no-out *)  
   Lemma All_eq_all: forall (X: set T) (p: seq T), 
-      (p [\in]  X) = all (fun x => x \in X) p.
+      (p [\in]  X) = p (\in) X.
   Proof.
+    (* end snippet All_with_all:: no-out *)
     by move => X p;rewrite propeqP;apply  All_iff_all.
   Qed.
   
@@ -837,38 +876,12 @@ Section DeploymentPath.
     by rewrite !Dpe_AllS !All_eq_all; apply all_subset.
   Qed.     
   
-  Lemma allLr: forall (X: set T) (x y: T) (p: seq T),
-      (Lift (x::(rcons p y))) (\in) L_(X) <-> (x::p) (\in) X.
-  Proof.
-    move => X x y p.
-    elim: p x. 
-    - rewrite /= /Lr; split => [/andP [/inP H1 _] | /andP [/inP H1 _]].
-      by rewrite /mkset /= in H1;apply mem_set in H1;rewrite H1.
-      by apply/andP;split;[ apply/inP;rewrite /mkset /= |].
-    - move => z p Hr x; rewrite rcons_cons Lift_c 2!all_cons.
-      split => [ [? /Hr ?] // | [? ?]].
-      by split;[| apply Hr].
-  Qed.
-  
   Lemma  Deployment_path_WS_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
       Deployment_path (Δ_(W.^c) `;` S) p x y <->
         All W.^c (x::p) /\ Deployment_path S p x y.
   Proof.
     move => S W p x y.
-    by rewrite !Dpe_AllS DeltaLco AllI !All_iff_all allLr.
-  Qed.
-
-  Lemma allRr: forall (X: set T) (x y: T) (p: seq T),
-      (Lift (x::(rcons p y))) (\in) R_(X) <-> (rcons p y) (\in) X.
-  Proof.
-    move => X x y p.
-    elim: p x. 
-    - rewrite /= /Rr; split => [/andP [/inP H1 _] | /andP [/inP H1 _]].
-      by rewrite /mkset /= in H1;apply mem_set in H1;rewrite H1.
-      by apply/andP;split;[ apply/inP;rewrite /mkset /= |].
-    - move => z p Hr x; rewrite rcons_cons Lift_c 2!all_cons.
-      split => [ [? /Hr ?] // | [? ?]].
-      by split;[| apply Hr].
+    by rewrite 2!Dpe_AllS DeltaLco AllI 3!All_eq_all allLr.
   Qed.
   
   Lemma  Deployment_path_SW_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
@@ -876,15 +889,15 @@ Section DeploymentPath.
       <-> All W.^c (rcons p y) /\ Deployment_path S p x y.
   Proof.
     move => S W p x y.
-    by rewrite !Dpe_AllS DeltaRco AllI !All_iff_all allRr andC.
+    by rewrite 2!Dpe_AllS DeltaRco AllI 3!All_eq_all allRr andC.
   Qed.
   
   Lemma  Deployment_path_rev: forall (S: relation T) (p: seq T) (x y: T),
       Deployment_path S p x y <->  Deployment_path S.-1 (rev p) y x.
   Proof.
-    split;rewrite !Dpe_AllS;move => H1.
-    by rewrite -rev_cons -rev_rcons Lift_rev -All_inv All_rev revK rcons_cons.  
-    by rewrite All_inv All_rev -map_rev -rcons_cons -Lift_rev rev_rcons rev_cons.
+    split;rewrite 2!Dpe_AllS 2!All_eq_all;move => H1.
+    by rewrite -rev_cons -rev_rcons Lift_rev -all_inv all_rev' revK rcons_cons.  
+    by rewrite all_inv all_rev' -map_rev -rcons_cons -Lift_rev rev_rcons rev_cons.
   Qed.     
   
   Lemma Deployment_path_All: forall (S: relation T) (p: seq T) (x y: T),
