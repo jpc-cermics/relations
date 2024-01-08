@@ -113,11 +113,13 @@ Section Bmw_implies_active_path.
     pose proof (clos_t_to_paths_l H2) as [p [[[H3 H3'] H4] H5]]. 
     apply Deployment_path_rev in H4.
     exists (rcons (rev p) x1); split.
-    apply Deployment_to_Active_path. 
-    by split;[apply All_rcons;split;[rewrite -All_rev |] | apply Dpe_rev;split].
-    by rewrite All_rev rev_rcons revK.
+    apply Deployment_to_Active_path.
+    split. 
+    by rewrite All_eq_all all_rcons -all_rev' -All_eq_all. 
+    by apply Dpe_rev;split.
+    by rewrite All_eq_all all_rev' -All_eq_all rev_rcons revK.
   Qed.
-
+  
   (** simplified version for composition *)
   Lemma Bmwpath_1: forall (x y:A),
       Bmw (x, y) -> exists (p : seq (Eo A O)) (x':A),
@@ -139,7 +141,8 @@ Section Bmw_implies_active_path.
     have H4: Ew.+ (y, x) by rewrite -r_clos_rt_clos_t;exists x1;split;[exists y;split | ].
     pose proof clos_t_to_paths_l H4 as [p [[[H6 H6'] H7] H8]].
     apply Deployment_path_rev in H7.
-    by (exists (rev p));rewrite -Deployment_to_Active_path -rev_cons -!All_rev.
+    (exists (rev p));rewrite -Deployment_to_Active_path -rev_cons.
+    by rewrite 2!All_eq_all -2!all_rev' -2!All_eq_all.
   Qed.
 
 End Bmw_implies_active_path.

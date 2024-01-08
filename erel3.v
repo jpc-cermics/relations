@@ -387,44 +387,17 @@ Section All.
   Notation "p [\in] X" := (All X p) (at level 4, no associativity).
   (* end snippet All_notation *)  
 
-  Lemma All_cons: forall (X: set T) (p: seq T) (x: T),
-      ((x::p) [\in]  X)  <->  p [\in] X /\ X x.
-  Proof.
-    move => X p x.
-    by split;[elim : p x => [ x // | y p H1 x [H2 H2']];split;[ apply H1 |] | ].
-  Qed.
-
-  (* just used by next Lemma *)
-  Lemma All_iff_all: forall (X: set T) (p: seq T), 
-      (p [\in]  X) <-> p (\in) X. 
-  Proof.
-    move => X p;split.
-    - elim:p => [? // | x p H1 /All_cons [/H1 H2 H3] //].
-      rewrite -in_setE /= in H3. 
-      rewrite /all H3 /=.
-      by apply H2.
-    - elim:p => [? // | x p H1]. 
-      by rewrite All_cons /all => /andP [? /H1 ?];split;[|rewrite -in_setE].
-  Qed.
-
   (* begin snippet All_with_all:: no-out *)  
   Lemma All_eq_all: forall (X: set T) (p: seq T), 
       (p [\in]  X) = p (\in) X.
   Proof.
     (* end snippet All_with_all:: no-out *)
-    by move => X p;rewrite propeqP;apply  All_iff_all.
-  Qed.
-  
-  Lemma All_rcons: forall (X: set T) (p: seq T) (x: T),
-      All X (rcons p x) <->  All X p /\ X x.
-  Proof.
-    move => X Y p;rewrite !All_eq_all; apply all_rcons.
-  Qed. 
-
-  Lemma All_rev: forall (X: set T) (p: seq T),
-      All X p <->  All X (rev p).
-  Proof.
-    by move => X p;rewrite 2!All_eq_all all_rev'.
+    move => X p.
+    have H1: (p [\in]  X) <-> p (\in) X 
+      by split;
+      [elim:p => [? // | x p H1 [/H1 H2 /inP H3] //];rewrite all_cons' H3 H2
+      | elim:p => [? // | x p H1 /andP [/inP H2 /H1 H3]];split].
+    by rewrite propeqP;apply H1.
   Qed.
   
 End All.
@@ -478,7 +451,7 @@ Section Seq_lift1.
       - elim: p x y => [ //= x y | z p Hr x y ].
         + move => [_ H2].
           by apply pp_two;[ apply pp_two;[constructor | left] | right; exists y, [::]].
-        + rewrite rcons_cons Lift_c All_cons;
+        + rewrite rcons_cons Lift_c All_eq_all all_cons andC -All_eq_all;
             by move => [H1 H2];apply pp_two;[ apply Hr | right; exists z, (rcons p y)].
       - move => H.
         elim/EPath_ind: H => [// | x' y' ep H1 [-> // | [y1 [ep1 [H2 H3]]]]].
@@ -842,9 +815,10 @@ Section DeploymentPath.
   Proof. 
     move => S p x y;split.
     elim: p x y => [ // | z p H1] x y /Dpe [H2 H3].
-    by rewrite rcons_cons Lift_c All_cons;split;[apply H1 | ].
+    by rewrite rcons_cons Lift_c All_eq_all all_cons 
+         andC -All_eq_all;split;[apply H1 | ].
     elim: p x y => [ |x p H1 ] z y; first by move => [_ H1].
-    rewrite rcons_cons Lift_c All_cons Dpe. 
+    rewrite rcons_cons Lift_c All_eq_all all_cons andC -All_eq_all Dpe. 
     by move => [H2 H3];split; [ | apply H1].
   Qed.
   
@@ -857,10 +831,10 @@ Section DeploymentPath.
       by rewrite -2!rcons_cons Lift_rcrc -cat_rcons cats0.
     rewrite All_eq_all all_cat andC -!All_eq_all.  
     have -> : All S [:: (z, y)] <-> S (z, y)
-      by rewrite All_cons;split => [[_ H1] // | H1]; split.
+      by rewrite All_eq_all all_cons andC -All_eq_all;split => [[_ H1] // | H1];split.
     by [].
   Qed.
-
+  
   Lemma Deployment_path_cat: forall (S: relation T) (p q: seq T) (x y z: T),
       Deployment_path S ((rcons p y) ++ q) x z
       <-> Deployment_path S p x y /\ Deployment_path S q y z.
@@ -1413,7 +1387,7 @@ Section Active.
         <-> Active_path W S (Lifto (x::(rcons p y)) o ) x y.
   Proof.
     split.
-    + elim: p x y => [x y [_ H1] | x1 p H1 x y [/All_cons [H2 H'2] /Dpe [H3 H4]]];
+    + elim: p x y => [x y [_ H1] | x1 p H1 x y [ [H2 H'2] /Dpe [H3 H4]]];
                     first by split;[ | split]; elim: o H1 => H1.
       elim: p H1 H2 H4 => [ _ H2 H4 // | z p _ H2 H5 /Dpe [H6 H7] ];
                          first by elim: o H3 H4 => H3 H4.
@@ -1428,7 +1402,8 @@ Section Active.
       (* size p >= 2 *)
       move => t p H1 x y H2;rewrite Lift_o_cons;move => /Active_path_cc [/H2 [H3 H5] H4].
       split.
-        rewrite All_cons;split;[ | move: H4 => [_ [_ [_ H4]]]].
+        rewrite All_eq_all all_cons andC -All_eq_all;
+          split;[ | move: H4 => [_ [_ [_ H4]]]].
         elim: o H1 H2 H4 H5 => H1 H2 H4 H5.
         by [].
         by [].
