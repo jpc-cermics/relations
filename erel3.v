@@ -280,7 +280,7 @@ Section all.
     by apply H1.
   Qed.
   
-  Lemma all_rcons: forall (X: set T) (p: seq T) (x: T),
+  Lemma all_rcons': forall (X: set T) (p: seq T) (x: T),
       (rcons p x) (\in) X <-> p (\in) X /\ X x.
   Proof.
     by move => X p x;rewrite all_rcons andC allP.
@@ -388,8 +388,8 @@ Section allL.
       allL S (rcons p z) x y <-> ((z,y) \in S) && allL S p x z.
   Proof.
     move => S p x y z;split.
-    by rewrite /allL -rcons_cons Lift_rcc all_rcons last_rcons;move => [-> /inP ->].
-    by move => /andP [/inP ? ?];rewrite /allL -rcons_cons Lift_rcc all_rcons last_rcons. 
+    by rewrite /allL -rcons_cons Lift_rcc all_rcons' last_rcons;move => [-> /inP ->].
+    by move => /andP [/inP ? ?];rewrite /allL -rcons_cons Lift_rcc all_rcons' last_rcons. 
   Qed.
   
   Lemma allL_cat: forall (S: relation T) (p q: seq T) (x y z: T),
@@ -662,6 +662,7 @@ Section Lift2.
 End Lift2.
 
 Section Seq_liftO. 
+
   (** * from (seq: A) (seq:O) to seq: A *A * O *)
   
   Variables (T: Type).
@@ -670,6 +671,13 @@ Section Seq_liftO.
   Inductive O := | P | N.
   (* end snippet O *)
   Definition O_rev (o:O) := match o with | P => N | N => P end.
+  
+  Record svo := { sv: seq T; so: seq O; len: length(sv) = (length(so)).+1}.
+
+  Lemma test: forall (s : svo), length (sv s) = (length(so s)).+1.
+  Proof.
+    by move => [a b c].
+  Qed.
   
   (* Oedge as a subset of (prod A A) O) *)
   (* begin snippet Oedge:: no-out *)  

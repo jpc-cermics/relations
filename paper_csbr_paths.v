@@ -115,7 +115,7 @@ Section Bmw_implies_active_path.
     exists (rcons (rev p) x1); split.
     apply Deployment_to_Active_path.
     split. 
-    by rewrite All_eq_all all_rcons -all_rev' -All_eq_all. 
+    by rewrite All_eq_all all_rcons' -all_rev' -All_eq_all. 
     by apply Dpe_rev;split.
     by rewrite All_eq_all all_rev' -All_eq_all rev_rcons revK.
   Qed.
