@@ -507,6 +507,7 @@ Section All_Lifted.
     end.
 
   (** what is the link between a Ppath and Deployment path ? *) 
+
   Lemma Dpe_AllS: forall (S: relation T) (p: seq T) (x y: T), 
       AllL S p x y <-> All S (Lift (x::(rcons p y))).
   Proof. 
@@ -517,6 +518,12 @@ Section All_Lifted.
     elim: p x y => [ |x p H1 ] z y; first by move => [_ H1].
     rewrite rcons_cons Lift_c All_eq_all all_cons andC -All_eq_all.
     by move => [H2 H3];split; [ | apply H1].
+  Qed.
+
+  Lemma AllL_eq_allL: forall (S: relation T) (p: seq T) (x y: T), 
+      AllL S p x y <-> allL S p x y. 
+  Proof. 
+    by move => S p x y; rewrite Dpe_AllS /allL All_eq_all.
   Qed.
 
   Lemma Dpe: forall (S: relation T) (p: seq T) (x y z: T),
@@ -536,13 +543,14 @@ Section All_Lifted.
       AllL S ((rcons p y) ++ q) x z
       <-> AllL S p x y /\ AllL S q y z.
   Proof.
-    by move => S p q x y z;rewrite !Dpe_AllS 3!All_eq_all -all_cat -Lift_cat_crc rcons_cat.
+    move => S p q x y z;rewrite 3!AllL_eq_allL allL_cat.
+    by split => [ /andP [? ?] | [? ?]];[| apply/andP].
   Qed.
   
   Lemma AllL_incl: forall (S R: relation T) (p: seq T) (x y: T),
       (S `<=` R) -> AllL S p x y -> AllL R p x y.
   Proof.
-    by move => S R p x y H1;rewrite !Dpe_AllS !All_eq_all; apply all_subset.
+    by move => S R p x y H1;rewrite 2!AllL_eq_allL => H2; apply: (allL_incl H1). 
   Qed.     
   
   Lemma AllL_WS_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
@@ -672,9 +680,28 @@ Section Seq_liftO.
   (* end snippet O *)
   Definition O_rev (o:O) := match o with | P => N | N => P end.
   
-  Record svo := { sv: seq T; so: seq O; len: length(sv) = (length(so)).+1}.
+  Record Svo := { sv: seq T; so: seq O; len: size(sv) = (size(so)).+1}.
 
-  Lemma test: forall (s : svo), length (sv s) = (length(so s)).+1.
+  Lemma test: forall (sv : seq T) (so : seq O), 
+       size(so) > 0 
+       -> size(sv) = (size(so)).+1 
+       -> size(behead sv)  = (size(behead so)).+1.
+  Proof.
+    move => sv so.
+    elim: so sv. 
+    move => so. by [].
+    move => o so' Hr so /= H1 H2. 
+    by rewrite size_behead H2.
+  Qed.
+
+  Lemma svo_rec : forall (svo: Svo),
+      size(so svo) > 0 
+      -> size(behead (sv svo)) = (size(behead (so svo))).+1.
+  Proof.
+    move => svo H1. apply: (test H1 (len svo)).
+  Qed.
+
+  Lemma test1: forall (s : Svo), length (sv s) = (length(so s)).+1.
   Proof.
     by move => [a b c].
   Qed.
