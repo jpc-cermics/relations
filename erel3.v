@@ -264,8 +264,8 @@ Section Seq_lift.
 
 End Seq_lift.
 
-Section all.
-  (** * utility lemmata for seq function all *)
+Section allset.
+  (** * utility lemmata for seq function all used with sets*)
 
   Variables (T: Type) (X Y: set T) (p q: seq T) (x:T).
   
@@ -305,7 +305,7 @@ Section all.
     by rewrite all_cat;split => [/andP | [-> ->]].
   Qed.
   
-End all.
+End allset.
 
 Section all2.
   (** * all for seq (T *T) *)
@@ -319,7 +319,7 @@ Section all2.
     by rewrite map_cons !allset_cons Hr.
   Qed.
 
-  Lemma allI: forall (R S: relation T) (spa: seq (T * T)), 
+  Lemma allset_I: forall (R S: relation T) (spa: seq (T * T)), 
       spa [\in] (R `&` S) <-> spa [\in] R && spa [\in] S. 
   Proof.
     move => R S spa. 
@@ -332,7 +332,7 @@ Section all2.
     by split;[rewrite /setI /mkset | apply Hr;apply/andP].
   Qed.
   
-  Lemma allRr: forall (X: set T) (x y: T) (p: seq T),
+  Lemma allset_Rr: forall (X: set T) (x y: T) (p: seq T),
       (Lift (x::(rcons p y))) [\in] R_(X) <-> (rcons p y) [\in] X.
   Proof.
     move => X x y p.
@@ -345,7 +345,7 @@ Section all2.
       by split;[| apply Hr].
   Qed.
 
-  Lemma allLr: forall (X: set T) (x y: T) (p: seq T),
+  Lemma allset_Lr: forall (X: set T) (x y: T) (p: seq T),
       (Lift (x::(rcons p y))) [\in] L_(X) <-> (x::p) [\in] X.
   Proof.
     move => X x y p.
@@ -358,30 +358,26 @@ Section all2.
       by split;[| apply Hr].
   Qed.
   
-  Lemma allDl: forall (X: set T) (S: relation T) (x y: T) (p: seq T),
+  Lemma allset_Dl: forall (X: set T) (S: relation T) (x y: T) (p: seq T),
       (Lift (x::(rcons p y))) [\in] (Δ_(X)`;`S) -> (x::p) [\in] X.
   Proof.
-    by move => X S x y p;rewrite DeltaLco allI => /andP [/allLr H1 _].
+    by move => X S x y p;rewrite DeltaLco allset_I => /andP [/allset_Lr H1 _].
   Qed.
 
-  Lemma allDr: forall (X: set T) (S: relation T) (x y: T) (p: seq T),
+  Lemma allset_Dr: forall (X: set T) (S: relation T) (x y: T) (p: seq T),
       (Lift (x::(rcons p y))) [\in] (S`;`Δ_(X)) -> (rcons p y) [\in] X.
   Proof.
-    by move => X S x y p;rewrite DeltaRco allI => /andP [_ /allRr H1].
+    by move => X S x y p;rewrite DeltaRco allset_I => /andP [_ /allset_Rr H1].
   Qed.
 
 End all2.
 
-Section allL.
-  (** *  all on a lifted sequence 
-   * et on voit que c'est un AllS pour un Lift 
-   * ce qui fait que la discussion au dessus doit s'appliquer 
-   * Il faut voir avec quelle équivalence les preuves sont les + simples.
-   *)
+Section allset_Lifted.
+  (** *  all on a lifted sequence  *)
   
   Variables (T: Type).
-  Definition allL (R: relation T) (p: seq T) (x y:T) := 
-    all (fun x => x \in R) (Lift (x::(rcons p y))).
+  Definition allL (S: relation T) (p: seq T) (x y:T) := 
+    (Lift (x::(rcons p y))) [\in] S.
 
   Lemma allL0 : forall (S: relation T) (x y : T),
       allL S [::] x y = ((x,y) \in S).
@@ -414,7 +410,7 @@ Section allL.
   Proof.
   Admitted.
   
-  Lemma allL_incl: forall (S R: relation T) (p: seq T) (x y: T),
+  Lemma allL_subset: forall (S R: relation T) (p: seq T) (x y: T),
       (S `<=` R) -> allL S p x y -> allL R p x y.
   Proof.
     by move => S R p x y H1 H2;apply allset_subset with S.
@@ -428,8 +424,8 @@ Section allL.
     have H2: (L_(W.^c) `&` S) `<=` L_(W.^c) by apply intersectionSl.
     pose proof (@allset_subset (T*T) (L_(W.^c) `&` S) L_(W.^c)) as H3.
     pose proof (@allset_subset (T*T) (L_(W.^c) `&` S) S) as H4.    
-    rewrite DeltaLco /allL allI.
-    by split => /andP [/allLr H5 H6];[apply /andP | apply /andP].
+    rewrite DeltaLco /allL allset_I.
+    by split => /andP [/allset_Lr H5 H6];[apply /andP | apply /andP].
   Qed.
   
   Lemma allL_SW_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
@@ -440,9 +436,9 @@ Section allL.
     have H2: (S `&` L_(W.^c)) `<=` L_(W.^c) by apply intersectionSr.
     pose proof (@allset_subset (T*T) (L_(W.^c) `&` S) L_(W.^c)) as H3.
     pose proof (@allset_subset (T*T) (L_(W.^c) `&` S) S) as H4.    
-    rewrite DeltaRco /allL allI; split => /andP [H5 H6]. 
-    by rewrite allRr in H6; apply /andP; split. 
-    by apply /andP; split;[| rewrite allRr].
+    rewrite DeltaRco /allL allset_I; split => /andP [H5 H6]. 
+    by rewrite allset_Rr in H6; apply /andP; split. 
+    by apply /andP; split;[| rewrite allset_Rr].
   Qed.
   
   Lemma allL_rev: forall (S: relation T) (p: seq T) (x y: T),
@@ -464,7 +460,7 @@ Section allL.
     by rewrite allset_cons;split;[ apply Fset_t2; exists z |].
   Qed.
   
-End allL.
+End allset_Lifted.
 
 Section Seq_lift1. 
   (** * Lift properties *) 

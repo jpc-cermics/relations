@@ -1,4 +1,4 @@
-export coq_root := ../../
+export coq_root := ../../_build/default
 export snippets_root := ./snippets
 assets_root := $(snippets_root)/assets
 
