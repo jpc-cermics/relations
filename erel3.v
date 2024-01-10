@@ -267,55 +267,44 @@ End Seq_lift.
 Section all.
   (** * utility lemmata for seq function all *)
 
-  Variables (T: Type). 
+  Variables (T: Type) (X Y: set T) (p q: seq T) (x:T).
   
-  Lemma allP: forall (X:set T) (p:seq T) (x:T), 
-      X x /\ p [\in] X <-> (x \in X) && (p [\in] X).
+  Lemma allsetP: X x /\ p [\in] X <-> (x \in X) && (p [\in] X).
   Proof.
-    by move => X p x;split => [[/mem_set -> ->] // | /andP [/set_mem H1 H2]].
+    by split => [[/mem_set -> ->] // | /andP [/set_mem H1 H2]].
   Qed.
   
-  Lemma all_cons': forall (X: set T) (p: seq T) (x: T),
-      ((x::p) [\in] X) <-> (x \in X) && p [\in] X.
-  Proof.
-    by move => X p x;split. 
-  Qed.
+  Lemma allset_consb: ((x::p) [\in] X) <-> (x \in X) && p [\in] X.
+  Proof. by split. Qed.
 
-  Lemma all_cons: forall (X: set T) (p: seq T) (x: T),
-      ((x::p) [\in]  X) <->  X x /\ p [\in] X.
+  Lemma allset_cons:  ((x::p) [\in]  X) <->  X x /\ p [\in] X.
   Proof.
-    by move => X p x;rewrite all_cons' allP.
+    by rewrite allset_consb allsetP.
   Qed.
   
-  Lemma all_subset: forall (X Y: set T) (p: seq T),
-      (X `<=` Y) -> (p [\in]  X) -> (p [\in] Y).
+  Lemma allset_subset: (X `<=` Y) -> (p [\in]  X) -> (p [\in] Y).
   Proof.
-    move => X Y; elim => [ // | x p H1 H2 /andP [H3 H4]]. 
+    elim: p => [ // | x' p' H1 H2 /andP [H3 H4]]. 
     apply/andP;split.
     by apply: mem_set;apply: H2; apply set_mem. 
     by apply H1.
   Qed.
   
-  Lemma all_rcons': forall (X: set T) (p: seq T) (x: T),
-      (rcons p x) [\in] X <-> p [\in] X /\ X x.
+  Lemma allset_rcons: (rcons p x) [\in] X <-> p [\in] X /\ X x.
   Proof.
-    by move => X p x;rewrite all_rcons andC allP.
+    by rewrite all_rcons andC allsetP.
   Qed. 
     
-  Lemma all_rev': forall (X: set T) (p: seq T),
-      p [\in] X <->  (rev p) [\in] X.
+  Lemma allset_rev: p [\in] X <->  (rev p) [\in] X.
   Proof.
-    by move => X p;rewrite all_rev.
+    by rewrite all_rev.
   Qed. 
   
-  Lemma all_cat: forall (X: set T) (p q: seq T),
-    (p++q) [\in] X <-> p [\in] X /\ q [\in] X.
+  Lemma allset_cat: (p++q) [\in] X <-> p [\in] X /\ q [\in] X.
   Proof.
-    move => X p q;rewrite all_cat;split. 
-    by move => /andP.
-    by move => [-> ->].
+    by rewrite all_cat;split => [/andP | [-> ->]].
   Qed.
-
+  
 End all.
 
 Section all2.
@@ -323,11 +312,11 @@ Section all2.
 
   Variables (T: Type).
   
-  Lemma all_inv: forall (S: relation T) (spa: seq (T * T)), 
+  Lemma allset_inv: forall (S: relation T) (spa: seq (T * T)), 
       spa [\in] S <-> (map (@pair_rev T) spa) [\in] S.-1. 
   Proof.
     move => S;elim => [ // | [x y] spa Hr].
-    by rewrite map_cons !all_cons Hr.
+    by rewrite map_cons !allset_cons Hr.
   Qed.
 
   Lemma allI: forall (R S: relation T) (spa: seq (T * T)), 
@@ -337,9 +326,9 @@ Section all2.
     have H1: (R `&` S) `<=` S by apply intersectionSr.
     have H2: (R `&` S) `<=` R by apply intersectionSl.
     split => [H3 | ]. 
-    by apply/andP;split;[apply: (all_subset H2 H3)| apply: (all_subset H1 H3)].
+    by apply/andP;split;[apply: (allset_subset H2 H3)| apply: (allset_subset H1 H3)].
     elim: spa => [// |  x spa Hr /andP H3].
-    move: H3; rewrite !all_cons => [[[H3 H4] [H5 H6]]].
+    move: H3; rewrite !allset_cons => [[[H3 H4] [H5 H6]]].
     by split;[rewrite /setI /mkset | apply Hr;apply/andP].
   Qed.
   
@@ -351,7 +340,7 @@ Section all2.
     - rewrite /= /Rr; split => [/andP [/inP H1 _] | /andP [/inP H1 _]].
       by rewrite /mkset /= in H1;apply mem_set in H1;rewrite H1.
       by apply/andP;split;[ apply/inP;rewrite /mkset /= |].
-    - move => z p Hr x; rewrite rcons_cons Lift_c 2!all_cons.
+    - move => z p Hr x; rewrite rcons_cons Lift_c 2!allset_cons.
       split => [ [? /Hr ?] // | [? ?]].
       by split;[| apply Hr].
   Qed.
@@ -364,7 +353,7 @@ Section all2.
     - rewrite /= /Lr; split => [/andP [/inP H1 _] | /andP [/inP H1 _]].
       by rewrite /mkset /= in H1;apply mem_set in H1;rewrite H1.
       by apply/andP;split;[ apply/inP;rewrite /mkset /= |].
-    - move => z p Hr x; rewrite rcons_cons Lift_c 2!all_cons.
+    - move => z p Hr x; rewrite rcons_cons Lift_c 2!allset_cons.
       split => [ [? /Hr ?] // | [? ?]].
       by split;[| apply Hr].
   Qed.
@@ -409,15 +398,15 @@ Section allL.
   Lemma allL_c: forall (S: relation T) (p: seq T) (x y z: T),
       allL S (z::p) x y <-> ((x, z) \in S) && allL S p z y.
   Proof.
-    by move => S p x y z;split;[rewrite /allL rcons_cons Lift_c all_cons |].
+    by move => S p x y z;split;[rewrite /allL rcons_cons Lift_c allset_cons |].
   Qed.
 
   Lemma allL_rc: forall (S: relation T) (p: seq T) (x y z: T),
       allL S (rcons p z) x y <-> ((z,y) \in S) && allL S p x z.
   Proof.
     move => S p x y z;split.
-    by rewrite /allL -rcons_cons Lift_rcc all_rcons' last_rcons;move => [-> /inP ->].
-    by move => /andP [/inP ? ?];rewrite /allL -rcons_cons Lift_rcc all_rcons' last_rcons. 
+    by rewrite /allL -rcons_cons Lift_rcc allset_rcons last_rcons;move => [-> /inP ->].
+    by move => /andP [/inP ? ?];rewrite /allL -rcons_cons Lift_rcc allset_rcons last_rcons. 
   Qed.
   
   Lemma allL_cat: forall (S: relation T) (p q: seq T) (x y z: T),
@@ -428,7 +417,7 @@ Section allL.
   Lemma allL_incl: forall (S R: relation T) (p: seq T) (x y: T),
       (S `<=` R) -> allL S p x y -> allL R p x y.
   Proof.
-    by move => S R p x y H1 H2;apply all_subset with S.
+    by move => S R p x y H1 H2;apply allset_subset with S.
   Qed.
   
   Lemma allL_WS_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
@@ -437,8 +426,8 @@ Section allL.
     move => S W p x y.
     have H1: (L_(W.^c) `&` S) `<=` S by apply intersectionSr.
     have H2: (L_(W.^c) `&` S) `<=` L_(W.^c) by apply intersectionSl.
-    pose proof (@all_subset (T*T) (L_(W.^c) `&` S) L_(W.^c)) as H3.
-    pose proof (@all_subset (T*T) (L_(W.^c) `&` S) S) as H4.    
+    pose proof (@allset_subset (T*T) (L_(W.^c) `&` S) L_(W.^c)) as H3.
+    pose proof (@allset_subset (T*T) (L_(W.^c) `&` S) S) as H4.    
     rewrite DeltaLco /allL allI.
     by split => /andP [/allLr H5 H6];[apply /andP | apply /andP].
   Qed.
@@ -449,8 +438,8 @@ Section allL.
     move => S W p x y.
     have H1: (S `&` L_(W.^c)) `<=` S by apply intersectionSl.
     have H2: (S `&` L_(W.^c)) `<=` L_(W.^c) by apply intersectionSr.
-    pose proof (@all_subset (T*T) (L_(W.^c) `&` S) L_(W.^c)) as H3.
-    pose proof (@all_subset (T*T) (L_(W.^c) `&` S) S) as H4.    
+    pose proof (@allset_subset (T*T) (L_(W.^c) `&` S) L_(W.^c)) as H3.
+    pose proof (@allset_subset (T*T) (L_(W.^c) `&` S) S) as H4.    
     rewrite DeltaRco /allL allI; split => /andP [H5 H6]. 
     by rewrite allRr in H6; apply /andP; split. 
     by apply /andP; split;[| rewrite allRr].
@@ -461,7 +450,7 @@ Section allL.
   Proof.
     move => S p x y. 
     have H1: (y :: rcons (rev p) x) = rev (x::(rcons p y)) by rewrite rev_cons rev_rcons -rcons_cons.
-    by rewrite /allL all_rev' all_inv H1 Lift_rev.
+    by rewrite /allL allset_rev allset_inv H1 Lift_rev.
   Qed.
   
   Lemma allL_All: forall (S: relation T) (p: seq T) (x y: T),
@@ -471,8 +460,8 @@ Section allL.
     elim: p x. 
     by move => x;rewrite /allL /= => /andP [/inP H1 _];apply /andP;split;[apply mem_set;apply Fset_t1|].
     move => z p Hr x;rewrite allL_c => /andP [/inP H1 /Hr H2].
-    move: (H2);rewrite all_cons => [[H3 H4]].
-    by rewrite all_cons;split;[ apply Fset_t2; exists z |].
+    move: (H2);rewrite allset_cons => [[H3 H4]].
+    by rewrite allset_cons;split;[ apply Fset_t2; exists z |].
   Qed.
   
 End allL.
@@ -506,11 +495,11 @@ Section Seq_lift1.
       split.
       - elim: p x y => [ //= x y /andP [/inP H2 _] | z p Hr x y ].
         by apply pp_two;[ apply pp_two;[constructor | left] | right; exists y, [::]].
-        rewrite rcons_cons Lift_c all_cons andC;
+        rewrite rcons_cons Lift_c allset_cons andC;
             by move => [H1 H2];apply pp_two;[ apply Hr | right; exists z, (rcons p y)].
       - move => H.
         elim/EPath_ind: H => [// | x' y' ep H1 [-> // | [y1 [ep1 [H2 H3]]]]].
-        by rewrite H2 in H1 *; rewrite Lift_c all_cons //.
+        by rewrite H2 in H1 *; rewrite Lift_c allset_cons //.
     Qed.
     
     Lemma Epath_equiv: forall (S:relation T) (p: seq T),
@@ -930,8 +919,8 @@ Section PathRel_Examples.
   Proof.
     move => x y; rewrite {1}clos_t_iff_PathRel; move => [p /= H1]; exists p.
     move: (H1) => /allL_WS_iff/andP [H2 H2'].
-    apply allL_All in H1;apply all_cons in H1;move: H1=> [/inP H1 H1'].
-    by rewrite -all_cons' H1 H1' andbT.
+    apply allL_All in H1;apply allset_cons in H1;move: H1=> [/inP H1 H1'].
+    by rewrite -allset_consb H1 H1' andbT.
   Qed.
   
   Lemma clos_t_to_paths_r : forall (x y: T),
@@ -942,8 +931,8 @@ Section PathRel_Examples.
     move => x y; rewrite {1}clos_t_iff_PathRel; move  => [p H1]; exists p.
     rewrite allL_rev inverse_compose DeltaE_inverse /= in H1.
     move: (H1) => /allL_WS_iff/andP /= [/andP [/inP H2 H3] H2'].
-    apply allL_All in H1;apply all_cons in H1;move: H1=> [/inP /= H1 H1'].
-    by rewrite H1 H1' andbT allL_rev H2' all_rcons' all_rev' H3. 
+    apply allL_All in H1;apply allset_cons in H1;move: H1=> [/inP /= H1 H1'].
+    by rewrite H1 H1' andbT allL_rev H2' allset_rcons allset_rev H3. 
   Qed.
   
 End PathRel_Examples.
@@ -1405,12 +1394,12 @@ Section Active.
     split.
     + elim: p x y => [x y [_ /allL0' /R_o' _] // | ]. 
       move => x1 p _ x y. 
-      rewrite all_cons' allL_c. 
+      rewrite allset_consb allL_c. 
       move => [ /andP [H2 H'2] /andP [/inP H3 H4]].
       rewrite Lifto_crc Lifto_rcc Active_path_crc /=. 
       elim: p x x1 H3 H2 H'2 H4 => [x x1 H3 /inP H1 _ /allL0' H4 // | ].  
       ++ by rewrite allL0 /=; apply mem_set; split;case: o H3 H4 => /R_o' H3 /R_o' H4.
-      ++ move => z p H1 x1 x H3 /inP H2 /all_cons [H4 H4'] /allL_c/andP [/inP H5 H6] /=. 
+      ++ move => z p H1 x1 x H3 /inP H2 /allset_cons [H4 H4'] /allL_c/andP [/inP H5 H6] /=. 
          rewrite Lifto_c allL_c;apply /andP;split; last first. 
          by apply: (H1 x z H5 _ H4' H6); apply mem_set. 
          clear H1 H6;apply mem_set;rewrite ActiveOe_o /Oedge.
@@ -1431,7 +1420,7 @@ Section Active.
       (* size p >= 2 *)
       move => t p _ x y H2;rewrite Lift_o_cons;move => /Active_path_cc [/H2 [H3 H5] H4].
       split.
-        rewrite all_cons andC. 
+        rewrite allset_cons andC. 
           split;[ | move: H4 => [_ [_ [_ H4]]]].
         by elim: o H2 H4 H5 => _ H4 H5.
         by elim: o H2 H4 H5 => _ /= H4 H5.

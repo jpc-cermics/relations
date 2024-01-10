@@ -100,7 +100,7 @@ Section Bw_implies_active_path.
     move => x y [[x1 [H1 H2]] H3]. 
     have H4: Ew.+ (x, y) by rewrite -r_clos_rt_clos_t;exists x1;split;[exists x;split | ].
     pose proof clos_t_to_paths_l H4 as [p [H5 [H6 H7]]]. 
-    move: H5 => /all_cons [H5 H5'].
+    move: H5 => /allset_cons [H5 H5'].
     by exists p;split;[ apply Deployment_to_Active_path |].
   Qed.
   
@@ -117,14 +117,14 @@ Section Bmw_implies_active_path.
     move => x y [x1 [/= H1 [/Delta_Id <- | H2]]];first by (exists [::]).
     pose proof (clos_t_to_paths_l H2) as [p [H3 [H4 H5]]].  
     apply allL_rev in H4.
-    move: H3 => /all_cons [H3 H3'].
+    move: H3 => /allset_cons [H3 H3'].
     exists (rcons (rev p) x1); split.
     apply Deployment_to_Active_path.
     split. 
-    by rewrite all_rcons' -all_rev'.
+    by rewrite allset_rcons -allset_rev.
     by rewrite /R_o allL_rev rev_rcons revK inverse_inverse allL_c;
     apply/andP; split;[apply mem_set| rewrite allL_rev].
-    by rewrite all_rev' rev_rcons revK.
+    by rewrite allset_rev rev_rcons revK.
   Qed.
   
   (** simplified version for composition *)
@@ -147,10 +147,10 @@ Section Bmw_implies_active_path.
     move => x y [[x1 [H1 H2]] H3]. 
     have H4: Ew.+ (y, x) by rewrite -r_clos_rt_clos_t;exists x1;split;[exists y;split | ].
     pose proof clos_t_to_paths_l H4 as [p [H6 [H7 H8]]].
-    move: H6 => /all_cons [H6 H6'].
+    move: H6 => /allset_cons [H6 H6'].
     apply allL_rev in H7.
     (exists (rev p));rewrite -Deployment_to_Active_path -rev_cons.
-    by rewrite -2!all_rev' /R_o. 
+    by rewrite -2!allset_rev /R_o. 
   Qed.
 
 End Bmw_implies_active_path.
