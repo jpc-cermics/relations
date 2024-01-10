@@ -23,6 +23,8 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+Local Open Scope classical_set_scope.
+
 Notation "( x [⊥d] y | W )" := (D_separated W E x y).
 
 (** * some Lemmas for the paths part *)
@@ -203,7 +205,7 @@ Section Cw_s_implies_active_path.
    *)
 
   Lemma BwKw_path1: forall (x y:A),
-      let R:=(Bw `|` Kw)%classic in R (x, y) -> exists (p : seq (Eo A O)) (y':A),
+      let R:=(Bw `|` Kw) in R (x, y) -> exists (p : seq (Eo A O)) (y':A),
           Active_path W E (rcons p (y',y,P)) x y /\ Oedge E (y',y,P).
   Proof.
     move => x y H1 [H2 | H2].
@@ -214,7 +216,7 @@ Section Cw_s_implies_active_path.
   Qed.
 
   Lemma BmwKw_path1: forall (x y:A),
-      let R:=(Bmw `|` Kw)%classic in R (x,y) -> exists (p : seq (Eo A O)) (x':A),
+      let R:=(Bmw `|` Kw) in R (x,y) -> exists (p : seq (Eo A O)) (x':A),
           Active_path W E ((x,x',N)::p) x y /\ Oedge E (x,x',N).
   Proof.
     move => x y H1 [H2 | H2].
@@ -409,42 +411,42 @@ Section Active_path_implies_Aw_s.
 
   (* Definition Aw_sp := Bw + Kw + ((Bw + Kw) `;` Cw_s `;` Kw). *)
   
-  Lemma Last1: (Aw_sp `;` Ew `<=` Aw_sp)%classic.
+  Lemma Last1: (Aw_sp `;` Ew `<=` Aw_sp).
   Proof.
     pose proof Bw_ends1 as H1.
     pose proof Kw_ends1 as H2.
-    have H3: (Bw `;` Ew `|` Kw `;` Ew `<=` Bw `;` Ew `|` Kw)%classic
+    have H3: (Bw `;` Ew `|` Kw `;` Ew `<=` Bw `;` Ew `|` Kw)
       by apply union_inc_l.
-    have H4: (Bw `;` Ew `|` Kw `<=` Bw `|` Kw)%classic
+    have H4: (Bw `;` Ew `|` Kw `<=` Bw `|` Kw)
       by apply union_inc_r.
-    have H5: (Bw `;` Ew `|` Kw `;` Ew `<=` Bw `|` Kw)%classic
-      by apply subset_trans with (Bw `;` Ew `|` Kw)%classic.
+    have H5: (Bw `;` Ew `|` Kw `;` Ew `<=` Bw `|` Kw)
+      by apply subset_trans with (Bw `;` Ew `|` Kw).
     have H6: (Bw `;` Ew `|` Kw `;` Ew 
-             `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew `<=` Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew)%classic
+             `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew `<=` Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew)
       by apply union_inc_r.
-    have H7: ((Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew `<=` (Bw `|` Kw) `;` Cw_s `;` Kw)%classic
+    have H7: ((Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew `<=` (Bw `|` Kw) `;` Cw_s `;` Kw)
       by rewrite composeA; apply compose_inc.
-    have H8: (Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew `<=` Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw)%classic.
+    have H8: (Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew `<=` Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw).
     by apply union_inc_l.
     
     rewrite /Aw_sp. 
-    rewrite composeDr [((Bw `|` Kw) `;` Ew)%classic]composeDr.
-    by apply subset_trans with (Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew)%classic.
+    rewrite composeDr [((Bw `|` Kw) `;` Ew)]composeDr.
+    by apply subset_trans with (Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew).
   Qed.
   
-  Lemma Last2: (Aw_sp `;` Δ_(W_s) `;` E.-1 `<=` Aw_sm)%classic.
+  Lemma Last2: (Aw_sp `;` Δ_(W_s) `;` E.-1 `<=` Aw_sm).
   Proof.
     by apply E27c.
   Qed.
   
-  Lemma Last3: (Aw_sm `;` Δ_(W.^c) `;` E `<=` Aw_sp)%classic.
+  Lemma Last3: (Aw_sm `;` Δ_(W.^c) `;` E `<=` Aw_sp).
   Proof.
     by apply E27b.
   Qed.
   
-  Lemma Last4: (Aw_sm `;` Δ_(W.^c) `;` E.-1 `<=` Aw_sm)%classic.
+  Lemma Last4: (Aw_sm `;` Δ_(W.^c) `;` E.-1 `<=` Aw_sm).
   Proof.
-    have H1: (Bmw `;` Δ_(W.^c) `;` E.-1 `<=` Bmw)%classic.
+    have H1: (Bmw `;` Δ_(W.^c) `;` E.-1 `<=` Bmw).
     rewrite /Bmw /Bw /Ew.
     rewrite -DeltaE_inverse inverse_compose inverse_star inverse_compose.
     rewrite DeltaE_inverse DeltaE_inverse.
@@ -458,14 +460,14 @@ Section Active_path_implies_Aw_s.
     rewrite composeA -/R.
     rewrite composeA -/R in H1.
     rewrite /Aw_sm.
-    pose S:= ((Bw `|` Kw) `;` Cw_s)%classic.
+    pose S:= ((Bw `|` Kw) `;` Cw_s).
     rewrite -/S.
     rewrite composeDr.
-    have H2: (Bmw `;` R `|` S `;` Bmw `;` R `<=` Bmw `|` S `;` Bmw `;` R)%classic
+    have H2: (Bmw `;` R `|` S `;` Bmw `;` R `<=` Bmw `|` S `;` Bmw `;` R)
       by apply union_inc_r.
-    have H3: (Bmw `|` S `;` Bmw `;` R `<=` Bmw `|` S `;` Bmw)%classic
+    have H3: (Bmw `|` S `;` Bmw `;` R `<=` Bmw `|` S `;` Bmw)
       by apply union_inc_l; rewrite composeA; apply compose_inc.
-    by apply subset_trans with (Bmw `|` S `;` Bmw `;` R)%classic.
+    by apply subset_trans with (Bmw `|` S `;` Bmw `;` R).
   Qed.
   
   Lemma L13: forall (n: nat) (p : seq (Eo A O)) (x y:A), 
