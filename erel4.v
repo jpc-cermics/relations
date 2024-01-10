@@ -1142,7 +1142,13 @@ Section Active_paths.
         /\ allL (ActiveOe W S) (belast eo2 p) eo1 (last eo2 p)
     end.
   
-  Definition R_o (S: relation T) (o:O):= match o with | P => S | N=> S.-1 end.
+  Definition R_o (o:O):= match o with | P => S | N=> S.-1 end.
+
+  Lemma R_o': forall (o:O) (xy: T*T),
+      R_o o xy <-> match o with | P => S xy | N=> S.-1 xy end.
+  Proof.
+    by move => o xy; case: o.
+  Qed.
 
   (** increase active path by left addition *)
   Lemma Active_path_cc: forall (p: seq EO) (eo1 eo2:  EO) (y: T),
@@ -1503,13 +1509,27 @@ Section Active.
   
   Lemma Deployment_to_Active_path:
     forall (W: set T) (S: relation T) (p: seq T) (x y: T) (o:O),
-      ( All W.^c p /\ AllL (R_o S o) p x y )
+      ( all (fun x => x \in W.^c) p /\ allL (R_o S o) p x y )
         <-> Active_path W S (Lifto (x::(rcons p y)) o ) x y.
   Proof.
     split.
-    + elim: p x y => [x y [_ H1] | x1 p H1 x y [ [H2 H'2] /Dpe [H3 H4]]];
-                    first by split;[ | split]; elim: o H1 => H1.
-      elim: p H1 H2 H4 => [ _ H2 H4 // | z p _ H2 H5 /Dpe [H6 H7] ];
+    + elim: p x y => [x y [_ /allL0' /R_o' _] // | ]. 
+      move => x1 p _ x y. 
+      rewrite all_cons' allL_c. 
+      move => [ /andP [H2 H'2] /andP [/inP H3 H4]].
+      rewrite Lifto_crc Lifto_rcc Active_path_crc /=. 
+      elim: p x1 H3 H2 H'2 H4 => [x1 H3 /inP H1 _ /allL0' H4 // | ].  
+      ++ by rewrite allL0 /=; apply mem_set; split;case: o H3 H4 => /R_o' H3 /R_o' H4.
+      ++ move => z p H1 x1 H3 H2 H4 H5 /=. 
+         rewrite Lifto_c allL_c.
+         apply /andP.
+         split; last first. 
+         rewrite Lifto_c.
+         apply: (H1 z).
+         rewrite -rcons_cons.  Lifto_crc.
+         
+         first by split;[ | split]; elim: o H1 => H1.
+      
                          first by elim: o H3 H4 => H3 H4.
       by apply Active_path_cc;split;[ apply H2 | ];elim: o H2 H3 H6 H7 => H2 H3 H6 H7.
     + elim: p x y;first (* size p = 1 *) by move => x y //= [_ [_ H]];split; elim: o H => H.
