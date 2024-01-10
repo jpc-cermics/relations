@@ -64,14 +64,14 @@ Section Paper.
 
   Lemma L10_csbr_33a: forall (x y:A),
       Bw (x, y)  -> (exists (p: seq A), Active_path W E (Lifto (x::(rcons p y)) P) x y
-                               /\ All (Ew.+)#_(y) p).
+                               /\ all (fun z => z \in (Ew.+)#_(y)) p).
   Proof.
     by apply Bwpath. 
   Qed.
   
   Lemma L10_csbr_33b: forall (x y:A),
       Bmw (x, y) -> (exists (p: seq A), Active_path W E (Lifto (x::(rcons p y)) N) x y
-                               /\ All (Ew.+)#_(x) p).
+                               /\ all (fun z => z \in (Ew.+)#_(x)) p).
   Proof.
     by apply Bmwpath. 
   Qed.
@@ -80,8 +80,8 @@ Section Paper.
       Kw (x,y) -> (exists (p q: seq A),exists t,
                    Active_path W E 
                      ((Lifto (x::(rcons p t)) N)++(Lifto (t::(rcons q y)) P )) x y
-                   /\ All (Ew.+)#_(x) (rcons p t) 
-                   /\ All (Ew.+)#_(y) (t::q)).
+                   /\ all (fun z => z \in (Ew.+)#_(x)) (rcons p t) 
+                   /\ all (fun z => z \in (Ew.+)#_(y)) (t::q)).
   Proof.
     by apply Kwpath.
   Qed.

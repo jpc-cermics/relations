@@ -568,45 +568,11 @@ Section All_Lifted.
     by split => [ /andP [/inP ? ?] // | [/inP ? ?] ];apply/andP.
   Qed.
   
-  Lemma AllL_cat: forall (S: relation T) (p q: seq T) (x y z: T),
-      AllL S ((rcons p y) ++ q) x z
-      <-> AllL S p x y /\ AllL S q y z.
-  Proof.
-    move => S p q x y z;rewrite 3!AllL_eq_allL allL_cat.
-    by split => [ /andP [? ?] | [? ?]];[| apply/andP].
-  Qed.
-  
-  Lemma AllL_incl: forall (S R: relation T) (p: seq T) (x y: T),
-      (S `<=` R) -> AllL S p x y -> AllL R p x y.
-  Proof.
-    by move => S R p x y H1;rewrite 2!AllL_eq_allL => H2; apply: (allL_incl H1). 
-  Qed.     
-  
-  Lemma AllL_WS_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
-      AllL (Δ_(W.^c) `;` S) p x y <-> All W.^c (x::p) /\ AllL S p x y.
-  Proof.
-    move => S W p x y;rewrite 2!Dpe_AllS 3!All_eq_all allL_WS_iff. 
-    by split => [ /andP [? ?] // | [? ?]]; apply/andP.
-  Qed.
-  
-  Lemma AllL_SW_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
-      AllL (S `;` Δ_(W.^c)) p x y <-> All W.^c (rcons p y) /\ AllL S p x y.
-  Proof.
-    move => S W p x y;rewrite 2!Dpe_AllS 3!All_eq_all allL_SW_iff. 
-    by split => [ /andP [? ?] // | [? ?]]; apply/andP.
-  Qed.
-  
   Lemma AllL_rev: forall (S: relation T) (p: seq T) (x y: T),
       AllL S p x y <-> AllL S.-1 (rev p) y x.
   Proof.
     by move => S p x y;rewrite 2!Dpe_AllS 2!All_eq_all allL_rev.
   Qed.     
-  
-  Lemma AllL_All: forall (S: relation T) (p: seq T) (x y: T),
-      AllL S p x y -> All (S.+)#_(y) (x::p).
-  Proof.
-    by move => S p x y;rewrite Dpe_AllS 2!All_eq_all; move => H1; apply allL_All.
-  Qed.
   
 End All_Lifted.
 
@@ -617,7 +583,7 @@ Section Seq_lift1.
   
   (* The definition of (edge) paths of length greater or equal to one *)
   
-  (* begin snippet EPath1:: no-out *)  
+  (* begin snippet EPath1:: no-out *) 
   Definition EPath1 (S: relation T):=[set p | All S (Lift p) /\ length(p) >= 2].
   (* end snippet EPath1 *)
   
@@ -1014,7 +980,7 @@ Section PathRel.
   
   (* relation based on paths: take care that the path p depends on (x,y) *)
   Definition PathRel_n (S: relation T) (n:nat) :=
-    [set x | (exists (p: seq T), size(p)=n /\ AllL S p x.1 x.2)].
+    [set x | (exists (p: seq T), size(p)=n /\ allL S p x.1 x.2)].
 
   (* composition and existence of paths coincide *)
   Lemma Itern_iff_PathReln : forall (n:nat), S^(n.+1) =  PathRel_n S n.
@@ -1022,22 +988,20 @@ Section PathRel.
     elim => [ | n' H].
     - rewrite /iter /PathRel_n Delta_idem_l /mkset predeqE => [[x y]].
       split => [ H | ].
-      by (exists [::]).
-      by move => [p [/size0nil -> H2]].
+      by (exists [::]); rewrite allL0' /=.
+      by move => [p [/size0nil -> /allL0' H2]].
     - rewrite -add1n iter_compose H /iter Delta_idem_l /mkset predeqE => [[x y]].
-      split => [[z [H1 [p [H2 H3]]]] |[p [H1 H2]]];
-              first by (exists (z::p));rewrite -H2.
+      split => [[z [/= /inP H1 [p [H2 /= H3]]]] |[p [H1 H2]]];
+                first by (exists (z::p));rewrite -H2 allL_c H3 andbT H1. 
       elim: p H1 H2 => [ // | z p' _ H1].
-      rewrite /size -/size -/addn1 in H1. 
-      apply succn_inj in H1.
-      rewrite /AllL -/AllL. 
-      move => [H2 H3].
-      by exists z;split;[ | (exists p');split].
+      move: H1;rewrite /size -/size -/addn1 => /succn_inj H1.
+      rewrite allL_c /= => [/andP [/inP H2 H3]].
+      by exists z;split;[ | exists p'].
   Qed.
   
   (* relation based on paths: take care that the path p depends on (x,y) *)
   Definition PathRel (S: relation T) := 
-    [set x | (exists (p: seq T), AllL S p x.1 x.2)].
+    [set x | (exists (p: seq T), allL S p x.1 x.2)].
   
   (* R.+ =  PathRel R *)
   Lemma clos_t_iff_PathRel: S.+ =  PathRel S.
@@ -1063,23 +1027,25 @@ Section PathRel_Examples.
 
   Lemma clos_t_to_paths_l : forall (x y: T),
       (Δ_(W.^c) `;` S).+ (x, y) ->
-      (exists (p: seq T), (All W.^c (x::p) /\ AllL S p x y)
-                     /\ All ((Δ_(W.^c) `;` S).+)#_(y) (x::p)).
+      (exists (p: seq T), all (fun x => x \in W.^c) (x::p) /\ allL S p x y
+                     /\ all (fun x => x \in ((Δ_(W.^c) `;` S).+)#_(y)) (x::p)).
   Proof.
-    move => x y; rewrite {1}clos_t_iff_PathRel; move  => [p H]; exists p.
-    by split;[apply AllL_WS_iff | apply AllL_All].
+    move => x y; rewrite {1}clos_t_iff_PathRel; move => [p /= H1]; exists p.
+    move: (H1) => /allL_WS_iff/andP [H2 H2'].
+    apply allL_All in H1;apply all_cons in H1;move: H1=> [/inP H1 H1'].
+    by rewrite -all_cons' H1 H1' andbT.
   Qed.
   
   Lemma clos_t_to_paths_r : forall (x y: T),
       (S `;` Δ_(W.^c)).+ (x, y) ->
-      (exists (p: seq T), (All W.^c (rcons p y) /\ AllL S p x y)
-                     /\ All ((Δ_(W.^c) `;` S.-1).+)#_(x) (y::(rev p))).
+      (exists (p: seq T), (all (fun z => z \in W.^c) (rcons p y) /\ allL S p x y)
+                     /\ all (fun z => z \in ((Δ_(W.^c) `;` S.-1).+)#_(x)) (y::(rev p))).
   Proof.
-    move => x y; rewrite {1}clos_t_iff_PathRel; move  => [p H]; exists p.
-    split.
-    by apply AllL_SW_iff. 
-    by rewrite AllL_rev inverse_compose DeltaE_inverse in H;
-    apply AllL_All.
+    move => x y; rewrite {1}clos_t_iff_PathRel; move  => [p H1]; exists p.
+    rewrite allL_rev inverse_compose DeltaE_inverse /= in H1.
+    move: (H1) => /allL_WS_iff/andP /= [/andP [/inP H2 H3] H2'].
+    apply allL_All in H1;apply all_cons in H1;move: H1=> [/inP /= H1 H1'].
+    by rewrite H1 H1' andbT allL_rev H2' all_rcons' all_rev' H3. 
   Qed.
   
 End PathRel_Examples.
