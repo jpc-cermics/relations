@@ -34,9 +34,8 @@ Local Open Scope classical_set_scope.
  *)
 
 (* begin snippet all_notation:: no-out *)  
-Notation "p (\in) X" := (all (fun x => x \in X) p) (at level 4, no associativity).
+Notation "p [\in] X" := (all (fun x => x \in X) p) (at level 4, no associativity).
 (* end snippet all_notation *)  
-Reserved Notation "p [\in] X" (at level 4, no associativity).
 
 Section Types.
   (** * Needed Types *)
@@ -271,25 +270,25 @@ Section all.
   Variables (T: Type). 
   
   Lemma allP: forall (X:set T) (p:seq T) (x:T), 
-      X x /\ p (\in) X <-> (x \in X) && (p (\in) X).
+      X x /\ p [\in] X <-> (x \in X) && (p [\in] X).
   Proof.
     by move => X p x;split => [[/mem_set -> ->] // | /andP [/set_mem H1 H2]].
   Qed.
   
   Lemma all_cons': forall (X: set T) (p: seq T) (x: T),
-      ((x::p) (\in) X) <-> (x \in X) && p (\in) X.
+      ((x::p) [\in] X) <-> (x \in X) && p [\in] X.
   Proof.
     by move => X p x;split. 
   Qed.
 
   Lemma all_cons: forall (X: set T) (p: seq T) (x: T),
-      ((x::p) (\in)  X) <->  X x /\ p (\in) X.
+      ((x::p) [\in]  X) <->  X x /\ p [\in] X.
   Proof.
     by move => X p x;rewrite all_cons' allP.
   Qed.
   
   Lemma all_subset: forall (X Y: set T) (p: seq T),
-      (X `<=` Y) -> (p (\in)  X) -> (p (\in) Y).
+      (X `<=` Y) -> (p [\in]  X) -> (p [\in] Y).
   Proof.
     move => X Y; elim => [ // | x p H1 H2 /andP [H3 H4]]. 
     apply/andP;split.
@@ -298,19 +297,19 @@ Section all.
   Qed.
   
   Lemma all_rcons': forall (X: set T) (p: seq T) (x: T),
-      (rcons p x) (\in) X <-> p (\in) X /\ X x.
+      (rcons p x) [\in] X <-> p [\in] X /\ X x.
   Proof.
     by move => X p x;rewrite all_rcons andC allP.
   Qed. 
     
   Lemma all_rev': forall (X: set T) (p: seq T),
-      p (\in) X <->  (rev p) (\in) X.
+      p [\in] X <->  (rev p) [\in] X.
   Proof.
     by move => X p;rewrite all_rev.
   Qed. 
   
   Lemma all_cat: forall (X: set T) (p q: seq T),
-    (p++q) (\in) X <-> p (\in) X /\ q (\in) X.
+    (p++q) [\in] X <-> p [\in] X /\ q [\in] X.
   Proof.
     move => X p q;rewrite all_cat;split. 
     by move => /andP.
@@ -325,14 +324,14 @@ Section all2.
   Variables (T: Type).
   
   Lemma all_inv: forall (S: relation T) (spa: seq (T * T)), 
-      spa (\in) S <-> (map (@pair_rev T) spa) (\in) S.-1. 
+      spa [\in] S <-> (map (@pair_rev T) spa) [\in] S.-1. 
   Proof.
     move => S;elim => [ // | [x y] spa Hr].
     by rewrite map_cons !all_cons Hr.
   Qed.
 
   Lemma allI: forall (R S: relation T) (spa: seq (T * T)), 
-      spa (\in) (R `&` S) <-> spa (\in) R && spa (\in) S. 
+      spa [\in] (R `&` S) <-> spa [\in] R && spa [\in] S. 
   Proof.
     move => R S spa. 
     have H1: (R `&` S) `<=` S by apply intersectionSr.
@@ -345,7 +344,7 @@ Section all2.
   Qed.
   
   Lemma allRr: forall (X: set T) (x y: T) (p: seq T),
-      (Lift (x::(rcons p y))) (\in) R_(X) <-> (rcons p y) (\in) X.
+      (Lift (x::(rcons p y))) [\in] R_(X) <-> (rcons p y) [\in] X.
   Proof.
     move => X x y p.
     elim: p x. 
@@ -358,7 +357,7 @@ Section all2.
   Qed.
 
   Lemma allLr: forall (X: set T) (x y: T) (p: seq T),
-      (Lift (x::(rcons p y))) (\in) L_(X) <-> (x::p) (\in) X.
+      (Lift (x::(rcons p y))) [\in] L_(X) <-> (x::p) [\in] X.
   Proof.
     move => X x y p.
     elim: p x. 
@@ -371,13 +370,13 @@ Section all2.
   Qed.
   
   Lemma allDl: forall (X: set T) (S: relation T) (x y: T) (p: seq T),
-      (Lift (x::(rcons p y))) (\in) (Δ_(X)`;`S) -> (x::p) (\in) X.
+      (Lift (x::(rcons p y))) [\in] (Δ_(X)`;`S) -> (x::p) [\in] X.
   Proof.
     by move => X S x y p;rewrite DeltaLco allI => /andP [/allLr H1 _].
   Qed.
 
   Lemma allDr: forall (X: set T) (S: relation T) (x y: T) (p: seq T),
-      (Lift (x::(rcons p y))) (\in) (S`;`Δ_(X)) -> (rcons p y) (\in) X.
+      (Lift (x::(rcons p y))) [\in] (S`;`Δ_(X)) -> (rcons p y) [\in] X.
   Proof.
     by move => X S x y p;rewrite DeltaRco allI => /andP [_ /allRr H1].
   Qed.
@@ -478,104 +477,6 @@ Section allL.
   
 End allL.
 
-Section All.
-  (** * version using the inductive All *)
-  (* we keep this definition used in many lemmata 
-   * we prove that it is equivalent to
-   *  (all (fun x => x \in X) p) 
-   * In the proofs of lemmata enouced with All 
-   * All_eq_all is used to get rid of All and just use 
-   * lemmata refering to all
-   *)
-  
-  Variables (T: Type). 
-  
-  (* True if all the elements of p are in X *)
-  Fixpoint All (X: set T) (p: seq T) := 
-    match p with 
-    | [::] => True
-    | x1::p1 => All X p1 /\ X x1
-    end.
-
-  (* begin snippet All_notation:: no-out *)  
-  Notation "p [\in] X" := (All X p) (at level 4, no associativity).
-  (* end snippet All_notation *)  
-
-  (* begin snippet All_with_all:: no-out *)  
-  Lemma All_eq_all: forall (X: set T) (p: seq T), 
-      (p [\in]  X) = p (\in) X.
-  Proof.
-    (* end snippet All_with_all:: no-out *)
-    move => X p.
-    have H1: (p [\in]  X) <-> p (\in) X 
-      by split;
-      [elim:p => [? // | x p H1 [/H1 H2 /inP H3] //];rewrite all_cons' H3 H2
-      | elim:p => [? // | x p H1 /andP [/inP H2 /H1 H3]];split].
-    by rewrite propeqP;apply H1.
-  Qed.
-  
-End All.
-
-Notation "p [\in] X" := (All X p) (at level 4, no associativity).
-
-Section All_Lifted.
-
-  (** * Ici on regarde Deployment paths from x to y for a relation 
-   * et on voit que c'est un AllS pour un Lift 
-   * ce qui fait que la discussion au dessus doit s'appliquer 
-   * Il faut voir avec quelle équivalence les preuves sont les + simples.
-   *)
-  
-  Variables (T: Type).
-          
-  (* (x :: (rcons p y)) is a path for the relation S or the graph (A,S) *)
-  Fixpoint AllL (S: relation T) (p: seq T) (x y: T) :=
-    match p with
-    | [::] => S (x, y)
-    | x1::p1 => S (x, x1) /\ AllL S p1 x1 y
-    end.
-
-  (** what is the link between a Ppath and Deployment path ? *) 
-
-  Lemma Dpe_AllS: forall (S: relation T) (p: seq T) (x y: T), 
-      AllL S p x y <-> All S (Lift (x::(rcons p y))).
-  Proof. 
-    move => S p x y;split.
-    elim: p x y => [ // | z p H1] x y [H2 H3].
-    by rewrite rcons_cons Lift_c All_eq_all all_cons 
-         andC -All_eq_all;split;[apply H1 | ].
-    elim: p x y => [ |x p H1 ] z y; first by move => [_ H1].
-    rewrite rcons_cons Lift_c All_eq_all all_cons andC -All_eq_all.
-    by move => [H2 H3];split; [ | apply H1].
-  Qed.
-
-  Lemma AllL_eq_allL: forall (S: relation T) (p: seq T) (x y: T), 
-      AllL S p x y <-> allL S p x y. 
-  Proof. 
-    by move => S p x y; rewrite Dpe_AllS /allL All_eq_all.
-  Qed.
-
-  Lemma Dpe: forall (S: relation T) (p: seq T) (x y z: T),
-      AllL S (z::p) x y <->  S (x, z) /\ AllL S p z y.
-  Proof.
-    by move => S p x y z; split;move => [H1 H2];[split| ].
-  Qed.
-  
-  Lemma Dpe_rev: forall (S: relation T) (p: seq T) (x y z: T),
-      AllL S (rcons p z) x y <-> S (z, y) /\ AllL S p x z.
-  Proof.
-    move => S p x y z. rewrite 2!Dpe_AllS 2!All_eq_all allL_rc /allL. 
-    by split => [ /andP [/inP ? ?] // | [/inP ? ?] ];apply/andP.
-  Qed.
-  
-  Lemma AllL_rev: forall (S: relation T) (p: seq T) (x y: T),
-      AllL S p x y <-> AllL S.-1 (rev p) y x.
-  Proof.
-    by move => S p x y;rewrite 2!Dpe_AllS 2!All_eq_all allL_rev.
-  Qed.     
-  
-End All_Lifted.
-
 Section Seq_lift1. 
   (** * Lift properties *) 
     
@@ -584,7 +485,7 @@ Section Seq_lift1.
   (* The definition of (edge) paths of length greater or equal to one *)
   
   (* begin snippet EPath1:: no-out *) 
-  Definition EPath1 (S: relation T):=[set p | All S (Lift p) /\ length(p) >= 2].
+  Definition EPath1 (S: relation T):=[set p | all (fun z => z \in S) (Lift p) /\ length(p) >= 2].
   (* end snippet EPath1 *)
   
   (* an equivalent definition not using the lift operation *)
@@ -600,26 +501,25 @@ Section Seq_lift1.
   Section EPath1_EPath1'.
 
     Lemma Epath_equiv_rc: forall (S:relation T) (p: seq T) (x y: T),
-        All S (Lift (x::(rcons p y))) <-> EPath S (x::(rcons p y)).
+        all (fun z => z \in S) (Lift (x::(rcons p y))) <-> EPath S (x::(rcons p y)).
     Proof.
       split.
-      - elim: p x y => [ //= x y | z p Hr x y ].
-        + move => [_ H2].
-          by apply pp_two;[ apply pp_two;[constructor | left] | right; exists y, [::]].
-        + rewrite rcons_cons Lift_c All_eq_all all_cons andC -All_eq_all;
+      - elim: p x y => [ //= x y /andP [/inP H2 _] | z p Hr x y ].
+        by apply pp_two;[ apply pp_two;[constructor | left] | right; exists y, [::]].
+        rewrite rcons_cons Lift_c all_cons andC;
             by move => [H1 H2];apply pp_two;[ apply Hr | right; exists z, (rcons p y)].
       - move => H.
         elim/EPath_ind: H => [// | x' y' ep H1 [-> // | [y1 [ep1 [H2 H3]]]]].
-        by rewrite H2 in H1 *; rewrite Lift_c //.
+        by rewrite H2 in H1 *; rewrite Lift_c all_cons //.
     Qed.
-  
+    
     Lemma Epath_equiv: forall (S:relation T) (p: seq T),
-        All S (Lift p ) <-> EPath S p.
+        all (fun z => z \in S) (Lift p ) <-> EPath S p.
     Proof.
       move => S.
-      have Chain_0: All S (Lift [::]) <-> EPath S [::] 
+      have Chain_0: all (fun z=> z\in S) (Lift [::]) <-> EPath S [::] 
         by split => H;[apply pp_void | ].
-      have Chain_1: forall (z: T), All S (Lift ([::z])) <-> EPath S [::z]
+      have Chain_1: forall (z: T), all  (fun z=> z\in S) (Lift ([::z])) <-> EPath S [::z]
           by split => H;[ apply pp_two;[apply pp_void | left] | ].
       split;match goal with 
             | _ => elim: p => [|x p ];[|elim: p => [H1 | y p _ H1 ]];
@@ -657,7 +557,7 @@ Section Lift2.
   Qed.
   
   Lemma Lift_and_composeTT': forall (p:seq T) (x y: T),
-      All ComposeTT (Lift (Lift [:: x, y & p])).
+      all (fun pa => pa \in ComposeTT) (Lift (Lift [:: x, y & p])).
   Proof.
     move => p x y;rewrite Epath_equiv; apply Lift_and_ComposeTT.
   Qed.
@@ -961,9 +861,7 @@ Section Seq_liftO.
   End Lifto_seq_props.
 
   (* begin snippet EoPath1:: no-out *)  
-  Definition EoPath1 (S: relation T):= 
-    [set po | All (Oedge S) (LiftO po.1 po.2) /\ length(po.1) >= 2 
-              /\ length(po.2) = length(po.1)-1].
+  
   (* end snippet EoPath1 *)
   
 End Seq_liftO.
