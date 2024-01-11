@@ -108,7 +108,7 @@ Section Utilities.
       True.
     Proof.
       move => p.
-      pose proof seq_cases p as [H1 | [[x' H1] | [x' [y' [q H1]]]]].
+      pose proof seq_cases p as [H1 | [[x H1] | [q [x [y H1]]]]].
       by []. 
       by [].
       by [].
@@ -157,6 +157,20 @@ Section Seq_lift.
         Lift (rcons (x::p) y) = rcons (Lift (x::p)) (last x p,y).
     Proof.
       by move => p x y;rewrite lastI Lift_rcrc.
+    Qed.
+
+    Lemma Lift_sz: forall  (p:seq T),
+        size(p) > 1 -> size (Lift p) = (size p) -1.
+    Proof.
+      move => p.
+      pose proof seq_cases p as [H1 | [[x H1] | [q [x [y H1]]]]];rewrite H1.
+      - by [].
+      - by [].
+      - clear H1; elim: q x => [// | z q Hr x  _].
+        rewrite Lift_crc 1![LHS]/size -/size. 
+        have H1: 1 < size (z :: rcons q y) by rewrite 1!/size -/size size_rcons.
+        move: H1 => /Hr H1.
+        by rewrite rcons_cons H1 2!subn1 /=.
     Qed.
     
     Lemma Lift_last: forall (p:seq T) (x y: T),
@@ -383,7 +397,10 @@ Section allset_Lifted.
   Lemma allL_cat: forall (S: relation T) (p q: seq T) (x y z: T),
       allL S ((rcons p y) ++ q) x z <-> allL S p x y && allL S q y z.
   Proof.
-  Admitted.
+    move => S p q x y z.
+    rewrite /allL cat_rcons rcons_cat rcons_cons -cat_rcons Lift_cat_crc allset_cat.
+    by split => [ [? ?] | /andP [? ?]];[apply/andP |].
+  Qed.
   
   Lemma allL_subset: forall (S R: relation T) (p: seq T) (x y: T),
       (S `<=` R) -> allL S p x y -> allL R p x y.
@@ -445,7 +462,7 @@ Section Seq_lift1.
   (* The definition of (edge) paths of length greater or equal to one *)
   
   (* begin snippet EPath1:: no-out *) 
-  Definition EPath1 (S: relation T):=[set p | all (fun z => z \in S) (Lift p) /\ size(p) >= 2].
+  Definition EPath1 (S: relation T):=[set p | (Lift p) [\in] S /\ size(p) >= 2].
   (* end snippet EPath1 *)
   
   (* an equivalent definition not using the lift operation *)
@@ -505,10 +522,61 @@ Section Lift2.
   (* A relation on (T*T) (Ch for Chain) *)
   Definition Chrel  := [set ppa : (T * T)*(T * T) | (ppa.1).2 = (ppa.2).1].
 
+  Lemma Chrel_eq: forall (pa1 pa2: (T*T)),
+      Chrel (pa1,pa2) <-> pa1.2 = pa2.1.
+  Proof. by []. Qed.
+  
   Definition BChains := [set spa : seq (T*T) | (Lift spa) [\in] Chrel]. 
 
   Definition IChains := [set spa : seq (T*T) | exists p: seq T, Lift p = spa]. 
-  
+
+  Lemma Lift_Chrel: forall (x y: T*T), 
+      Chrel (x,y) <-> Lift [::x.1;x.2;y.2] = [::x;y].
+  Proof.
+    move => [x x'] [y y'].
+    by split;[ rewrite /Chrel /= =>[->] | rewrite /Lift /=; move => [->]].
+  Qed.
+
+  Lemma Lift_Chrel': forall (x y: T*T), 
+     Chrel (x,y) <-> exists p, Lift p = [::x;y].
+  Proof.
+    have H3: forall (z r: T*T), [::z;r]= rcons [::z] r by[].
+    move => [x x'] [y y'].
+    split;rewrite Chrel_eq /=.
+    by move => ->;(exists [::x;y;y']).
+    move => [p H0].
+    pose proof seq_cases p as [H1 | [[x1 H1] | [q [x1 [y1 H1]]]]]. 
+    - by rewrite H1 in H0.
+    - by rewrite H1 in H0.
+    - pose proof seq_cases q as [H2 | [[x2 H2] | [r [x2 [y2 H2]]]]].
+      + by move: H0; rewrite H1 H2 /= => H0. 
+      + by move: H0; rewrite H1 H2 /= => [[_ -> -> _]].
+      + move: H0; rewrite H1 H2 => H0.
+        rewrite rcons_cons Lift_c Lift_crc in H0.
+        move: H0 => [_ _ _ _ H0].
+        rewrite Lift_rcrc in H0.
+        have H4: size (rcons (Lift (rcons r y2)) (y2, y1)) > 0 by rewrite size_rcons.
+        by rewrite H0 in H4.
+  Qed.
+    
+  Lemma test2: BChains = IChains.
+  Proof.
+    rewrite predeqE => spa.
+    rewrite /BChains /IChains /mkset.
+    pose proof seq_cases spa as [H1 | [[x H1] | [q [x [y H1]]]]];rewrite H1.
+    - by split => [_|_];[exists [::] |].
+    - by move: x H1 => [x y] H1; split => [_ | H2 ];[exists ([::x ;y]) |].
+    - clear H1.
+      elim : q.
+      + split => [/allL0' /Chrel_eq H2 |].
+        exists [::x.1;x.2;y.2].
+        rewrite /Lift.
+        have H3: forall (z: T*T), z = (z.1, z.2) by move => [z1 z2].
+        by rewrite (H3 x) (H3 y) H2 /=.
+      + move => /= [p H].
+        rewrite andbT. 
+  Admitted.
+
   (** sanity check: lifted sequence  *)
   Lemma Lift_and_Chrel: forall (p:seq T) (x y: T),
       EPath Chrel (Lift [::x, y & p]).
