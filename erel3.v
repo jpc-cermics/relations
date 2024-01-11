@@ -93,53 +93,28 @@ Section Utilities.
     by exists x,y;rewrite H4.
   Qed.
 
+  Lemma seq_cases: forall (p: seq T), 
+      p=[::] \/ (exists x, p=[::x]) \/ exists (q:seq T), exists (x y:T), p=x::(rcons q y).
+  Proof.
+    elim => [| x p _]; first by left.
+    elim: p => [ | y p _]; first by right;left;(exists x).
+    right;right.
+    have H1: size([:: x, y & p]) > 1 by [].
+    pose proof (seq_crc H1) as [q [x' [y' H2]]].
+    by exists q;exists x';exists y';rewrite H2.
+  Qed.
+
+  Lemma seq_cases_test: forall  (p:seq T),
+      True.
+    Proof.
+      move => p.
+      pose proof seq_cases p as [H1 | [[x' H1] | [x' [y' [q H1]]]]].
+      by []. 
+      by [].
+      by [].
+    Qed.
+  
 End Utilities.
-
-Section Wip.
-  (** * test to check how to prove that active path can be chosen uniq *)
-
-  (* we use eqType here *)
-  Variables (T: eqType).
-  
-  Lemma trunck_seq: forall (x: T) (p: seq T),
-      ((x \in p) /\ exists (p1:seq T) , x \notin p1 /\ exists p2, (p= p1 ++ (x::p2)))
-      \/ ~ (x \in p).
-  Proof.
-    move => x' p.
-    elim: p => [ | x p [[H1 [p1 [H2 [p2 H3]]]] | H1] ].
-    - by right.
-    - left; split;first by rewrite in_cons H1 orbT.
-      case Hx: (x'== x). 
-      + by move: Hx => /eqP <-;(exists [::]);split;[|exists p].
-      + by exists(x::p1);split;[rewrite in_cons Hx H2 | (exists p2); rewrite H3].
-            - case Hx: (x'== x);last by right;rewrite in_cons Hx /=.
-              left;split;first by rewrite in_cons Hx /=.
-              by exists[::]; split;[ | exists p; move: Hx => /eqP ->].
-  Qed.
-
-  (* general property of seq *)
-  Lemma trunck_seq_rev: forall (x: T) (p: seq T),
-      ((x \in p) /\ exists (p1 p2:seq T), x \notin p2 /\ p= p1 ++ (x::p2))
-      \/ ~ (x \in p).
-  Admitted.
-  
-  (* P is compatible with truncation *)
-  Axiom trunck_seq_P: forall (x: T) (p p1 p2: seq T) (P: T -> (seq T) -> Prop),
-      P x p -> p = p1 ++ (x::p2) -> P x p2.
-  
-  (* existence with uniq *)
-  Lemma P_uniq: forall (x: T) (p: seq T) (P: T-> (seq T) -> Prop),
-      P x p -> exists (p2:seq T), x \notin p2 /\ P x p2.
-  Proof.
-    move => x p P H1.
-    case Hx: (x \in p); last first.
-    by (exists p);split;[rewrite Hx /= |].
-    pose proof trunck_seq_rev x p as [[_ [p1 [p2 [H3 H4]]]] | H2].
-    - exists p2. split. by []. by apply: (trunck_seq_P H1 H4).
-    - by [].
-  Qed.
-           
-End Wip.
 
 Section Seq_lift. 
   (** * Lift properties *) 
@@ -162,7 +137,7 @@ Section Seq_lift.
     Proof.
       by move => p x y; split.
     Qed.
-    
+
     Lemma Lift_crc: forall  (p:seq T) (x y: T),
         Lift (x::(rcons p y)) = (x,(head y p))::(Lift (rcons p y)).
     Proof.
@@ -307,7 +282,7 @@ Section allset.
   
 End allset.
 
-Section all2.
+Section allset2.
   (** * all for seq (T *T) *)
 
   Variables (T: Type).
@@ -370,7 +345,7 @@ Section all2.
     by move => X S x y p;rewrite DeltaRco allset_I => /andP [_ /allset_Rr H1].
   Qed.
 
-End all2.
+End allset2.
 
 Section allset_Lifted.
   (** *  all on a lifted sequence  *)
@@ -470,7 +445,7 @@ Section Seq_lift1.
   (* The definition of (edge) paths of length greater or equal to one *)
   
   (* begin snippet EPath1:: no-out *) 
-  Definition EPath1 (S: relation T):=[set p | all (fun z => z \in S) (Lift p) /\ length(p) >= 2].
+  Definition EPath1 (S: relation T):=[set p | all (fun z => z \in S) (Lift p) /\ size(p) >= 2].
   (* end snippet EPath1 *)
   
   (* an equivalent definition not using the lift operation *)
@@ -481,12 +456,12 @@ Section Seq_lift1.
     ep = [::] \/ (exists (y: T), exists (ep1: seq T), ep = [::y & ep1] /\ S (x,y))
     -> EPath S ([:: x & ep]).
   
-  Definition EPath1' (S: relation T) := [set p: seq T | EPath S p /\ length(p) >= 2].
+  Definition EPath1' (S: relation T) := [set p: seq T | EPath S p /\ size(p) >= 2].
 
   Section EPath1_EPath1'.
 
     Lemma Epath_equiv_rc: forall (S:relation T) (p: seq T) (x y: T),
-        all (fun z => z \in S) (Lift (x::(rcons p y))) <-> EPath S (x::(rcons p y)).
+        (Lift (x::(rcons p y))) [\in] S <-> EPath S (x::(rcons p y)).
     Proof.
       split.
       - elim: p x y => [ //= x y /andP [/inP H2 _] | z p Hr x y ].
@@ -499,26 +474,23 @@ Section Seq_lift1.
     Qed.
     
     Lemma Epath_equiv: forall (S:relation T) (p: seq T),
-        all (fun z => z \in S) (Lift p ) <-> EPath S p.
+        (Lift p ) [\in] S <-> EPath S p.
     Proof.
-      move => S.
-      have Chain_0: all (fun z=> z\in S) (Lift [::]) <-> EPath S [::] 
-        by split => H;[apply pp_void | ].
-      have Chain_1: forall (z: T), all  (fun z=> z\in S) (Lift ([::z])) <-> EPath S [::z]
-          by split => H;[ apply pp_two;[apply pp_void | left] | ].
-      split;match goal with 
-            | _ => elim: p => [|x p ];[|elim: p => [H1 | y p _ H1 ]];
-                            try rewrite lastI;apply (Chain_0 , Chain_1, Epath_equiv_rc)
-            end.
+      move => S p.
+      (* we use seq_cases to explore the three cases *)
+      pose proof seq_cases p as [H1 | [[x' H1] | [x' [y' [q H1]]]]];rewrite H1.
+      by split => H;[apply pp_void | ].
+      by split => H;[apply pp_two;[apply pp_void | left] | ].
+      by rewrite Epath_equiv_rc.
     Qed.
-
+    
     Lemma Epath_eq: forall (S:relation T),  EPath1 S = EPath1' S.
     Proof.
       move => S.
       rewrite /EPath1 /EPath1' /mkset predeqE => p.
       split => [[H1 H2] | [H1 H2]].
       by split;[rewrite -Epath_equiv |].
-      by split;[rewrite Epath_equiv |].
+      by split;[rewrite Epath_equiv  |].
     Qed.
 
   End EPath1_EPath1'.
@@ -526,25 +498,29 @@ Section Seq_lift1.
 End Seq_lift1.
 
 Section Lift2.
-  (** using twice Lifted sequences or just Chain on lifted equences *)
+  (** * two ways to check edge paths *) 
   
   Variables (T: Type).
 
-  (* A relation on (T*T) *)
-  Definition ComposeTT  := [set ppa : (T * T)*(T * T) | (ppa.1).2 = (ppa.2).1].
+  (* A relation on (T*T) (Ch for Chain) *)
+  Definition Chrel  := [set ppa : (T * T)*(T * T) | (ppa.1).2 = (ppa.2).1].
 
+  Definition BChains := [set spa : seq (T*T) | (Lift spa) [\in] Chrel]. 
+
+  Definition IChains := [set spa : seq (T*T) | exists p: seq T, Lift p = spa]. 
+  
   (** sanity check: lifted sequence  *)
-  Lemma Lift_and_ComposeTT: forall (p:seq T) (x y: T),
-      EPath ComposeTT (Lift [::x, y & p]).
+  Lemma Lift_and_Chrel: forall (p:seq T) (x y: T),
+      EPath Chrel (Lift [::x, y & p]).
   Proof.
     elim => [ x y | y p Hr z x];first by constructor;constructor.
     by rewrite Lift_c;apply pp_two;[ | right; exists (x,y), (Lift [::y &p])].
   Qed.
   
   Lemma Lift_and_composeTT': forall (p:seq T) (x y: T),
-      all (fun pa => pa \in ComposeTT) (Lift (Lift [:: x, y & p])).
+      (Lift (Lift [:: x, y & p])) [\in] Chrel. 
   Proof.
-    move => p x y;rewrite Epath_equiv; apply Lift_and_ComposeTT.
+    move => p x y;rewrite Epath_equiv; apply Lift_and_Chrel.
   Qed.
   
 End Lift2.
@@ -581,14 +557,13 @@ Section Seq_liftO.
     move => svo H1. apply: (test H1 (len svo)).
   Qed.
 
-  Lemma test1: forall (s : Svo), length (sv s) = (length(so s)).+1.
+  Lemma test1: forall (s : Svo), size (sv s) = (size(so s)).+1.
   Proof.
     by move => [a b c].
   Qed.
   
-  (* Oedge as a subset of (prod A A) O) *)
   (* begin snippet Oedge:: no-out *)  
-  Definition Oedge (S: relation T) :=
+  Definition Oedge (S: relation T): set (T*T*O) :=
     fun (oe: Eo T O) => match oe with | (e,P) => S e | (e,N) => S.-1 e end.
   (* end snippet Oedge *)
 
@@ -1440,3 +1415,49 @@ Section Active.
 
 End Active. 
 
+
+Section Wip.
+  (** * test to check how to prove that active path can be chosen uniq *)
+
+  (* we use eqType here *)
+  Variables (T: eqType).
+  
+  Lemma trunck_seq: forall (x: T) (p: seq T),
+      ((x \in p) /\ exists (p1:seq T) , x \notin p1 /\ exists p2, (p= p1 ++ (x::p2)))
+      \/ ~ (x \in p).
+  Proof.
+    move => x' p.
+    elim: p => [ | x p [[H1 [p1 [H2 [p2 H3]]]] | H1] ].
+    - by right.
+    - left; split;first by rewrite in_cons H1 orbT.
+      case Hx: (x'== x). 
+      + by move: Hx => /eqP <-;(exists [::]);split;[|exists p].
+      + by exists(x::p1);split;[rewrite in_cons Hx H2 | (exists p2); rewrite H3].
+            - case Hx: (x'== x);last by right;rewrite in_cons Hx /=.
+              left;split;first by rewrite in_cons Hx /=.
+              by exists[::]; split;[ | exists p; move: Hx => /eqP ->].
+  Qed.
+
+  (* general property of seq *)
+  Lemma trunck_seq_rev: forall (x: T) (p: seq T),
+      ((x \in p) /\ exists (p1 p2:seq T), x \notin p2 /\ p= p1 ++ (x::p2))
+      \/ ~ (x \in p).
+  Admitted.
+  
+  (* P is compatible with truncation *)
+  Axiom trunck_seq_P: forall (x: T) (p p1 p2: seq T) (P: T -> (seq T) -> Prop),
+      P x p -> p = p1 ++ (x::p2) -> P x p2.
+  
+  (* existence with uniq *)
+  Lemma P_uniq: forall (x: T) (p: seq T) (P: T-> (seq T) -> Prop),
+      P x p -> exists (p2:seq T), x \notin p2 /\ P x p2.
+  Proof.
+    move => x p P H1.
+    case Hx: (x \in p); last first.
+    by (exists p);split;[rewrite Hx /= |].
+    pose proof trunck_seq_rev x p as [[_ [p1 [p2 [H3 H4]]]] | H2].
+    - exists p2. split. by []. by apply: (trunck_seq_P H1 H4).
+    - by [].
+  Qed.
+           
+End Wip.
