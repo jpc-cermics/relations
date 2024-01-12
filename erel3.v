@@ -82,6 +82,17 @@ Section Utilities.
     pose proof seq_c H4 as [q [x H5]].
     by exists q,x,y;rewrite H3 H5.
   Qed.
+
+  Lemma seq_cc: forall (p: seq T), 
+      1 < size p -> exists (q:seq T) (x y:T), p = [::x,y &q].
+  Proof.
+    move => p H1.
+    have H2: 0 < size p by apply leq_ltn_trans with 1.  
+    pose proof seq_c H2 as [r [y H3]].
+    have H4: 0 < size r by rewrite H3 ltnS in H1.
+    pose proof seq_c H4 as [q [x H5]].
+    by exists q,y,x;rewrite H3 H5.
+  Qed.
   
   Lemma seq_rcrc0: forall (p: seq T), 
       size p = 2 -> exists (x y:T), p = [::x;y].
@@ -172,6 +183,18 @@ Section Seq_lift.
         have H1: 1 < size (z :: rcons q y) by rewrite 1!/size -/size size_rcons.
         move: H1 => /Hr H1.
         by rewrite rcons_cons H1 2!subn1 /=.
+    Qed.
+
+    Lemma Lift_sz1: forall (p:seq T) (q:seq (T*T)),
+        Lift p = q -> size(q) > 0 -> size (p) > 1.
+    Proof.
+      move => p q.
+      elim: p q => [q <- H1 // | x p Hr q].
+      elim: p q Hr => [q _ <- //=  | x' p Hr q H1].
+      rewrite Lift_c =>  H2 H3.
+      pose proof seq_c H3 as [q1 [x1 H4]]. 
+      move: H2; rewrite H4 => [[H2 H5]].
+      rewrite //=.
     Qed.
     
     Lemma Lift_last: forall (p:seq T) (x y: T),
@@ -545,9 +568,27 @@ Section Lift2.
   
   Definition BChains := [set spa : seq (T*T) | (Lift spa) [\in] Chrel /\ size(spa) > 0]. 
 
-  Definition IChains := [set spa : seq (T*T) | exists p: seq T, Lift p = spa /\ size(spa) > 0]. 
-
-
+  Definition IChains := [set spa : seq (T*T) | (exists p: seq T, Lift p = spa) /\ size(spa) > 0]. 
+  
+  (** sanity check: lifted sequence  *)
+  Lemma Lift_and_Chrel: forall (p:seq T) (x y: T),
+      EPath Chrel (Lift [::x, y & p]).
+  Proof.
+    elim => [ x y | y p Hr z x];first by constructor;constructor.
+    by rewrite Lift_c;apply pp_two;[ | right; exists (x,y), (Lift [::y &p])].
+  Qed.
+  
+  Lemma Lift_Lift: forall (p:seq T), (Lift (Lift p)) [\in] Chrel. 
+  Proof.
+    move => p. 
+    pose proof seq_cases p as [H1 | [[x H1] | [q [x [y H1]]]]].
+    by rewrite H1. 
+    by rewrite H1. 
+    have H2: size(p) > 1 by rewrite H1 /= size_rcons.
+    pose proof seq_cc H2 as [q1 [x1 [x2 H3]]].
+    by rewrite H3 Epath_equiv; apply Lift_and_Chrel.
+  Qed.
+  
   Lemma Lift_Chrel1: forall (n: nat),
       (forall (spa : seq (T*T)), size(spa)= n.+2 
                             -> (Lift spa) [\in] Chrel -> exists p: seq T, Lift p = spa).
@@ -555,26 +596,48 @@ Section Lift2.
     elim => [// | n Hr].
     - move => spa H1 H2.
       pose proof seq_rcrc0 H1 as [[x1 x2] [[y1 y2] H3]].
-      move: H2; rewrite H3 allL0' /Chrel /mkset => [[/= ->]].
+      move: H2; rewrite H3 allL0' /Chrel /mkset => /= [->].
       by (exists [::x1;y1;y2]).
     - move => spa H1 H2.
       have H4: size(spa) > 1 by rewrite H1.
-      ZZZ pose proof seq_crc H4 as [q [[x1 x2] [[y1 y2] H5]]].
-      move: H2; rewrite H5 Lift_crc allset_cons => [[H6 H7]].
-      have H8: size (rcons q (y1, y2)) = n.+2
+      pose proof seq_cc H4 as [q [[x1 x2] [[y1 y2] H5]]].
+      move: H2; rewrite H5 Lift_c allset_cons => [[H6 H7]].
+      move: H6; rewrite /Chrel /mkset /= => ->.
+      have H8: size [::(y1, y2) & q] = n.+2
         by rewrite H5 /= -addn1 -[in RHS]addn1 in H1; apply addIn in H1.
-      apply Hr in H7.
+      apply Hr in H7;last by [].
       move: H7 => [p1 H7].
-      move => spa [pa1 pa2] H1 H2.
-    pose proof seq_c H1 as [q [[x1 x2] H3]]. 
-    move => H4.
-    move: (H4); rewrite H3 Lift_c allset_cons /Chrel /mkset => [[/= H5]].
-    move: H4;rewrite H3 Lift_c allset_cons => [[_ H6]].
-    
-    ZZZ
-    
+      pose proof Lift_sz1 H7 as H9.
+      have H10:  0 < size ((y1, y2) :: q) by [].
+      apply H9 in H10.
+      pose proof seq_cc H10 as [q3 [x3 [y3 H11]]].
+      exists [::x1,x3,y3& q3].
+      rewrite Lift_c -H11 H7. 
+      by have -> : x3 = y1 by move: H7; rewrite H11 Lift_c => [[H7]]. 
+  Qed.
+  
+  Lemma Lift_Chrel2: forall (n: nat) (spa : seq (T*T)),
+      size(spa)= n.+2 -> ((Lift spa) [\in] Chrel <-> exists p: seq T, Lift p = spa).
+  Proof.
+    move => n spa H1;split;first by apply Lift_Chrel1 with n.
+    by move => [p <-]; apply Lift_Lift.
+  Qed.
 
 
+  Lemma Lift_Chrel3: forall (spa : seq (T*T)),
+      size(spa) > 1 -> ((Lift spa) [\in] Chrel <-> exists p: seq T, Lift p = spa).
+  Proof.
+    move => spa H1.
+    have H0: forall (n : nat), 1 < n -> n = n.-2.+2
+        by elim => [// | [// |n _ H2 ]];
+                  pose proof ltn_predK H2;rewrite -H;apply succn_inj.
+    have H2: (size(spa)).-2 >= 0 by [].
+    split => [H3 | [p <-]].
+    - apply Lift_Chrel1 with (size(spa)).-2.
+      by apply H0.
+      by [].
+    - by apply Lift_Lift.
+  Qed.
 
   Lemma Lift_Chrel: forall (x y: T*T), 
       Chrel (x,y) <-> Lift [::x.1;x.2;y.2] = [::x;y].
@@ -617,36 +680,18 @@ Section Lift2.
   
   Lemma test2: BChains = IChains.
   Proof.
-    have H3: forall (z: T*T), z = (z.1, z.2) by move => [z1 z2].
     rewrite predeqE /BChains /IChains /mkset => spa.
-    pose proof seq_cases spa as [H1 | [[x H1] | [q [x [y H1]]]]];rewrite H1.
-    - by split => [_|_];[exists [::] |].
-    - by move: x H1 => [x y] H1; split => [_ | H2 ];[exists ([::x ;y]) |].
-    - clear H1;elim : q x.
-      + split => [/allL0' /Chrel_eq H2 | /= [p H] ].
-        by (exists [::x.1;x.2;y.2]);rewrite /Lift; rewrite (H3 x) (H3 y) H2 /=.
-        by rewrite andbT mem_set;[ | apply Lift_Chrel';exists p].
-      + move => z q Hr.
-        split. 
-        rewrite Lift_crc allset_cons rcons_cons => [[H1 /Hr [p H2]]].
-        pose proof Lift_Chrel'.
-        
-        exists [::x.1 & p].
-        
-  Admitted.
-
-  (** sanity check: lifted sequence  *)
-  Lemma Lift_and_Chrel: forall (p:seq T) (x y: T),
-      EPath Chrel (Lift [::x, y & p]).
-  Proof.
-    elim => [ x y | y p Hr z x];first by constructor;constructor.
-    by rewrite Lift_c;apply pp_two;[ | right; exists (x,y), (Lift [::y &p])].
-  Qed.
-  
-  Lemma Lift_and_composeTT': forall (p:seq T) (x y: T),
-      (Lift (Lift [:: x, y & p])) [\in] Chrel. 
-  Proof.
-    move => p x y;rewrite Epath_equiv; apply Lift_and_Chrel.
+    pose proof seq_cases spa as [H1 | [[x H1] | [q [x [y H1]]]]].
+    - by rewrite H1 /=;split => [[_ H2 //]| [[p _] H3] //].
+    - by rewrite H1 /=;move: x H1=> [x y] H1;split=> [_|H2];[split;[exists([::x ;y])|]|].
+    - rewrite H1.
+      have H2: size(spa) > 1. by rewrite H1 /= size_rcons.
+      pose proof Lift_Chrel3 H2 as H3.
+      split => [[H4 H5] | [[p H4] H5]].
+      + rewrite H1 in H3. apply H3 in H4. move: H4 => [p H4]. split. by (exists p). by [].
+      + split. 
+        rewrite -H1 H3. exists p. by rewrite H4. 
+        by rewrite /= size_rcons. 
   Qed.
   
 End Lift2.
