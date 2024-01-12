@@ -229,6 +229,7 @@ Section Seq_lift.
     Qed.
 
     (** sanity check *)
+
     Lemma Lift_inv: forall (p : seq T) (x y: T),
         UnLift (Lift [::x,y & p]) x = [::x,y & p].
     Proof.
@@ -240,7 +241,7 @@ Section Seq_lift.
     Proof.
       by elim => [// | y p Hr x' x];rewrite Lift_c UnLift_c Hr.
     Qed.
-    
+
     Lemma Lift_inv2: forall (p : seq T) (x: T),
         p <> [::] ->  UnLift (Lift p) (head x p) = p.
     Proof.
@@ -249,6 +250,14 @@ Section Seq_lift.
       by rewrite Lift_c UnLift_c Hr.
     Qed.
     
+    Lemma Lift_bc: forall (p : seq T) (x:T) (y: T*T) (q: seq (T*T)),
+        Lift (x :: p) = y :: q -> x = y.1.
+    Proof.
+      move => p x' [y1 y2] q.
+      by pose proof seq_cases p as [H1 | [[x H1] | [r [x [y H1]]]]];
+        rewrite H1; [ | rewrite /= => [[?]] |rewrite Lift_c => [[?] _ _]].
+    Qed.
+
   End Lift_seq_props.
 
 End Seq_lift.
@@ -558,23 +567,35 @@ Section Lift2.
         have H4: size (rcons (Lift (rcons r y2)) (y2, y1)) > 0 by rewrite size_rcons.
         by rewrite H0 in H4.
   Qed.
-    
+                         
+  Lemma Lift_Chrel'': forall (p : seq T) (x:T) (y z: T*T) (q: seq (T*T)),
+      Lift p = (y :: rcons q z) -> 
+      Lift [::x & p] = [::(x,y.1), y & rcons q z].
+  Proof.
+    elim => [x y z q // | r p Hr x y z q H1].
+    rewrite Lift_c H1.
+    apply Lift_bc in H1.
+    by rewrite H1.
+  Qed.
+  
   Lemma test2: BChains = IChains.
   Proof.
-    rewrite predeqE => spa.
-    rewrite /BChains /IChains /mkset.
+    have H3: forall (z: T*T), z = (z.1, z.2) by move => [z1 z2].
+    rewrite predeqE /BChains /IChains /mkset => spa.
     pose proof seq_cases spa as [H1 | [[x H1] | [q [x [y H1]]]]];rewrite H1.
     - by split => [_|_];[exists [::] |].
     - by move: x H1 => [x y] H1; split => [_ | H2 ];[exists ([::x ;y]) |].
-    - clear H1.
-      elim : q.
-      + split => [/allL0' /Chrel_eq H2 |].
-        exists [::x.1;x.2;y.2].
-        rewrite /Lift.
-        have H3: forall (z: T*T), z = (z.1, z.2) by move => [z1 z2].
-        by rewrite (H3 x) (H3 y) H2 /=.
-      + move => /= [p H].
-        rewrite andbT. 
+    - clear H1;elim : q x.
+      + split => [/allL0' /Chrel_eq H2 | /= [p H] ].
+        by (exists [::x.1;x.2;y.2]);rewrite /Lift; rewrite (H3 x) (H3 y) H2 /=.
+        by rewrite andbT mem_set;[ | apply Lift_Chrel';exists p].
+      + move => z q Hr.
+        split. 
+        rewrite Lift_crc allset_cons rcons_cons => [[H1 /Hr [p H2]]].
+        pose proof Lift_Chrel'.
+        
+        exists [::x.1 & p].
+        
   Admitted.
 
   (** sanity check: lifted sequence  *)
