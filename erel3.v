@@ -33,8 +33,9 @@ Local Open Scope classical_set_scope.
  * Variables (R_T2: relation T*T)
  *)
 
+Reserved Notation "p [\in] X" (at level 4, no associativity). 
 (* begin snippet all_notation:: no-out *)  
-Notation "p [\in] X" := (all (fun x => x \in X) p) (at level 4, no associativity).
+Notation "p [\in] X" := (all (fun x => x \in X) p). 
 (* end snippet all_notation *)  
 
 Section Types.

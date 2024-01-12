@@ -334,23 +334,22 @@ We denote by $\cardinal{\path}$ the length of a path $\path \in
 An \emph{\EdgeSubPath} of the \EdgePath~$\path$ is an \EdgePath\ obtained by a
 subsequence of consecutive indices.
 
-We describe the coq formalization of (edge) paths. A graph $(\VERTEX,\EDGE)$ is given by a type \texttt{T: Type} and a relation on \texttt{T} which is
-a set in $T*T$, $\EDGE:\texttt{set T*T}$ using the (classical) set definition of mathcomp analysis. We then directly define the \texttt{Lift} operator $\Lift$ as follows.
-
-{\small 
-\inputsnippets{erel3/Lift.tex}
-}
-Checking that all the elements of a sequence \texttt{(p: seq T)} belongs to a set \texttt{(X: set T)} is done by an inductive predicate \texttt{All}.
-Then, we prove in a lemma that the inductive predicate \texttt{All} can be equivalently defined with the help of the function
-\texttt{all} of mathcomp sequence library \texttt{seq.v}.
+\paragraph{(Coq)} We describe the coq formalization of (edge) paths.  A graph
+$(\VERTEX,\EDGE)$ is given by a type \texttt{(T: Type)} and a relation on
+\texttt{T} is a set in the product type \texttt{set T*T}, that is
+$(\EDGE:\texttt{set T*T})$. Thus, the (classical) set definition of mathcomp
+analysis \texttt{classical\_sets.v} is used to formalize a graph. Now, the lift
+operator $\Lift$ is implemented in Coq as a recursive mapping denoted
+\texttt{Lift}: {\small \inputsnippets{erel3/Lift.tex} } Finally, the set of
+finite (edge) paths of length greater of equal to $1$,
+$\PATH^{\ge 1}\np{\OrientedGraph}$ defined in Equation~\eqref{def:epaths_gt1} is
+formalized in Coq using the function \texttt{all} --- used to checks that the elements of a sequence belong to a given set 
+-- combined with the \texttt{Lift} operator:
 {\small
-  ZZZZ %% \inputsnippets{erel3/All_notation.tex, erel3/All_with_all.tex}}
-\medskip
-Finally, the set of finite (edge) paths of length greater of equal to $1$, $\PATH^{\ge 1}\np{\OrientedGraph}$ defined in Equation~\eqref{def:epaths_gt1} is defined by
-{\small
-  \inputsnippets{erel3/EPath1.tex}
+  \inputsnippets{erel3/all_notation.tex,erel3/EPath1.tex}
 }
-Thus in the Coq implementation an (edge) path is given as a node path \texttt{p} satisfying a predicate \texttt{All (Lifp p)}.
+To conclude, at Coq level, an (edge) path is represented by its preimage by the lift operation, that is a sequence of 
+vertices which gives an edge path. 
 
 \medskip
 \noindent $\bullet$ Definition of \emph{\undirectedEdgePath}. To define
@@ -428,7 +427,7 @@ The set of finite \undirectedEdgePaths\footnote{%
     \cap \Sequence_{\ge 1}(\EDGEo)
     \text{ and satisfy } \UPATH^{\ge 1}\np{\OrientedGraph}  \subset \Sequence_{\ge 1}(\EDGEo) 
     \eqfinp
-    \label{def:epaths_gt1}
+    \label{def:eopaths_gt1}
 \end{align}
 An \emph{\undirectedEdgeSubPath} of the \undirectedEdgePath~$\UndirectedPath
 \in\UPATH\np{\OrientedGraph}$ is an \undirectedEdgePath\ obtained by a
