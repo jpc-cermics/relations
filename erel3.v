@@ -543,9 +543,38 @@ Section Lift2.
       Chrel (pa1,pa2) <-> pa1.2 = pa2.1.
   Proof. by []. Qed.
   
-  Definition BChains := [set spa : seq (T*T) | (Lift spa) [\in] Chrel]. 
+  Definition BChains := [set spa : seq (T*T) | (Lift spa) [\in] Chrel /\ size(spa) > 0]. 
 
-  Definition IChains := [set spa : seq (T*T) | exists p: seq T, Lift p = spa]. 
+  Definition IChains := [set spa : seq (T*T) | exists p: seq T, Lift p = spa /\ size(spa) > 0]. 
+
+
+  Lemma Lift_Chrel1: forall (n: nat),
+      (forall (spa : seq (T*T)), size(spa)= n.+2 
+                            -> (Lift spa) [\in] Chrel -> exists p: seq T, Lift p = spa).
+  Proof.
+    elim => [// | n Hr].
+    - move => spa H1 H2.
+      pose proof seq_rcrc0 H1 as [[x1 x2] [[y1 y2] H3]].
+      move: H2; rewrite H3 allL0' /Chrel /mkset => [[/= ->]].
+      by (exists [::x1;y1;y2]).
+    - move => spa H1 H2.
+      have H4: size(spa) > 1 by rewrite H1.
+      ZZZ pose proof seq_crc H4 as [q [[x1 x2] [[y1 y2] H5]]].
+      move: H2; rewrite H5 Lift_crc allset_cons => [[H6 H7]].
+      have H8: size (rcons q (y1, y2)) = n.+2
+        by rewrite H5 /= -addn1 -[in RHS]addn1 in H1; apply addIn in H1.
+      apply Hr in H7.
+      move: H7 => [p1 H7].
+      move => spa [pa1 pa2] H1 H2.
+    pose proof seq_c H1 as [q [[x1 x2] H3]]. 
+    move => H4.
+    move: (H4); rewrite H3 Lift_c allset_cons /Chrel /mkset => [[/= H5]].
+    move: H4;rewrite H3 Lift_c allset_cons => [[_ H6]].
+    
+    ZZZ
+    
+
+
 
   Lemma Lift_Chrel: forall (x y: T*T), 
       Chrel (x,y) <-> Lift [::x.1;x.2;y.2] = [::x;y].
