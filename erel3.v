@@ -132,19 +132,19 @@ Section Seq_lift.
 
   Section Lift_seq_props.
     
-    Lemma Lift_c: forall  (p:seq T) (x y: T),
+    Lemma Lift_c: forall (p:seq T) (x y: T),
         Lift [::x,y & p] = [::(x,y) & Lift [::y & p]].
     Proof.
       by move => p x y; split.
     Qed.
 
-    Lemma Lift_crc: forall  (p:seq T) (x y: T),
+    Lemma Lift_crc: forall (p:seq T) (x y: T),
         Lift (x::(rcons p y)) = (x,(head y p))::(Lift (rcons p y)).
     Proof.
       by move => p x y; rewrite headI Lift_c. 
     Qed.
     
-    Lemma Lift_rcrc: forall  (p:seq T) (x y: T),
+    Lemma Lift_rcrc: forall (p:seq T) (x y: T),
         Lift (rcons (rcons p x) y) =  rcons (Lift (rcons p x)) (x,y).
     Proof.
       have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
@@ -159,7 +159,7 @@ Section Seq_lift.
       by move => p x y;rewrite lastI Lift_rcrc.
     Qed.
 
-    Lemma Lift_sz: forall  (p:seq T),
+    Lemma Lift_sz: forall (p:seq T),
         size(p) > 1 -> size (Lift p) = (size p) -1.
     Proof.
       move => p.
@@ -215,39 +215,46 @@ Section Seq_lift.
          -rev_cons H1 Lift_c rev_cons map_rcons /pair_rev.
     Qed.
     
-    (** Left inverse of Lift when p is not the nil list *)
+    (** Left inverse of Lift when p is not the empty list *)
+
     Fixpoint UnLift (p: seq (T * T)) (x: T):= 
       match p with 
       | [::] => [::x]
       | [::(x,y) & p1 ] => [::x & UnLift p1 y]
       end.
-
+    
     Lemma UnLift_c: forall (p: seq (T * T)) (x y z: T),
         UnLift ((x, y) :: p) z = [::x & UnLift p y].
     Proof.
       by [].
     Qed.
 
-    (** sanity check *)
-
-    Lemma Lift_inv: forall (p : seq T) (x y: T),
-        UnLift (Lift [::x,y & p]) x = [::x,y & p].
+    Lemma Lift_inv1: forall (p : seq T) (x y z: T),
+        UnLift (Lift (x::(rcons p y))) z = (x::(rcons p y)).
     Proof.
-      by elim => [// | y p Hr x' x];rewrite Lift_c UnLift_c Hr.
-    Qed.
-
-    Lemma Lift_inv1: forall (p : seq T) (x y: T),
-        UnLift (Lift (x::(rcons p y))) x = (x::(rcons p y)).
-    Proof.
-      by elim => [// | y p Hr x' x];rewrite Lift_c UnLift_c Hr.
+      by elim => [// | y p Hr x' x z]; rewrite Lift_c UnLift_c Hr.
     Qed.
 
     Lemma Lift_inv2: forall (p : seq T) (x: T),
         p <> [::] ->  UnLift (Lift p) (head x p) = p.
     Proof.
-      elim => [ // | y p _ x _]. 
-      elim: p x y => [ //= | z p  Hr x y].
-      by rewrite Lift_c UnLift_c Hr.
+      move => p x'.
+      pose proof seq_cases p as [H1 | [[x H1] | [r [x [y H1]]]]];rewrite H1 //;
+      by move => _; apply Lift_inv1.
+    Qed.
+    
+    Lemma Lift_inv_sz2: forall (p : seq T),
+        (size(p) > 1) -> (forall (x:T), UnLift (Lift p) x = p).
+    Proof.
+      move => p.
+      pose proof seq_cases p as [H1 | [[x H1] | [r [x [y H1]]]]];rewrite H1 //.
+      by move => _ x1; apply Lift_inv1.
+    Qed.
+    
+    Lemma Lift_inv: forall (p : seq T) (x y z: T),
+        UnLift (Lift [::x,y & p]) z = [::x,y & p].
+    Proof.
+      by move => p x y z; apply Lift_inv_sz2.
     Qed.
     
     Lemma Lift_bc: forall (p : seq T) (x:T) (y: T*T) (q: seq (T*T)),
@@ -257,7 +264,7 @@ Section Seq_lift.
       by pose proof seq_cases p as [H1 | [[x H1] | [r [x [y H1]]]]];
         rewrite H1; [ | rewrite /= => [[?]] |rewrite Lift_c => [[?] _ _]].
     Qed.
-
+    
   End Lift_seq_props.
 
 End Seq_lift.
