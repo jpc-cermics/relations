@@ -46,7 +46,7 @@ Section Types.
 End Types.
 
 Section Utilities.
-
+  (** * some utilities on seq *)
   Variables (T: Type).
 
   Lemma seq_rc: forall (p: seq T), 
@@ -129,7 +129,7 @@ Section Utilities.
 End Utilities.
 
 Section Seq_lift. 
-  (** * Lift properties *) 
+  (** * Lift operation on sequences *) 
     
   Variables (T: Type).
   Definition pair_rev (tt: T * T):=  (tt.2, tt.1). 
@@ -195,6 +195,16 @@ Section Seq_lift.
       pose proof seq_c H3 as [q1 [x1 H4]]. 
       move: H2; rewrite H4 => [[H2 H5]].
       rewrite //=.
+    Qed.
+
+    Lemma Lift_szn: forall (p:seq T) (q:seq (T*T)) (n:nat),
+        Lift p = q -> size(q) > n -> size (p) > n.+1.
+    Proof.
+      move => p q n H1 H2.
+      have H3: size(p)> 1 by apply Lift_sz1 with q;[|apply leq_ltn_trans with n].
+      pose proof Lift_sz H3 as H4.
+      rewrite H1 in H4; rewrite H4 in H2.
+      by rewrite -ltn_predRL -subn1.
     Qed.
     
     Lemma Lift_last: forall (p:seq T) (x y: T),
@@ -494,15 +504,15 @@ Section allset_Lifted.
   
 End allset_Lifted.
 
-Section Seq_lift1. 
-  (** * Lift properties *) 
+Section Edge_paths.
+  (** * (edge) paths equivalent definitions with the help of all and Lift  *) 
     
   Variables (T: Type).
   
   (* The definition of (edge) paths of length greater or equal to one *)
   
   (* begin snippet EPath1:: no-out *) 
-  Definition EPath1 (S: relation T):=[set p | (Lift p) [\in] S /\ size(p) >= 2].
+  Definition EPath1 (S: relation T):=[set p: seq T| (Lift p) [\in] S /\ size(p) >= 2].
   (* end snippet EPath1 *)
   
   (* an equivalent definition not using the lift operation *)
@@ -517,7 +527,8 @@ Section Seq_lift1.
 
   Section EPath1_EPath1'.
 
-    Lemma Epath_equiv_rc: forall (S:relation T) (p: seq T) (x y: T),
+    (* intermediate Lemma *)
+    Lemma Epath_equiv_rc_: forall (S:relation T) (p: seq T) (x y: T),
         (Lift (x::(rcons p y))) [\in] S <-> EPath S (x::(rcons p y)).
     Proof.
       split.
@@ -538,7 +549,7 @@ Section Seq_lift1.
       pose proof seq_cases p as [H1 | [[x' H1] | [x' [y' [q H1]]]]];rewrite H1.
       by split => H;[apply pp_void | ].
       by split => H;[apply pp_two;[apply pp_void | left] | ].
-      by rewrite Epath_equiv_rc.
+      by rewrite Epath_equiv_rc_.
     Qed.
     
     Lemma Epath_eq: forall (S:relation T),  EPath1 S = EPath1' S.
@@ -552,7 +563,7 @@ Section Seq_lift1.
 
   End EPath1_EPath1'.
 
-End Seq_lift1.
+End Edge_paths.
 
 Section Lift2.
   (** * two ways to check edge paths *) 
@@ -562,36 +573,28 @@ Section Lift2.
   (* A relation on (T*T) (Ch for Chain) *)
   Definition Chrel  := [set ppa : (T * T)*(T * T) | (ppa.1).2 = (ppa.2).1].
 
-  Lemma Chrel_eq: forall (pa1 pa2: (T*T)),
-      Chrel (pa1,pa2) <-> pa1.2 = pa2.1.
+  Lemma Chrel_eq: forall (pa1 pa2: (T*T)), Chrel (pa1,pa2) <-> pa1.2 = pa2.1.
   Proof. by []. Qed.
-  
-  Definition BChains := [set spa : seq (T*T) | (Lift spa) [\in] Chrel /\ size(spa) > 0]. 
 
-  Definition IChains := [set spa : seq (T*T) | (exists p: seq T, Lift p = spa) /\ size(spa) > 0]. 
-  
-  (** sanity check: lifted sequence  *)
-  Lemma Lift_and_Chrel: forall (p:seq T) (x y: T),
-      EPath Chrel (Lift [::x, y & p]).
-  Proof.
-    elim => [ x y | y p Hr z x];first by constructor;constructor.
-    by rewrite Lift_c;apply pp_two;[ | right; exists (x,y), (Lift [::y &p])].
-  Qed.
-  
   Lemma Lift_Lift: forall (p:seq T), (Lift (Lift p)) [\in] Chrel. 
   Proof.
     move => p. 
     pose proof seq_cases p as [H1 | [[x H1] | [q [x [y H1]]]]].
-    by rewrite H1. 
-    by rewrite H1. 
+    (* p = [::] *) by rewrite H1. 
+    (* p = [::x] *) by rewrite H1. 
+    (* p = x::(rcons q y) *)
     have H2: size(p) > 1 by rewrite H1 /= size_rcons.
     pose proof seq_cc H2 as [q1 [x1 [x2 H3]]].
-    by rewrite H3 Epath_equiv; apply Lift_and_Chrel.
+    rewrite H3 Epath_equiv; clear H1 H2 H3.
+    elim: q1 x1 x2 => [ x' y' | y' p' Hr z' x'];first by constructor;constructor.
+    by rewrite Lift_c;apply pp_two;[ | right; exists (x',y'), (Lift [::y' &p'])].
   Qed.
+    
+  Definition BChains := [set spa | (Lift spa) [\in] Chrel /\ size(spa) > 0]. 
+  Definition IChains := [set spa | (exists p: seq T, Lift p = spa) /\ size(spa) > 0]. 
   
-  Lemma Lift_Chrel1: forall (n: nat),
-      (forall (spa : seq (T*T)), size(spa)= n.+2 
-                            -> (Lift spa) [\in] Chrel -> exists p: seq T, Lift p = spa).
+  Lemma Lift_Chrel_n_imp: forall (n: nat) (spa : seq (T*T)),
+      size(spa)= n.+2 -> (Lift spa) [\in] Chrel -> exists p: seq T, Lift p = spa.
   Proof.
     elim => [// | n Hr].
     - move => spa H1 H2.
@@ -616,15 +619,14 @@ Section Lift2.
       by have -> : x3 = y1 by move: H7; rewrite H11 Lift_c => [[H7]]. 
   Qed.
   
-  Lemma Lift_Chrel2: forall (n: nat) (spa : seq (T*T)),
+  Lemma Lift_Chrel_n_iff: forall (n: nat) (spa : seq (T*T)),
       size(spa)= n.+2 -> ((Lift spa) [\in] Chrel <-> exists p: seq T, Lift p = spa).
   Proof.
-    move => n spa H1;split;first by apply Lift_Chrel1 with n.
+    move => n spa H1;split;first by apply Lift_Chrel_n_imp with n.
     by move => [p <-]; apply Lift_Lift.
   Qed.
-
-
-  Lemma Lift_Chrel3: forall (spa : seq (T*T)),
+  
+  Lemma Lift_Chrel: forall (spa : seq (T*T)),
       size(spa) > 1 -> ((Lift spa) [\in] Chrel <-> exists p: seq T, Lift p = spa).
   Proof.
     move => spa H1.
@@ -633,52 +635,11 @@ Section Lift2.
                   pose proof ltn_predK H2;rewrite -H;apply succn_inj.
     have H2: (size(spa)).-2 >= 0 by [].
     split => [H3 | [p <-]].
-    - apply Lift_Chrel1 with (size(spa)).-2.
-      by apply H0.
-      by [].
-    - by apply Lift_Lift.
-  Qed.
-
-  Lemma Lift_Chrel: forall (x y: T*T), 
-      Chrel (x,y) <-> Lift [::x.1;x.2;y.2] = [::x;y].
-  Proof.
-    move => [x x'] [y y'].
-    by split;[ rewrite /Chrel /= =>[->] | rewrite /Lift /=; move => [->]].
-  Qed.
-
-  Lemma Lift_Chrel': forall (x y: T*T), 
-     Chrel (x,y) <-> exists p, Lift p = [::x;y].
-  Proof.
-    have H3: forall (z r: T*T), [::z;r]= rcons [::z] r by[].
-    move => [x x'] [y y'].
-    split;rewrite Chrel_eq /=.
-    by move => ->;(exists [::x;y;y']).
-    move => [p H0].
-    pose proof seq_cases p as [H1 | [[x1 H1] | [q [x1 [y1 H1]]]]]. 
-    - by rewrite H1 in H0.
-    - by rewrite H1 in H0.
-    - pose proof seq_cases q as [H2 | [[x2 H2] | [r [x2 [y2 H2]]]]].
-      + by move: H0; rewrite H1 H2 /= => H0. 
-      + by move: H0; rewrite H1 H2 /= => [[_ -> -> _]].
-      + move: H0; rewrite H1 H2 => H0.
-        rewrite rcons_cons Lift_c Lift_crc in H0.
-        move: H0 => [_ _ _ _ H0].
-        rewrite Lift_rcrc in H0.
-        have H4: size (rcons (Lift (rcons r y2)) (y2, y1)) > 0 by rewrite size_rcons.
-        by rewrite H0 in H4.
-  Qed.
-                         
-  Lemma Lift_Chrel'': forall (p : seq T) (x:T) (y z: T*T) (q: seq (T*T)),
-      Lift p = (y :: rcons q z) -> 
-      Lift [::x & p] = [::(x,y.1), y & rcons q z].
-  Proof.
-    elim => [x y z q // | r p Hr x y z q H1].
-    rewrite Lift_c H1.
-    apply Lift_bc in H1.
-    by rewrite H1.
+    by apply Lift_Chrel_n_imp with (size(spa)).-2;[apply H0 |].
+    by apply Lift_Lift.
   Qed.
   
-  Lemma test2: BChains = IChains.
+  Lemma BChains_eq_IChains: BChains = IChains.
   Proof.
     rewrite predeqE /BChains /IChains /mkset => spa.
     pose proof seq_cases spa as [H1 | [[x H1] | [q [x [y H1]]]]].
@@ -686,7 +647,7 @@ Section Lift2.
     - by rewrite H1 /=;move: x H1=> [x y] H1;split=> [_|H2];[split;[exists([::x ;y])|]|].
     - rewrite H1.
       have H2: size(spa) > 1. by rewrite H1 /= size_rcons.
-      pose proof Lift_Chrel3 H2 as H3.
+      pose proof Lift_Chrel H2 as H3.
       split => [[H4 H5] | [[p H4] H5]].
       + rewrite H1 in H3. apply H3 in H4. move: H4 => [p H4]. split. by (exists p). by [].
       + split. 
@@ -694,6 +655,32 @@ Section Lift2.
         by rewrite /= size_rcons. 
   Qed.
   
+  (* begin snippet EPath2:: no-out *) 
+  Definition EPath2 (S: relation T):=
+    [set spa | spa [\in] S /\ (Lift spa) [\in] Chrel /\ size(spa) > 1].
+  (* end snippet EPath2 *)
+
+  (* begin snippet EPath3:: no-out *) 
+  Definition EPath3 (S: relation T):=
+    [set spa | spa [\in] S /\ (exists p, (Lift p) =spa /\ size(p) > 2)].
+  (* end snippet EPath3 *)
+
+  Lemma EPath_p1: forall (S: relation T), EPath2 S = EPath3 S.
+  Proof.
+    move => S. rewrite /EPath2 /EPath3 /mkset predeqE => spa.
+    split. 
+    - move => [H1 [H2 H3]]. split; first by [].
+      have [p H4]: exists p: seq T, Lift p = spa by apply Lift_Chrel.
+      exists p; split. by [].
+      apply Lift_szn with spa. by []. 
+      by apply leq_ltn_trans with 1.  
+    - move => [H1 [p [H2 H3]]].
+      split.  by []. split. rewrite -H2. apply Lift_Lift.
+      have H4: size (Lift p) = (size p) -1 
+        by apply Lift_sz;apply leq_ltn_trans with 2. 
+      by rewrite H2 in H4;rewrite H4 subn1 ltn_predRL.
+  Qed.
+    
 End Lift2.
 
 Section Seq_liftO. 
