@@ -94,6 +94,13 @@ Section Utilities.
     by exists q,y,x;rewrite H3 H5.
   Qed.
   
+  Lemma seq_1: forall (p: seq T), 
+      size p = 1 -> exists (x:T), p = [::x].
+  Proof.
+    elim => [// | x p H1 /= H2].
+    by (have -> : p = [::] by apply size0nil; apply succn_inj in H2);(exists x).
+  Qed. 
+  
   Lemma seq_rcrc0: forall (p: seq T), 
       size p = 2 -> exists (x y:T), p = [::x;y].
   Proof.
@@ -679,6 +686,29 @@ Section Lift2.
       have H4: size (Lift p) = (size p) -1 
         by apply Lift_sz;apply leq_ltn_trans with 2. 
       by rewrite H2 in H4;rewrite H4 subn1 ltn_predRL.
+  Qed.
+
+  (* begin snippet EPath2x:: no-out *) 
+  Definition EPath2' (S: relation T):=
+    [set spa | spa [\in] S /\ (Lift spa) [\in] Chrel /\ size(spa) = 1].
+  (* end snippet EPath2x *)
+
+  (* begin snippet EPath3x:: no-out *) 
+  Definition EPath3' (S: relation T):=
+    [set spa | spa [\in] S /\ (exists p, (Lift p) =spa /\ size(p) = 2)].
+  (* end snippet EPath3x *)
+
+  Lemma EPath_p2: forall (S: relation T), EPath2' S = EPath3' S.
+  Proof.
+    move => S. rewrite /EPath2 /EPath3 /mkset predeqE => spa.
+    split. 
+    - move => [H1 [H2 H3]]. split; first by [].
+      have [[x1 x2] H4]: exists x, spa =[::x] by apply seq_1.
+      by rewrite H4;(exists [::x1;x2]);split.
+    - move => [H1 [p [H2 H3]]].
+      split. by [].
+      have [x [y H4]]: exists (x y:T), p = [::x;y] by apply seq_rcrc0.
+      by rewrite -H2 H4 /=.
   Qed.
     
 End Lift2.
