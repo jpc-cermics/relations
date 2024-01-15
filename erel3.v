@@ -178,62 +178,6 @@ Section Seq_lift.
     Proof.
       by move => p x y;rewrite lastI Lift_rcrc.
     Qed.
-
-    Lemma Lift_sz: forall (p:seq T),
-        size(p) > 1 -> size (Lift p) = (size p) -1.
-    Proof.
-      move => p H1;pose proof seq_cc H1 as [q [x [y H2]]];rewrite H2;clear H2. 
-      elim: q x y => [x y // | z q Hr x y].
-      have H2: size ((x, y) :: Lift [:: y, z & q]) = 1+ size(Lift [:: y, z & q]) by [].
-      by rewrite Hr in H2;rewrite Lift_c H2 /= addnC [RHS]subn1 subn1 addn1 /=.
-    Qed.
-    
-    Lemma Lift_sz1: forall (p:seq T) (q:seq (T*T)),
-        Lift p = q -> size(q) > 0 -> size (p) > 1.
-    Proof.
-      move => p q.
-      elim: p q => [q <- H1 // | x p Hr q].
-      elim: p q Hr => [q _ <- //=  | x' p Hr q H1].
-      rewrite Lift_c =>  H2 H3.
-      pose proof seq_c H3 as [q1 [x1 H4]]. 
-      move: H2; rewrite H4 => [[H2 H5]].
-      rewrite //=.
-    Qed.
-
-    Lemma Lift_sz1': forall (p:seq T) (q:seq (T*T)),
-        Lift p = q -> size (p) > 1 -> size(q) > 0.
-    Proof.
-      move => p q H1 H2.
-      pose proof Lift_sz H2 as H3.
-      rewrite -H1 H3 -ltnS subn1.
-      by have ->: (size p).-1.+1 = size p by apply: ltn_predK H2.
-    Qed.
-    
-    Lemma Lift_szn': forall (p:seq T) (q:seq (T*T)) (n:nat),
-        Lift p = q -> (size(q) = n.+1 <-> size (p) = n.+2).
-    Proof.
-      move => p q n H1. 
-      split => H2.
-      - have H3: size(q)> 0 by rewrite H2.
-        have H4: size(p)> 1 by apply: (Lift_sz1 H1).
-        move: (H4) => /Lift_sz H4'.
-        move: H2;rewrite -H1 H4' => H2.
-        have H5: (size p -1).+1 = size(p) by rewrite subn1; apply: (ltn_predK H4).
-        by rewrite -H5 H2.
-      - have H3: size(p)> 1 by rewrite H2.
-        pose proof (Lift_sz H3) as H4.
-        by move: H4; rewrite H1 H2 subn1 /=.
-    Qed.
-    
-    Lemma Lift_szn: forall (p:seq T) (q:seq (T*T)) (n:nat),
-        Lift p = q -> size(q) > n -> size (p) > n.+1.
-    Proof.
-      move => p q n H1 H2.
-      have H3: size(p)> 1 by apply Lift_sz1 with q;[|apply leq_ltn_trans with n].
-      pose proof Lift_sz H3 as H4.
-      rewrite H1 in H4; rewrite H4 in H2.
-      by rewrite -ltn_predRL -subn1.
-    Qed.
     
     Lemma Lift_last: forall (p:seq T) (x y: T),
         last (x, head y p) (Lift (rcons p y)) = (last x p, y).
@@ -325,6 +269,47 @@ Section Seq_lift.
       move => p x' [y1 y2] q.
       by pose proof seq_cases p as [H1 | [[x H1] | [r [x [y H1]]]]];
         rewrite H1; [ | rewrite /= => [[?]] |rewrite Lift_c => [[?] _ _]].
+    Qed.
+    
+    Lemma Lift_sz: forall (p:seq T),
+        size(p) > 1 -> size (Lift p) = (size p) -1.
+    Proof.
+      move => p H1;pose proof seq_cc H1 as [q [x [y H2]]];rewrite H2;clear H2. 
+      elim: q x y => [x y // | z q Hr x y].
+      have H2: size ((x, y) :: Lift [:: y, z & q]) = 1+ size(Lift [:: y, z & q]) by [].
+      by rewrite Hr in H2;rewrite Lift_c H2 /= addnC [RHS]subn1 subn1 addn1 /=.
+    Qed.
+
+    Lemma Lift_sz1: forall (p:seq T),
+        size(Lift p) > 0 -> size (p) > 1.
+    Proof.
+      by elim => [// | x p ]; elim: p x => [// | x p Hr y H1 // H2].
+    Qed.
+    
+    Lemma Lift_szn': forall (p:seq T) (q:seq (T*T)) (n:nat),
+        Lift p = q -> (size(q) = n.+1 <-> size (p) = n.+2).
+    Proof.
+      move => p q n H1. 
+      split => H2.
+      - have H3: size(q)> 0 by rewrite H2.
+        have H4: size(p)> 1 by apply Lift_sz1;rewrite H1.
+        move: (H4) => /Lift_sz H4'.
+        move: H2;rewrite -H1 H4' => H2.
+        have H5: (size p -1).+1 = size(p) by rewrite subn1; apply: (ltn_predK H4).
+        by rewrite -H5 H2.
+      - have H3: size(p)> 1 by rewrite H2.
+        pose proof (Lift_sz H3) as H4.
+        by move: H4; rewrite H1 H2 subn1 /=.
+    Qed.
+
+    Lemma Lift_szn: forall (p:seq T) (q:seq (T*T)) (n:nat),
+        Lift p = q -> size(q) > n -> size (p) > n.+1.
+    Proof.
+      move => p q n H1 H2.
+      have H3: size(p)> 1 by apply Lift_sz1;rewrite H1;apply leq_ltn_trans with n.
+      pose proof Lift_sz H3 as H4.
+      rewrite H1 in H4; rewrite H4 in H2.
+      by rewrite -ltn_predRL -subn1.
     Qed.
     
   End Lift_seq_props.
@@ -638,9 +623,7 @@ Section Lift2.
         by rewrite H5 /= -addn1 -[in RHS]addn1 in H1; apply addIn in H1.
       apply Hr in H7;last by [].
       move: H7 => [p1 H7].
-      pose proof Lift_sz1 H7 as H9.
-      have H10:  0 < size ((y1, y2) :: q) by [].
-      apply H9 in H10.
+      have H10: size(p1) > 1 by apply Lift_sz1;rewrite H7.
       pose proof seq_cc H10 as [q3 [x3 [y3 H11]]].
       exists [::x1,x3,y3& q3].
       rewrite Lift_c -H11 H7. 
