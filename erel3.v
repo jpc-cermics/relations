@@ -95,23 +95,24 @@ Section Utilities.
   Qed.
   
   Lemma seq_1: forall (p: seq T), 
-      size p = 1 -> exists (x:T), p = [::x].
+      size p = 1 <-> exists (x:T), p = [::x].
   Proof.
-    elim => [// | x p H1 /= H2].
+    split; last by move => [x H1];rewrite H1.
+    elim:p => [// | x p H1 /= H2].
     by (have -> : p = [::] by apply size0nil; apply succn_inj in H2);(exists x).
   Qed. 
   
   Lemma seq_rcrc0: forall (p: seq T), 
-      size p = 2 -> exists (x y:T), p = [::x;y].
+      size p = 2 <-> exists (x y:T), p = [::x;y].
   Proof.
-    move => p H1.
-    have H2: 1 < size p by rewrite -H1.
-    pose proof seq_rcrc H2 as [q [x [y H3]]].
-    move: H1;rewrite H3 size_rcons size_rcons => /eqP H1.
-    have /nilP H4: size q == 0 by [].
-    by exists x,y;rewrite H4.
+    split => [H1 |[x [y H1]]];last by rewrite H1.
+    - have H2: 1 < size p by rewrite -H1.
+      pose proof seq_rcrc H2 as [q [x [y H3]]].
+      move: H1;rewrite H3 size_rcons size_rcons => /eqP H1.
+      have /nilP H4: size q == 0 by [].
+      by exists x,y;rewrite H4.
   Qed.
-
+  
   Lemma seq_cases: forall (p: seq T), 
       p=[::] \/ (exists x, p=[::x]) \/ exists (q:seq T), exists (x y:T), p=x::(rcons q y).
   Proof.
@@ -181,17 +182,12 @@ Section Seq_lift.
     Lemma Lift_sz: forall (p:seq T),
         size(p) > 1 -> size (Lift p) = (size p) -1.
     Proof.
-      move => p.
-      pose proof seq_cases p as [H1 | [[x H1] | [q [x [y H1]]]]];rewrite H1.
-      - by [].
-      - by [].
-      - clear H1; elim: q x => [// | z q Hr x  _].
-        rewrite Lift_crc 1![LHS]/size -/size. 
-        have H1: 1 < size (z :: rcons q y) by rewrite 1!/size -/size size_rcons.
-        move: H1 => /Hr H1.
-        by rewrite rcons_cons H1 2!subn1 /=.
+      move => p H1;pose proof seq_cc H1 as [q [x [y H2]]];rewrite H2;clear H2. 
+      elim: q x y => [x y // | z q Hr x y].
+      have H2: size ((x, y) :: Lift [:: y, z & q]) = 1+ size(Lift [:: y, z & q]) by [].
+      by rewrite Hr in H2;rewrite Lift_c H2 /= addnC [RHS]subn1 subn1 addn1 /=.
     Qed.
-
+    
     Lemma Lift_sz1: forall (p:seq T) (q:seq (T*T)),
         Lift p = q -> size(q) > 0 -> size (p) > 1.
     Proof.
@@ -204,6 +200,31 @@ Section Seq_lift.
       rewrite //=.
     Qed.
 
+    Lemma Lift_sz1': forall (p:seq T) (q:seq (T*T)),
+        Lift p = q -> size (p) > 1 -> size(q) > 0.
+    Proof.
+      move => p q H1 H2.
+      pose proof Lift_sz H2 as H3.
+      rewrite -H1 H3 -ltnS subn1.
+      by have ->: (size p).-1.+1 = size p by apply: ltn_predK H2.
+    Qed.
+    
+    Lemma Lift_szn': forall (p:seq T) (q:seq (T*T)) (n:nat),
+        Lift p = q -> (size(q) = n.+1 <-> size (p) = n.+2).
+    Proof.
+      move => p q n H1. 
+      split => H2.
+      - have H3: size(q)> 0 by rewrite H2.
+        have H4: size(p)> 1 by apply: (Lift_sz1 H1).
+        move: (H4) => /Lift_sz H4'.
+        move: H2;rewrite -H1 H4' => H2.
+        have H5: (size p -1).+1 = size(p) by rewrite subn1; apply: (ltn_predK H4).
+        by rewrite -H5 H2.
+      - have H3: size(p)> 1 by rewrite H2.
+        pose proof (Lift_sz H3) as H4.
+        by move: H4; rewrite H1 H2 subn1 /=.
+    Qed.
+    
     Lemma Lift_szn: forall (p:seq T) (q:seq (T*T)) (n:nat),
         Lift p = q -> size(q) > n -> size (p) > n.+1.
     Proof.
@@ -605,7 +626,7 @@ Section Lift2.
   Proof.
     elim => [// | n Hr].
     - move => spa H1 H2.
-      pose proof seq_rcrc0 H1 as [[x1 x2] [[y1 y2] H3]].
+      rewrite seq_rcrc0 in H1;move: H1 => [[x1 x2] [[y1 y2] H3]].
       move: H2; rewrite H3 allL0' /Chrel /mkset => /= [->].
       by (exists [::x1;y1;y2]).
     - move => spa H1 H2.

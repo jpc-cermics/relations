@@ -479,7 +479,7 @@ Section Active_path_implies_Aw_s.
     elim. 
     - move => p x y H1 H2.
       have H3: (1 < size p) by rewrite H1.
-      pose proof seq_rcrc0 H1 as [[[u v] o1] [[[z t] o2] H4]].
+      rewrite seq_rcrc0 in H1;move: H1 => [[[u v] o1] [[[z t] o2] H4]].
       rewrite H4 in H2.
       pose proof Active_path_cc_ht H2 as [H5 H6].
       rewrite /last /= in H5 H6.
