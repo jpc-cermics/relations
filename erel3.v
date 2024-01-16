@@ -286,30 +286,33 @@ Section Seq_lift.
       by elim => [// | x p ]; elim: p x => [// | x p Hr y H1 // H2].
     Qed.
     
-    Lemma Lift_szn': forall (p:seq T) (q:seq (T*T)) (n:nat),
-        Lift p = q -> (size(q) = n.+1 <-> size (p) = n.+2).
+    Lemma Lift_szn': forall (p:seq T) (n:nat),
+        size(Lift p) = n.+1 <-> size (p) = n.+2.
     Proof.
-      move => p q n H1. 
-      split => H2.
-      - have H3: size(q)> 0 by rewrite H2.
-        have H4: size(p)> 1 by rewrite -Lift_sz2 H1.
-        move: (H4) => /Lift_sz H4'.
-        move: H2;rewrite -H1 H4' => H2.
-        have H5: (size p -1).+1 = size(p) by rewrite subn1; apply: (ltn_predK H4).
-        by rewrite -H5 H2.
-      - have H3: size(p)> 1 by rewrite H2.
+      move => p n.
+      split => H1.
+      - have H2: size(Lift p) > 0 by rewrite H1.
+        have H3: size(p) > 1 by rewrite -Lift_sz2.
+        move: (H3) => /Lift_sz H4.
+        have H5: ((size p).-1)%N  = n.+1 by rewrite -subn1 -H4.
+        have H6: (size p).-1.+1 = size(p) by apply: (ltn_predK H3).
+        by rewrite -H5 -[in LHS]H6.
+      - have H3: size(p)> 1 by rewrite H1.
         pose proof (Lift_sz H3) as H4.
-        by move: H4; rewrite H1 H2 subn1 /=.
+        by move: H4;rewrite H1 subn1 /=.
     Qed.
-
-    Lemma Lift_szn: forall (p:seq T) (q:seq (T*T)) (n:nat),
-        Lift p = q -> size(q) > n -> size (p) > n.+1.
+    
+    Lemma Lift_szn: forall (p:seq T) (n:nat),
+        size(Lift p) > n <-> size (p) > n.+1.
     Proof.
-      move => p q n H1 H2.
-      have H3: size(p)> 1 by rewrite -Lift_sz2 H1;apply leq_ltn_trans with n.
-      pose proof Lift_sz H3 as H4.
-      rewrite H1 in H4; rewrite H4 in H2.
-      by rewrite -ltn_predRL -subn1.
+      move => p n.
+      split => H1.
+      - have H3: size(p)> 1 by rewrite -Lift_sz2 ;apply leq_ltn_trans with n.
+        pose proof Lift_sz H3 as H4.
+        by move: H1;rewrite H4 -ltn_predRL -subn1.
+      - have H3: size(p)> 1 by apply leq_ltn_trans with n.+1.
+        pose proof Lift_sz H3 as H4.
+        by rewrite H4 subn1 ltn_predRL.
     Qed.
     
   End Lift_seq_props.
@@ -706,8 +709,7 @@ Section Lift2.
     - move => [H1 [H2 H3]]. split; first by [].
       have [p H4]: exists p: seq T, Lift p = spa by apply Lift_Chrel.
       exists p; split. by [].
-      apply Lift_szn with spa. by []. 
-      by apply leq_ltn_trans with 1.  
+      by rewrite -Lift_szn H4.
     - move => [H1 [p [H2 H3]]].
       split.  by []. split. rewrite -H2. apply Lift_Lift.
       have H4: size (Lift p) = (size p) -1 
