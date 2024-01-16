@@ -141,7 +141,7 @@ Section Seq_lift.
     
   Variables (T: Type).
   Definition pair_rev (tt: T * T):=  (tt.2, tt.1). 
-
+  
   (* begin snippet Lift:: no-out *)  
   Fixpoint Lift (p: seq T): seq (T * T) := 
     match p with 
@@ -320,6 +320,10 @@ Section allset.
   (** * utility lemmata for seq function all used with sets*)
 
   Variables (T: Type) (X Y: set T) (p q: seq T) (x:T).
+
+  (* begin snippet Sn:: no-out *)  
+  Definition Sn (T:Type) (n: nat) (D: set T) := [set p | p [\in] D /\ size(p)=n].
+  (* end snippet Sn *)
   
   Lemma allsetP: X x /\ p [\in] X <-> (x \in X) && (p [\in] X).
   Proof.
@@ -584,7 +588,9 @@ Section Lift2.
   Variables (T: Type).
 
   (* A relation on (T*T) (Ch for Chain) *)
+  (* begin snippet Chrel:: no-out *)  
   Definition Chrel  := [set ppa : (T * T)*(T * T) | (ppa.1).2 = (ppa.2).1].
+  (* end snippet Chrel *)  
 
   Lemma Chrel_eq: forall (pa1 pa2: (T*T)), Chrel (pa1,pa2) <-> pa1.2 = pa2.1.
   Proof. by []. Qed.
@@ -602,9 +608,14 @@ Section Lift2.
     elim: q1 x1 x2 => [ x' y' | y' p' Hr z' x'];first by constructor;constructor.
     by rewrite Lift_c;apply pp_two;[ | right; exists (x',y'), (Lift [::y' &p'])].
   Qed.
-    
+
+  (* begin snippet BChains:: no-out *)  
   Definition BChains := [set spa | (Lift spa) [\in] Chrel /\ size(spa) > 0]. 
-  Definition IChains := [set spa | (exists p: seq T, Lift p = spa) /\ size(spa) > 0]. 
+  (* end snippet BChains:: no-out *)  
+  Definition IChains' := [set spa | (exists p: seq T, Lift p = spa) /\ size(spa) > 0]. 
+  (* begin snippet IChains:: no-out *)  
+  Definition IChains := [set spa | exists p: seq T, Lift p = spa /\ size(p) > 1]. 
+  (* end snippet IChains *)  
   
   Lemma Lift_Chrel_n_imp: forall (n: nat) (spa : seq (T*T)),
       size(spa)= n.+2 -> (Lift spa) [\in] Chrel -> exists p: seq T, Lift p = spa.
@@ -650,9 +661,9 @@ Section Lift2.
     by apply Lift_Lift.
   Qed.
   
-  Lemma BChains_eq_IChains: BChains = IChains.
+  Lemma BChains_eq_IChains: BChains = IChains'.
   Proof.
-    rewrite predeqE /BChains /IChains /mkset => spa.
+    rewrite predeqE /BChains /IChains' /mkset => spa.
     pose proof seq_cases spa as [H1 | [[x H1] | [q [x [y H1]]]]].
     - by rewrite H1 /=;split => [[_ H2 //]| [[p _] H3] //].
     - by rewrite H1 /=;move: x H1=> [x y] H1;split=> [_|H2];[split;[exists([::x ;y])|]|].
@@ -664,6 +675,16 @@ Section Lift2.
       + split. 
         rewrite -H1 H3. exists p. by rewrite H4. 
         by rewrite /= size_rcons. 
+  Qed.
+
+  Lemma IChains_eq_IChains': IChains' = IChains.
+  Proof.
+    rewrite predeqE /IChains /IChains' /mkset => spa.
+    split. 
+    by move => [[p H1] H2];exists p; split;[ | apply Lift_sz1; rewrite H1].
+    move => [p [H1 H2]];split; first by (exists p).
+    by pose proof  Lift_sz H2 as H3;move: H3;
+    rewrite H1 => [->];rewrite subn1 ltn_predRL.
   Qed.
   
   (* begin snippet EPath2:: no-out *) 

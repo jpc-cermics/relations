@@ -195,25 +195,56 @@ An \emph{equivalence relation} is a reflexive, symmetric and transitive binary
 relation. XXXX \cite{Gonthier-Mahboubi-Tassi:2016} \cite{MathComp:2022}
 \inputsnippets{ssrel/relation.tex,ssrel/clos_refl_trans.tex,ssrel/clos_rt.tex}
 
+\subsection{Sequences sets and relations}
+\label{sec:sequences}
+\newcommand{\fullset}{T}
 
-\subsubsection{Notations} 
+To formalization in Coq graph paths we use sequences (defined in mathcomp
+\texttt{seq.v}) combined with set formalization (defined in mathcomp
+\texttt{classical\_sets}). To describe the formalization we introduce some
+notations. We consider a set $\fullset$, and for any set ${\Set} \subset \fullset$, we denote by
+$\Sequence_n(\Set)$ the set of sequences of length $n$ of elements of the
+set~$\Set$, $\Sequence_n(\Set)= \SetProd{\Set}{n}$ and by
+$\Sequence_{\ge n}(\Set)$ the set of finite sequences of length greater or equal
+to $n$ of elements of the set $\Set$, that is the disjoint union
+$\sqcup_{k\ge n} \Sequence_k(\Set)$.
 
-\begin{itemize}
-  \item graph~\( \npOrientedGraph \).
-  \item Relations on $\VERTEX$ are defined with caligraphic letters as in~${\cal R}$
-  \item Product space $\VERTEX_{(2)} = \VERTEX{\times}\VERTEX$. $\VERTEX_{(4)} = (\VERTEX{\times}\VERTEX)_{(2)}$
-  \item Relations on $\VERTEX$ are subsets of $\VERTEX_{(2)}$ and denoted as~${\cal R}_{(2)}$. Note that
-    $\VERTEX_{(2)}$ is indeed also a relation on $\VERTEX$.
-  \item Sequences ${\mathbb S}[\VERTEX]$, with also ${\mathbb S}_{\ge k}[\VERTEX]$ and ${\mathbb S}_{k}[\VERTEX]$.
-  \item Sequences ${\mathbb S}[\VERTEX_{(2)}]$, with also ${\mathbb S}_{\ge k}[\VERTEX_{2}]$ and ${\mathbb S}_{k}[\VERTEX_{(2)}]$.
-  \item Lift operator $\Lift: {\mathbb S}[\VERTEX] \to {\mathbb S}[\VERTEX{\times}\VERTEX]$
-  \item Lift operator $\Lift_{(2)}: {\mathbb S}[\VERTEX_{(2)}] \to {\mathbb S}[(\VERTEX{\times}\VERTEX)_{(2)}]$.
-  \item Given a set $\Set$ and a subset $\Setbis$ of $\Set$
-    Then ${\mathbb S}[\Set,\Setbis]$ is the subset of ${\mathbb S}[\Set]$.
-  \item Given a set $\Set$ and a relation ${\cal R}$ on $\Set$.
-    Then, ${\mathbb L}[\Set;{\cal R}]= {\cal L}\bp{{\mathbb S}[\Set]} \cap {\mathbb S}[\Set_{(2)},\cal R]$
+\paragraph{(Coq)} The sets $\Sequence_{\ge n}(\fullset)$ and $\Sequence_{= n}(\fullset)$
+ are implemented in Coq using sequences of elements of type \texttt{T} 
+and the restriction to elements in a subset \texttt{(D: set T)} is obtained using the function \texttt{all}. 
+As an example $\Sequence_{= n}(T)$ is formalized as follows
+{\small \inputsnippets{erel3/all_notation.tex,erel3/Sn.tex}}
 
-\end{itemize}
+Now, for $n\ge 2$, we consider a lift operator
+\[\Lift_n: \Sequence_{n}(\fullset)\to \Sequence_{n{-}1}(\fullset{\times}\fullset)\eqfinv\]
+transforming a sequence of elements of
+$\fullset$ of length $n$
+into a sequence of oriented pairs in $\fullset{\times}\fullset$ of length $n{-}1$ as follows 
+\begin{align}
+  \forall (\vertex_1,\dots, \vertex_n)\in \SetProd{\fullset}{n}
+  \eqsepv
+  \Lift_n(\vertex_1,\dots, \vertex_n) = \bp{\np{\vertex_1, \vertex_2},\np{\vertex_2, \vertex_3},\dots,
+  \np{\vertex_{n-1},\vertex_n}}
+  \eqfinp
+\end{align}
+Then, using the sequence of mapping $\nseqa{\Lift_n}{n\ge 2}$ we define a lift operator
+\[ \Lift: \Sequence_{> 1}(\fullset) \to \Sequence_{> 0}(\fullset{\times}\fullset)
+  \eqfinv\] such that for all $n > 1$ the restriction of $\Lift$ to the set
+$\Sequence_{n}(\fullset)$ coincide with the $\Lift_n$ mapping, that is
+${\Lift}_{\vert\Sequence_n(\fullset)}= \Lift_n$.
+
+\paragraph{(Coq)} The lift operator $\Lift$ is implemented in Coq as a recursive mapping denoted
+\texttt{Lift}: {\small \inputsnippets{erel3/Lift.tex} }
+
+We have two ways to characterize the set $\Lift\bp{ \Sequence_{>1}(\fullset)}$. 
+First as the image through the lift operator of the set $\Sequence_{> 1}(\fullset)$ 
+{\small \inputsnippets{erel3/IChains.tex}}
+Second, as a preimage as $\Lift^{-1}\bp{ \Sequence_{> 1}(Ch)}$
+{\small \inputsnippets{erel3/BChains.tex}}
+using a relation \texttt{Chrel} on the set $T{\times}T$  defined by 
+{\small \inputsnippets{erel3/Chrel} 
+
+These two sets are proved to be the same in \texttt{Lemma XXX}.
 
 \subsubsection{Extended-oriented paths in a (directed simple) graph (permitting loops)}
 
@@ -238,7 +269,6 @@ hence a graph (in our sense) is not a multigraph (in graph theory);
 loops are not excluded (since we do not impose $\Delta \cap \EDGE=\emptyset$).
 Hence, what we call a graph would be called a directed simple graph permitting
 loops in graph theory. 
-
 
 To define blocked and active \undirectedEdgePaths\ relative to the
 graph~\( \npOrientedGraph \), we need to fix additional vocabulary and
@@ -265,41 +295,28 @@ or, equivalently, if
 \( \EDGE \cap \Converse{\EDGE}=\emptyset \), that is, 
 when no two edges have the same endpoints.
 
+\paragraph{(Coq)} A graph $(\VERTEX,\EDGE)$ is given in Coq by a type \texttt{(T: Type)} and a relation on
+\texttt{T} which is a set in the product type \texttt{set T*T}, that is
+$(\EDGE:\texttt{set T*T})$. Thus, the (classical) set definition of mathcomp
+analysis \texttt{classical\_sets.v} is used to formalize a graph.
+\medskip
+
 In graph theory, one finds the notions of path, chain and walk. 
 To avoid ambiguities,
 we formally define an \EdgePath\ in $(\VERTEX,\EDGE)$ (in our sense) 
 as the classical notion of path in a graph~\citep{Diestel}.
 We also define an \undirectedEdgePath\ in $(\VERTEX,\EDGE)$ (in our sense)
-as what corresponds to chain path in~\citep{Lauritzen-et-al-1990}. 
+as what corresponds to chain path in~\citep{Lauritzen-et-al-1990}.
 \medskip
-
-\noindent $\bullet$ Definition of (edge) paths. We first introduce some notations.
-
-For any set ${\Set}$, we denote by $\Sequence_n(\Set)$ the set of sequences of
-length $n$ of elements of the set~$\Set$, $\Sequence_n(\Set)= \SetProd{\Set}{n}$
-and by $\Sequence_{\ge n}(\Set)$ the set of finite sequences of length greater or equal
-to $n$ of elements of the set $\Set$, that is the disjoint union
-$\sqcup_{k\ge n} \Sequence_k(\Set)$.
-
-Now, for $n\ge 2$, we consider a lift operator $\Lift_n: \Sequence_{n}(\Set)\to 
-\Sequence_{n{-}1}(\Set{\times}\Set)$ transforming a sequence of elements of
-$\Set$ of length $n$
-into a sequence of oriented pairs in $\Set\times\Set$ of length $n{-}1$ as follows 
-\begin{align}
-  \forall (\vertex_1,\dots, \vertex_n)\in \SetProd{\Set}{n}
-  \eqsepv
-  \Lift_n(\vertex_1,\dots, \vertex_n) = \bp{\np{\vertex_1, \vertex_2},\np{\vertex_2, \vertex_3},\dots,
-  \np{\vertex_{n-1},\vertex_n}}
-  \eqfinp
-\end{align}
-
-The set of \emph{\EdgePath} of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$ is defined by
+Using the notations introduced in Section~\ref{sec:sequences}, 
+the set of \emph{\EdgePath} of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$ is defined by
 \begin{equation}
   \PATH^n\np{\OrientedGraph} =
   \Lift_n \bp{ \Sequence_{n+1}(\VERTEX)} \cap \Sequence_{n}(\EDGE)
   \text{ and satisfy } \PATH^n\np{\OrientedGraph} \subset \Sequence_{n}(\EDGE) \subset \Sequence_{n}(\VERTEX{\times}\VERTEX))
   \eqfinp
 \end{equation}
+
 It easily follows from the definition of $\PATH^n\np{\OrientedGraph}$ that we also have and equivalent definition
 \begin{align}
   \PATH^n\np{\OrientedGraph} %    \PATH^n\np{\graph}
@@ -308,9 +325,6 @@ It easily follows from the definition of $\PATH^n\np{\OrientedGraph}$ that we al
     { \head{\vertex_i}=\tail{\vertex_{i+1}} \text{ for } i\in\ic{1,n{-}1}}
     \eqfinp
 \end{align}
-Then, using the sequence of mapping $\nseqa{\Lift_n}{n\ge 2}$ we define a lift operator
-$\Lift: \Sequence_{\ge 2}(\Set) \to \Sequence_{\ge 1}(\Set{\times}\Set)$ such that for all $n \ge 2$ the restriction of
-$\Lift$ to the set $\Sequence_{n}(\Set)$ coincide with the $\Lift_n$ mapping, that is ${\Lift}_{\vert\Sequence_n(\Set)}= \Lift_n$.
 The set of finite (edge) paths of length greater of equal to $1$ relative to the graph~$\npOrientedGraph$ is defined by
 \begin{align}
   \PATH^{\ge 1}\np{\OrientedGraph}
@@ -323,6 +337,11 @@ The set of finite (edge) paths of length greater of equal to $1$ relative to the
 which coincide with the set $\bigcup_{n\ge 1} \PATH^n\np{\OrientedGraph}$ as it easily follows that
 $\PATH^{\ge 1}\np{\OrientedGraph} = \bigcup_{n\ge 1} \PATH^n\np{\OrientedGraph}$.
 
+\paragraph{(Coq)} XXXXX
+
+
+\medskip
+
 The first element~$\tail{\vertex_1}$ of an \EdgePath\
 \( \path=\bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \) 
 is the \emph{tail of the \EdgePath}, 
@@ -333,23 +352,6 @@ We denote by $\cardinal{\path}$ the length of a path $\path \in
 \PATH\np{\OrientedGraph}$.
 An \emph{\EdgeSubPath} of the \EdgePath~$\path$ is an \EdgePath\ obtained by a
 subsequence of consecutive indices.
-
-\paragraph{(Coq)} We describe the coq formalization of (edge) paths.  A graph
-$(\VERTEX,\EDGE)$ is given by a type \texttt{(T: Type)} and a relation on
-\texttt{T} is a set in the product type \texttt{set T*T}, that is
-$(\EDGE:\texttt{set T*T})$. Thus, the (classical) set definition of mathcomp
-analysis \texttt{classical\_sets.v} is used to formalize a graph. Now, the lift
-operator $\Lift$ is implemented in Coq as a recursive mapping denoted
-\texttt{Lift}: {\small \inputsnippets{erel3/Lift.tex} } Finally, the set of
-finite (edge) paths of length greater of equal to $1$,
-$\PATH^{\ge 1}\np{\OrientedGraph}$ defined in Equation~\eqref{def:epaths_gt1} is
-formalized in Coq using the function \texttt{all} --- used to checks that the elements of a sequence belong to a given set 
--- combined with the \texttt{Lift} operator:
-{\small
-  \inputsnippets{erel3/all_notation.tex,erel3/EPath1.tex}
-}
-To conclude, at Coq level, an (edge) path is represented by its preimage by the lift operation, that is a sequence of 
-vertices which gives an edge path. 
 
 \medskip
 \noindent $\bullet$ Definition of \emph{\undirectedEdgePath}. To define
