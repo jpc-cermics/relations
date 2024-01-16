@@ -664,82 +664,39 @@ Section Lift2.
     by apply Lift_Chrel_gt1.
   Qed.
 
-  (* begin snippet Lift_lemma:: no-out *)  
   Lemma Lift_lemma:  image [set s | True] (@Lift T) 
                      = preimage (@Lift (T*T)) [set spa| spa [\in] Chrel].
-  (* end snippet Lift_lemma *)  
   Proof. 
     rewrite /image /preimage /mkset predeqE => spa.
     by split => [[x _ <-] | /Lift_Chrel [p H1]];[ apply Lift_Lift | exists p].
   Qed.
-  
-  (* begin snippet BChains:: no-out *)  
-  Definition BChains := [set spa | (Lift spa) [\in] Chrel /\ size(spa) > 1]. 
-  (* end snippet BChains:: no-out *)  
-  (* begin snippet IChains:: no-out *)  
-  Definition IChains := [set spa | exists p: seq T, Lift p = spa /\ size(p) > 1]. 
-  (* end snippet IChains *)  
-    
-  Lemma IChains_as_image: IChains =  image [set p | size(p) > 1] (@Lift T).
-  Proof.
-    rewrite /image /IChains /mkset predeqE => spa.
-    by split => [ [p [H1 H2]] |[p H1 H2]];(exists p).
+
+  Lemma Lift_lemma1:  
+    image [set s | size(s) > 2] (@Lift T) 
+    = preimage (@Lift (T*T)) [set spa| spa [\in] Chrel /\ size(spa)> 0].
+  Proof. 
+    rewrite /image /preimage /mkset predeqE => spa.
+    split => [[x H1 <-] | [/Lift_Chrel [p H1] H2]]. 
+    by split;[apply Lift_Lift | move: H1; rewrite 2!Lift_szn].
+    by exists p;[rewrite -2!Lift_szn H1 |].
   Qed.
   
-  Lemma BChains_as_preimage: BChains = preimage (@Lift (T*T)) [set p | p [\in] Chrel /\ size(p) > 0].
-  Proof.
-    rewrite /preimage /BChains /mkset predeqE  => spa.
-    by rewrite Lift_sz2.
-  Qed.
-  
-  (* begin snippet EPath2:: no-out *) 
-  Definition EPath2 (S: relation T):=
-    [set spa | spa [\in] S /\ (Lift spa) [\in] Chrel /\ size(spa) > 1].
-  (* end snippet EPath2 *)
-
-  (* begin snippet EPath3:: no-out *) 
-  Definition EPath3 (S: relation T):=
-    [set spa | spa [\in] S /\ (exists p, (Lift p) =spa /\ size(p) > 2)].
-  (* end snippet EPath3 *)
-
-  Lemma EPath_p1: forall (S: relation T), EPath2 S = EPath3 S.
-  Proof.
-    move => S. rewrite /EPath2 /EPath3 /mkset predeqE => spa.
-    split. 
-    - move => [H1 [H2 H3]]. split; first by [].
-      have [p H4]: exists p: seq T, Lift p = spa by apply Lift_Chrel.
-      exists p; split. by [].
-      by rewrite -Lift_szn H4.
-    - move => [H1 [p [H2 H3]]].
-      split.  by []. split. rewrite -H2. apply Lift_Lift.
-      have H4: size (Lift p) = (size p) -1 
-        by apply Lift_sz;apply leq_ltn_trans with 2. 
-      by rewrite H2 in H4;rewrite H4 subn1 ltn_predRL.
+  Lemma Lift_lemma2:
+    preimage (@Lift (T*T)) [set spa| spa [\in] Chrel /\ size(spa)> 0] 
+    = [set spa | (Lift spa) [\in] Chrel /\ size(spa) > 1].
+  Proof. 
+    rewrite /preimage /mkset predeqE => spa. 
+    by rewrite Lift_szn.
   Qed.
 
-  (* begin snippet EPath2x:: no-out *) 
-  Definition EPath2' (S: relation T):=
-    [set spa | spa [\in] S /\ (Lift spa) [\in] Chrel /\ size(spa) = 1].
-  (* end snippet EPath2x *)
-
-  (* begin snippet EPath3x:: no-out *) 
-  Definition EPath3' (S: relation T):=
-    [set spa | spa [\in] S /\ (exists p, (Lift p) =spa /\ size(p) = 2)].
-  (* end snippet EPath3x *)
-
-  Lemma EPath_p2: forall (S: relation T), EPath2' S = EPath3' S.
-  Proof.
-    move => S. rewrite /EPath2 /EPath3 /mkset predeqE => spa.
-    split. 
-    - move => [H1 [H2 H3]]. split; first by [].
-      have [[x1 x2] H4]: exists x, spa =[::x] by apply seq_1.
-      by rewrite H4;(exists [::x1;x2]);split.
-    - move => [H1 [p [H2 H3]]].
-      split. by [].
-      have [x [y H4]]: exists (x y:T), p = [::x;y] by apply seq_rcrc0.
-      by rewrite -H2 H4 /=.
+  Lemma Lift_lemma3:
+    image [set s | size(s) > 2] (@Lift T) 
+    =  [set spa | exists p: seq T, Lift p = spa /\ size(p) > 2].
+  Proof. 
+    rewrite /image /mkset predeqE => spa.
+    by split => [[p H1 H2]|[p [H1 H2]]];(exists p).
   Qed.
-  
+
   (* begin snippet EPath2new:: no-out *) 
   Definition EPath2'' (S: relation T):=
     [set spa | spa [\in] S /\ (Lift spa) [\in] Chrel /\ size(spa) > 0].
@@ -772,7 +729,7 @@ Section Lift2.
     move => [H1 [p [H2 H3]]].
     split. by []. split. rewrite Lift_Chrel. by exists p. by rewrite -H2  Lift_sz2.
   Qed.
-
+  
 End Lift2.
 
 Section Seq_liftO. 
