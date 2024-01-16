@@ -235,16 +235,11 @@ ${\Lift}_{\vert\Sequence_n(\fullset)}= \Lift_n$.
 
 \paragraph{(Coq)} The lift operator $\Lift$ is implemented in Coq as a recursive mapping denoted
 \texttt{Lift}: {\small \inputsnippets{erel3/Lift.tex} }
-
-We have two ways to characterize the set $\Lift\bp{ \Sequence_{>1}(\fullset)}$. 
-First as the image through the lift operator of the set $\Sequence_{> 1}(\fullset)$ 
-{\small \inputsnippets{erel3/IChains.tex}}
-Second, as a preimage as $\Lift^{-1}\bp{ \Sequence_{> 1}(Ch)}$
-{\small \inputsnippets{erel3/BChains.tex}}
-using a relation \texttt{Chrel} on the set $T{\times}T$  defined by 
+Using the relation \texttt{Chrel} on the set $T{\times}T$  defined by 
 {\small \inputsnippets{erel3/Chrel} 
-
-These two sets are proved to be the same in \texttt{Lemma XXX}.
+We obtain the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{ \Sequence(\texttt{Chrel})}$ proved in Coq in 
+Lemma \texttt{Lift\_lemma}
+{\small \inputsnippets{erel3/Lift_lemma.tex} 
 
 \subsubsection{Extended-oriented paths in a (directed simple) graph (permitting loops)}
 

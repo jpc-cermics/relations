@@ -280,8 +280,8 @@ Section Seq_lift.
       by rewrite Hr in H2;rewrite Lift_c H2 /= addnC [RHS]subn1 subn1 addn1 /=.
     Qed.
 
-    Lemma Lift_sz1: forall (p:seq T),
-        size(Lift p) > 0 -> size (p) > 1.
+    Lemma Lift_sz2: forall (p:seq T),
+        size(Lift p) > 0 <-> size (p) > 1.
     Proof.
       by elim => [// | x p ]; elim: p x => [// | x p Hr y H1 // H2].
     Qed.
@@ -292,7 +292,7 @@ Section Seq_lift.
       move => p q n H1. 
       split => H2.
       - have H3: size(q)> 0 by rewrite H2.
-        have H4: size(p)> 1 by apply Lift_sz1;rewrite H1.
+        have H4: size(p)> 1 by rewrite -Lift_sz2 H1.
         move: (H4) => /Lift_sz H4'.
         move: H2;rewrite -H1 H4' => H2.
         have H5: (size p -1).+1 = size(p) by rewrite subn1; apply: (ltn_predK H4).
@@ -306,7 +306,7 @@ Section Seq_lift.
         Lift p = q -> size(q) > n -> size (p) > n.+1.
     Proof.
       move => p q n H1 H2.
-      have H3: size(p)> 1 by apply Lift_sz1;rewrite H1;apply leq_ltn_trans with n.
+      have H3: size(p)> 1 by rewrite -Lift_sz2 H1;apply leq_ltn_trans with n.
       pose proof Lift_sz H3 as H4.
       rewrite H1 in H4; rewrite H4 in H2.
       by rewrite -ltn_predRL -subn1.
@@ -608,14 +608,6 @@ Section Lift2.
     elim: q1 x1 x2 => [ x' y' | y' p' Hr z' x'];first by constructor;constructor.
     by rewrite Lift_c;apply pp_two;[ | right; exists (x',y'), (Lift [::y' &p'])].
   Qed.
-
-  (* begin snippet BChains:: no-out *)  
-  Definition BChains := [set spa | (Lift spa) [\in] Chrel /\ size(spa) > 0]. 
-  (* end snippet BChains:: no-out *)  
-  Definition IChains' := [set spa | (exists p: seq T, Lift p = spa) /\ size(spa) > 0]. 
-  (* begin snippet IChains:: no-out *)  
-  Definition IChains := [set spa | exists p: seq T, Lift p = spa /\ size(p) > 1]. 
-  (* end snippet IChains *)  
   
   Lemma Lift_Chrel_n_imp: forall (n: nat) (spa : seq (T*T)),
       size(spa)= n.+2 -> (Lift spa) [\in] Chrel -> exists p: seq T, Lift p = spa.
@@ -634,7 +626,7 @@ Section Lift2.
         by rewrite H5 /= -addn1 -[in RHS]addn1 in H1; apply addIn in H1.
       apply Hr in H7;last by [].
       move: H7 => [p1 H7].
-      have H10: size(p1) > 1 by apply Lift_sz1;rewrite H7.
+      have H10: size(p1) > 1 by rewrite -Lift_sz2 H7.  
       pose proof seq_cc H10 as [q3 [x3 [y3 H11]]].
       exists [::x1,x3,y3& q3].
       rewrite Lift_c -H11 H7. 
@@ -648,7 +640,7 @@ Section Lift2.
     by move => [p <-]; apply Lift_Lift.
   Qed.
   
-  Lemma Lift_Chrel: forall (spa : seq (T*T)),
+  Lemma Lift_Chrel_gt1: forall (spa : seq (T*T)),
       size(spa) > 1 -> ((Lift spa) [\in] Chrel <-> exists p: seq T, Lift p = spa).
   Proof.
     move => spa H1.
@@ -661,7 +653,49 @@ Section Lift2.
     by apply Lift_Lift.
   Qed.
   
-  Lemma BChains_eq_IChains: BChains = IChains'.
+  Lemma Lift_Chrel: forall (spa : seq (T*T)),
+      ((Lift spa) [\in] Chrel <-> exists p: seq T, Lift p = spa).
+  Proof.
+    elim => [ | [x y] spa _ ];first by split => ?;[(exists [::]) |].
+    elim: spa => [ | [z t] spa _]; first by split => [H2 | [p H2]];[(exists [::x;y])|].
+    by apply Lift_Chrel_gt1.
+  Qed.
+
+  (* begin snippet Lift_lemma:: no-out *)  
+  Lemma Lift_lemma:  image [set s | True] (@Lift T) 
+                     = preimage (@Lift (T*T)) [set spa| spa [\in] Chrel].
+  (* end snippet Lift_lemma *)  
+  Proof. 
+    rewrite /image /preimage /mkset predeqE => spa.
+    by split => [[x _ <-] | /Lift_Chrel [p H1]];[ apply Lift_Lift | exists p].
+  Qed.
+  
+  (* begin snippet BChains:: no-out *)  
+  Definition BChains := [set spa | (Lift spa) [\in] Chrel /\ size(spa) > 1]. 
+  Definition BChains' := [set spa | (Lift spa) [\in] Chrel /\ size(spa) > 0]. 
+  (* end snippet BChains:: no-out *)  
+  Definition IChains' := [set spa | (exists p: seq T, Lift p = spa) /\ size(spa) > 0]. 
+  (* begin snippet IChains:: no-out *)  
+  Definition IChains := [set spa | exists p: seq T, Lift p = spa /\ size(p) > 1]. 
+  (* end snippet IChains *)  
+  
+  Definition ICh := image [set p | size(p) > 1] (@Lift T).
+  
+  Lemma IChains_as_image: ICh = IChains. 
+  Proof.
+    rewrite /ICh /image /IChains /mkset predeqE => spa.
+    by split => [[p H1 H2] | [p [H1 H2]]];(exists p).
+  Qed.
+
+  Definition PiCh := preimage (@Lift (T*T)) [set p | p [\in] Chrel /\ size(p) > 0].
+
+  Lemma BChains_as_preimage: PiCh = BChains.
+  Proof.
+    rewrite /PiCh /preimage /BChains /mkset predeqE  => spa.
+    by rewrite Lift_sz2.
+  Qed.
+  
+  Lemma BChains_eq_IChains': BChains' = IChains'.
   Proof.
     rewrite predeqE /BChains /IChains' /mkset => spa.
     pose proof seq_cases spa as [H1 | [[x H1] | [q [x [y H1]]]]].
@@ -669,19 +703,16 @@ Section Lift2.
     - by rewrite H1 /=;move: x H1=> [x y] H1;split=> [_|H2];[split;[exists([::x ;y])|]|].
     - rewrite H1.
       have H2: size(spa) > 1. by rewrite H1 /= size_rcons.
-      pose proof Lift_Chrel H2 as H3.
-      split => [[H4 H5] | [[p H4] H5]].
-      + rewrite H1 in H3. apply H3 in H4. move: H4 => [p H4]. split. by (exists p). by [].
-      + split. 
-        rewrite -H1 H3. exists p. by rewrite H4. 
-        by rewrite /= size_rcons. 
+      split => [[/Lift_Chrel [p H4] H5] | [[p H4] H5]].
+      by split;[ (exists p) |].
+      by split;[rewrite Lift_Chrel; exists p |]. 
   Qed.
-
+  
   Lemma IChains_eq_IChains': IChains' = IChains.
   Proof.
     rewrite predeqE /IChains /IChains' /mkset => spa.
     split. 
-    by move => [[p H1] H2];exists p; split;[ | apply Lift_sz1; rewrite H1].
+    by move => [[p H1] H2];exists p; split;[| rewrite -Lift_sz2 H1].
     move => [p [H1 H2]];split; first by (exists p).
     by pose proof  Lift_sz H2 as H3;move: H3;
     rewrite H1 => [->];rewrite subn1 ltn_predRL.
