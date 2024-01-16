@@ -531,7 +531,7 @@ Section Edge_paths.
   (* begin snippet EPath1:: no-out *) 
   Definition EPath1 (S: relation T):=[set p: seq T| (Lift p) [\in] S /\ size(p) >= 2].
   (* end snippet EPath1 *)
-  
+
   (* an equivalent definition not using the lift operation *)
   Inductive EPath (S: relation T): seq T -> Prop :=
   | pp_void : EPath S [::]
@@ -672,50 +672,21 @@ Section Lift2.
   
   (* begin snippet BChains:: no-out *)  
   Definition BChains := [set spa | (Lift spa) [\in] Chrel /\ size(spa) > 1]. 
-  Definition BChains' := [set spa | (Lift spa) [\in] Chrel /\ size(spa) > 0]. 
   (* end snippet BChains:: no-out *)  
-  Definition IChains' := [set spa | (exists p: seq T, Lift p = spa) /\ size(spa) > 0]. 
   (* begin snippet IChains:: no-out *)  
   Definition IChains := [set spa | exists p: seq T, Lift p = spa /\ size(p) > 1]. 
   (* end snippet IChains *)  
-  
-  Definition ICh := image [set p | size(p) > 1] (@Lift T).
-  
-  Lemma IChains_as_image: ICh = IChains. 
+    
+  Lemma IChains_as_image: IChains =  image [set p | size(p) > 1] (@Lift T).
   Proof.
-    rewrite /ICh /image /IChains /mkset predeqE => spa.
-    by split => [[p H1 H2] | [p [H1 H2]]];(exists p).
+    rewrite /image /IChains /mkset predeqE => spa.
+    by split => [ [p [H1 H2]] |[p H1 H2]];(exists p).
   Qed.
-
-  Definition PiCh := preimage (@Lift (T*T)) [set p | p [\in] Chrel /\ size(p) > 0].
-
-  Lemma BChains_as_preimage: PiCh = BChains.
+  
+  Lemma BChains_as_preimage: BChains = preimage (@Lift (T*T)) [set p | p [\in] Chrel /\ size(p) > 0].
   Proof.
-    rewrite /PiCh /preimage /BChains /mkset predeqE  => spa.
+    rewrite /preimage /BChains /mkset predeqE  => spa.
     by rewrite Lift_sz2.
-  Qed.
-  
-  Lemma BChains_eq_IChains': BChains' = IChains'.
-  Proof.
-    rewrite predeqE /BChains /IChains' /mkset => spa.
-    pose proof seq_cases spa as [H1 | [[x H1] | [q [x [y H1]]]]].
-    - by rewrite H1 /=;split => [[_ H2 //]| [[p _] H3] //].
-    - by rewrite H1 /=;move: x H1=> [x y] H1;split=> [_|H2];[split;[exists([::x ;y])|]|].
-    - rewrite H1.
-      have H2: size(spa) > 1. by rewrite H1 /= size_rcons.
-      split => [[/Lift_Chrel [p H4] H5] | [[p H4] H5]].
-      by split;[ (exists p) |].
-      by split;[rewrite Lift_Chrel; exists p |]. 
-  Qed.
-  
-  Lemma IChains_eq_IChains': IChains' = IChains.
-  Proof.
-    rewrite predeqE /IChains /IChains' /mkset => spa.
-    split. 
-    by move => [[p H1] H2];exists p; split;[| rewrite -Lift_sz2 H1].
-    move => [p [H1 H2]];split; first by (exists p).
-    by pose proof  Lift_sz H2 as H3;move: H3;
-    rewrite H1 => [->];rewrite subn1 ltn_predRL.
   Qed.
   
   (* begin snippet EPath2:: no-out *) 
@@ -766,7 +737,40 @@ Section Lift2.
       have [x [y H4]]: exists (x y:T), p = [::x;y] by apply seq_rcrc0.
       by rewrite -H2 H4 /=.
   Qed.
-    
+  
+  (* begin snippet EPath2new:: no-out *) 
+  Definition EPath2'' (S: relation T):=
+    [set spa | spa [\in] S /\ (Lift spa) [\in] Chrel /\ size(spa) > 0].
+  (* end snippet EPath2new *)
+  
+  (* begin snippet EPath3new:: no-out *) 
+  Definition EPath3'' (S: relation T):=
+    [set spa | spa [\in] S /\ (exists p, (Lift p) =spa /\ size(p) > 1)].
+  (* end snippet EPath3new *)
+  
+  Lemma EP2_lemma: forall (S: relation T), 
+      EPath2'' S = [set spa | spa [\in] S] `&` [set spa | (Lift spa)  [\in] Chrel /\ size(spa) > 0].
+  Proof.
+    by move => S;rewrite /EPath2'' /setI /mkset predeqE => spa.
+  Qed.
+
+  Lemma EP3_lemma: forall (S: relation T), 
+      EPath3'' S =[set spa | spa [\in] S] `&` [set spa | (exists p, (Lift p) =spa /\ size(p) > 1)].
+  Proof.
+    by move => S;rewrite /EPath3'' /setI /mkset predeqE => spa.
+  Qed.
+
+  Lemma EP_equiv: forall (S: relation T), 
+      EPath2'' S = EPath3'' S.
+  Proof.
+    move => S;rewrite /EPath2'' /EPath3'' /setI /mkset predeqE => spa.
+    split. 
+    move => [H1 [/Lift_Chrel [p H2] H3]].
+    split. by []. exists p. split. by []. by rewrite -Lift_sz2 H2.
+    move => [H1 [p [H2 H3]]].
+    split. by []. split. rewrite Lift_Chrel. by exists p. by rewrite -H2  Lift_sz2.
+  Qed.
+
 End Lift2.
 
 Section Seq_liftO. 

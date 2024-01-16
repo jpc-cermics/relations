@@ -74,6 +74,69 @@
 \setcounter{tocdepth}{2}
 \pagebreak\tableofcontents \pagebreak 
 
+
+\begin{verbatim}
+  Lemma Lift_Lift: forall (p:seq T), (Lift (Lift p)) [\in] Chrel. 
+  
+  Lemma Lift_Chrel_n_imp: forall (n: nat) (spa : seq (T*T)),
+      size(spa)= n.+2 -> (Lift spa) [\in] Chrel -> exists p: seq T, Lift p = spa.
+  
+  Lemma Lift_Chrel_n_iff: forall (n: nat) (spa : seq (T*T)),
+      size(spa)= n.+2 -> ((Lift spa) [\in] Chrel <-> exists p: seq T, Lift p = spa).
+  
+  Lemma Lift_Chrel_gt1: forall (spa : seq (T*T)),
+      size(spa) > 1 -> ((Lift spa) [\in] Chrel <-> exists p: seq T, Lift p = spa).
+
+  Lemma Lift_Chrel: forall (spa : seq (T*T)),
+      ((Lift spa) [\in] Chrel <-> exists p: seq T, Lift p = spa).
+
+  (* begin snippet Lift_lemma:: no-out *)  
+  Lemma Lift_lemma:  image [set s | True] (@Lift T) 
+                     = preimage (@Lift (T*T)) [set spa| spa [\in] Chrel].
+
+  Definition BChains := [set spa | (Lift spa) [\in] Chrel /\ size(spa) > 1]. 
+
+  Definition IChains := [set spa | exists p: seq T, Lift p = spa /\ size(p) > 1]. 
+    
+  Lemma IChains_as_image: IChains =  image [set p | size(p) > 1] (@Lift T).
+  
+  Lemma BChains_as_preimage: BChains = preimage (@Lift (T*T)) [set p | p [\in] Chrel /\ size(p) > 0].
+  
+  Definition EPath2 (S: relation T):=
+    [set spa | spa [\in] S /\ (Lift spa) [\in] Chrel /\ size(spa) > 1].
+
+  Definition EPath3 (S: relation T):=
+    [set spa | spa [\in] S /\ (exists p, (Lift p) =spa /\ size(p) > 2)].
+
+  Lemma EPath_p1: forall (S: relation T), EPath2 S = EPath3 S.
+
+  Definition EPath2' (S: relation T):=
+    [set spa | spa [\in] S /\ (Lift spa) [\in] Chrel /\ size(spa) = 1].
+
+  Definition EPath3' (S: relation T):=
+    [set spa | spa [\in] S /\ (exists p, (Lift p) =spa /\ size(p) = 2)].
+
+  Lemma EPath_p2: forall (S: relation T), EPath2' S = EPath3' S.
+  
+  Definition EPath2'' (S: relation T):=
+    [set spa | spa [\in] S /\ (Lift spa) [\in] Chrel /\ size(spa) > 0].
+  
+
+  Definition EPath3'' (S: relation T):=
+    [set spa | spa [\in] S /\ (exists p, (Lift p) =spa /\ size(p) > 1)].
+  
+  Lemma EP2_lemma: forall (S: relation T), 
+      EPath2'' S = [set spa | spa [\in] S] `&` [set spa | (Lift spa)  [\in] Chrel /\ size(spa) > 0].
+
+  Lemma EP3_lemma: forall (S: relation T), 
+      EPath3'' S =[set spa | spa [\in] S] `&` [set spa | (exists p, (Lift p) =spa /\ size(p) > 1)].
+
+  Lemma EP_equiv: forall (S: relation T), 
+      EPath2'' S = EPath3'' S.
+\end{verbatim}
+
+
+
 % START
 \section{Introduction}
 As the world shifts toward more and more data-driven decision-making, causal
@@ -207,10 +270,10 @@ $\Sequence_n(\Set)$ the set of sequences of length $n$ of elements of the
 set~$\Set$, $\Sequence_n(\Set)= \SetProd{\Set}{n}$ and by
 $\Sequence_{\ge n}(\Set)$ the set of finite sequences of length greater or equal
 to $n$ of elements of the set $\Set$, that is the disjoint union
-$\sqcup_{k\ge n} \Sequence_k(\Set)$.
+$\sqcup_{k\ge n} \Sequence_k(\Set)$. the set $\Sequence_{\ge n}(\Set)$ will be denoted by $\Sequence(\Set)$.
 
-\paragraph{(Coq)} The sets $\Sequence_{\ge n}(\fullset)$ and $\Sequence_{= n}(\fullset)$
- are implemented in Coq using sequences of elements of type \texttt{T} 
+\paragraph{(Coq)} The sets $\Sequence_{\ge n}(\fullset)$ and $\Sequence_{n}(\fullset)$
+are implemented in Coq using sequences of elements of type \texttt{T} 
 and the restriction to elements in a subset \texttt{(D: set T)} is obtained using the function \texttt{all}. 
 As an example $\Sequence_{= n}(T)$ is formalized as follows
 {\small \inputsnippets{erel3/all_notation.tex,erel3/Sn.tex}}
@@ -238,7 +301,7 @@ ${\Lift}_{\vert\Sequence_n(\fullset)}= \Lift_n$.
 Using the relation \texttt{Chrel} on the set $T{\times}T$  defined by 
 {\small \inputsnippets{erel3/Chrel} 
 We obtain the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{ \Sequence(\texttt{Chrel})}$ proved in Coq in 
-Lemma \texttt{Lift\_lemma}
+Lemma \texttt{Lift\_lemma} which gives us the possibility to treat the set 
 {\small \inputsnippets{erel3/Lift_lemma.tex} 
 
 \subsubsection{Extended-oriented paths in a (directed simple) graph (permitting loops)}
