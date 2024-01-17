@@ -192,16 +192,22 @@ and the \emph{reflexive and transitive closure} is
 A \emph{partial equivalence relation} is a symmetric and transitive binary
 relation (generally denoted by~$\sim$ or~$\equiv$).
 An \emph{equivalence relation} is a reflexive, symmetric and transitive binary
-relation. XXXX \cite{Gonthier-Mahboubi-Tassi:2016} \cite{MathComp:2022}
-\inputsnippets{ssrel/relation.tex,ssrel/clos_refl_trans.tex,ssrel/clos_rt.tex}
+relation.
 
+Relations are implemented as sets on a product space using the classical sets implemented in
+\texttt{classical\_sets.v} from the mathcomp library~\cite{MathComp:2022}
+using ssreflect tactics~\cite{Gonthier-Mahboubi-Tassi:2016} 
+\inputsnippetsE{ssrel/relation.tex}{.}
+As described in more details below, we have developed a library for relations taking into account all the
+definitions recalled at the begining of the section.
+% ,ssrel/clos_refl_trans.tex,ssrel/clos_rt.tex}
 \subsection{Sequences sets and relations}
 \label{sec:sequences}
 \newcommand{\fullset}{T}
 
-To formalization in Coq graph paths we use sequences (defined in mathcomp
+To formalize in Coq graph paths we use sequences (defined in mathcomp
 \texttt{seq.v}) combined with set formalization (defined in mathcomp
-\texttt{classical\_sets}). To describe the formalization we introduce some
+\texttt{classical\_sets}). To describe the formalization we start by introducing some
 notations. We consider a set $\fullset$, and for any set ${\Set} \subset \fullset$, we denote by
 $\Sequence_n(\Set)$ the set of sequences of length $n$ of elements of the
 set~$\Set$, $\Sequence_n(\Set)= \SetProd{\Set}{n}$ and by
@@ -237,7 +243,7 @@ ${\Lift}_{\vert\Sequence_n(\fullset)}= \Lift_n$ and for ${\Lift}\bp{\Sequence_{0
 \texttt{Lift}: {\small \inputsnippets{erel3/Lift.tex} }
 
 The list operator will be usefull to convert node paths into edge paths and
-conversely and to check that edge paths satisfy relation between successive
+conversely and to check that edge paths satisfy given relations between successive
 edges. As an example, using the relation $C_{\textsc{H}}$ -- denote
 \texttt{Chrel} in Coq -- on the product set $T{\times}T$ defined by
 $((v_1, v_2)\, C_{\textsc{H}}\, (v_3 v_4) \iff v_2 = v_3)$, that is {\small
@@ -245,7 +251,10 @@ $((v_1, v_2)\, C_{\textsc{H}}\, (v_3 v_4) \iff v_2 = v_3)$, that is {\small
 expressed as image of set and two as preimage of set -- of representing sequences
 of pairs of elements of $T$ such that successive pairs satisfy the
 $C_{\textsc{H}}$ relation.  {\small \inputsnippets{erel3/Lift_lemma2.tex}}
-The Lift operator satisfy the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{ \Sequence(\texttt{Chrel})}$
+The Lift operator satisfy the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{ \Sequence(\texttt{Chrel})}$\footnote{%
+  Note that mathematically, two different Lift operators appear in this equation as their domain is not the same.
+  Nevertheless, we use the same notation as in Coq they are implemented with the same \texttt{List} function using
+  type polymorphism}
 proved in Coq in Lemma \texttt{Lift\_lemma}
 {\small \inputsnippets{erel3/Lift_lemma}}
 
