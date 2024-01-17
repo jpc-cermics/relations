@@ -212,7 +212,7 @@ $\sqcup_{k\ge n} \Sequence_k(\Set)$. the set $\Sequence_{\ge n}(\Set)$ will be d
 \paragraph{(Coq)} The sets $\Sequence_{\ge n}(\fullset)$ and $\Sequence_{n}(\fullset)$
 are implemented in Coq using sequences of elements of type \texttt{T} 
 and the restriction to elements in a subset \texttt{(D: set T)} is obtained using the function \texttt{all}. 
-As an example $\Sequence_{= n}(T)$ is formalized as follows
+As an example $\Sequence_{n}(T)$ is formalized as follows
 {\small \inputsnippets{erel3/all_notation.tex,erel3/Sn.tex}}
 
 Now, for $n\ge 2$, we consider a lift operator
@@ -235,10 +235,11 @@ ${\Lift}_{\vert\Sequence_n(\fullset)}= \Lift_n$.
 
 \paragraph{(Coq)} The lift operator $\Lift$ is implemented in Coq as a recursive mapping denoted
 \texttt{Lift}: {\small \inputsnippets{erel3/Lift.tex} }
-Using the relation \texttt{Chrel} on the set $T{\times}T$  defined by 
-{\small \inputsnippets{erel3/Chrel} 
-We obtain the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{ \Sequence(\texttt{Chrel})}$ proved in Coq in 
-Lemma \texttt{Lift\_lemma} which gives us the possibility to treat the set 
+Using the relation $C_{\textsc{H}}$ -- denote \texttt{Chrel} in Coq -- on the product set $T{\times}T$  defined by
+$((v_1, v_2)\, C_{\textsc{H}}\, (v_3 v_4) \iff v_2 = v_3)$, that is 
+{\small \inputsnippetsE{erel3/Chrel}{,}} 
+we obtain the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{ \Sequence(\texttt{Chrel})}$ proved in Coq in 
+Lemma \texttt{Lift\_lemma} which gives us the possibility to treat the set ZZZZZZ
 {\small \inputsnippets{erel3/Lift_lemma.tex,erel3/Lift_lemma1.tex, erel3/Lift_lemma2.tex,} 
 
 \subsubsection{Extended-oriented paths in a (directed simple) graph (permitting loops)}

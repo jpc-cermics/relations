@@ -23,8 +23,15 @@
 \newcommand{\inputsnippets}[1]
   {{\setlength{\itemsep}{1pt}\setlength{\parsep}{0pt}% Adjust spacing
       {\small \alectryon@copymacros\begin{io}
-      \forcsvlist{\item\@inputsnippet}{#1}
+      \forcsvlist{\item\@inputsnippet}{#1}.
     \end{io}}}}
+
+\newcommand{\inputsnippetsE}[2]
+  {{\setlength{\itemsep}{1pt}\setlength{\parsep}{0pt}% Adjust spacing
+      {\small \alectryon@copymacros\begin{io}
+      \forcsvlist{\item\@inputsnippet}{#1}#2
+    \end{io}}}}
+
 \let\input@old\input % Save definition of \input
 \newcommand{\@inputsnippet}[1]
   {{\renewenvironment{alectryon}{}{}% Skip \begin{alectryon} included in snippet
