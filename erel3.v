@@ -663,17 +663,20 @@ Section Lift2.
     elim: spa => [ | [z t] spa _]; first by split => [H2 | [p H2]];[(exists [::x;y])|].
     by apply Lift_Chrel_gt1.
   Qed.
-
+  (* begin snippet Lift_lemma:: no-out *)  
   Lemma Lift_lemma:  image [set s | True] (@Lift T) 
                      = preimage (@Lift (T*T)) [set spa| spa [\in] Chrel].
+  (* end snippet Lift_lemma *)  
   Proof. 
     rewrite /image /preimage /mkset predeqE => spa.
     by split => [[x _ <-] | /Lift_Chrel [p H1]];[ apply Lift_Lift | exists p].
   Qed.
 
+  (* begin snippet Lift_lemma1:: no-out *)  
   Lemma Lift_lemma1:  
     image [set s | size(s) > 2] (@Lift T) 
     = preimage (@Lift (T*T)) [set spa| spa [\in] Chrel /\ size(spa)> 0].
+  (* end snippet Lift_lemma1 *)  
   Proof. 
     rewrite /image /preimage /mkset predeqE => spa.
     split => [[x H1 <-] | [/Lift_Chrel [p H1] H2]]. 
@@ -681,9 +684,11 @@ Section Lift2.
     by exists p;[rewrite -2!Lift_szn H1 |].
   Qed.
   
+  (* begin snippet Lift_lemma2:: no-out *)  
   Lemma Lift_lemma2:
     preimage (@Lift (T*T)) [set spa| spa [\in] Chrel /\ size(spa)> 0] 
     = [set spa | (Lift spa) [\in] Chrel /\ size(spa) > 1].
+  (* end snippet Lift_lemma2 *)  
   Proof. 
     rewrite /preimage /mkset predeqE => spa. 
     by rewrite Lift_szn.
@@ -696,7 +701,7 @@ Section Lift2.
     rewrite /image /mkset predeqE => spa.
     by split => [[p H1 H2]|[p [H1 H2]]];(exists p).
   Qed.
-
+  
   (* begin snippet EPath2new:: no-out *) 
   Definition EPath2'' (S: relation T):=
     [set spa | spa [\in] S /\ (Lift spa) [\in] Chrel /\ size(spa) > 0].
@@ -707,8 +712,11 @@ Section Lift2.
     [set spa | spa [\in] S /\ (exists p, (Lift p) =spa /\ size(p) > 1)].
   (* end snippet EPath3new *)
   
+  (* begin snippet EPath2inter:: no-out *) 
   Lemma EP2_lemma: forall (S: relation T), 
-      EPath2'' S = [set spa | spa [\in] S] `&` [set spa | (Lift spa)  [\in] Chrel /\ size(spa) > 0].
+      EPath2'' S = [set spa | spa [\in] S] 
+                     `&` [set spa | (Lift spa)  [\in] Chrel /\ size(spa) > 0].
+  (* end snippet EPath2inter *)
   Proof.
     by move => S;rewrite /EPath2'' /setI /mkset predeqE => spa.
   Qed.

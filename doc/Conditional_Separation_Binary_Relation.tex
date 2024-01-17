@@ -74,69 +74,6 @@
 \setcounter{tocdepth}{2}
 \pagebreak\tableofcontents \pagebreak 
 
-
-\begin{verbatim}
-  Lemma Lift_Lift: forall (p:seq T), (Lift (Lift p)) [\in] Chrel. 
-  
-  Lemma Lift_Chrel_n_imp: forall (n: nat) (spa : seq (T*T)),
-      size(spa)= n.+2 -> (Lift spa) [\in] Chrel -> exists p: seq T, Lift p = spa.
-  
-  Lemma Lift_Chrel_n_iff: forall (n: nat) (spa : seq (T*T)),
-      size(spa)= n.+2 -> ((Lift spa) [\in] Chrel <-> exists p: seq T, Lift p = spa).
-  
-  Lemma Lift_Chrel_gt1: forall (spa : seq (T*T)),
-      size(spa) > 1 -> ((Lift spa) [\in] Chrel <-> exists p: seq T, Lift p = spa).
-
-  Lemma Lift_Chrel: forall (spa : seq (T*T)),
-      ((Lift spa) [\in] Chrel <-> exists p: seq T, Lift p = spa).
-
-  (* begin snippet Lift_lemma:: no-out *)  
-  Lemma Lift_lemma:  image [set s | True] (@Lift T) 
-                     = preimage (@Lift (T*T)) [set spa| spa [\in] Chrel].
-
-  Definition BChains := [set spa | (Lift spa) [\in] Chrel /\ size(spa) > 1]. 
-
-  Definition IChains := [set spa | exists p: seq T, Lift p = spa /\ size(p) > 1]. 
-    
-  Lemma IChains_as_image: IChains =  image [set p | size(p) > 1] (@Lift T).
-  
-  Lemma BChains_as_preimage: BChains = preimage (@Lift (T*T)) [set p | p [\in] Chrel /\ size(p) > 0].
-  
-  Definition EPath2 (S: relation T):=
-    [set spa | spa [\in] S /\ (Lift spa) [\in] Chrel /\ size(spa) > 1].
-
-  Definition EPath3 (S: relation T):=
-    [set spa | spa [\in] S /\ (exists p, (Lift p) =spa /\ size(p) > 2)].
-
-  Lemma EPath_p1: forall (S: relation T), EPath2 S = EPath3 S.
-
-  Definition EPath2' (S: relation T):=
-    [set spa | spa [\in] S /\ (Lift spa) [\in] Chrel /\ size(spa) = 1].
-
-  Definition EPath3' (S: relation T):=
-    [set spa | spa [\in] S /\ (exists p, (Lift p) =spa /\ size(p) = 2)].
-
-  Lemma EPath_p2: forall (S: relation T), EPath2' S = EPath3' S.
-  
-  Definition EPath2'' (S: relation T):=
-    [set spa | spa [\in] S /\ (Lift spa) [\in] Chrel /\ size(spa) > 0].
-  
-
-  Definition EPath3'' (S: relation T):=
-    [set spa | spa [\in] S /\ (exists p, (Lift p) =spa /\ size(p) > 1)].
-  
-  Lemma EP2_lemma: forall (S: relation T), 
-      EPath2'' S = [set spa | spa [\in] S] `&` [set spa | (Lift spa)  [\in] Chrel /\ size(spa) > 0].
-
-  Lemma EP3_lemma: forall (S: relation T), 
-      EPath3'' S =[set spa | spa [\in] S] `&` [set spa | (exists p, (Lift p) =spa /\ size(p) > 1)].
-
-  Lemma EP_equiv: forall (S: relation T), 
-      EPath2'' S = EPath3'' S.
-\end{verbatim}
-
-
-
 % START
 \section{Introduction}
 As the world shifts toward more and more data-driven decision-making, causal
@@ -302,7 +239,7 @@ Using the relation \texttt{Chrel} on the set $T{\times}T$  defined by
 {\small \inputsnippets{erel3/Chrel} 
 We obtain the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{ \Sequence(\texttt{Chrel})}$ proved in Coq in 
 Lemma \texttt{Lift\_lemma} which gives us the possibility to treat the set 
-{\small \inputsnippets{erel3/Lift_lemma.tex} 
+{\small \inputsnippets{erel3/Lift_lemma.tex,erel3/Lift_lemma1.tex, erel3/Lift_lemma2.tex,} 
 
 \subsubsection{Extended-oriented paths in a (directed simple) graph (permitting loops)}
 
@@ -383,7 +320,7 @@ It easily follows from the definition of $\PATH^n\np{\OrientedGraph}$ that we al
     { \head{\vertex_i}=\tail{\vertex_{i+1}} \text{ for } i\in\ic{1,n{-}1}}
     \eqfinp
 \end{align}
-The set of finite (edge) paths of length greater of equal to $1$ relative to the graph~$\npOrientedGraph$ is defined by
+The set of finite (edge) paths of length greater or equal to $1$ relative to the graph~$\npOrientedGraph$ is defined by
 \begin{align}
   \PATH^{\ge 1}\np{\OrientedGraph}
   &=
@@ -395,8 +332,8 @@ The set of finite (edge) paths of length greater of equal to $1$ relative to the
 which coincide with the set $\bigcup_{n\ge 1} \PATH^n\np{\OrientedGraph}$ as it easily follows that
 $\PATH^{\ge 1}\np{\OrientedGraph} = \bigcup_{n\ge 1} \PATH^n\np{\OrientedGraph}$.
 
-\paragraph{(Coq)} XXXXX
-
+\paragraph{(Coq)} 
+{\small \inputsnippets{erel3/EPath2new.tex,erel3/EPath3new,erel3/EPath2inter}}
 
 \medskip
 
