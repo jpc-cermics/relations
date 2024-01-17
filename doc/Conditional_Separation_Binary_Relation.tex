@@ -212,14 +212,14 @@ $\sqcup_{k\ge n} \Sequence_k(\Set)$. the set $\Sequence_{\ge n}(\Set)$ will be d
 \paragraph{(Coq)} The sets $\Sequence_{\ge n}(\fullset)$ and $\Sequence_{n}(\fullset)$
 are implemented in Coq using sequences of elements of type \texttt{T} 
 and the restriction to elements in a subset \texttt{(D: set T)} is obtained using the function \texttt{all}. 
-As an example $\Sequence_{n}(T)$ is formalized as follows
+As an example $\Sequence_{n}(D)$ is implemented as follows
 {\small \inputsnippets{erel3/all_notation.tex,erel3/Sn.tex}}
 
 Now, for $n\ge 2$, we consider a lift operator
 \[\Lift_n: \Sequence_{n}(\fullset)\to \Sequence_{n{-}1}(\fullset{\times}\fullset)\eqfinv\]
 transforming a sequence of elements of
 $\fullset$ of length $n$
-into a sequence of oriented pairs in $\fullset{\times}\fullset$ of length $n{-}1$ as follows 
+into a sequence of oriented pairs in $\fullset{\times}\fullset$ of length $n{-}1$
 \begin{align}
   \forall (\vertex_1,\dots, \vertex_n)\in \SetProd{\fullset}{n}
   \eqsepv
@@ -228,19 +228,26 @@ into a sequence of oriented pairs in $\fullset{\times}\fullset$ of length $n{-}1
   \eqfinp
 \end{align}
 Then, using the sequence of mapping $\nseqa{\Lift_n}{n\ge 2}$ we define a lift operator
-\[ \Lift: \Sequence_{> 1}(\fullset) \to \Sequence_{> 0}(\fullset{\times}\fullset)
-  \eqfinv\] such that for all $n > 1$ the restriction of $\Lift$ to the set
+\[ \Lift: \Sequence(\fullset) \to \Sequence(\fullset{\times}\fullset)
+  \eqfinv\] such that for all $n \ge 2$ the restriction of $\Lift$ to the set
 $\Sequence_{n}(\fullset)$ coincide with the $\Lift_n$ mapping, that is
-${\Lift}_{\vert\Sequence_n(\fullset)}= \Lift_n$.
+${\Lift}_{\vert\Sequence_n(\fullset)}= \Lift_n$ and for ${\Lift}\bp{\Sequence_{0}(\fullset) \cup\Sequence_{1}(\fullset)}$ is a singleton set composed of the empty list on $\fullset{\times}\fullset$.
 
 \paragraph{(Coq)} The lift operator $\Lift$ is implemented in Coq as a recursive mapping denoted
 \texttt{Lift}: {\small \inputsnippets{erel3/Lift.tex} }
-Using the relation $C_{\textsc{H}}$ -- denote \texttt{Chrel} in Coq -- on the product set $T{\times}T$  defined by
-$((v_1, v_2)\, C_{\textsc{H}}\, (v_3 v_4) \iff v_2 = v_3)$, that is 
-{\small \inputsnippetsE{erel3/Chrel}{,}} 
-we obtain the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{ \Sequence(\texttt{Chrel})}$ proved in Coq in 
-Lemma \texttt{Lift\_lemma} which gives us the possibility to treat the set ZZZZZZ
-{\small \inputsnippets{erel3/Lift_lemma.tex,erel3/Lift_lemma1.tex, erel3/Lift_lemma2.tex,} 
+
+The list operator will be usefull to convert node paths into edge paths and
+conversely and to check that edge paths satisfy relation between successive
+edges. As an example, using the relation $C_{\textsc{H}}$ -- denote
+\texttt{Chrel} in Coq -- on the product set $T{\times}T$ defined by
+$((v_1, v_2)\, C_{\textsc{H}}\, (v_3 v_4) \iff v_2 = v_3)$, that is {\small
+  \inputsnippetsE{erel3/Chrel}{,}} we obtain four equivalent ways -- two are
+expressed as image of set and two as preimage of set -- of representing sequences
+of pairs of elements of $T$ such that successive pairs satisfy the
+$C_{\textsc{H}}$ relation.  {\small \inputsnippets{erel3/Lift_lemma2.tex}}
+The Lift operator satisfy the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{ \Sequence(\texttt{Chrel})}$
+proved in Coq in Lemma \texttt{Lift\_lemma}
+{\small \inputsnippets{erel3/Lift_lemma}}
 
 \subsubsection{Extended-oriented paths in a (directed simple) graph (permitting loops)}
 

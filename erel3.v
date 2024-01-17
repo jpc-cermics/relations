@@ -325,7 +325,7 @@ Section allset.
   Variables (T: Type) (X Y: set T) (p q: seq T) (x:T).
 
   (* begin snippet Sn:: no-out *)  
-  Definition Sn (T:Type) (n: nat) (D: set T) := [set p | p [\in] D /\ size(p)=n].
+  Definition Sn (T:Type) (n: nat) (D: set T):= [set p| p [\in] D/\size(p)=n].
   (* end snippet Sn *)
   
   Lemma allsetP: X x /\ p [\in] X <-> (x \in X) && (p [\in] X).
@@ -672,39 +672,37 @@ Section Lift2.
     by split => [[x _ <-] | /Lift_Chrel [p H1]];[ apply Lift_Lift | exists p].
   Qed.
 
-  (* begin snippet Lift_lemma1:: no-out *)  
-  Lemma Lift_lemma1:  
-    image [set s | size(s) > 2] (@Lift T) 
-    = preimage (@Lift (T*T)) [set spa| spa [\in] Chrel /\ size(spa)> 0].
-  (* end snippet Lift_lemma1 *)  
+  (* begin snippet Lift_lemma2:: no-out *)  
+  Definition Im  := image [set s | size(s) > 2] (@Lift T).
+  Definition Im1 := [set spa | exists p: seq T, Lift p = spa /\ size(p) > 2].
+  Definition Pre := preimage (@Lift (T*T)) [set spa| spa [\in] Chrel /\ size(spa)> 0].
+  Definition Pre1:= [set spa | (Lift spa) [\in] Chrel /\ size(spa) > 1].
+  (* end snippet Lift_lemma2 *)  
+
+  Lemma Lift_lemma2: Im = Pre.
   Proof. 
-    rewrite /image /preimage /mkset predeqE => spa.
+    rewrite /Im /Pre /image /preimage /mkset predeqE => spa.
     split => [[x H1 <-] | [/Lift_Chrel [p H1] H2]]. 
     by split;[apply Lift_Lift | move: H1; rewrite 2!Lift_szn].
     by exists p;[rewrite -2!Lift_szn H1 |].
   Qed.
-  
-  (* begin snippet Lift_lemma2:: no-out *)  
-  Lemma Lift_lemma2:
-    preimage (@Lift (T*T)) [set spa| spa [\in] Chrel /\ size(spa)> 0] 
-    = [set spa | (Lift spa) [\in] Chrel /\ size(spa) > 1].
-  (* end snippet Lift_lemma2 *)  
-  Proof. 
-    rewrite /preimage /mkset predeqE => spa. 
-    by rewrite Lift_szn.
-  Qed.
 
-  Lemma Lift_lemma3:
-    image [set s | size(s) > 2] (@Lift T) 
-    =  [set spa | exists p: seq T, Lift p = spa /\ size(p) > 2].
+  Lemma Lift_lemma3: Im = Im1.
   Proof. 
-    rewrite /image /mkset predeqE => spa.
+    rewrite /Im /Im1 /image /mkset predeqE => spa.
     by split => [[p H1 H2]|[p [H1 H2]]];(exists p).
   Qed.
+    
+  Lemma Lift_lemma4: Pre = Pre1.
+  Proof. 
+    by rewrite /Pre /Pre1 /preimage /mkset predeqE => spa;rewrite Lift_szn.
+  Qed.
+  
   
   (* begin snippet EPath2new:: no-out *) 
   Definition EPath2'' (S: relation T):=
     [set spa | spa [\in] S /\ (Lift spa) [\in] Chrel /\ size(spa) > 0].
+  
   (* end snippet EPath2new *)
   
   (* begin snippet EPath3new:: no-out *) 
@@ -1676,3 +1674,4 @@ Section Wip.
   Qed.
            
 End Wip.
+
