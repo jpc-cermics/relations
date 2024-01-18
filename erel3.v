@@ -673,13 +673,14 @@ Section Lift2.
   Qed.
 
   (* begin snippet Lift_lemma2:: no-out *)  
-  Definition Im  := image [set s | size(s) > 2] (@Lift T).
-  Definition Im1 := [set spa | exists p: seq T, Lift p = spa /\ size(p) > 2].
-  Definition Pre := preimage (@Lift (T*T)) [set spa| spa [\in] Chrel /\ size(spa)> 0].
-  Definition Pre1:= [set spa | (Lift spa) [\in] Chrel /\ size(spa) > 1].
+  Definition Im (n: nat):= image [set s | size(s)>n] (@Lift T).
+  Definition Im1 (n: nat):= [set sp| exists p: seq T, Lift p = sp /\ size(p)>n].
+  Definition Pre (n: nat):= 
+    preimage (@Lift (T*T)) [set sp| sp [\in] Chrel /\ size(sp)> n].
+  Definition Pre1 (n: nat):= [set sp| (Lift sp) [\in] Chrel /\ size(sp)>n].
   (* end snippet Lift_lemma2 *)  
 
-  Lemma Lift_lemma2: Im = Pre.
+  Lemma Lift_lemma2: (Im 2) = (Pre 0).
   Proof. 
     rewrite /Im /Pre /image /preimage /mkset predeqE => spa.
     split => [[x H1 <-] | [/Lift_Chrel [p H1] H2]]. 
@@ -687,13 +688,13 @@ Section Lift2.
     by exists p;[rewrite -2!Lift_szn H1 |].
   Qed.
 
-  Lemma Lift_lemma3: Im = Im1.
+  Lemma Lift_lemma3: (Im 2) = (Im1 2).
   Proof. 
     rewrite /Im /Im1 /image /mkset predeqE => spa.
     by split => [[p H1 H2]|[p [H1 H2]]];(exists p).
   Qed.
     
-  Lemma Lift_lemma4: Pre = Pre1.
+  Lemma Lift_lemma4: (Pre 0) = (Pre1 1).
   Proof. 
     by rewrite /Pre /Pre1 /preimage /mkset predeqE => spa;rewrite Lift_szn.
   Qed.

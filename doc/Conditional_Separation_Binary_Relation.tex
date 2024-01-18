@@ -208,18 +208,20 @@ definitions recalled at the begining of the section.
 To formalize in Coq graph paths we use sequences (defined in mathcomp
 \texttt{seq.v}) combined with set formalization (defined in mathcomp
 \texttt{classical\_sets}). To describe the formalization we start by introducing some
-notations. We consider a set $\fullset$, and for any set ${\Set} \subset \fullset$, we denote by
+notations. We consider a set $\fullset$, and for any set ${\Set} \subset \fullset$ and $n\in \NN$,
+we denote by
 $\Sequence_n(\Set)$ the set of sequences of length $n$ of elements of the
-set~$\Set$, $\Sequence_n(\Set)= \SetProd{\Set}{n}$ and by
+set~$\Set$, $\Sequence_n(\Set)= \SetProd{\Set}{n}$ ($\Sequence_0(\Set)$ being the singleton set with the empty sequence) and by
 $\Sequence_{\ge n}(\Set)$ the set of finite sequences of length greater or equal
 to $n$ of elements of the set $\Set$, that is the disjoint union
-$\sqcup_{k\ge n} \Sequence_k(\Set)$. the set $\Sequence_{\ge n}(\Set)$ will be denoted by $\Sequence(\Set)$.
+$\sqcup_{k\ge n} \Sequence_k(\Set)$. The set $\Sequence_{\ge 0}(\Set)$ will be denoted by $\Sequence(\Set)$.
 
-\paragraph{(Coq)} The sets $\Sequence_{\ge n}(\fullset)$ and $\Sequence_{n}(\fullset)$
-are implemented in Coq using sequences of elements of type \texttt{T} 
-and the restriction to elements in a subset \texttt{(D: set T)} is obtained using the function \texttt{all}. 
-As an example $\Sequence_{n}(D)$ is implemented as follows
-{\small \inputsnippets{erel3/all_notation.tex,erel3/Sn.tex}}
+\paragraph{(Coq)} The sets $\Sequence_{\ge n}(\fullset)$ and
+$\Sequence_{n}(\fullset)$ are implemented in Coq using sequences of elements of
+type \texttt{T} and the restriction to elements in a subset
+\texttt{(\PY{n+nv}{D}: set T)} is obtained using the function \texttt{all}.  As
+an example $\Sequence_{n}(D)$ is implemented as follows {\small
+  \inputsnippets{erel3/all_notation.tex,erel3/Sn.tex}}
 
 Now, for $n\ge 2$, we consider a lift operator
 \[\Lift_n: \Sequence_{n}(\fullset)\to \Sequence_{n{-}1}(\fullset{\times}\fullset)\eqfinv\]
@@ -250,7 +252,10 @@ $((v_1, v_2)\, C_{\textsc{H}}\, (v_3 v_4) \iff v_2 = v_3)$, that is {\small
   \inputsnippetsE{erel3/Chrel}{,}} we obtain four equivalent ways -- two are
 expressed as image of set and two as preimage of set -- of representing sequences
 of pairs of elements of $T$ such that successive pairs satisfy the
-$C_{\textsc{H}}$ relation.  {\small \inputsnippets{erel3/Lift_lemma2.tex}}
+$C_{\textsc{H}}$ relation. We obtain that \texttt{(Im 2) = (Im1 2) = (Pre 0) = (Pre1 1)}, 
+where the four paths sets are defined by 
+{\small \inputsnippets{erel3/Lift_lemma2.tex}}
+
 The Lift operator satisfy the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{ \Sequence(\texttt{Chrel})}$\footnote{%
   Note that mathematically, two different Lift operators appear in this equation as their domain is not the same.
   Nevertheless, we use the same notation as in Coq they are implemented with the same \texttt{List} function using
