@@ -1097,7 +1097,17 @@ Section Active_relation.
   Lemma ComposeOe_eq: forall (x y z t: T) (o1 o2:O),
       ComposeOe ((x,y,o1), (z,t,o2)) <-> y = z.
   Proof. by []. Qed.
-
+  
+  (* begin snippet EoPath:: no-out *) 
+  Definition U_ge_1 (S: relation T):=
+    [set spa | spa [\in] (Oedge S) /\ (Lift spa) [\in] ComposeOe /\ size(spa) > 0].
+  (* end snippet EoPath *)
+  
+  (* begin snippet EPath3new:: no-out *) 
+  Definition U_ge_1' (S: relation T):=
+    [set spa | spa [\in] (Oedge S) /\ (exists p,exists o, (LiftO p o) =spa /\ size(p) > 1)].
+  (* end snippet EPath3new *)
+  
   (* Active as a relation on Eo) *)
   Definition ActiveOe (W: set T) (S: relation T) := 
     [set oe : (Eo T O) * (Eo T O) | 

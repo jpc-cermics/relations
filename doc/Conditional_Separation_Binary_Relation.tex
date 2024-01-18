@@ -370,6 +370,12 @@ to one is given as a Lifted sequence of elements of $T$
 as for example in \texttt{\PY{n}{Lift}~\PY{o}{(}\PY{n}{x}\PY{o}{::(}\PY{n}{rcons}~\PY{n}{p}~\PY{n}{y}\PY{o}{))}~\PY{o}{=}~\PY{n}{sp}\PY{o}{.}} the endpoints \texttt{(x,y)} and the
 intermediate nodes \texttt{p} of the \EdgePath\ \texttt{sp} are immediately obtained.
 
+As a first result linking (edge) paths and relations we can prove that 
+{\small \inputsnippetsE{erel3/TCP.tex}{,}
+which asserts that two nodes \texttt{(v1,v2)} are in relation through the transitive closure of a relation 
+\texttt{S}, that is \texttt{(v1,v2) $\in$ S.+} if and only if 
+there exists an edge path with endpoints \texttt{(v1,v2)} in the graph $(T,S)$.
+
 We denote by $\cardinal{\path}$ the length of a path $\path \in
 \PATH\np{\OrientedGraph}$.
 An \emph{\EdgeSubPath} of the \EdgePath~$\path$ is an \EdgePath\ obtained by a
@@ -473,7 +479,7 @@ Equation~\eqref{def:Eo_relation}. For that purpose,  the mapping \texttt{Oedge} 
 construct a relation $\EDGEo$ given a relation $\EDGE$
 {\small \inputsnippets{erel3/Oedge.tex}
 Finally, the set of
-\undirectedEdgePaths\ paths of size greater or equal to one,
+\undirectedEdgePaths\ of size greater or equal to one,
 $\UPATH_{\ge 1}\np{\OrientedGraph}$ is defined by
 \inputsnippets{erel3/EoPath1.tex}
 
