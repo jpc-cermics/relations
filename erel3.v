@@ -586,7 +586,7 @@ Section Edge_paths.
 End Edge_paths.
 
 Section Lift2.
-  (** * two ways to check edge paths *) 
+  (** * Multiple definitions of edge paths *) 
   
   Variables (T: Type).
 
@@ -729,12 +729,6 @@ Section Lift2.
     move => [H1 [p [H2 H3]]].
     split. by []. split. rewrite Lift_Chrel. by exists p. by rewrite -H2  Lift_sz2.
   Qed.
-
-  Definition Test (x y:T) (p:seq T) (sp:seq(T*T)):= 
-  (* begin snippet LiftEP:: no-out *) 
-    Lift (x::(rcons p y)) = sp.
-  (* end snippet LiftEP:: no-out *) 
-  
   
 End Lift2.
 
@@ -748,32 +742,6 @@ Section Seq_liftO.
   Inductive O := | P | N.
   (* end snippet O *)
   Definition O_rev (o:O) := match o with | P => N | N => P end.
-  
-  Record Svo := { sv: seq T; so: seq O; len: size(sv) = (size(so)).+1}.
-
-  Lemma test: forall (sv : seq T) (so : seq O), 
-       size(so) > 0 
-       -> size(sv) = (size(so)).+1 
-       -> size(behead sv)  = (size(behead so)).+1.
-  Proof.
-    move => sv so.
-    elim: so sv. 
-    move => so. by [].
-    move => o so' Hr so /= H1 H2. 
-    by rewrite size_behead H2.
-  Qed.
-
-  Lemma svo_rec : forall (svo: Svo),
-      size(so svo) > 0 
-      -> size(behead (sv svo)) = (size(behead (so svo))).+1.
-  Proof.
-    move => svo H1. apply: (test H1 (len svo)).
-  Qed.
-
-  Lemma test1: forall (s : Svo), size (sv s) = (size(so s)).+1.
-  Proof.
-    by move => [a b c].
-  Qed.
   
   (* begin snippet Oedge:: no-out *)  
   Definition Oedge (S: relation T): set (T*T*O) :=
@@ -939,106 +907,101 @@ Section Seq_liftO.
   
   Section Lifto_seq_props.
     (** Lifto properties herited from Lift *) 
-  Lemma Lifto_c: forall (p:seq T) (o:O) (x y: T),
-      Lifto [::x, y & p] o = (x,y,o)::(Lifto [::y & p] o).
-  Proof.
-    by [].
-  Qed.
+    Lemma Lifto_c: forall (p:seq T) (o:O) (x y: T),
+        Lifto [::x, y & p] o = (x,y,o)::(Lifto [::y & p] o).
+    Proof.
+      by [].
+    Qed.
 
-  Lemma Lifto_crc: forall (p:seq T) (o:O) (x y: T),
-      Lifto (x::(rcons p y)) o = (x,(head y p),o)::(Lifto (rcons p y) o).
-  Proof.
-    by move => p o x y; rewrite /Lifto Lift_crc. 
-  Qed.
+    Lemma Lifto_crc: forall (p:seq T) (o:O) (x y: T),
+        Lifto (x::(rcons p y)) o = (x,(head y p),o)::(Lifto (rcons p y) o).
+    Proof.
+      by move => p o x y; rewrite /Lifto Lift_crc. 
+    Qed.
     
-  Lemma Lifto_rcc: forall (p:seq T) (o:O) (x y: T),
-      Lifto (rcons (x::p) y) o = rcons (Lifto (x::p) o) (last x p,y,o).
-  Proof.
-    by move => p o x y; rewrite /Lifto lastI Lift_rcrc pair_o_rc.
-  Qed.
-  
-  Lemma Lifto_rcrc: forall (p:seq T) (o:O) (x y: T),
-      Lifto (rcons (rcons p x) y) o =  rcons (Lifto (rcons p x) o) (x,y,o).
-  Proof.
-    by move => p o x y;rewrite /Lifto Lift_rcrc pair_o_rc. 
-  Qed.
-  
-  Lemma Lifto_last: forall (p:seq T) (o:O) (y z: T),
-      last (z, y ,o) (Lifto (rcons p y) o) = (last z p, y,o).
-  Proof.
-    elim/last_ind => [o y z // | p t Hr o y z].
-    by rewrite /Lifto Lift_rcrc pair_o_last !last_rcons.
-  Qed.
+    Lemma Lifto_rcc: forall (p:seq T) (o:O) (x y: T),
+        Lifto (rcons (x::p) y) o = rcons (Lifto (x::p) o) (last x p,y,o).
+    Proof.
+      by move => p o x y; rewrite /Lifto lastI Lift_rcrc pair_o_rc.
+    Qed.
+    
+    Lemma Lifto_rcrc: forall (p:seq T) (o:O) (x y: T),
+        Lifto (rcons (rcons p x) y) o =  rcons (Lifto (rcons p x) o) (x,y,o).
+    Proof.
+      by move => p o x y;rewrite /Lifto Lift_rcrc pair_o_rc. 
+    Qed.
+    
+    Lemma Lifto_last: forall (p:seq T) (o:O) (y z: T),
+        last (z, y ,o) (Lifto (rcons p y) o) = (last z p, y,o).
+    Proof.
+      elim/last_ind => [o y z // | p t Hr o y z].
+      by rewrite /Lifto Lift_rcrc pair_o_last !last_rcons.
+    Qed.
 
-  Lemma Lifto_last1: forall (p:seq T) (o:O) ( y z: T),
-      last (z, head y p,o) (Lifto (rcons p y) o) = (last z p, y,o).
-  Proof.
-    elim/last_ind => [o y z // | p t Hr o y z].
-    by rewrite /Lifto Lift_rcrc pair_o_last !last_rcons.
-  Qed.
-  
-  Lemma Lifto_head: forall (p:seq T) (o:O) (x z: T),
-      head (x, z ,o) (Lifto (x::p) o) = (x, head z p, o).
-  Proof.
-    have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
-    elim/last_ind => [o x y // | p t Hr o x z].
-    by rewrite /Lifto Lift_crc H1. 
-  Qed.
+    Lemma Lifto_last1: forall (p:seq T) (o:O) ( y z: T),
+        last (z, head y p,o) (Lifto (rcons p y) o) = (last z p, y,o).
+    Proof.
+      elim/last_ind => [o y z // | p t Hr o y z].
+      by rewrite /Lifto Lift_rcrc pair_o_last !last_rcons.
+    Qed.
+    
+    Lemma Lifto_head: forall (p:seq T) (o:O) (x z: T),
+        head (x, z ,o) (Lifto (x::p) o) = (x, head z p, o).
+    Proof.
+      have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
+      elim/last_ind => [o x y // | p t Hr o x z].
+      by rewrite /Lifto Lift_crc H1. 
+    Qed.
 
-  Lemma Lifto_head1: forall (p:seq T) (o:O) (x z: T),
-      head (last x p, z ,o) (Lifto (x::p) o) = (x, head z p, o).
-  Proof.
-    have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
-    elim/last_ind => [o x y // | p t Hr o x z].
-    by rewrite /Lifto Lift_crc H1. 
-  Qed.
-  
-  Lemma Lift_o_cons: forall (p:seq T) (o:O) (x y z: T),
-      Lifto (x::(rcons (z::p) y)) o = (x,z,o)::(Lifto (z::(rcons p y)) o).
-  Proof.
-    move => p o x y z;rewrite Lifto_crc //.
-  Qed.
-  
-  Lemma Lift_o_start_end: forall (p q: seq T) (x y t: T),
+    Lemma Lifto_head1: forall (p:seq T) (o:O) (x z: T),
+        head (last x p, z ,o) (Lifto (x::p) o) = (x, head z p, o).
+    Proof.
+      have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
+      elim/last_ind => [o x y // | p t Hr o x z].
+      by rewrite /Lifto Lift_crc H1. 
+    Qed.
+    
+    Lemma Lift_o_cons: forall (p:seq T) (o:O) (x y z: T),
+        Lifto (x::(rcons (z::p) y)) o = (x,z,o)::(Lifto (z::(rcons p y)) o).
+    Proof.
+      move => p o x y z;rewrite Lifto_crc //.
+    Qed.
+    
+    Lemma Lift_o_start_end: forall (p q: seq T) (x y t: T),
       exists (x' y': T) (r: seq (Eo T O)), 
         ((Lifto (x::(rcons p t)) N)++(Lifto (t::(rcons q y)) P))
         = (x,x',N)::(rcons r (y',y,P)).
-  Proof.
-    elim => [ |x' p Hr q ].
-    - elim/last_ind => [x y t | q z Hr x y t]; first by (exists t,t,[::]).
-      (exists t,z, (Lifto (t::(rcons q z)) P)).
-      by rewrite //= -!rcons_cons Lifto_rcrc !rcons_cons. 
-    - elim/last_ind: q x' p Hr => [x p Hr x' y t |q x1 Hr x2 p H1 x y t ].
-      + specialize Hr with [::] x y t as [x1 [y1 [r H1]]].
-        by (exists x, y1, ((x, x1, N)::r));rewrite //= H1.
-      + exists x2, x1, ((Lifto (x2::(rcons p t)) N) ++ (Lifto (t::(rcons q x1)) P)).
-        by rewrite rcons_cons Lifto_c -!rcons_cons Lifto_rcrc -rcons_cat.
-  Qed.
-  
-  Lemma Lifto_inv1: forall (p: seq T) (x y: T),
-      UnLiftO_A (Lifto (x::(rcons p y)) N) x = x::(rcons p y).
-  Proof.
-    by move => p x y;rewrite /Lifto /UnLiftO_A pair_o_iff pair_invl Lift_inv1.
-  Qed.
+    Proof.
+      elim => [ |x' p Hr q ].
+      - elim/last_ind => [x y t | q z Hr x y t]; first by (exists t,t,[::]).
+        (exists t,z, (Lifto (t::(rcons q z)) P)).
+        by rewrite //= -!rcons_cons Lifto_rcrc !rcons_cons. 
+      - elim/last_ind: q x' p Hr => [x p Hr x' y t |q x1 Hr x2 p H1 x y t ].
+        + specialize Hr with [::] x y t as [x1 [y1 [r H1]]].
+          by (exists x, y1, ((x, x1, N)::r));rewrite //= H1.
+        + exists x2, x1, ((Lifto (x2::(rcons p t)) N) ++ (Lifto (t::(rcons q x1)) P)).
+          by rewrite rcons_cons Lifto_c -!rcons_cons Lifto_rcrc -rcons_cat.
+    Qed.
+    
+    Lemma Lifto_inv1: forall (p: seq T) (x y: T),
+        UnLiftO_A (Lifto (x::(rcons p y)) N) x = x::(rcons p y).
+    Proof.
+      by move => p x y;rewrite /Lifto /UnLiftO_A pair_o_iff pair_invl Lift_inv1.
+    Qed.
 
-  Lemma Lifto_inv3: forall (p q: seq T) (x y t: T),
-      UnLiftO_A ((Lifto (x::(rcons p t)) N)++(Lifto (t::(rcons q y)) P )) x =
-        x :: rcons (rcons p t ++ q) y.
-  Proof.
-    move => p q x y t;rewrite /Lifto /UnLiftO_A. 
-    rewrite !pair_o_iff -pair_cat.
-    by rewrite pair_invl -Lift_cat_crc -rcons_cat Lift_inv1.
-    by rewrite size_nseq.
-  Qed.
+    Lemma Lifto_inv3: forall (p q: seq T) (x y t: T),
+        UnLiftO_A ((Lifto (x::(rcons p t)) N)++(Lifto (t::(rcons q y)) P )) x =
+          x :: rcons (rcons p t ++ q) y.
+    Proof.
+      move => p q x y t;rewrite /Lifto /UnLiftO_A. 
+      rewrite !pair_o_iff -pair_cat.
+      by rewrite pair_invl -Lift_cat_crc -rcons_cat Lift_inv1.
+      by rewrite size_nseq.
+    Qed.
 
   End Lifto_seq_props.
-
-  (* begin snippet EoPath1:: no-out *)  
-  
-  (* end snippet EoPath1 *)
   
 End Seq_liftO.
-
 
 Section PathRel.
   (** * transitive closure and paths
@@ -1070,12 +1033,10 @@ Section PathRel.
       by exists z;split;[ | exists p'].
   Qed.
   
-  (* relation based on paths: take care that the path p depends on (x,y) *)
-  Definition PathRel (S: relation T) := 
-    [set x | (exists (p: seq T), allL S p x.1 x.2)].
-  
   (* R.+ =  PathRel R *)
-  Lemma clos_t_iff_PathRel: S.+ =  PathRel S.
+  (* begin snippet TCP:: no-out *)  
+  Lemma TCP: S.+ = [set vp | exists p, (Lift (vp.1::(rcons p vp.2))) [\in] S].
+  (* end snippet TCP *)  
   Proof.
     rewrite /mkset predeqE => [[x y]].
     split => [H1 | [p H1]].
@@ -1101,7 +1062,7 @@ Section PathRel_Examples.
       (exists (p: seq T), all (fun x => x \in W.^c) (x::p) /\ allL S p x y
                      /\ all (fun x => x \in ((Δ_(W.^c) `;` S).+)#_(y)) (x::p)).
   Proof.
-    move => x y; rewrite {1}clos_t_iff_PathRel; move => [p /= H1]; exists p.
+    move => x y; rewrite {1}TCP; move => [p /= H1]; exists p.
     move: (H1) => /allL_WS_iff/andP [H2 H2'].
     apply allL_All in H1;apply allset_cons in H1;move: H1=> [/inP H1 H1'].
     by rewrite -allset_consb H1 H1' andbT.
@@ -1112,7 +1073,7 @@ Section PathRel_Examples.
       (exists (p: seq T), (all (fun z => z \in W.^c) (rcons p y) /\ allL S p x y)
                      /\ all (fun z => z \in ((Δ_(W.^c) `;` S.-1).+)#_(x)) (y::(rev p))).
   Proof.
-    move => x y; rewrite {1}clos_t_iff_PathRel; move  => [p H1]; exists p.
+    move => x y; rewrite {1}TCP; move  => [p H1]; exists p.
     rewrite allL_rev inverse_compose DeltaE_inverse /= in H1.
     move: (H1) => /allL_WS_iff/andP /= [/andP [/inP H2 H3] H2'].
     apply allL_All in H1;apply allset_cons in H1;move: H1=> [/inP /= H1 H1'].
