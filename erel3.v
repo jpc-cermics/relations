@@ -597,7 +597,7 @@ Section Lift2.
 
   Lemma Chrel_eq: forall (pa1 pa2: (T*T)), Chrel (pa1,pa2) <-> pa1.2 = pa2.1.
   Proof. by []. Qed.
-
+  
   Lemma Lift_Lift: forall (p:seq T), (Lift (Lift p)) [\in] Chrel. 
   Proof.
     move => p. 
@@ -606,12 +606,11 @@ Section Lift2.
     (* p = [::x] *) by rewrite H1. 
     (* p = x::(rcons q y) *)
     have H2: size(p) > 1 by rewrite H1 /= size_rcons.
-    pose proof seq_cc H2 as [q1 [x1 [x2 H3]]].
-    rewrite H3 Epath_equiv; clear H1 H2 H3.
-    elim: q1 x1 x2 => [ x' y' | y' p' Hr z' x'];first by constructor;constructor.
-    by rewrite Lift_c;apply pp_two;[ | right; exists (x',y'), (Lift [::y' &p'])].
+    move: H2 => /seq_cc [q1 [x1 [x2 ->]]].
+    elim: q1 x1 x2 => [ x' y' // | y' p' Hr z' x'].
+    by rewrite 3!Lift_c allset_cons -Lift_c;split;[ |apply Hr].
   Qed.
-  
+
   Lemma Lift_Chrel_n_imp: forall (n: nat) (spa : seq (T*T)),
       size(spa)= n.+2 -> (Lift spa) [\in] Chrel -> exists p: seq T, Lift p = spa.
   Proof.
@@ -768,6 +767,7 @@ Section Seq_liftO.
     |  _ , _ => @nil (Eo T O)
     end.
   (* end snippet pair *)  
+
   Lemma pair_c: forall (spa: seq (T * T)) (so: seq O) (pa: T * T),
       pair (pa::spa) so = (pa,head P so )::(pair spa (behead so)).
   Proof.
@@ -790,7 +790,7 @@ Section Seq_liftO.
       by apply H3.
     by [].
   Qed.
-  
+
   Fixpoint unpair_A (spao: seq (Eo T O)) :=
     match spao with 
     | [::] => [::]
@@ -1082,10 +1082,8 @@ Section PathRel_Examples.
   
 End PathRel_Examples.
 
-Section Active_relation.
-  (** * relation on EO where EO = (AxA)xO
-   * this section is to be merged with previous stuffs 
-   *)
+Section Extended_oriented_paths.
+
   Variables (T: Type).
   
   (* A relation on (Eo) *)
@@ -1097,7 +1095,7 @@ Section Active_relation.
   Lemma ComposeOe_eq: forall (x y z t: T) (o1 o2:O),
       ComposeOe ((x,y,o1), (z,t,o2)) <-> y = z.
   Proof. by []. Qed.
-  
+
   (* begin snippet EoPath:: no-out *) 
   Definition U_ge_1 (S: relation T):=
     [set spa | spa [\in] (Oedge S) /\ (Lift spa) [\in] ComposeOe /\ size(spa) > 0].
@@ -1107,6 +1105,26 @@ Section Active_relation.
   Definition U_ge_1' (S: relation T):=
     [set spa | spa [\in] (Oedge S) /\ (exists p,exists o, (LiftO p o) =spa /\ size(p) > 1)].
   (* end snippet EPath3new *)
+
+  Lemma XX: forall (S: relation T),
+      [set spa | (Lift spa) [\in] ComposeOe /\ size(spa) > 0]
+      = [set spa | (exists p,exists o, (LiftO p o) =spa /\ size(p) > 1)].
+  Proof.
+    move => S.
+    rewrite /mkset predeqE => spo.
+    
+  Admitted.
+
+
+End Extended_oriented_paths.
+
+
+Section Active_relation.
+  (** * relation on EO where EO = (AxA)xO
+   * this section is to be merged with previous stuffs 
+   *)
+  
+  Variables (T: Type).
   
   (* Active as a relation on Eo) *)
   Definition ActiveOe (W: set T) (S: relation T) := 
