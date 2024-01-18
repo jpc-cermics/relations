@@ -195,11 +195,11 @@ An \emph{equivalence relation} is a reflexive, symmetric and transitive binary
 relation.
 
 Relations are implemented as sets on a product space using the classical sets implemented in
-\texttt{classical\_sets.v} from the mathcomp library~\cite{MathComp:2022}
+\texttt{classical\_sets.v} from the Coq mathcomp library~\cite{MathComp:2022}
 using ssreflect tactics~\cite{Gonthier-Mahboubi-Tassi:2016} 
 \inputsnippetsE{ssrel/relation.tex}{.}
 As described in more details below, we have developed a library for relations taking into account all the
-definitions recalled at the begining of the section.
+definitions recalled at the begining of this section.
 % ,ssrel/clos_refl_trans.tex,ssrel/clos_rt.tex}
 \subsection{Sequences sets and relations}
 \label{sec:sequences}
@@ -241,10 +241,9 @@ Then, using the sequence of mapping $\nseqa{\Lift_n}{n\ge 2}$ we define a lift o
 $\Sequence_{n}(\fullset)$ coincide with the $\Lift_n$ mapping, that is
 ${\Lift}_{\vert\Sequence_n(\fullset)}= \Lift_n$ and for ${\Lift}\bp{\Sequence_{0}(\fullset) \cup\Sequence_{1}(\fullset)}$ is a singleton set composed of the empty list on $\fullset{\times}\fullset$.
 
-\paragraph{(Coq)} The lift operator $\Lift$ is implemented in Coq as a recursive mapping denoted
-\texttt{Lift}: {\small \inputsnippets{erel3/Lift.tex} }
-
-The list operator will be usefull to convert node paths into edge paths and
+The lift operator $\Lift$ is implemented in Coq as a recursive mapping denoted
+\texttt{Lift}: {\small \inputsnippetsE{erel3/Lift.tex}{,} }
+it will be usefull, in this work, to convert node paths into edge paths and
 conversely and to check that edge paths satisfy given relations between successive
 edges. As an example, using the relation $C_{\textsc{H}}$ -- denote
 \texttt{Chrel} in Coq -- on the product set $T{\times}T$ defined by
@@ -312,7 +311,7 @@ or, equivalently, if
 \( \EDGE \cap \Converse{\EDGE}=\emptyset \), that is, 
 when no two edges have the same endpoints.
 
-\paragraph{(Coq)} A graph $(\VERTEX,\EDGE)$ is given in Coq by a type \texttt{(T: Type)} and a relation on
+A graph $(\VERTEX,\EDGE)$ is given in Coq by a type \texttt{(T: Type)} and a relation on
 \texttt{T} which is a set in the product type \texttt{set T*T}, that is
 $(\EDGE:\texttt{set T*T})$. Thus, the (classical) set definition of mathcomp
 analysis \texttt{classical\_sets.v} is used to formalize a graph.
@@ -325,45 +324,51 @@ as the classical notion of path in a graph~\citep{Diestel}.
 We also define an \undirectedEdgePath\ in $(\VERTEX,\EDGE)$ (in our sense)
 as what corresponds to chain path in~\citep{Lauritzen-et-al-1990}.
 \medskip
+
+\noindent $\bullet$ Definition of \emph{\EdgePath}.
 Using the notations introduced in Section~\ref{sec:sequences}, 
 the set of \emph{\EdgePath} of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$ is defined by
 \begin{equation}
-  \PATH^n\np{\OrientedGraph} =
-  \Lift_n \bp{ \Sequence_{n+1}(\VERTEX)} \cap \Sequence_{n}(\EDGE)
-  \text{ and satisfy } \PATH^n\np{\OrientedGraph} \subset \Sequence_{n}(\EDGE) \subset \Sequence_{n}(\VERTEX{\times}\VERTEX))
-  \eqfinp
+  \PATH_n\np{\OrientedGraph} =
+  \Lift \bp{ \Sequence_{n+1}(\VERTEX)} \cap \Sequence_{n}(\EDGE)
+  \eqsepv
 \end{equation}
-
-It easily follows from the definition of $\PATH^n\np{\OrientedGraph}$ that we also have and equivalent definition
+and satisfy $\PATH_n\np{\OrientedGraph} \subset \Sequence_{n}(\EDGE)$$ \subset \Sequence_{n}(\VERTEX{\times}\VERTEX))$.
+Moreover, it easily follows from the definition of $\PATH_n\np{\OrientedGraph}$ that we also have the followin equality
 \begin{align}
-  \PATH^n\np{\OrientedGraph} %    \PATH^n\np{\graph}
+  \PATH_\np{\OrientedGraph} %    \PATH^n\np{\graph}
   &=
     \Bset{ \bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \in \SetProd{\EDGE}{n} }
     { \head{\vertex_i}=\tail{\vertex_{i+1}} \text{ for } i\in\ic{1,n{-}1}}
     \eqfinp
 \end{align}
-The set of finite (edge) paths of length greater or equal to $1$ relative to the graph~$\npOrientedGraph$ is defined by
+The set of finite (edge) paths of length greater or equal to $n\ge1$ relative to the graph~$\npOrientedGraph$ is defined by
 \begin{align}
-  \PATH^{\ge 1}\np{\OrientedGraph}
+  \PATH_{\ge n}\np{\OrientedGraph}
   &=
-    \Lift\bp{ \Sequence_{\ge 2}(\VERTEX)} \cap \Sequence_{\ge 1}(\EDGE)
-    \text{ and satisfy } \PATH^{\ge 1}\np{\OrientedGraph}  \subset \Sequence_{\ge 1}(\EDGE)  \subset \Sequence_{\ge 1}(\VERTEX{\times}\VERTEX))
-    \eqfinv
+    \Lift\bp{ \Sequence_{\ge n+1}(\VERTEX)} \cap \Sequence_{\ge n}(\EDGE)
     \label{def:epaths_gt1}
+    \eqfinv
 \end{align}
-which coincide with the set $\bigcup_{n\ge 1} \PATH^n\np{\OrientedGraph}$ as it easily follows that
-$\PATH^{\ge 1}\np{\OrientedGraph} = \bigcup_{n\ge 1} \PATH^n\np{\OrientedGraph}$.
+and satisfy $\PATH_{\ge n}\np{\OrientedGraph} \subset \Sequence_{\ge n}(\EDGE)$$ \subset \Sequence_{\ge n}(\VERTEX{\times}\VERTEX)$
+and coincide with the set $\sqcup_{n'\ge n} \PATH_{n'}\np{\OrientedGraph}$.
 
-\paragraph{(Coq)} 
-{\small \inputsnippets{erel3/EPath2new.tex,erel3/EPath3new,erel3/EPath2inter}}
+Using the tools introduced in Section~\ref{sec:sequences} and Equation~\eqref{def:epaths_gt1} we obtain in Coq
+the following three equivalent definitions of $P_{\ge 1}$
+{\small \inputsnippetsE{erel3/EPath2new.tex,erel3/EPath3new,erel3/EPath2inter}{,}}
+where \texttt{`\&`} is the set intersection as defined in \texttt{classical\_sets.v}.
 
 \medskip
 
 The first element~$\tail{\vertex_1}$ of an \EdgePath\
-\( \path=\bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \) 
-is the \emph{tail of the \EdgePath}, 
-whereas the last one~$\head{\vertex_n}$ is the \emph{head of the \EdgePath}.
-Both tail and head are called \emph{endpoints} of the \EdgePath. 
+\( \path=\bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \) is the
+\emph{tail of the \EdgePath}, whereas the last one~$\head{\vertex_n}$ is the
+\emph{head of the \EdgePath}.  Both tail (obtained with function \texttt{head}
+in Coq) and head (obtained with function \texttt{last} in Coq) are called
+\emph{endpoints} of the \EdgePath.  When an edge path of length greater or equal
+to one is given as a Lifted sequence of elements of $T$
+as for example in \texttt{\PY{n}{Lift}~\PY{o}{(}\PY{n}{x}\PY{o}{::(}\PY{n}{rcons}~\PY{n}{p}~\PY{n}{y}\PY{o}{))}~\PY{o}{=}~\PY{n}{sp}\PY{o}{.}} the endpoints \texttt{(x,y)} and the
+intermediate nodes \texttt{p} of the \EdgePath\ \texttt{sp} are immediately obtained.
 
 We denote by $\cardinal{\path}$ the length of a path $\path \in
 \PATH\np{\OrientedGraph}$.
@@ -374,16 +379,21 @@ subsequence of consecutive indices.
 \noindent $\bullet$ Definition of \emph{\undirectedEdgePath}. To define
 \emph{\undirectedEdgePath}, we consider a finite set ${\Orientation}=\na{-1,+1}$
 taking two possible values and implemented in Coq a an inductive type taking two
-values \texttt{N} and \texttt{P} which will serve as an orientation
-specification of an edge {\small \inputsnippets{erel3/O.tex}} Now, for $n\ge 2$,
-we consider an oriented lift operator
-$\Lifto_n: \Sequence_{n}(\Set)\times\Sequence_{n-1}(\Orientation) \to
-\Sequence_{n{-}1}(\Set{\times}\Set{\times}\Orientation)$ transforming a sequence of elements
-of $\Set$ of length $n$ and a sequence of orientations of length $n{-}1$ into a
-sequence of oriented triples in $\Set{\times}\Set{\times}\Orientation$ of length
+values \texttt{N} and \texttt{P}
+(\texttt{\PY{k+kn}{Inductive}~\PY{n+nf}{O}~\PY{o}{:=}~\PY{o}{|}~\PY{n}{P}~\PY{o}{|}~\PY{n}{N}\PY{o}{.}})
+which will serve as an orientation specification of an edge.
+
+Now, for $n\ge 2$, we consider an oriented lift operator
+\begin{equation}
+  \Lifto_n: \Sequence_{n}(\fullset)\times\Sequence_{n-1}(\Orientation) \to
+  \Sequence_{n{-}1}(\fullset{\times}\fullset{\times}\Orientation)
+  \eqsepv
+\end{equation}
+transforming a sequence of elements of $\fullset$ of length $n$ and a sequence of orientations of length $n{-}1$ into a
+sequence of oriented triples in $\fullset{\times}\fullset{\times}\Orientation$ of length
 $n{-}1$ as follows
 \begin{align}
-  \forall \vertex\in \Sequence_n(\Set)
+  \forall \vertex\in \Sequence_n(\fullset)
   \eqsepv
   \forall o\in \Sequence_{n-1}(\Orientation)
   \eqsepv
@@ -394,11 +404,11 @@ $n{-}1$ as follows
 \end{align}
 Proceeding as in the previous paragraph, using the sequence of mapping
 $\nseqa{\Lifto_n}{n\ge 2}$ we define a lift operator
-$$\Lifto: \sqcup_{n\ge 2} \Sequence_{n}(\Set){\times}\Sequence_{n-1}(\Orientation)
-\to \Sequence_{\ge 1}(\Set{\times}\Set{\times}\Orientation)$$ such that for all
+$$\Lifto: \sqcup_{n\ge 2} \Sequence_{n}(\fullset){\times}\Sequence_{n-1}(\Orientation)
+\to \Sequence_{\ge 1}(\fullset{\times}\fullset{\times}\Orientation)$$ such that for all
 $n \ge 2$ the restriction of $\Lifto$ to the set
-$\Sequence_{n}(\Set){\times}\Sequence_{n-1}(\Orientation)$ coincide with the
-$\Lifto_n$ mapping. 
+$\Sequence_{n}(\fullset){\times}\Sequence_{n-1}(\Orientation)$ coincide with
+$\Lifto_n$.
 
 The set of \emph{\undirectedEdgePath} of length~$n$ ($n\ge 1$) relative to the
 graph~$\npOrientedGraph$ is defined by
@@ -418,7 +428,7 @@ where the relation $\EDGEo$ on the set $\EDGE\times\Orientation$ is defined by
   \label{def:Eo_relation}
 \end{align}
 
-The set of finite \undirectedEdgePaths\footnote{%
+Finally, the set of finite \undirectedEdgePaths\footnote{%
   It is to be noted that an \undirectedEdgePath\ is \emph{not a path in the graph
     $\npOrientedGraph$}, neither in the undirected graph $\npUnorientedGraph$.
   However, considering a couple $(\path,\orient)\in \UPATH^n\np{\OrientedGraph}$, we obtain that
@@ -436,15 +446,15 @@ The set of finite \undirectedEdgePaths\footnote{%
     the graph~\( \npOrientedGraph \) is directed,
     that is, when $\EDGE \cap \Converse{\EDGE}=\emptyset$, that is, 
     when no two edges have the same endpoints. 
-  }
+  } of length greater or equal to one
   relative to the graph~$\npOrientedGraph$ 
   is defined by
 \begin{align}
-  \UPATH^{\ge 1}\np{\OrientedGraph}
+  \UPATH_{\ge 1}\np{\OrientedGraph}
   &=
     \Lifto \bp{\sqcup_{n\ge 2} \Sequence_{n}(\Set){\times}\Sequence_{n-1}(\Orientation)}
     \cap \Sequence_{\ge 1}(\EDGEo)
-    \text{ and satisfy } \UPATH^{\ge 1}\np{\OrientedGraph}  \subset \Sequence_{\ge 1}(\EDGEo) 
+    \text{ and satisfy } \UPATH_{\ge 1}\np{\OrientedGraph}  \subset \Sequence_{\ge 1}(\EDGEo) 
     \eqfinp
     \label{def:eopaths_gt1}
 \end{align}
@@ -455,7 +465,7 @@ subsequence of consecutive indices.
 The coq formalization of \undirectedEdgePaths\ paths of size greater or equal to
 one follows the same path as the one used for (edge) paths except that we use
 the oriented lift operator defined in Equation~\eqref{def:Lifto} implemented as 
-follows in Coq
+in Coq as follows
 {\small \inputsnippets{erel3/pair.tex,erel3/LiftO.tex}}
 Moreover, we have to
 check that elements of paths satisfy the $\EDGEo$ relation defined in
@@ -464,7 +474,7 @@ construct a relation $\EDGEo$ given a relation $\EDGE$
 {\small \inputsnippets{erel3/Oedge.tex}
 Finally, the set of
 \undirectedEdgePaths\ paths of size greater or equal to one,
-$\UPATH^{\ge 1}\np{\OrientedGraph}$ is defined by
+$\UPATH_{\ge 1}\np{\OrientedGraph}$ is defined by
 \inputsnippets{erel3/EoPath1.tex}
 
 \medskip

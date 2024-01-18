@@ -699,43 +699,42 @@ Section Lift2.
     by rewrite /Pre /Pre1 /preimage /mkset predeqE => spa;rewrite Lift_szn.
   Qed.
   
-  
   (* begin snippet EPath2new:: no-out *) 
-  Definition EPath2'' (S: relation T):=
+  Definition P_ge_1 (S: relation T):=
     [set spa | spa [\in] S /\ (Lift spa) [\in] Chrel /\ size(spa) > 0].
-  
   (* end snippet EPath2new *)
   
   (* begin snippet EPath3new:: no-out *) 
-  Definition EPath3'' (S: relation T):=
+  Definition P_ge_1' (S: relation T):=
     [set spa | spa [\in] S /\ (exists p, (Lift p) =spa /\ size(p) > 1)].
   (* end snippet EPath3new *)
   
   (* begin snippet EPath2inter:: no-out *) 
-  Lemma EP2_lemma: forall (S: relation T), 
-      EPath2'' S = [set spa | spa [\in] S] 
-                     `&` [set spa | (Lift spa)  [\in] Chrel /\ size(spa) > 0].
+  Lemma P_ge_1_lemma: forall (S: relation T), 
+      P_ge_1 S = [set spa | spa [\in] S] 
+                   `&` [set spa | (Lift spa)  [\in] Chrel /\ size(spa) > 0].
   (* end snippet EPath2inter *)
-  Proof.
-    by move => S;rewrite /EPath2'' /setI /mkset predeqE => spa.
-  Qed.
+  Proof. by move => S;rewrite /P_ge_1 /setI /mkset predeqE => spa. Qed.
 
-  Lemma EP3_lemma: forall (S: relation T), 
-      EPath3'' S =[set spa | spa [\in] S] `&` [set spa | (exists p, (Lift p) =spa /\ size(p) > 1)].
+  Lemma P_ge_1'_lemma: forall (S: relation T), 
+      P_ge_1' S =[set spa | spa [\in] S] `&` [set spa | (exists p, (Lift p) =spa /\ size(p) > 1)].
+  Proof. by move => S;rewrite /P_ge_1 /setI /mkset predeqE => spa. Qed.
+  
+  Lemma P_equiv: forall (S: relation T), P_ge_1 S = P_ge_1' S.
   Proof.
-    by move => S;rewrite /EPath3'' /setI /mkset predeqE => spa.
-  Qed.
-
-  Lemma EP_equiv: forall (S: relation T), 
-      EPath2'' S = EPath3'' S.
-  Proof.
-    move => S;rewrite /EPath2'' /EPath3'' /setI /mkset predeqE => spa.
+    move => S;rewrite /P_ge_1 /P_ge_1' /setI /mkset predeqE => spa.
     split. 
     move => [H1 [/Lift_Chrel [p H2] H3]].
     split. by []. exists p. split. by []. by rewrite -Lift_sz2 H2.
     move => [H1 [p [H2 H3]]].
     split. by []. split. rewrite Lift_Chrel. by exists p. by rewrite -H2  Lift_sz2.
   Qed.
+
+  Definition Test (x y:T) (p:seq T) (sp:seq(T*T)):= 
+  (* begin snippet LiftEP:: no-out *) 
+    Lift (x::(rcons p y)) = sp.
+  (* end snippet LiftEP:: no-out *) 
+  
   
 End Lift2.
 
