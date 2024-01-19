@@ -732,28 +732,17 @@ Section Lift2.
   
 End Lift2.
 
-Section custom_induction_principle.    
-  Variable X : Type.
-  Variable P : list X -> Prop.
-
-  Hypothesis true_for_nil : P nil.
-  Hypothesis true_for_list : forall xs, P xs.
-  Hypothesis preserved_by_rcons : forall xs' x, P xs' -> P (rcons xs' x).
-
-  Fixpoint list_ind_rcons (xs : list X) : P xs. Admitted.
-End custom_induction_principle.
-
 Section Pairs.
-
+  (** * pair of sequences with control on respective sizes *)
   Variables (T S: Type).
   
   Record Pairs (n m:nat) 
-    := spair { fst: (seq T);snd: (seq S);cond1: size(fst) > n;cond2: size(fst)=size(snd) + m}.
+    := pairs { fst: (seq T);snd: (seq S);cond1: size(fst) >= n;cond2: size(fst)=size(snd) + m}.
 
   Lemma size_c1: forall (ts: T*S) (n m:nat) (sp : Pairs n m), 
-      size(ts.1::(fst sp)) > n. 
+      size(ts.1::(fst sp)) >= n. 
   Proof. 
-    move => ts n m sp /=. apply leqW; apply (cond1 sp).
+    by move => ts n m sp /=; apply leqW; apply (cond1 sp).
   Qed.
   
   Lemma size_c2: forall (ts: T*S) (n m:nat) (sp : Pairs n m), 
@@ -765,20 +754,60 @@ Section Pairs.
 
   Definition spair_c (n m:nat) (ts: T*S) (sp : Pairs n m) := 
     {| fst:= ts.1::(fst sp); snd:= ts.2::(snd sp); cond1:= size_c1 ts sp; cond2 := size_c2 ts sp |}.
+
+  Fixpoint pair (st: seq T) (so: seq S) (s: S):= 
+    match st, so with 
+    | t::st, o::so => (t,o)::(pair st so s)
+    | t::st, [::] =>  (t,s)::(pair st [::] s)
+    |  _ , _ => @nil (T*S)
+    end.
+
+  Definition sPairs (sp : Pairs 0 0) (v :S): (seq (T*S)) := pair (fst sp) (snd sp) (v:S).
+
+  Fixpoint unpair_ (s: seq (T*S)) := 
+    match s with 
+    | [::] => ([::],[::])
+    | (x,y)::s => (x::(unpair_ s).1,y::(unpair_ s).2)
+    end.
+
+  Lemma unpair_sz: forall (sts: seq (T*S)) (s: (seq T)*(seq S)),
+      s = unpair_(sts) -> size(s.1) = size (s.2).
+  Proof.
+    elim. 
+    by move => [st ss] /= => [[-> ->]].
+    move => [t s] sts Hr [st ss].
+    rewrite /unpair_ -/unpair_ /=.
+    move => [-> ->] /=.
+    have H1: forall (ts:T*S), (ts.1,ts.2) =ts by move => [ts1 ts2].
+    have H2: (size (unpair_ sts).1) = (size (unpair_ sts).2) by apply Hr.
+    by rewrite H2.
+  Qed.
+
+  Lemma unpair_sz1: forall (sts: seq (T*S)), size (unpair_ sts).1 = (size (unpair_ sts).2) + 0 .
+  Proof.
+    by move => sts;rewrite addn0; apply unpair_sz with sts.
+  Qed.
   
+  Lemma unpair_sz0: forall (sts: seq (T*S)), size (unpair_ sts).1 >=0. 
+  Proof. by move => sts. Qed.
+  
+  Definition unpair (s: seq (T*S)) := 
+    {| fst:= (unpair_ s).1; snd := (unpair_ s).2 ; cond1:= unpair_sz0 s ; cond2:= unpair_sz1 s |}.
+
 End Pairs.
 
 Section LiftO. 
 
   Variables (T S: Type).
-
-  Lemma size_l: forall (ps : (@Pairs T S 1 1)), size((Lift (fst ps)))= size(snd ps).
+  
+  (*
+  Lemma size_l: forall (ps : (@Pairs T S 1 1)), size((Lift (fst ps)))= size(snd ps) + 0.
   Proof.
     move => ps. 
     pose proof (cond2 ps) as H1.
     pose proof (cond1 ps) as H2.
     pose proof (Lift_sz H2) as H3. 
-    by rewrite H3 H1 addn1 subn1.
+    by rewrite H3 H1 addn1 addn0 subn1.
   Qed.
   
   Lemma size_gt1: forall (ps : (@Pairs T S 1 1)), size((Lift (fst ps))) > 0.
@@ -787,19 +816,17 @@ Section LiftO.
     pose proof (cond2 ps) as H1.
     pose proof (cond1 ps) as H2.
     pose proof (Lift_sz H2) as H3. 
-    rewrite H3 H1 addn1 subn1.
+    rewrite H3 H1 addn1 subn1 /=.
+    pose proof ltn_predK H2 as H4.
+    rewrite -H4 addn1 in H1. apply succn_inj in H1.
+    by rewrite -H1 ltn_predRL.
   Qed.
   
-
-  Definition LiftO (s: (@Pairs T S 1)) : (@Pairs T S 0) := 
-    {| fst:= (Lift (fst s));snd:=(snd s);cond1:=ZZ ; cond2:= size_l s).
-
+  Definition LiftT (s: (@Pairs T S 1 1)): (@Pairs (T*T) S 0 0) := 
+    {| fst:= (Lift (fst s));snd:=(snd s);cond1:= size_gt1 s ; cond2:= size_l s |}.
+  *) 
 
 End LiftO.
-
-
-
-
 
 Section Seq_liftO. 
 
