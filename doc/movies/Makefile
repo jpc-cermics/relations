@@ -4,7 +4,7 @@ assets_root := $(snippets_root)/assets
 
 include config.mk
 
-default: all
+default: all  snippets/erel3/D_Un.tex
 
 targets.mk: gen_targets.py
 	@$(PYTHON) gen_targets.py "$(coq_root)" "$(snippets_root)" > "$@"
@@ -22,3 +22,9 @@ clean:
 
 ignore:
 	svn propset svn:ignore -F .cvsignore .
+
+new: snippets/erel3/D_Un.tex
+
+snippets/erel3/D_Un.tex : snippets/erel3/D_U.tex
+	@sed -e 's/{exists}/{\\(\\exists\\)}/g' $< > $@
+

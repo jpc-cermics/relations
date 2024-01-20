@@ -45,7 +45,8 @@ Section Types.
 
 End Types.
 
-Section Utilities.
+Section Seq_utilities.
+  
   (** * some utilities on seq *)
   Variables (T: Type).
 
@@ -126,15 +127,15 @@ Section Utilities.
 
   Lemma seq_cases_test: forall  (p:seq T),
       True.
-    Proof.
-      move => p.
-      pose proof seq_cases p as [H1 | [[x H1] | [q [x [y H1]]]]].
-      by []. 
-      by [].
-      by [].
-    Qed.
+  Proof.
+    move => p.
+    pose proof seq_cases p as [H1 | [[x H1] | [q [x [y H1]]]]].
+    by []. 
+    by [].
+    by [].
+  Qed.
   
-End Utilities.
+End Seq_utilities.
 
 Section Seq_lift. 
   (** * Lift operation on sequences *) 
@@ -156,11 +157,11 @@ Section Lift_seq_props.
   Variables (T:Type).
 
   Lemma Lift_c: forall (p:seq T) (x y: T),
-      Lift [::x,y & p] = [::(x,y) & Lift [::y & p]].
+        Lift [::x,y & p] = [::(x,y) & Lift [::y & p]].
   Proof.
     by move => p x y; split.
   Qed.
-
+  
   Lemma Lift_crc: forall (p:seq T) (x y: T),
       Lift (x::(rcons p y)) = (x,(head y p))::(Lift (rcons p y)).
   Proof.
@@ -225,7 +226,7 @@ Section Lift_seq_props.
   Qed.
   
   (** Left inverse of Lift when p is not the empty list *)
-
+  
   Fixpoint UnLift (p: seq (T * T)) (x: T):= 
     match p with 
     | [::] => [::x]
@@ -372,19 +373,19 @@ Section allset2.
 
   Variables (T: Type).
   
-  Lemma allset_inv: forall (S: relation T) (spa: seq (T * T)), 
-      spa [\in] S <-> (map (@pair_rev T) spa) [\in] S.-1. 
+  Lemma allset_inv: forall (E: relation T) (spa: seq (T * T)), 
+      spa [\in] E <-> (map (@pair_rev T) spa) [\in] E.-1. 
   Proof.
-    move => S;elim => [ // | [x y] spa Hr].
+    move => E;elim => [ // | [x y] spa Hr].
     by rewrite map_cons !allset_cons Hr.
   Qed.
 
-  Lemma allset_I: forall (R S: relation T) (spa: seq (T * T)), 
-      spa [\in] (R `&` S) <-> spa [\in] R && spa [\in] S. 
+  Lemma allset_I: forall (R E: relation T) (spa: seq (T * T)), 
+      spa [\in] (R `&` E) <-> spa [\in] R && spa [\in] E. 
   Proof.
-    move => R S spa. 
-    have H1: (R `&` S) `<=` S by apply intersectionSr.
-    have H2: (R `&` S) `<=` R by apply intersectionSl.
+    move => R E spa. 
+    have H1: (R `&` E) `<=` E by apply intersectionSr.
+    have H2: (R `&` E) `<=` R by apply intersectionSl.
     split => [H3 | ]. 
     by apply/andP;split;[apply: (allset_subset H2 H3)| apply: (allset_subset H1 H3)].
     elim: spa => [// |  x spa Hr /andP H3].
@@ -418,16 +419,16 @@ Section allset2.
       by split;[| apply Hr].
   Qed.
   
-  Lemma allset_Dl: forall (X: set T) (S: relation T) (x y: T) (p: seq T),
-      (Lift (x::(rcons p y))) [\in] (Δ_(X)`;`S) -> (x::p) [\in] X.
+  Lemma allset_Dl: forall (X: set T) (E: relation T) (x y: T) (p: seq T),
+      (Lift (x::(rcons p y))) [\in] (Δ_(X)`;`E) -> (x::p) [\in] X.
   Proof.
-    by move => X S x y p;rewrite DeltaLco allset_I => /andP [/allset_Lr H1 _].
+    by move => X E x y p;rewrite DeltaLco allset_I => /andP [/allset_Lr H1 _].
   Qed.
 
-  Lemma allset_Dr: forall (X: set T) (S: relation T) (x y: T) (p: seq T),
-      (Lift (x::(rcons p y))) [\in] (S`;`Δ_(X)) -> (rcons p y) [\in] X.
+  Lemma allset_Dr: forall (X: set T) (E: relation T) (x y: T) (p: seq T),
+      (Lift (x::(rcons p y))) [\in] (E`;`Δ_(X)) -> (rcons p y) [\in] X.
   Proof.
-    by move => X S x y p;rewrite DeltaRco allset_I => /andP [_ /allset_Rr H1].
+    by move => X E x y p;rewrite DeltaRco allset_I => /andP [_ /allset_Rr H1].
   Qed.
 
 End allset2.
@@ -436,86 +437,86 @@ Section allset_Lifted.
   (** *  all on a lifted sequence  *)
   
   Variables (T: Type).
-  Definition allL (S: relation T) (p: seq T) (x y:T) := 
-    (Lift (x::(rcons p y))) [\in] S.
+  Definition allL (E: relation T) (p: seq T) (x y:T) := 
+    (Lift (x::(rcons p y))) [\in] E.
 
-  Lemma allL0 : forall (S: relation T) (x y : T),
-      allL S [::] x y = ((x,y) \in S).
+  Lemma allL0 : forall (E: relation T) (x y : T),
+      allL E [::] x y = ((x,y) \in E).
   Proof.
-    by move => S x y;rewrite /allL Lift_c /andP /= andbT. 
+    by move => E x y;rewrite /allL Lift_c /andP /= andbT. 
   Qed.
 
-  Lemma allL0' : forall (S: relation T) (x y : T),
-      allL S [::] x y <-> S (x,y).
+  Lemma allL0' : forall (E: relation T) (x y : T),
+      allL E [::] x y <-> E (x,y).
   Proof.
-    by move => S x y;rewrite allL0;split=> [/set_mem H1 // | /inP H1]. 
+    by move => E x y;rewrite allL0;split=> [/set_mem H1 // | /inP H1]. 
   Qed.
   
-  Lemma allL_c: forall (S: relation T) (p: seq T) (x y z: T),
-      allL S (z::p) x y <-> ((x, z) \in S) && allL S p z y.
+  Lemma allL_c: forall (E: relation T) (p: seq T) (x y z: T),
+      allL E (z::p) x y <-> ((x, z) \in E) && allL E p z y.
   Proof.
-    by move => S p x y z;split;[rewrite /allL rcons_cons Lift_c allset_cons |].
+    by move => E p x y z;split;[rewrite /allL rcons_cons Lift_c allset_cons |].
   Qed.
 
-  Lemma allL_rc: forall (S: relation T) (p: seq T) (x y z: T),
-      allL S (rcons p z) x y <-> ((z,y) \in S) && allL S p x z.
+  Lemma allL_rc: forall (E: relation T) (p: seq T) (x y z: T),
+      allL E (rcons p z) x y <-> ((z,y) \in E) && allL E p x z.
   Proof.
-    move => S p x y z;split.
+    move => E p x y z;split.
     by rewrite /allL -rcons_cons Lift_rcc allset_rcons last_rcons;move => [-> /inP ->].
     by move => /andP [/inP ? ?];rewrite /allL -rcons_cons Lift_rcc allset_rcons last_rcons. 
   Qed.
   
-  Lemma allL_cat: forall (S: relation T) (p q: seq T) (x y z: T),
-      allL S ((rcons p y) ++ q) x z <-> allL S p x y && allL S q y z.
+  Lemma allL_cat: forall (E: relation T) (p q: seq T) (x y z: T),
+      allL E ((rcons p y) ++ q) x z <-> allL E p x y && allL E q y z.
   Proof.
-    move => S p q x y z.
+    move => E p q x y z.
     rewrite /allL cat_rcons rcons_cat rcons_cons -cat_rcons Lift_cat_crc allset_cat.
     by split => [ [? ?] | /andP [? ?]];[apply/andP |].
   Qed.
   
-  Lemma allL_subset: forall (S R: relation T) (p: seq T) (x y: T),
-      (S `<=` R) -> allL S p x y -> allL R p x y.
+  Lemma allL_subset: forall (E R: relation T) (p: seq T) (x y: T),
+      (E `<=` R) -> allL E p x y -> allL R p x y.
   Proof.
-    by move => S R p x y H1 H2;apply allset_subset with S.
+    by move => E R p x y H1 H2;apply allset_subset with E.
   Qed.
   
-  Lemma allL_WS_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
-      allL (Δ_(W.^c) `;` S) p x y <-> all (fun x => x \in W.^c) (x::p) && allL S p x y.
+  Lemma allL_WS_iff: forall (E: relation T) (W:set T) (p: seq T) (x y: T),
+      allL (Δ_(W.^c) `;` E) p x y <-> all (fun x => x \in W.^c) (x::p) && allL E p x y.
   Proof.
-    move => S W p x y.
-    have H1: (L_(W.^c) `&` S) `<=` S by apply intersectionSr.
-    have H2: (L_(W.^c) `&` S) `<=` L_(W.^c) by apply intersectionSl.
-    pose proof (@allset_subset (T*T) (L_(W.^c) `&` S) L_(W.^c)) as H3.
-    pose proof (@allset_subset (T*T) (L_(W.^c) `&` S) S) as H4.    
+    move => E W p x y.
+    have H1: (L_(W.^c) `&` E) `<=` E by apply intersectionSr.
+    have H2: (L_(W.^c) `&` E) `<=` L_(W.^c) by apply intersectionSl.
+    pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) L_(W.^c)) as H3.
+    pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) E) as H4.    
     rewrite DeltaLco /allL allset_I.
     by split => /andP [/allset_Lr H5 H6];[apply /andP | apply /andP].
   Qed.
   
-  Lemma allL_SW_iff: forall (S: relation T) (W:set T) (p: seq T) (x y: T),
-      allL (S `;` Δ_(W.^c)) p x y <-> all (fun x => x \in W.^c) (rcons p y) && allL S p x y.
+  Lemma allL_SW_iff: forall (E: relation T) (W:set T) (p: seq T) (x y: T),
+      allL (E `;` Δ_(W.^c)) p x y <-> all (fun x => x \in W.^c) (rcons p y) && allL E p x y.
   Proof.
-    move => S W p x y.
-    have H1: (S `&` L_(W.^c)) `<=` S by apply intersectionSl.
-    have H2: (S `&` L_(W.^c)) `<=` L_(W.^c) by apply intersectionSr.
-    pose proof (@allset_subset (T*T) (L_(W.^c) `&` S) L_(W.^c)) as H3.
-    pose proof (@allset_subset (T*T) (L_(W.^c) `&` S) S) as H4.    
+    move => E W p x y.
+    have H1: (E `&` L_(W.^c)) `<=` E by apply intersectionSl.
+    have H2: (E `&` L_(W.^c)) `<=` L_(W.^c) by apply intersectionSr.
+    pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) L_(W.^c)) as H3.
+    pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) E) as H4.    
     rewrite DeltaRco /allL allset_I; split => /andP [H5 H6]. 
     by rewrite allset_Rr in H6; apply /andP; split. 
     by apply /andP; split;[| rewrite allset_Rr].
   Qed.
   
-  Lemma allL_rev: forall (S: relation T) (p: seq T) (x y: T),
-      allL S p x y <->  allL S.-1 (rev p) y x.
+  Lemma allL_rev: forall (E: relation T) (p: seq T) (x y: T),
+      allL E p x y <->  allL E.-1 (rev p) y x.
   Proof.
-    move => S p x y. 
+    move => E p x y. 
     have H1: (y :: rcons (rev p) x) = rev (x::(rcons p y)) by rewrite rev_cons rev_rcons -rcons_cons.
     by rewrite /allL allset_rev allset_inv H1 Lift_rev.
   Qed.
   
-  Lemma allL_All: forall (S: relation T) (p: seq T) (x y: T),
-      allL S p x y -> all (fun x => x \in (S.+)#_(y)) (x::p).
+  Lemma allL_All: forall (E: relation T) (p: seq T) (x y: T),
+      allL E p x y -> all (fun x => x \in (E.+)#_(y)) (x::p).
   Proof.
-    move => S p x y.
+    move => E p x y.
     elim: p x. 
     by move => x;rewrite /allL /= => /andP [/inP H1 _];apply /andP;split;[apply mem_set;apply Fset_t1|].
     move => z p Hr x;rewrite allL_c => /andP [/inP H1 /Hr H2].
@@ -533,24 +534,24 @@ Section Edge_paths.
   (* The definition of (edge) paths of length greater or equal to one *)
   
   (* begin snippet EPath1:: no-out *) 
-  Definition EPath1 (S: relation T):=[set p: seq T| (Lift p) [\in] S /\ size(p) >= 2].
+  Definition EPath1 (E: relation T):=[set p: seq T| (Lift p) [\in] E /\ size(p) >= 2].
   (* end snippet EPath1 *)
 
   (* an equivalent definition not using the lift operation *)
-  Inductive EPath (S: relation T): seq T -> Prop :=
-  | pp_void : EPath S [::]
+  Inductive EPath (E: relation T): seq T -> Prop :=
+  | pp_void : EPath E [::]
   | pp_two (x: T) (ep: seq T) : 
-    EPath S ep ->
-    ep = [::] \/ (exists (y: T), exists (ep1: seq T), ep = [::y & ep1] /\ S (x,y))
-    -> EPath S ([:: x & ep]).
+    EPath E ep ->
+    ep = [::] \/ (exists (y: T), exists (ep1: seq T), ep = [::y & ep1] /\ E (x,y))
+    -> EPath E ([:: x & ep]).
   
-  Definition EPath1' (S: relation T) := [set p: seq T | EPath S p /\ size(p) >= 2].
+  Definition EPath1' (E: relation T) := [set p: seq T | EPath E p /\ size(p) >= 2].
 
   Section EPath1_EPath1'.
 
     (* intermediate Lemma *)
-    Lemma Epath_equiv_rc_: forall (S:relation T) (p: seq T) (x y: T),
-        (Lift (x::(rcons p y))) [\in] S <-> EPath S (x::(rcons p y)).
+    Lemma Epath_equiv_rc_: forall (E:relation T) (p: seq T) (x y: T),
+        (Lift (x::(rcons p y))) [\in] E <-> EPath E (x::(rcons p y)).
     Proof.
       split.
       - elim: p x y => [ //= x y /andP [/inP H2 _] | z p Hr x y ].
@@ -562,10 +563,10 @@ Section Edge_paths.
         by rewrite H2 in H1 *; rewrite Lift_c allset_cons //.
     Qed.
     
-    Lemma Epath_equiv: forall (S:relation T) (p: seq T),
-        (Lift p ) [\in] S <-> EPath S p.
+    Lemma Epath_equiv: forall (E:relation T) (p: seq T),
+        (Lift p ) [\in] E <-> EPath E p.
     Proof.
-      move => S p.
+      move => E p.
       (* we use seq_cases to explore the three cases *)
       pose proof seq_cases p as [H1 | [[x' H1] | [x' [y' [q H1]]]]];rewrite H1.
       by split => H;[apply pp_void | ].
@@ -573,9 +574,9 @@ Section Edge_paths.
       by rewrite Epath_equiv_rc_.
     Qed.
     
-    Lemma Epath_eq: forall (S:relation T),  EPath1 S = EPath1' S.
+    Lemma Epath_eq: forall (E:relation T),  EPath1 E = EPath1' E.
     Proof.
-      move => S.
+      move => E.
       rewrite /EPath1 /EPath1' /mkset predeqE => p.
       split => [[H1 H2] | [H1 H2]].
       by split;[rewrite -Epath_equiv |].
@@ -700,29 +701,29 @@ Section Lift2.
   Qed.
   
   (* begin snippet EPath2new:: no-out *) 
-  Definition P_ge_1 (S: relation T):=
-    [set spa | spa [\in] S /\ (Lift spa) [\in] Chrel /\ size(spa) > 0].
+  Definition P_ge_1 (E: relation T):=
+    [set spa | spa [\in] E /\ (Lift spa) [\in] Chrel /\ size(spa) > 0].
   (* end snippet EPath2new *)
   
   (* begin snippet EPath3new:: no-out *) 
-  Definition P_ge_1' (S: relation T):=
-    [set spa | spa [\in] S /\ (exists p, (Lift p) =spa /\ size(p) > 1)].
+  Definition P_ge_1' (E: relation T):=
+    [set spa | spa [\in] E /\ (exists p, (Lift p) =spa /\ size(p) > 1)].
   (* end snippet EPath3new *)
   
   (* begin snippet EPath2inter:: no-out *) 
-  Lemma P_ge_1_lemma: forall (S: relation T), 
-      P_ge_1 S = [set spa | spa [\in] S] 
+  Lemma P_ge_1_lemma: forall (E: relation T), 
+      P_ge_1 E = [set spa | spa [\in] E] 
                    `&` [set spa | (Lift spa)  [\in] Chrel /\ size(spa) > 0].
   (* end snippet EPath2inter *)
-  Proof. by move => S;rewrite /P_ge_1 /setI /mkset predeqE => spa. Qed.
+  Proof. by move => E;rewrite /P_ge_1 /setI /mkset predeqE => spa. Qed.
 
-  Lemma P_ge_1'_lemma: forall (S: relation T), 
-      P_ge_1' S =[set spa | spa [\in] S] `&` [set spa | (exists p, (Lift p) =spa /\ size(p) > 1)].
-  Proof. by move => S;rewrite /P_ge_1 /setI /mkset predeqE => spa. Qed.
+  Lemma P_ge_1'_lemma: forall (E: relation T), 
+      P_ge_1' E =[set spa | spa [\in] E] `&` [set spa | (exists p, (Lift p) =spa /\ size(p) > 1)].
+  Proof. by move => E;rewrite /P_ge_1 /setI /mkset predeqE => spa. Qed.
   
-  Lemma P_equiv: forall (S: relation T), P_ge_1 S = P_ge_1' S.
+  Lemma P_equiv: forall (E: relation T), P_ge_1 E = P_ge_1' E.
   Proof.
-    move => S;rewrite /P_ge_1 /P_ge_1' /setI /mkset predeqE => spa.
+    move => E;rewrite /P_ge_1 /P_ge_1' /setI /mkset predeqE => spa.
     split. 
     move => [H1 [/Lift_Chrel [p H2] H3]].
     split. by []. exists p. split. by []. by rewrite -Lift_sz2 H2.
@@ -737,32 +738,32 @@ Section Pairs.
   Variables (T S: Type).
   
   Record Pairs (n m:nat) 
-    := pairs { fst: (seq T);snd: (seq S);cond1: size(fst) >= n;cond2: size(fst)=size(snd) + m}.
+    := pairs { pfst: (seq T);psnd: (seq S);cond1: size(pfst) >= n;cond2: size(pfst)=size(psnd) + m}.
 
   Lemma size_c1: forall (ts: T*S) (n m:nat) (sp : Pairs n m), 
-      size(ts.1::(fst sp)) >= n. 
+      size(ts.1::(pfst sp)) >= n. 
   Proof. 
     by move => ts n m sp /=; apply leqW; apply (cond1 sp).
   Qed.
   
   Lemma size_c2: forall (ts: T*S) (n m:nat) (sp : Pairs n m), 
-      size(ts.1::(fst sp))= size(ts.2::(snd sp)) + m.
+      size(ts.1::(pfst sp))= size(ts.2::(psnd sp)) + m.
   Proof. 
     move => ts n m sp /=.
     by rewrite (cond2 sp) -addn1 -addnA [m+1]addnC addnA addn1. 
   Qed.
 
   Definition spair_c (n m:nat) (ts: T*S) (sp : Pairs n m) := 
-    {| fst:= ts.1::(fst sp); snd:= ts.2::(snd sp); cond1:= size_c1 ts sp; cond2 := size_c2 ts sp |}.
+    {| pfst:= ts.1::(pfst sp); psnd:= ts.2::(psnd sp); cond1:= size_c1 ts sp; cond2 := size_c2 ts sp |}.
 
-  Fixpoint pair (st: seq T) (so: seq S) (s: S):= 
+  Fixpoint pairx (st: seq T) (so: seq S) (s: S):= 
     match st, so with 
-    | t::st, o::so => (t,o)::(pair st so s)
-    | t::st, [::] =>  (t,s)::(pair st [::] s)
+    | t::st, o::so => (t,o)::(pairx st so s)
+    | t::st, [::] =>  (t,s)::(pairx st [::] s)
     |  _ , _ => @nil (T*S)
     end.
 
-  Definition sPairs (sp : Pairs 0 0) (v :S): (seq (T*S)) := pair (fst sp) (snd sp) (v:S).
+  Definition sPairs (sp : Pairs 0 0) (v :S): (seq (T*S)) := pairx (pfst sp) (psnd sp) (v:S).
 
   Fixpoint unpair_ (s: seq (T*S)) := 
     match s with 
@@ -792,7 +793,7 @@ Section Pairs.
   Proof. by move => sts. Qed.
   
   Definition unpair (s: seq (T*S)) := 
-    {| fst:= (unpair_ s).1; snd := (unpair_ s).2 ; cond1:= unpair_sz0 s ; cond2:= unpair_sz1 s |}.
+    {| pfst:= (unpair_ s).1; psnd := (unpair_ s).2 ; cond1:= unpair_sz0 s ; cond2:= unpair_sz1 s |}.
 
 End Pairs.
 
@@ -801,7 +802,7 @@ Section LiftO.
   Variables (T S: Type).
   
   (*
-  Lemma size_l: forall (ps : (@Pairs T S 1 1)), size((Lift (fst ps)))= size(snd ps) + 0.
+  Lemma size_l: forall (ps : (@Pairs T S 1 1)), size((Lift (pfst ps)))= size(psnd ps) + 0.
   Proof.
     move => ps. 
     pose proof (cond2 ps) as H1.
@@ -810,7 +811,7 @@ Section LiftO.
     by rewrite H3 H1 addn1 addn0 subn1.
   Qed.
   
-  Lemma size_gt1: forall (ps : (@Pairs T S 1 1)), size((Lift (fst ps))) > 0.
+  Lemma size_gt1: forall (ps : (@Pairs T S 1 1)), size((Lift (pfst ps))) > 0.
   Proof.
     move => ps. 
     pose proof (cond2 ps) as H1.
@@ -823,7 +824,7 @@ Section LiftO.
   Qed.
   
   Definition LiftT (s: (@Pairs T S 1 1)): (@Pairs (T*T) S 0 0) := 
-    {| fst:= (Lift (fst s));snd:=(snd s);cond1:= size_gt1 s ; cond2:= size_l s |}.
+    {| pfst:= (Lift (pfst s));psnd:=(psnd s);cond1:= size_gt1 s ; cond2:= size_l s |}.
   *) 
 
 End LiftO.
@@ -840,20 +841,20 @@ Section Seq_liftO.
   Definition O_rev (o:O) := match o with | P => N | N => P end.
   
   (* begin snippet Oedge:: no-out *)  
-  Definition Oedge (S: relation T): set (T*T*O) :=
-    fun (oe: Eo T O) => match oe with | (e,P) => S e | (e,N) => S.-1 e end.
+  Definition Oedge (E: relation T): set (T*T*O) :=
+    fun (oe: Eo T O) => match oe with | (e,P) => E e | (e,N) => E.-1 e end.
   (* end snippet Oedge *)
 
-  Lemma Oedge_rev: forall (S: relation T) (x y: T),
-      Oedge S (x,y,P) = Oedge S (y,x,N).
+  Lemma Oedge_rev: forall (E: relation T) (x y: T),
+      Oedge E (x,y,P) = Oedge E (y,x,N).
   Proof.
-    by move => S x y.
+    by move => E x y.
   Qed.
   
-  Lemma Oedge_inv: forall (S: relation T) (x y: T) (o:O),
-      Oedge S (x,y,o) = Oedge S.-1 (x,y, O_rev o).
+  Lemma Oedge_inv: forall (E: relation T) (x y: T) (o:O),
+      Oedge E (x,y,o) = Oedge E.-1 (x,y, O_rev o).
   Proof.
-    by move => S x y; elim. 
+    by move => E x y; elim. 
   Qed.
 
   (* begin snippet pair:: no-out *)  
@@ -1103,18 +1104,18 @@ End Seq_liftO.
 Section PathRel.
   (** * transitive closure and paths
    * the main result here is that the relation in AxA obtained 
-   * by fun (x y : T) => (exists (p: seq T), AllL S p x y)
-   * is the relation S.+ the transitive closure of S 
+   * by fun (x y : T) => (exists (p: seq T), AllL E p x y)
+   * is the relation E.+ the transitive closure of E 
    *)
 
-  Variables (T: Type) (S: relation T).
+  Variables (T: Type) (E: relation T).
   
   (* relation based on paths: take care that the path p depends on (x,y) *)
-  Definition PathRel_n (S: relation T) (n:nat) :=
-    [set x | (exists (p: seq T), size(p)=n /\ allL S p x.1 x.2)].
+  Definition PathRel_n (E: relation T) (n:nat) :=
+    [set x | (exists (p: seq T), size(p)=n /\ allL E p x.1 x.2)].
 
   (* composition and existence of paths coincide *)
-  Lemma Itern_iff_PathReln : forall (n:nat), S^(n.+1) =  PathRel_n S n.
+  Lemma Itern_iff_PathReln : forall (n:nat), E^(n.+1) =  PathRel_n E n.
   Proof.
     elim => [ | n' H].
     - rewrite /iter /PathRel_n Delta_idem_l /mkset predeqE => [[x y]].
@@ -1132,7 +1133,7 @@ Section PathRel.
   
   (* R.+ =  PathRel R *)
   (* begin snippet TCP:: no-out *)  
-  Lemma TCP: S.+ = [set vp | exists p, (Lift (vp.1::(rcons p vp.2))) [\in] S].
+  Lemma TCP: E.+ = [set vp | exists p, (Lift (vp.1::(rcons p vp.2))) [\in] E].
   (* end snippet TCP *)  
   Proof.
     rewrite /mkset predeqE => [[x y]].
@@ -1142,7 +1143,7 @@ Section PathRel.
       rewrite  Itern_iff_PathReln /PathRel_n in H1.
       move: H1 => [p [H1 H2]].
       by (exists p).
-    - have H2:  PathRel_n S (size p) (x, y) by (exists p).
+    - have H2:  PathRel_n E (size p) (x, y) by (exists p).
       rewrite -Itern_iff_PathReln in H2.
       by apply iterk_inc_clos_trans in H2.
   Qed.
@@ -1152,12 +1153,12 @@ End PathRel.
 Section PathRel_Examples.
   (* Applications *)
   
-  Variables (T: Type) (S: relation T) (W: set T).
+  Variables (T: Type) (E: relation T) (W: set T).
 
   Lemma clos_t_to_paths_l : forall (x y: T),
-      (Δ_(W.^c) `;` S).+ (x, y) ->
-      (exists (p: seq T), all (fun x => x \in W.^c) (x::p) /\ allL S p x y
-                     /\ all (fun x => x \in ((Δ_(W.^c) `;` S).+)#_(y)) (x::p)).
+      (Δ_(W.^c) `;` E).+ (x, y) ->
+      (exists (p: seq T), all (fun x => x \in W.^c) (x::p) /\ allL E p x y
+                     /\ all (fun x => x \in ((Δ_(W.^c) `;` E).+)#_(y)) (x::p)).
   Proof.
     move => x y; rewrite {1}TCP; move => [p /= H1]; exists p.
     move: (H1) => /allL_WS_iff/andP [H2 H2'].
@@ -1166,9 +1167,9 @@ Section PathRel_Examples.
   Qed.
   
   Lemma clos_t_to_paths_r : forall (x y: T),
-      (S `;` Δ_(W.^c)).+ (x, y) ->
-      (exists (p: seq T), (all (fun z => z \in W.^c) (rcons p y) /\ allL S p x y)
-                     /\ all (fun z => z \in ((Δ_(W.^c) `;` S.-1).+)#_(x)) (y::(rev p))).
+      (E `;` Δ_(W.^c)).+ (x, y) ->
+      (exists (p: seq T), (all (fun z => z \in W.^c) (rcons p y) /\ allL E p x y)
+                     /\ all (fun z => z \in ((Δ_(W.^c) `;` E.-1).+)#_(x)) (y::(rev p))).
   Proof.
     move => x y; rewrite {1}TCP; move  => [p H1]; exists p.
     rewrite allL_rev inverse_compose DeltaE_inverse /= in H1.
@@ -1194,27 +1195,22 @@ Section Extended_oriented_paths.
   Proof. by []. Qed.
 
   (* begin snippet EoPath:: no-out *) 
-  Definition U_ge_1 (S: relation T):=
-    [set spa | spa [\in] (Oedge S) /\ (Lift spa) [\in] ComposeOe /\ size(spa) > 0].
+  Definition U_ge_1 (E: relation T):=
+    [set spa | spa [\in] (Oedge E) /\ (Lift spa) [\in] ComposeOe /\ size(spa) > 0].
   (* end snippet EoPath *)
   
   (* begin snippet EPath3new:: no-out *) 
-  Definition U_ge_1' (S: relation T):=
-    [set spa | spa [\in] (Oedge S) /\ (exists p,exists o, (LiftO p o) =spa /\ size(p) > 1)].
+  Definition U_ge_1' (E: relation T):=
+    [set spa | spa [\in] (Oedge E) /\ (exists p,exists o, (LiftO p o) =spa /\ size(p) > 1)].
   (* end snippet EPath3new *)
 
-  Lemma XX: forall (S: relation T),
-      [set spa | (Lift spa) [\in] ComposeOe /\ size(spa) > 0]
-      = [set spa | (exists p,exists o, (LiftO p o) =spa /\ size(p) > 1)].
-  Proof.
-    move => S.
-    rewrite /mkset predeqE => spo.
-    
-  Admitted.
-
+  (* begin snippet D_U:: no-out *) 
+  Definition D_U (R E: relation T):=
+    [set spa | spa [\in] (Oedge E) /\
+                 (exists p, exists x,exists y,exists o, (LiftO (x::(rcons p y)) o) = spa /\ R (x,y))].
+  (* end snippet D_U *)
 
 End Extended_oriented_paths.
-
 
 Section Active_relation.
   (** * relation on EO where EO = (AxA)xO
@@ -1224,85 +1220,85 @@ Section Active_relation.
   Variables (T: Type).
   
   (* Active as a relation on Eo) *)
-  Definition ActiveOe (W: set T) (S: relation T) := 
+  Definition ActiveOe (W: set T) (E: relation T) := 
     [set oe : (Eo T O) * (Eo T O) | 
-      Oedge S oe.1 /\ Oedge S oe.2 /\ (ComposeOe oe)
+      Oedge E oe.1 /\ Oedge E oe.2 /\ (ComposeOe oe)
       /\ match (oe.1.2,oe.2.2, oe.1.1.2) with 
         | (P,P,v) => W.^c v
         | (N,N,v) => W.^c v
         | (N,P,v) => W.^c v
-        | (P,N,v) => (Fset S.* W) v
+        | (P,N,v) => (Fset E.* W) v
         end].
     
-  Lemma ActiveOe_Oedge: forall (W: set T) (S: relation T) (eo : (Eo T O) * (Eo T O)),
-      (ActiveOe W S) eo -> Oedge S eo.1 /\ Oedge S eo.2.
+  Lemma ActiveOe_Oedge: forall (W: set T) (E: relation T) (eo : (Eo T O) * (Eo T O)),
+      (ActiveOe W E) eo -> Oedge E eo.1 /\ Oedge E eo.2.
   Proof.
-    by move => W S eo [H1 [H2 _]].
+    by move => W E eo [H1 [H2 _]].
   Qed.
 
-  Lemma ActiveOe_Compose: forall (W: set T) (S: relation T) (eo : (Eo T O) * (Eo T O)),
-      eo \in (ActiveOe W S) -> ComposeOe eo. 
+  Lemma ActiveOe_Compose: forall (W: set T) (E: relation T) (eo : (Eo T O) * (Eo T O)),
+      eo \in (ActiveOe W E) -> ComposeOe eo. 
   Proof.
-    by move => W S eo /inP [_ [_ [H3 _]]].
+    by move => W E eo /inP [_ [_ [H3 _]]].
   Qed.
   
-  Lemma ActiveOe_o: forall (W: set T) (S: relation T) (x y z: T) (o:O),
-      (ActiveOe W S) ((x,y,o),(y,z,o)) <-> (Oedge S (x,y,o)) /\ (Oedge S (y,z,o)) /\ W.^c y.
+  Lemma ActiveOe_o: forall (W: set T) (E: relation T) (x y z: T) (o:O),
+      (ActiveOe W E) ((x,y,o),(y,z,o)) <-> (Oedge E (x,y,o)) /\ (Oedge E (y,z,o)) /\ W.^c y.
   Proof.
-    move => W S x y z o;rewrite /ActiveOe /mkset /ComposeOe /=.
+    move => W E x y z o;rewrite /ActiveOe /mkset /ComposeOe /=.
     case: o.
     by split => [[? [? [_ ?]]] // | [? [? ?]]].
     by split => [[? [? [_ ?]]] // | [? [? ?]]].
   Qed.
   
-  Lemma ActiveOeT: forall (W: set T) (S: relation T) (x u v z t: T) (o1 o2 o3 o4:O),
-      (Fset S.* W) x 
-      /\ ActiveOe W S ((u,x,o1), (x,v,o2)) /\ ActiveOe W S ((z,x,o3), (x,t,o4))
-      -> ActiveOe W S ((u,x,o1), (x,t,o4)).
+  Lemma ActiveOeT: forall (W: set T) (E: relation T) (x u v z t: T) (o1 o2 o3 o4:O),
+      (Fset E.* W) x 
+      /\ ActiveOe W E ((u,x,o1), (x,v,o2)) /\ ActiveOe W E ((z,x,o3), (x,t,o4))
+      -> ActiveOe W E ((u,x,o1), (x,t,o4)).
   Proof.
-    move => W S x u v z t o1 o2 o3 o4.
+    move => W E x u v z t o1 o2 o3 o4.
     case: o1;case: o2; case:o3; case:o4;
       by move => [H0 [[H1 [H2 [H3 H4]]] [H5 [H6 [H7 H8]]]]].
   Qed.
   
-  Lemma ActiveOe_rev: forall (W:set T) (S: relation T) (e1 e2: (T * T)) (o:O),
-      (ActiveOe W S).-1 ((e1,o), (e2,o)) <-> ActiveOe W S.-1 ((e2,O_rev o), (e1,O_rev o)).
+  Lemma ActiveOe_rev: forall (W:set T) (E: relation T) (e1 e2: (T * T)) (o:O),
+      (ActiveOe W E).-1 ((e1,o), (e2,o)) <-> ActiveOe W E.-1 ((e2,O_rev o), (e1,O_rev o)).
   Proof.
-    by move => W S [x1 y1] [x2 y2] o; case: o. 
+    by move => W E [x1 y1] [x2 y2] o; case: o. 
   Qed.
 
 End Active_relation.
 
 Section Active_paths. 
   (** * Active paths  *)
-  Variables (T: Type) (W: set T) (S: relation T).
+  Variables (T: Type) (W: set T) (E: relation T).
   (* orientation  *)
   Definition EO := Eo T O.
   
   (* Active is now almost expressed as a transitive closure 
    * on an lifted space (A * A) * O as it uses AllL *)
   Definition Active_path
-    (W: set T) (S: relation T) (p: seq EO) (x y: T) :=
+    (W: set T) (E: relation T) (p: seq EO) (x y: T) :=
     match p with 
     | [::] => x = y 
-    | [::eo1] => eo1.1.1 = x /\  eo1.1.2 = y /\  Oedge S eo1 
+    | [::eo1] => eo1.1.1 = x /\  eo1.1.2 = y /\  Oedge E eo1 
     | eo1 :: [:: eo2 & p]
       => eo1.1.1 = x /\ (last eo2 p).1.2 = y 
-        /\ allL (ActiveOe W S) (belast eo2 p) eo1 (last eo2 p)
+        /\ allL (ActiveOe W E) (belast eo2 p) eo1 (last eo2 p)
     end.
   
-  Definition R_o (o:O):= match o with | P => S | N=> S.-1 end.
+  Definition R_o (o:O):= match o with | P => E | N=> E.-1 end.
 
   Lemma R_o': forall (o:O) (xy: T*T),
-      R_o o xy <-> match o with | P => S xy | N=> S.-1 xy end.
+      R_o o xy <-> match o with | P => E xy | N=> E.-1 xy end.
   Proof.
     by move => o xy; case: o.
   Qed.
 
   (** increase active path by left addition *)
   Lemma Active_path_cc: forall (p: seq EO) (eo1 eo2:  EO) (y: T),
-      Active_path W S [:: eo1, eo2 & p] eo1.1.1 y
-      <-> Active_path W S [:: eo2 & p] eo2.1.1 y /\ ActiveOe W S (eo1, eo2).
+      Active_path W E [:: eo1, eo2 & p] eo1.1.1 y
+      <-> Active_path W E [:: eo2 & p] eo2.1.1 y /\ ActiveOe W E (eo1, eo2).
   Proof.
     elim => [ | eo3 p _] eo1 eo2 y. 
     - split.
@@ -1315,14 +1311,14 @@ Section Active_paths.
   Qed.
   
   Lemma Active_path_cc_ht: forall (p: seq EO) (eo1 eo2:  EO) (x y: T),
-      Active_path W S [:: eo1, eo2 & p] x y -> 
+      Active_path W E [:: eo1, eo2 & p] x y -> 
       x = eo1.1.1 /\ y = (last eo2 p).1.2.
   Proof.
     by move => p eo1 eo2 x y [H1 [H2 _]].
   Qed. 
   
   Lemma Active_path_cc_a: forall (p: seq EO) (eo1 eo2:  EO) (x y: T),
-      Active_path W S [:: eo1, eo2 & p] x y -> ActiveOe W S (eo1, eo2) .
+      Active_path W E [:: eo1, eo2 & p] x y -> ActiveOe W E (eo1, eo2) .
   Proof.
     move => p eo1 eo2 x y H1.
     pose proof Active_path_cc_ht H1 as [H2 H3].
@@ -1330,8 +1326,8 @@ Section Active_paths.
   Qed.
   
   Lemma Active_path_crc: forall  (p: seq EO) (eo1 eo2:  EO),
-      Active_path W S (eo1::(rcons p eo2)) eo1.1.1 eo2.1.2
-      <-> allL (ActiveOe W S) p eo1 eo2.
+      Active_path W E (eo1::(rcons p eo2)) eo1.1.1 eo2.1.2
+      <-> allL (ActiveOe W E) p eo1 eo2.
   Proof.
     elim => [ | eo p H1] eo1 eo2;
            first by split;[move => [_ [_ /= H2]] |move => H1;split;[ |split]].
@@ -1342,15 +1338,15 @@ Section Active_paths.
   Qed.
   
   Lemma Active_path_crc_ht: forall  (p: seq EO) (eo1 eo2: EO) (x y: T),
-      Active_path W S (eo1::(rcons p eo2)) x y -> eo1.1.1 = x /\  eo2.1.2 = y.
+      Active_path W E (eo1::(rcons p eo2)) x y -> eo1.1.1 = x /\  eo2.1.2 = y.
   Proof.
     move => p eo1 eo2 x y;rewrite headI;move => [H1 [H2 _]].
     by elim: p H2 => [ //= | a p _ //=]; rewrite last_rcons.
   Qed.
   
   Lemma Active_path_crc_a: forall (p: seq EO) (eo1 eo2:  EO) (x y: T),
-      Active_path W S (eo1::(rcons p eo2)) x y
-      -> ActiveOe W S (eo1, (head eo2 p)) /\ ActiveOe W S ((last eo1 p), eo2).
+      Active_path W E (eo1::(rcons p eo2)) x y
+      -> ActiveOe W E (eo1, (head eo2 p)) /\ ActiveOe W E ((last eo1 p), eo2).
   Proof.
     elim => [eo1 eo2 x y [_ [/= _ /allL0' H4]] // | eo3 p H1 eo1 eo2 x y].
     rewrite rcons_cons. move => H2.
@@ -1362,9 +1358,9 @@ Section Active_paths.
   Qed.
   
   Lemma Active_path_rcrc: forall (p: seq EO) (eo1 eo2:  EO),
-      Active_path W S (rcons (rcons p eo1) eo2) (head eo1 p).1.1 eo2.1.2
-      <-> Active_path W S (rcons p eo1) (head eo1 p).1.1 eo1.1.2
-        /\ ActiveOe W S (eo1, eo2).
+      Active_path W E (rcons (rcons p eo1) eo2) (head eo1 p).1.1 eo2.1.2
+      <-> Active_path W E (rcons p eo1) (head eo1 p).1.1 eo1.1.2
+        /\ ActiveOe W E (eo1, eo2).
   Proof.
     elim => [ | eo p H1] eo1 eo2.
     - split. 
@@ -1382,7 +1378,7 @@ Section Active_paths.
   Qed.
 
   Lemma Active_path_rcrc_ht: forall (p: seq EO) (eo1 eo2:  EO) (x y: T),
-      Active_path W S (rcons (rcons p eo1) eo2) x y 
+      Active_path W E (rcons (rcons p eo1) eo2) x y 
       -> x = (head eo1 p).1.1 /\ y= eo2.1.2.
   Proof.
     elim => [ | eo p H1] eo1 eo2 x y; first by move => [H1 [H2 _]]; split.
@@ -1390,8 +1386,8 @@ Section Active_paths.
   Qed.
 
   Lemma Active_path_rcrc_a: forall (p: seq EO) (eo1 eo2:  EO) (x y: T),
-      Active_path W S (rcons (rcons p eo1) eo2) x y 
-      -> ActiveOe W S (eo1, eo2).
+      Active_path W E (rcons (rcons p eo1) eo2) x y 
+      -> ActiveOe W E (eo1, eo2).
   Proof.
     move => p eo1 eo2 x y H1.
     pose proof Active_path_rcrc_ht H1 as [H2 H3].
@@ -1399,9 +1395,9 @@ Section Active_paths.
   Qed.
 
   Lemma Active_path_rc_hto: forall (p: seq EO) (eo1:  EO) (x y: T),
-      Active_path W S (rcons p eo1) x y ->
+      Active_path W E (rcons p eo1) x y ->
       x = (head eo1 p).1.1 /\ y = eo1.1.2 
-      /\ Oedge S eo1 /\ Oedge S (head eo1 p).
+      /\ Oedge E eo1 /\ Oedge E (head eo1 p).
   Proof.
     elim => [eo1 x y [H2 [H3 H4]] // | eo2 p _ eo1 x y H1]. 
     by pose proof Active_path_crc_ht H1 as [H2 H3];
@@ -1409,9 +1405,9 @@ Section Active_paths.
   Qed.
   
   Lemma Active_path_c_hto: forall (p: seq EO) (eo1:  EO) (x y: T),
-      Active_path W S (eo1::p) x y -> 
+      Active_path W E (eo1::p) x y -> 
       x = eo1.1.1 /\ y = (last eo1 p).1.2
-      /\ Oedge S eo1 /\ Oedge S (last eo1 p).
+      /\ Oedge E eo1 /\ Oedge E (last eo1 p).
   Proof.
     elim => [eo1 x y [H1 [H2 H3]] // | eo2 p _ eo1 x y H1]. 
     pose proof Active_path_cc_ht H1 as [H2 H3];
@@ -1421,10 +1417,10 @@ Section Active_paths.
   Qed.
     
   Lemma Active_path_split: forall (p q: seq EO) (eop eoq:  EO) (x y: T),
-      Active_path W S ((rcons p eop)++ eoq::q) x y
-      -> Active_path W S (rcons p eop) x eop.1.2
-        /\ Active_path W S (eoq::q) eoq.1.1 y
-        /\ ActiveOe W S (eop, eoq).
+      Active_path W E ((rcons p eop)++ eoq::q) x y
+      -> Active_path W E (rcons p eop) x eop.1.2
+        /\ Active_path W E (eoq::q) eoq.1.1 y
+        /\ ActiveOe W E (eop, eoq).
   Proof.
     elim => [ q eop eoq x y // | z p Hr q eop eoq x y ].
     - rewrite cat_rcons cat0s => H1.
@@ -1446,10 +1442,10 @@ Section Active_paths.
   Qed.
   
   Lemma Active_path_cat: forall (p q: seq EO) (eop eoq :EO) (x y z: T),
-      ActiveOe W S (eop, eoq)
-      /\ Active_path W S (rcons p eop) x y 
-      /\ Active_path W S (eoq::q) y z
-      -> Active_path W S (rcons p eop++ eoq::q) x z.
+      ActiveOe W E (eop, eoq)
+      /\ Active_path W E (rcons p eop) x y 
+      /\ Active_path W E (eoq::q) y z
+      -> Active_path W E (rcons p eop++ eoq::q) x z.
   Proof.
     elim. 
     - move => q eop eoq x y z [H1 [H2 H3]].
@@ -1479,10 +1475,10 @@ Section Active_paths.
   Qed.
 
   Lemma Active_path_iff: forall (p q: seq EO) (eop eoq :EO) (x y z: T),
-      ActiveOe W S (eop, eoq)
-      /\ Active_path W S (rcons p eop) x y 
-      /\ Active_path W S (eoq::q) y z
-      <-> Active_path W S (rcons p eop++ eoq::q) x z /\ y= eop.1.2.
+      ActiveOe W E (eop, eoq)
+      /\ Active_path W E (rcons p eop) x y 
+      /\ Active_path W E (eoq::q) y z
+      <-> Active_path W E (rcons p eop++ eoq::q) x z /\ y= eop.1.2.
   Proof.
     move => p q eop eoq x y z.
     split => [ [H1 [H2 H3]] | [H1 H2]].
@@ -1495,10 +1491,10 @@ Section Active_paths.
   
   Lemma Active_path_cat': forall (p q: seq EO) (x y z: T),
       (exists (p' q': seq EO), exists (eop eoq: EO),
-          p = rcons p' eop /\ q = eoq::q' /\  ActiveOe W S (eop, eoq))
-      /\ Active_path W S p x y 
-      /\ Active_path W S q y z
-      -> Active_path W S (p++q) x z.
+          p = rcons p' eop /\ q = eoq::q' /\  ActiveOe W E (eop, eoq))
+      /\ Active_path W E p x y 
+      /\ Active_path W E q y z
+      -> Active_path W E (p++q) x z.
   Proof.
     move => p q x y z [[p1 [q1 [eop [eoq [H1 [H2 H3]]]]]] [H4 H5]].
     by rewrite H1 H2; apply Active_path_cat with y; rewrite -H1 -H2.
@@ -1512,19 +1508,19 @@ Section Active_paths.
         active path * to prove the general property, we have maybe to switch from
         Type to eqType to use unique * in seq ?  *)
     
-    Lemma Oedge_Fset:  forall (u v: T), Oedge S (u,v, P) /\ S.*#W v -> S.*#W u.
+    Lemma Oedge_Fset:  forall (u v: T), Oedge E (u,v, P) /\ E.*#W v -> E.*#W u.
     Proof.
       move => u v [H1 H2]. 
       move: H2 => [w [H2 H3]].
-      have H4: (S `;` S.* ) (u,w) by (exists v).
-      have H5:  (S.+ `<=` S.*) by apply clos_t_clos_rt.
-      have H6: S.* (u, w) by rewrite r_clos_rt_clos_t in H4 ;apply H5 in H4.
+      have H4: (E `;` E.* ) (u,w) by (exists v).
+      have H5:  (E.+ `<=` E.*) by apply clos_t_clos_rt.
+      have H6: E.* (u, w) by rewrite r_clos_rt_clos_t in H4 ;apply H5 in H4.
       by (exists w).
     Qed.
   
     Lemma Active_path_Fset:  forall (p: seq T) (x y: T),
-        Active_path W S ((x, y, P) :: Lifto (y :: p) P) x (last y p) 
-        /\ S.*#W (last y p) -> S.*#W x. 
+        Active_path W E ((x, y, P) :: Lifto (y :: p) P) x (last y p) 
+        /\ E.*#W (last y p) -> E.*#W x. 
     Proof.
       elim. 
       - rewrite /last /Lifto /pair_o /Lift.
@@ -1533,14 +1529,14 @@ Section Active_paths.
       - move => z p Hr x y.
         rewrite Lifto_c last_cons Active_path_cc. 
         move => [[H1 H2] H3].
-        have H4: S.*#W y by apply Hr with z.
+        have H4: E.*#W y by apply Hr with z.
         move: H2 => [H2 _].
         by apply Oedge_Fset with y.
     Qed.
     
     Lemma Active_path_Fset':  forall (p: seq T) (x y: T),
-        Active_path W S ((x, y, P) :: Lifto (y :: p) P) x (last y p) 
-        /\ S.*#W (last y p) -> S.*#W y. 
+        Active_path W E ((x, y, P) :: Lifto (y :: p) P) x (last y p) 
+        /\ E.*#W (last y p) -> E.*#W y. 
     Proof.
       elim. 
       - rewrite /last /Lifto /pair_o /Lift.
@@ -1548,15 +1544,15 @@ Section Active_paths.
       - move => z p Hr x y.
         rewrite Lifto_c last_cons Active_path_cc.
         move => [[H1 H2] H3].
-        have H4: S.*#W z by apply Hr with y.
+        have H4: E.*#W z by apply Hr with y.
         move: H2 => [_ [H2 _]].
         by apply Oedge_Fset with z.
     Qed.
     
     Lemma Active_path_shorten_L1: forall (p: seq EO) (x y z u v w: T),
-        Active_path W S [::(x,y,P),(y,z,P) & (rcons (rcons p (u,v,N)) (v,w,N))] x w
-        -> exists (q: seq T), Active_path W S (Lifto [::x,y & q] P) x (last y q) 
-                        /\ (Fset S.* W) (last y q).
+        Active_path W E [::(x,y,P),(y,z,P) & (rcons (rcons p (u,v,N)) (v,w,N))] x w
+        -> exists (q: seq T), Active_path W E (Lifto [::x,y & q] P) x (last y q) 
+                        /\ (Fset E.* W) (last y q).
     Proof. 
       elim => [x y z u v w| ].
       - rewrite -rcons_cons -rcons_cons -rcons_cons -rcons_cons Active_path_rcrc.
@@ -1603,8 +1599,8 @@ Section Active_paths.
     Qed.
     
     Lemma Active_path_shorten_L2: forall (p: seq EO) (x y z u w: T),
-        Active_path W S [::(x,y,P),(y,z,P) & (rcons (rcons p (u,y,N)) (y,w,N))] x w
-        -> S.*#W y. 
+        Active_path W E [::(x,y,P),(y,z,P) & (rcons (rcons p (u,y,N)) (y,w,N))] x w
+        -> E.*#W y. 
     Proof. 
       move => p x y z u w H1.
       pose proof Active_path_shorten_L1 H1 as [q H2].
@@ -1613,8 +1609,8 @@ Section Active_paths.
     Qed.
 
     Lemma Active_path_shorten_L3: forall (p: seq EO) (x y z u w: T),
-        Active_path W S [::(x,y,P),(y,z,P) & (rcons (rcons p (u,y,N)) (y,w,N))] x w
-        -> ActiveOe W S ((x,y,P), (y,w,N)).
+        Active_path W E [::(x,y,P),(y,z,P) & (rcons (rcons p (u,y,N)) (y,w,N))] x w
+        -> ActiveOe W E ((x,y,P), (y,w,N)).
     Proof. 
       move => p x y z u w H1.
       move: (H1) => /Active_path_shorten_L2 H2.
@@ -1627,8 +1623,8 @@ Section Active_paths.
     (* the only complex case is (o1 o2 o3 o4)= ( P P N N) which was is treated 
        in the previous lemmata *) 
     Lemma Active_path_shorten: forall (p: seq EO) (x y z u w: T) (o1 o2 o3 o4:O) ,
-        Active_path W S [::(x,y,o1),(y,z,o2) & (rcons (rcons p (u,y,o3)) (y,w,o4))] x w
-        -> ActiveOe W S ((x,y,o1), (y,w,o4)).
+        Active_path W E [::(x,y,o1),(y,z,o2) & (rcons (rcons p (u,y,o3)) (y,w,o4))] x w
+        -> ActiveOe W E ((x,y,o1), (y,w,o4)).
     Proof. 
       move => p x y z u w o1 o2 o3 o4 H1. 
       move: (H1); rewrite -rcons_cons -rcons_cons -rcons_cons -rcons_cons. 
@@ -1650,16 +1646,16 @@ Section Active.
 
   Variables (T: Type). 
   
-  Definition Active (W: set T) (S: relation T) (x y: T) :=
-   (exists (p: seq (Eo T O)), Active_path W S p x y).
+  Definition Active (W: set T) (E: relation T) (x y: T) :=
+   (exists (p: seq (Eo T O)), Active_path W E p x y).
 
-  Definition D_separated  (W: set T) (S: relation T) (x y: T) := 
-    ~(Active W S x y).
+  Definition D_separated  (W: set T) (E: relation T) (x y: T) := 
+    ~(Active W E x y).
 
   Lemma Deployment_to_Active_path:
-    forall (W: set T) (S: relation T) (p: seq T) (x y: T) (o:O),
-      ( all (fun x => x \in W.^c) p /\ allL (R_o S o) p x y )
-        <-> Active_path W S (Lifto (x::(rcons p y)) o) x y.
+    forall (W: set T) (E: relation T) (p: seq T) (x y: T) (o:O),
+      ( all (fun x => x \in W.^c) p /\ allL (R_o E o) p x y )
+        <-> Active_path W E (Lifto (x::(rcons p y)) o) x y.
   Proof.
     split.
     + elim: p x y => [x y [_ /allL0' /R_o' _] // | ]. 
@@ -1698,17 +1694,17 @@ Section Active.
         by elim: o H2 H4 H5 => _ [/= /inP H4 _] _ /=.
   Qed.
   
-  Lemma Deployment_to_Active: forall (W: set T) (S: relation T) (p: seq T) (x y: T),
-      (all (fun x => x \in W.^c) p /\ allL S p x y) -> Active W S x y.
+  Lemma Deployment_to_Active: forall (W: set T) (E: relation T) (p: seq T) (x y: T),
+      (all (fun x => x \in W.^c) p /\ allL E p x y) -> Active W E x y.
   Proof.
-    move => W S p x y [H1 H2].
+    move => W E p x y [H1 H2].
     by exists (Lifto (x::(rcons p y)) P); apply Deployment_to_Active_path;split.
   Qed.
 
-  Lemma Deployment_inv_to_Active: forall (W: set T) (S: relation T) (p: seq T) (x y: T),
-      (all (fun x => x \in W.^c) p /\ allL S.-1 p x y) -> Active W S x y.
+  Lemma Deployment_inv_to_Active: forall (W: set T) (E: relation T) (p: seq T) (x y: T),
+      (all (fun x => x \in W.^c) p /\ allL E.-1 p x y) -> Active W E x y.
   Proof.
-    move => W S p x y [H1 H2].
+    move => W E p x y [H1 H2].
     by exists (Lifto (x::(rcons p y)) N); apply Deployment_to_Active_path;split.
   Qed.
 
