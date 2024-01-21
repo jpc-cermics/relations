@@ -333,6 +333,13 @@ Section basic_pair_unpair.
     by rewrite Hr.
   Qed.
 
+  Lemma pair_cc_: forall (sv: S) (st: seq T) (ss: seq S) (t: T) (s:S),
+      pair_ sv (t::st) (s::ss) = (t,s)::(pair_ sv st ss).
+  Proof.
+    move => sv st ss t s.
+    by elim: st => [// | t1 st ];elim: ss=> [// | s1 ss ].
+  Qed.
+  
   Lemma pair_cat_: forall (s: S) (p q: seq T) (sop soq: seq S),
       size sop = size p ->
       pair_ s (p++q) (sop++soq) = (pair_ s p sop) ++ (pair_ s q soq).
@@ -425,6 +432,10 @@ Section pair_unpair.
       pair (pa::spa) so = (pa,head P so )::(pair spa (behead so)).
   Proof. by apply pair_c_. Qed.
 
+  Lemma pair_cc: forall (st: seq T) (so: seq O) (t: T) (o: O),
+      pair (t::st) (o::so) = (t,o)::(pair st so).
+  Proof. by apply pair_cc_. Qed.
+  
   Lemma pair_cat: forall (p q: seq T) (sop soq: seq O),
       size sop = size p ->
       pair (p++q) (sop++soq) = (pair p sop) ++ (pair q soq).

@@ -457,6 +457,75 @@ Section Lift2.
   
 End Lift2.
 
+Section Lift2O.
+  (** * Multiple definitions of edge paths *) 
+  
+  Variables (T: Type).
+
+  Fixpoint pairp (st: seq(T*T)) (so: seq (O*O)):= 
+    match st, so with 
+    | t::st, o::so => ((t.1,o.1),(t.2,o.2))::(pairp st so)
+    | t::st, [::] =>  ((t.1,P),(t.2,P))::(pairp st [::])
+    |  _ , _ => [::]
+    end.
+
+  Lemma Lift_LiftO__: forall (st:seq T) (so:seq O), 
+      size(st) = size (so)
+      -> (Lift (pair st so)) = pairp (Lift st) (Lift so).
+  Proof.
+    elim => [ // | t st Hr]. 
+    - elim => [ // | o so Ho H1].
+      rewrite pair_cc.
+      elim: st Hr Ho H1 => [// | t' st' Hr'].
+      elim: so Hr' => [ // | o' so' Ho' H1'] Hr' H2 H3.
+      rewrite pair_cc Lift_c -pair_cc.
+      rewrite Lift_c Lift_c /pairp -/pairp.
+      f_equal.
+      apply Hr'.
+      by move: H3; rewrite /= => /succn_inj H3.
+  Qed.
+  
+  Definition Prel (R: relation (T)) := [set p : (T*O)*(T*O) | R (p.1.1,p.2.1)].
+  
+  Lemma XX: forall (R: relation T) (st: seq(T*T)) (so: seq (O*O)),
+      (pairp st so) [\in] (Prel R) <-> st [\in] R.
+  Proof.
+    move => R.
+    elim => [// | [t1 t2] st Hr so].
+    elim: so => [ |  [o1 o2] so Ho ].
+    + rewrite /pairp -/pairp;split. 
+      by rewrite allset_cons /Prel => [[/= H1 /Hr ->]];rewrite andbT mem_set.
+      by rewrite allset_cons => [[H1 /Hr H2]];rewrite allset_cons /=;split.
+    + rewrite /pairp allset_cons -/pairp /=.
+      split => [ [H1 /Hr ->] | /andP [/inP H1 /Hr H2] ]. 
+      by rewrite andbT mem_set.
+      by split.
+  Qed.
+
+End  Lift2O.
+
+Section LiftO3.
+
+  Variable (T:Type).
+
+  Definition ChrelO := [set ppa: (T*T*O)*(T*T*O) | (ppa.1.1).2 = (ppa.2.1).1].
+
+  Lemma ChrelO_eq: forall (pa1 pa2: (T*T*O)), ChrelO (pa1,pa2) <-> pa1.1.2 = pa2.1.1.
+  Proof. by []. Qed.
+  
+  Lemma Lift_LiftO: forall (st:seq T) (so:seq O), 
+      size(st)> 1 /\ size(st) = size(so)+1
+      -> (Lift (LiftO st so)) = pairp (Lift (Lift st)) (Lift so).
+  Proof.
+    move => st so [H1 H2].
+    rewrite /LiftO.
+    apply Lift_LiftO__.
+    pose proof (Lift_sz H1) as H3.
+    by rewrite H3 H2 addn1 subn1. 
+  Qed.
+
+End LiftO3.
+
 Section Seq_liftO. 
 
   (** * from (seq: A) (seq:O) to seq: A *A * O *)
