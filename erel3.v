@@ -972,9 +972,10 @@ Section Seq_liftO.
     Proof.
       by move => p so x y o;rewrite headI LiftO_c. 
     Qed.
-    
+
     Definition UnLiftO_A (p: seq (Eo T O)) (x: T) := UnLift (unpair_A p) x.
-    
+
+    (*
     Definition UnLiftO_O (p: seq (Eo T O)) := unpair_O p.
     
     Lemma UnLiftO_A_c: forall (p: seq (Eo T O)) (x y: T) (o:O),
@@ -1000,7 +1001,7 @@ Section Seq_liftO.
     Proof.
       by move => p so x y o H1;rewrite /LiftO /UnLiftO_A pair_invl Lift_inv2.
     Qed.
-    
+    *)
   End LiftO_seq_props.
   
   Section Lifto_seq_props.

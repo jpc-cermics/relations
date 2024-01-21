@@ -202,10 +202,10 @@ Section Seq_lift.
   
   (** Left inverse of Lift when p is not the empty list *)
   
-  Fixpoint UnLift (p: seq (T * T)) (x: T):= 
+  Fixpoint UnLift (p: seq (T * T)) (t: T):= 
     match p with 
-    | [::] => [::x]
-    | [::(x,y) & p1 ] => [::x & UnLift p1 y]
+    | [::] => [::t]
+    | [::(t1,t2) & p1 ] => [::t1 & UnLift p1 t2]
     end.
   
   Lemma UnLift_c: forall (p: seq (T * T)) (x y z: T),
@@ -313,6 +313,31 @@ Section basic_pair_unpair.
     | (x,y)::s => (x::(unpair s).1,y::(unpair s).2)
     end.
 
+  Lemma pair_c_: forall (s: S) (st: seq T) (ss: seq S) (t: T),
+      pair_ s (t::st) ss = (t,head s ss)::(pair_ s st (behead ss)).
+  Proof.
+    move => s.
+    elim => [ so pa // | pa1 spa Hr so pa ]; first by elim: so => [// | o so _ //].
+    elim: so => [// | o so _ ].
+    have -> : pair_ s [:: pa, pa1 & spa] (o :: so) = (pa,o)::(pair_ s [::pa1 & spa] so) by [].
+    by rewrite Hr.
+  Qed.
+
+  Lemma pair_cat_: forall (s: S) (p q: seq T) (sop soq: seq S),
+      size sop = size p ->
+      pair_ s (p++q) (sop++soq) = (pair_ s p sop) ++ (pair_ s q soq).
+  Proof.
+    move => s.
+    elim => [ q sop soq /eqP //= /nilP -> //= | ].
+    move => a p Hr q sop soq H1.
+    elim: sop H1 Hr => [// | so1 sop H1 H2 H3].
+    rewrite cat_cons cat_cons pair_c_ //=.
+    have H4: size sop = size p by rewrite /size in H2; apply succn_inj.
+    have -> : pair_ s (p ++ q) (sop ++ soq) = pair_ s p sop ++ pair_ s q soq 
+      by apply H3.
+    by [].
+  Qed.
+
   Lemma unpair_sz: forall (sts: seq (T*S)),
       size (unpair sts).1 = size (unpair sts).2. 
   Proof.
@@ -328,6 +353,17 @@ Section basic_pair_unpair.
     by elim =>  [ // | s1 so _ /succn_inj/Hrt H1] /=; rewrite H1.
   Qed.
 
+  Lemma unpair1_left: forall(s: S) (st: seq T) (so: seq S),
+      (unpair (pair_ s st so)).1 = st.
+  Proof.
+    move => s.
+    elim => [ | t st Hrt].
+    by elim => [ // | s1 so _ //].
+    elim =>  [ // | s1 so _]. 
+    by rewrite pair_c_ /unpair Hrt -/unpair.
+    by rewrite pair_c_ /unpair Hrt -/unpair /=.
+  Qed.
+  
   Lemma unpair_right: forall(s: S) (sts: seq (T*S)),
       pair_ s (unpair sts).1 (unpair sts).2 = sts.
   Proof.
@@ -359,7 +395,9 @@ Section basic_pair_unpair.
 End basic_pair_unpair.
 
 Section pair_unpair.
-  (** * pair (seq: T) (seq:O) with O inductive *)
+  (** * pair (seq: T) (seq:O) with O inductive
+   * using P as default value. 
+   *)
   
   Variables (T: Type).
   
@@ -374,53 +412,18 @@ Section pair_unpair.
   
   Lemma pair_c: forall (spa: seq T) (so: seq O) (pa: T),
       pair (pa::spa) so = (pa,head P so )::(pair spa (behead so)).
-  Proof.
-    elim => [ so pa // | pa1 spa Hr so pa ]; first by elim: so => [// | o so _ //].
-    elim: so => [// | o so _ ].
-    have -> : pair [:: pa, pa1 & spa] (o :: so) = (pa,o)::(pair [::pa1 & spa] so) by [].
-    by rewrite Hr.
-  Qed.
+  Proof. by apply pair_c_. Qed.
 
   Lemma pair_cat: forall (p q: seq T) (sop soq: seq O),
       size sop = size p ->
       pair (p++q) (sop++soq) = (pair p sop) ++ (pair q soq).
-  Proof.
-    elim => [ q sop soq /eqP //= /nilP -> //= | ].
-    move => a p Hr q sop soq H1.
-    elim: sop H1 Hr => [// | so1 sop H1 H2 H3].
-    rewrite cat_cons cat_cons pair_c //=.
-    have H4: size sop = size p. by rewrite /size in H2; apply succn_inj.
-    have -> : pair (p ++ q) (sop ++ soq) = pair p sop ++ pair q soq 
-      by apply H3.
-    by [].
-  Qed.
-
-  Fixpoint unpair_A (spao: seq (T*O)) :=
-    match spao with 
-    | [::] => [::]
-    | (pa,o)::spao => (pa)::(unpair_A spao)
-    end.
-
-  Lemma unpair_A_c: forall (spao: seq (T*O)) (pa: T) (o: O),
-      unpair_A ((pa,o)::spao) = pa::(unpair_A spao).
-  Proof.
-    by [].
-  Qed.
+  Proof. by apply pair_cat_. Qed.
   
+  (* XXX rename *)
   Lemma pair_invl: forall (spa: seq T) (so: seq O),
-      unpair_A (pair spa so) = spa.
-  Proof.
-    elim => [// | pa spa Hr so].
-    elim: so Hr => [ Hr // | o so _ Hr ];
-                  match goal with _ => by rewrite pair_c unpair_A_c Hr end.
-  Qed.
-  
-  Fixpoint unpair_O (spao: seq (T*O)) :=
-    match spao with 
-    | [::] => [::]
-    | (pa,o)::spao => o::(unpair_O spao)
-    end.
-  
+      (unpair (pair spa so)).1 = spa.
+  Proof. by apply unpair1_left. Qed.
+
 End pair_unpair.
 
 Section LiftO_seq_props.
@@ -444,12 +447,15 @@ Section LiftO_seq_props.
     by move => p so x y o;rewrite headI LiftO_c. 
   Qed.
   
-  Definition UnLiftO_A (p: seq (T*T*O)) (x: T) := UnLift (unpair_A p) x.
+  Definition UnLiftO (p: seq (T*T*O)) (x: T) :=
+    ( UnLift (unpair p).1 x, (unpair p).2).
   
-  Definition UnLiftO_O (p: seq (T*T*O)) := unpair_O p.
-  
-  Lemma UnLiftO_A_c: forall (p: seq (T*T*O)) (x y: T) (o:O),
-      UnLiftO_A ((x, y, o) :: p) x = [::x & UnLiftO_A p y].
+  Definition UnLiftO1 (p: seq (T*T*O)) (x: T) := UnLift (unpair p).1 x.
+  (*
+  Definition UnLiftO2 (p: seq (T*T*O)) := (unpair p).2 .
+
+  Lemma UnLiftO1_c: forall (p: seq (T*T*O)) (x y: T) (o:O),
+      UnLiftO1 ((x, y, o) :: p) x = [::x & UnLiftO1 p y].
   Proof.
     by [].
   Qed.
@@ -471,7 +477,8 @@ Section LiftO_seq_props.
   Proof.
     by move => p so x y o H1;rewrite /LiftO /UnLiftO_A pair_invl Lift_inv2.
   Qed.
-  
+  *)
+
 End LiftO_seq_props.
 
 Section Seq_lifto. 
@@ -595,16 +602,16 @@ Section Seq_lifto.
   Qed.
   
   Lemma Lifto_inv1: forall (p: seq T) (x y: T),
-      UnLiftO_A (Lifto (x::(rcons p y)) N) x = x::(rcons p y).
+      UnLiftO1 (Lifto (x::(rcons p y)) N) x = x::(rcons p y).
   Proof.
-    by move => p x y;rewrite /Lifto /UnLiftO_A pair_o_iff pair_invl Lift_inv1.
+    by move => p x y;rewrite /Lifto /UnLiftO1 pair_o_iff pair_invl Lift_inv1.
   Qed.
 
   Lemma Lifto_inv3: forall (p q: seq T) (x y t: T),
-      UnLiftO_A ((Lifto (x::(rcons p t)) N)++(Lifto (t::(rcons q y)) P )) x =
+      UnLiftO1 ((Lifto (x::(rcons p t)) N)++(Lifto (t::(rcons q y)) P )) x =
         x :: rcons (rcons p t ++ q) y.
   Proof.
-    move => p q x y t;rewrite /Lifto /UnLiftO_A. 
+    move => p q x y t;rewrite /Lifto /UnLiftO1. 
     rewrite !pair_o_iff -pair_cat.
     by rewrite pair_invl -Lift_cat_crc -rcons_cat Lift_inv1.
     by rewrite size_nseq.
