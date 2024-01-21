@@ -220,6 +220,14 @@ Section Seq_lift.
     by elim => [// | y p Hr x' x z]; rewrite Lift_c UnLift_c Hr.
   Qed.
 
+  Lemma UnLift_left: forall (t:T) (p : seq T),
+      size (p) > 1 -> UnLift (Lift p) t = p.
+  Proof.
+    move => t p H1.
+    pose proof (seq_crc H1) as [q [x [y H2]]]. 
+    rewrite H2. apply Lift_inv1. 
+  Qed.
+  
   Lemma Lift_inv2: forall (p : seq T) (x: T),
       p <> [::] ->  UnLift (Lift p) (head x p) = p.
   Proof.
@@ -300,6 +308,8 @@ Section basic_pair_unpair.
   (** * pair of sequences *)
   Variables (T S: Type).
   
+  (* we need an extra element as the two sequence may 
+   * differ in size *)
   Fixpoint pair_ (s: S) (st: seq T) (so: seq S):= 
     match st, so with 
     | t::st, o::so => (t,o)::(pair_ s st so)
@@ -389,7 +399,8 @@ Section basic_pair_unpair.
     move => s.
     rewrite /mkset predeqE => sts.
     split => [ _ | _ ]; last first. by [].
-    by exists (unpair sts).1;exists (unpair sts).2;split;[apply unpair_sz|apply unpair_right].
+    by exists (unpair sts).1;exists (unpair sts).2;
+         split;[apply unpair_sz|apply unpair_right].
   Qed.
 
 End basic_pair_unpair.
@@ -418,22 +429,15 @@ Section pair_unpair.
       size sop = size p ->
       pair (p++q) (sop++soq) = (pair p sop) ++ (pair q soq).
   Proof. by apply pair_cat_. Qed.
-  
-  (* XXX rename *)
-  Lemma pair_invl: forall (spa: seq T) (so: seq O),
-      (unpair (pair spa so)).1 = spa.
-  Proof. by apply unpair1_left. Qed.
 
 End pair_unpair.
 
-Section LiftO_seq_props.
+Section pair_lift1.
   (** * pair combined with Lift *)
   Variables (T: Type).
   
-  (* begin snippet LiftO:: no-out *)  
   Definition LiftO (sa: seq T) (so: seq O) := pair (Lift sa) so.
-  (* end snippet LiftO *)  
-  
+
   Lemma LiftO_c: forall  (p:seq T) (so: seq O) (x y: T) (o:O),
       LiftO [::x,y & p] [::o & so]= [::(x,y,o) & LiftO [::y & p] so].
   Proof.
@@ -449,37 +453,32 @@ Section LiftO_seq_props.
   
   Definition UnLiftO (p: seq (T*T*O)) (x: T) :=
     ( UnLift (unpair p).1 x, (unpair p).2).
-  
+
   Definition UnLiftO1 (p: seq (T*T*O)) (x: T) := UnLift (unpair p).1 x.
-  (*
-  Definition UnLiftO2 (p: seq (T*T*O)) := (unpair p).2 .
-
-  Lemma UnLiftO1_c: forall (p: seq (T*T*O)) (x y: T) (o:O),
-      UnLiftO1 ((x, y, o) :: p) x = [::x & UnLiftO1 p y].
+  
+  Lemma UnLiftO_left: forall (t: T) (st: seq T) (so: seq O),
+      size (st) > 1 /\ size(st) = size(so) + 1 
+      -> UnLiftO (LiftO st so) t = (st,so).
   Proof.
-    by [].
+    move => t st so [H1 H2].
+    have H3: size(Lift st) = (size st) -1 by apply Lift_sz.
+    have H4: size(Lift st) = size(so) by rewrite H3 H2 addn1 subn1. 
+    have H5: (unpair (pair (Lift st) so)) = ((Lift st), so)
+      by apply unpair_left.
+    by rewrite /UnLiftO /LiftO H5 /=;f_equal;apply Lift_inv_sz2.
   Qed.
   
-  Lemma LiftO_A_inv: forall (p : seq T) (so: seq O) (x y: T) (o:O),
-      UnLiftO_A (LiftO [::x,y & p] [::o & so]) x = [::x,y & p].
+  Lemma UnLiftO1_left: forall(t: T) (st: seq T) (so: seq O),
+      size (st) > 1 -> (UnLiftO (LiftO st so) t).1 = st.
   Proof.
-    by move => p so x y o;rewrite /LiftO /UnLiftO_A pair_invl Lift_inv.
+    move => t st so H1.
+    have H3: size(Lift st) = (size st) -1 by apply Lift_sz.
+    have H5: (unpair (pair (Lift st) so)).1 = (Lift st)
+      by apply unpair1_left.
+    by rewrite /UnLiftO /LiftO H5 /=;f_equal;apply Lift_inv_sz2.
   Qed.
 
-  Lemma LiftO_A_inv1: forall (p : seq T) (so: seq O) (x y: T) (o:O),
-      UnLiftO_A (LiftO (x::(rcons p y)) [::o & so]) x = (x::(rcons p y)).
-  Proof.
-    by move => p so x y o;rewrite /LiftO /UnLiftO_A pair_invl Lift_inv1.
-  Qed.
-  
-  Lemma LiftO_A_inv2: forall (p : seq T) (so: seq O) (x y: T) (o:O),
-      p <> [::] -> UnLiftO_A (LiftO p so) (head x p) = p.
-  Proof.
-    by move => p so x y o H1;rewrite /LiftO /UnLiftO_A pair_invl Lift_inv2.
-  Qed.
-  *)
-
-End LiftO_seq_props.
+End pair_lift1.
 
 Section Seq_lifto. 
   (** * Lifto *)
@@ -490,7 +489,9 @@ Section Seq_lifto.
     | [::] => @nil (T*T*O)
     | pa::spa => (pa,o)::(pair_o spa o)
     end.
-    
+
+  Definition Lifto (sa: seq T) (o: O) := pair_o (Lift sa) o.
+  
   Lemma pair_o_c: forall (spa: seq (T * T)) (o: O) (aa:T * T),
         pair_o (aa::spa) o = (aa,o)::(pair_o spa o).
   Proof.
@@ -520,11 +521,7 @@ Section Seq_lifto.
   Proof.
     by elim => [ // | pa spa Hr o ];rewrite pair_c pair_o_c Hr.
   Qed.
-
-  Definition Lifto (sa: seq T) (o: O) := pair_o (Lift sa) o.
   
-  (** Lifto properties herited from Lift *) 
-
   Lemma Lifto_c: forall (p:seq T) (o:O) (x y: T),
       Lifto [::x, y & p] o = (x,y,o)::(Lifto [::y & p] o).
   Proof.
@@ -566,7 +563,8 @@ Section Seq_lifto.
   Lemma Lifto_head: forall (p:seq T) (o:O) (x z: T),
       head (x, z ,o) (Lifto (x::p) o) = (x, head z p, o).
   Proof.
-    have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
+    have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q
+        by elim. 
     elim/last_ind => [o x y // | p t Hr o x z].
     by rewrite /Lifto Lift_crc H1. 
   Qed.
@@ -574,7 +572,8 @@ Section Seq_lifto.
   Lemma Lifto_head1: forall (p:seq T) (o:O) (x z: T),
       head (last x p, z ,o) (Lifto (x::p) o) = (x, head z p, o).
   Proof.
-    have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
+    have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q
+        by elim. 
     elim/last_ind => [o x y // | p t Hr o x z].
     by rewrite /Lifto Lift_crc H1. 
   Qed.
@@ -601,22 +600,6 @@ Section Seq_lifto.
         by rewrite rcons_cons Lifto_c -!rcons_cons Lifto_rcrc -rcons_cat.
   Qed.
   
-  Lemma Lifto_inv1: forall (p: seq T) (x y: T),
-      UnLiftO1 (Lifto (x::(rcons p y)) N) x = x::(rcons p y).
-  Proof.
-    by move => p x y;rewrite /Lifto /UnLiftO1 pair_o_iff pair_invl Lift_inv1.
-  Qed.
-
-  Lemma Lifto_inv3: forall (p q: seq T) (x y t: T),
-      UnLiftO1 ((Lifto (x::(rcons p t)) N)++(Lifto (t::(rcons q y)) P )) x =
-        x :: rcons (rcons p t ++ q) y.
-  Proof.
-    move => p q x y t;rewrite /Lifto /UnLiftO1. 
-    rewrite !pair_o_iff -pair_cat.
-    by rewrite pair_invl -Lift_cat_crc -rcons_cat Lift_inv1.
-    by rewrite size_nseq.
-  Qed.
-
 End Seq_lifto. 
 
 Section Pair_of_seq.
