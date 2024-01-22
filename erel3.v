@@ -512,8 +512,11 @@ Section LiftO3.
 
   Lemma ChrelO_eq: forall (pa1 pa2: (T*T*O)), ChrelO (pa1,pa2) <-> pa1.1.2 = pa2.1.1.
   Proof. by []. Qed.
+
+  Lemma ChrelO_as_Prel: ChrelO = Prel (@Chrel T).
+  Proof. by []. Qed.
   
-  Lemma Lift_LiftO: forall (st:seq T) (so:seq O), 
+  Lemma Lift_LiftO_gt1: forall (st:seq T) (so:seq O), 
       size(st)> 1 /\ size(st) = size(so)+1
       -> (Lift (LiftO st so)) = pairp (Lift (Lift st)) (Lift so).
   Proof.
@@ -524,6 +527,39 @@ Section LiftO3.
     by rewrite H3 H2 addn1 subn1. 
   Qed.
 
+  Lemma Lift_LiftO_eq1: forall (st:seq T) (so:seq O), 
+      size(st)= 1 /\ size(st) = size(so)+1
+      -> (Lift (LiftO st so)) = pairp (Lift (Lift st)) (Lift so).
+  Proof.
+    move => st so [H1 H2].
+    move: (H1);rewrite seq_1 => [[x H3]].
+    have H4: size so =0. by rewrite H1 addn1 in H2;apply succn_inj. 
+    apply size0nil in H4.
+    by rewrite H3 H4 /=.
+  Qed.
+  
+  Lemma Lift_LiftO_gtO: forall (st:seq T) (so:seq O), 
+      size(st)> 0 /\ size(st) = size(so)+1
+      -> (Lift (LiftO st so)) = pairp (Lift (Lift st)) (Lift so).
+  Proof.
+    move => st so.
+    pose proof seq_cases st as [H1 | [[t H1] | [q [t [v H1]]]]].
+    by rewrite H1.
+    by move => [_ H2];apply Lift_LiftO_eq1;split;[rewrite H1|].
+    by move => [H2 H3];apply Lift_LiftO_gt1;split;[rewrite H1 /= size_rcons|].
+  Qed.
+ 
+  Lemma Lift_LiftO: forall (st:seq T) (so:seq O), 
+      size(st)> 0 /\ size(st) = size(so)+1
+      -> (Lift (LiftO st so)) [\in] ChrelO. 
+  Proof.
+    move => st so [H1 H2].
+    rewrite ChrelO_as_Prel Lift_LiftO_gtO. 
+    apply XX.
+    apply Lift_Lift.
+    by [].
+  Qed.
+  
 End LiftO3.
 
 Section Seq_liftO. 
