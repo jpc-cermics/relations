@@ -93,7 +93,7 @@ Section allset.
 End allset.
 
 Section allset2.
-  (** * all for seq (T *T) *)
+  (** * allset for a product type (T *T) *)
 
   Variables (T: Type).
   
