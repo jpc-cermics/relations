@@ -572,12 +572,51 @@ Section LiftO3.
     by [].
   Qed.
   
+  Definition pair_tt_o:= (@pair_ (T*T) O P).
+  Definition unpair_tt_o:= (@unpair (T*T) O).
+  
+  Lemma YY: forall (sto: seq(T*T*O)),
+      pair_tt_o (unpair_tt_o sto).1 (unpair_tt_o sto).2 = sto.
+  Proof.
+    by move => sto;apply unpair_right.
+  Qed.
+  
   Lemma Lift_ChrelO: forall (sto: seq(T*T*O)),
-      (Lift sto) [\in] ChrelO -> exists st: seq T,exists so:seq O, LiftO st so = sto.
+      (Lift sto) [\in] ChrelO -> (Lift (unpair_tt_o sto).1) [\in] (@Chrel T).
+  Proof.
+    elim => [ // | tto sto Hr].
+    elim: sto tto Hr => [ [t1 t2 o1] _ // | [[t1' t2'] o1'] sto Hr [[t1 t2] o1] H1 H2].
+    move: H2;rewrite Lift_c allset_cons=> [[H2 H3]].
+    rewrite /unpair_tt_o /unpair Lift_c allset_cons.
+    by split;[ | apply H1].
+  Qed.
+
+  Lemma Lift_ChrelO1: forall (sto: seq(T*T*O)),
+      (Lift sto) [\in] ChrelO -> exists p: seq T, Lift p = (unpair_tt_o sto).1.
   Proof.
     move => sto H1.
-    have H2: forall x, pairp (unpairp x).1  (unpairp x).2 = x. 
-  Admitted.
+    have H2:  (Lift (unpair_tt_o sto).1) [\in] (@Chrel T) by apply Lift_ChrelO.
+    move: H2;rewrite Lift_Chrel => [[p H3]].
+    by exists p. 
+  Qed.
+
+  Lemma Lift_ChrelO2: forall (sto: seq(T*T*O)),
+      (Lift sto) [\in] ChrelO -> exists p: seq T,exists so: seq O, LiftO p so = sto.
+  Proof.
+    move => sto H1.
+    pose proof Lift_ChrelO1 H1 as [p H2].
+    exists p. exists (unpair_tt_o sto).2.
+    rewrite /LiftO H2.
+    apply YY.
+  Qed.
+
+  Lemma Lift_ChrelO3: forall (sto: seq(T*T*O)),
+    (exists p: seq T,exists so: seq O,0 < size p /\ size p = size so + 1 /\ LiftO p so = sto)
+    -> (Lift sto) [\in] ChrelO.
+  Proof.
+    move => sto [p [so [H1 [H2 <-]]]].
+    by apply Lift_LiftO.
+  Qed.
 
 End LiftO3.
 

@@ -305,7 +305,7 @@ Section Seq_lift.
 End Seq_lift.
 
 Section basic_pair_unpair.
-  (** * pair of sequences *)
+  (** * pair sequences *)
   Variables (T S: Type).
   
   (* we need an extra element as the two sequence may 
