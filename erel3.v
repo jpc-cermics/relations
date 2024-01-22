@@ -163,7 +163,7 @@ Section allset_Lifted.
   Variables (T: Type).
   Definition allL (E: relation T) (p: seq T) (x y:T) := 
     (Lift (x::(rcons p y))) [\in] E.
-
+  
   Lemma allL0 : forall (E: relation T) (x y : T),
       allL E [::] x y = ((x,y) \in E).
   Proof.
@@ -270,7 +270,7 @@ Section Edge_paths.
     -> EPath E ([:: x & ep]).
   
   Definition EPath1' (E: relation T) := [set p: seq T | EPath E p /\ size(p) >= 2].
-
+  
   Section EPath1_EPath1'.
 
     (* intermediate Lemma *)
@@ -457,8 +457,8 @@ Section Lift2.
   
 End Lift2.
 
-Section Lift2O.
-  (** * Multiple definitions of edge paths *) 
+Section LiftO2.
+  (** * Multiple definitions of extended oriented edge paths *) 
   
   Variables (T: Type).
 
@@ -514,12 +514,31 @@ Section Lift2O.
       by split.
   Qed.
 
-End  Lift2O.
+End  LiftO2.
 
 Section LiftO3.
-
+  (** * Multiple definitions of extended oriented edge paths *) 
   Variable (T:Type).
 
+  Definition O_rev (o:O) := match o with | P => N | N => P end.
+  
+  (* begin snippet Oedge:: no-out *)  
+  Definition Oedge (E: relation T): set (T*T*O) :=
+    fun (oe: T*T*O) => match oe with | (e,P) => E e | (e,N) => E.-1 e end.
+  (* end snippet Oedge *)
+
+  Lemma Oedge_rev: forall (E: relation T) (x y: T),
+      Oedge E (x,y,P) = Oedge E (y,x,N).
+  Proof.
+    by move => E x y.
+  Qed.
+  
+  Lemma Oedge_inv: forall (E: relation T) (x y: T) (o:O),
+      Oedge E (x,y,o) = Oedge E.-1 (x,y, O_rev o).
+  Proof.
+    by move => E x y; elim. 
+  Qed.
+  
   Definition ChrelO := [set ppa: (T*T*O)*(T*T*O) | (ppa.1.1).2 = (ppa.2.1).1].
 
   Lemma ChrelO_eq: forall (pa1 pa2: (T*T*O)), ChrelO (pa1,pa2) <-> pa1.1.2 = pa2.1.1.
@@ -618,35 +637,23 @@ Section LiftO3.
     by apply Lift_LiftO.
   Qed.
 
+  (* begin snippet EPath2new:: no-out *) 
+  Definition U_ge_1 (E: relation T):=
+    [set sto | sto [\in] (Oedge E) /\ (Lift sto) [\in] ChrelO /\ size(sto) > 0].
+  (* end snippet EPath2new *)
+  
+  (* begin snippet EPath3new:: no-out *) 
+  Definition U_ge_1' (E: relation T):=
+    [set sto | sto [\in] (Oedge E) /\ (exists p, exists so, size p > 1 /\ size p = size so + 1 /\ (LiftO p so) =sto)].
+  (* end snippet EPath3new *)
+  
+  Lemma U_equiv: forall (E: relation T), U_ge_1 E = U_ge_1' E.
+  Proof.
+    move => E;rewrite /U_ge_1 /U_ge_1' /setI /mkset predeqE => spa.
+    split. 
+  Admitted.
+
 End LiftO3.
-
-Section Seq_liftO. 
-
-  (** * from (seq: A) (seq:O) to seq: A *A * O *)
-  
-  Variables (T: Type).
-  (* orientation  *)
-
-  Definition O_rev (o:O) := match o with | P => N | N => P end.
-  
-  (* begin snippet Oedge:: no-out *)  
-  Definition Oedge (E: relation T): set (T*T*O) :=
-    fun (oe: T*T*O) => match oe with | (e,P) => E e | (e,N) => E.-1 e end.
-  (* end snippet Oedge *)
-
-  Lemma Oedge_rev: forall (E: relation T) (x y: T),
-      Oedge E (x,y,P) = Oedge E (y,x,N).
-  Proof.
-    by move => E x y.
-  Qed.
-  
-  Lemma Oedge_inv: forall (E: relation T) (x y: T) (o:O),
-      Oedge E (x,y,o) = Oedge E.-1 (x,y, O_rev o).
-  Proof.
-    by move => E x y; elim. 
-  Qed.
-
-End Seq_liftO.
 
 Section PathRel.
   (** * transitive closure and paths
@@ -742,12 +749,12 @@ Section Extended_oriented_paths.
   Proof. by []. Qed.
 
   (* begin snippet EoPath:: no-out *) 
-  Definition U_ge_1 (E: relation T):=
+  Definition ZZU_ge_1 (E: relation T):=
     [set spa | spa [\in] (Oedge E) /\ (Lift spa) [\in] ComposeOe /\ size(spa) > 0].
   (* end snippet EoPath *)
   
   (* begin snippet EPath3new:: no-out *) 
-  Definition U_ge_1' (E: relation T):=
+  Definition ZZU_ge_1' (E: relation T):=
     [set spa | spa [\in] (Oedge E) /\ (exists p,exists o, (LiftO p o) =spa /\ size(p) > 1)].
   (* end snippet EPath3new *)
 
