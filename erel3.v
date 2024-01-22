@@ -462,13 +462,25 @@ Section Lift2O.
   
   Variables (T: Type).
 
-  Fixpoint pairp (st: seq(T*T)) (so: seq (O*O)):= 
+  Fixpoint pairp (st: seq(T*T)) (so: seq (O*O)): seq((T*O)*(T*O)):= 
     match st, so with 
     | t::st, o::so => ((t.1,o.1),(t.2,o.2))::(pairp st so)
     | t::st, [::] =>  ((t.1,P),(t.2,P))::(pairp st [::])
     |  _ , _ => [::]
     end.
 
+  Fixpoint unpairp (sto: seq((T*O)*(T*O))) : seq(T*T)*seq(O*O):=
+    match sto with 
+    | x::sto => ((x.1.1,x.2.1)::((unpairp sto).1),(x.1.2,x.2.2)::((unpairp sto).2))
+    | [::] => ([::],[::])
+    end.
+  
+  Lemma unpairp_right: forall (sto: seq((T*O)*(T*O))),
+      pairp (unpairp sto).1 (unpairp sto).2 = sto.
+  Proof.
+    by elim => [// | [[t1 o1] [t2 o2]] sto Hrt];rewrite /= Hrt.
+  Qed.
+  
   Lemma Lift_LiftO__: forall (st:seq T) (so:seq O), 
       size(st) = size (so)
       -> (Lift (pair st so)) = pairp (Lift st) (Lift so).
@@ -560,6 +572,13 @@ Section LiftO3.
     by [].
   Qed.
   
+  Lemma Lift_ChrelO: forall (sto: seq(T*T*O)),
+      (Lift sto) [\in] ChrelO -> exists st: seq T,exists so:seq O, LiftO st so = sto.
+  Proof.
+    move => sto H1.
+    have H2: forall x, pairp (unpairp x).1  (unpairp x).2 = x. 
+  Admitted.
+
 End LiftO3.
 
 Section Seq_liftO. 
