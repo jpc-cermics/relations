@@ -343,6 +343,12 @@ Section basic_pair_unpair.
     by rewrite Hr.
   Qed.
 
+  Lemma pair_sz:  forall (s: S) (st: seq T) (ss: seq S),
+      size (pair_ s st ss) = size st.
+  Proof.
+    by move => s;elim => [// | t st Hr ss];rewrite pair_c_ /= Hr.
+  Qed.
+
   Lemma pair_cc_: forall (sv: S) (st: seq T) (ss: seq S) (t: T) (s:S),
       pair_ sv (t::st) (s::ss) = (t,s)::(pair_ sv st ss).
   Proof.

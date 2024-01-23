@@ -633,12 +633,24 @@ Section LiftO3.
   Qed.
   
   Lemma Lift_ChrelO2: forall (sto: seq(T*T*O)),
-      (Lift sto) [\in] ChrelO -> exists p: seq T,exists so: seq O, LiftO p so = sto.
+    size(sto) > 0 /\  (Lift sto) [\in] ChrelO -> 
+    exists p: seq T,exists so: seq O, 
+      size(p) = size(sto)+1 /\ size(p)=size(so) +1 /\ LiftO p so = sto.
   Proof.
     move => sto H1.
-    pose proof Lift_ChrelO1 H1 as [p H2].
-    exists p. exists (unpair_tt_o sto).2.
-    rewrite /LiftO H2.
+    pose proof Lift_ChrelO1 H1 as [p [H2 H3]].
+    move: H1 => [H0 H1].
+    have H4: size p > 1 by rewrite H2 addn1.
+    exists p; exists (unpair_tt_o sto).2.
+    rewrite -unpair_sz. 
+    split. by []. split. 
+    rewrite -H3.
+    rewrite [in RHS]Lift_sz. 
+    rewrite subn1 addn1.
+    pose proof (ltn_predK H4) as H5.
+    by rewrite H5.
+    by [].
+    rewrite /LiftO H3. 
     apply YY.
   Qed.
 
@@ -652,7 +664,8 @@ Section LiftO3.
 
   (* begin snippet EPath2new:: no-out *) 
   Definition U_ge_1 (E: relation T):=
-    [set sto | sto [\in] (Oedge E) /\ (Lift sto) [\in] ChrelO /\ size(sto) > 0].
+    [set sto | sto [\in] (Oedge E) /\  size(sto) > 0 /\ 
+                 (Lift sto) [\in] ChrelO].
   (* end snippet EPath2new *)
   
   (* begin snippet EPath3new:: no-out *) 
@@ -663,9 +676,20 @@ Section LiftO3.
   Lemma U_equiv: forall (E: relation T), U_ge_1 E = U_ge_1' E.
   Proof.
     move => E;rewrite /U_ge_1 /U_ge_1' /setI /mkset predeqE => spa.
-    
     split. 
-  Admitted.
+    - move => [H1 H2].
+      split; first by []. 
+      pose proof (Lift_ChrelO2 H2) as [p [so [H3 [H4 H5]]]].
+      move: H2 => [H2 H2'].
+      by (exists p);(exists so);split;[rewrite H3 addn1|].
+    - move => [H1 [p [so [H2 [H3 H4]]]]].
+      split. by [].
+      split. 
+      by rewrite -H4 /LiftO pair_sz Lift_sz2.
+      rewrite -H4. apply Lift_LiftO.
+      split. by apply ltn_trans with 1.
+      by []. 
+  Qed.
 
 End LiftO3.
 
