@@ -475,6 +475,13 @@ Section LiftO2.
     | [::] => ([::],[::])
     end.
   
+  Lemma unpairp_sz: forall (sto: seq((T*O)*(T*O))),
+      size(unpairp sto).1 = size(sto) 
+      /\ size(unpairp sto).2 = size(sto).
+  Proof.
+    by elim => [// | x sto [H1 H2]];rewrite /unpairp /= H1 H2.
+  Qed.
+  
   Lemma unpairp_right: forall (sto: seq((T*O)*(T*O))),
       pairp (unpairp sto).1 (unpairp sto).2 = sto.
   Proof.
@@ -611,14 +618,20 @@ Section LiftO3.
   Qed.
 
   Lemma Lift_ChrelO1: forall (sto: seq(T*T*O)),
-      (Lift sto) [\in] ChrelO -> exists p: seq T, Lift p = (unpair_tt_o sto).1.
+      size(sto) > 0 /\ (Lift sto) [\in] ChrelO 
+      -> exists p: seq T, size(p) = size(sto)+1 /\ Lift p = (unpair_tt_o sto).1.
   Proof.
-    move => sto H1.
+    move => sto [H0 H1].
     have H2:  (Lift (unpair_tt_o sto).1) [\in] (@Chrel T) by apply Lift_ChrelO.
     move: H2;rewrite Lift_Chrel => [[p H3]].
-    by exists p. 
+    exists p. 
+    split; last by [].
+    have H2: size(Lift p)= size(sto) by rewrite -[RHS]unpair_sz1 H3.
+    have H4: size(p) > 1 by rewrite -Lift_sz2 H2.
+    have H5: size(p) = size (Lift p) +1 by apply Lift_sz3;rewrite H2.
+    by rewrite H5 H2. 
   Qed.
-
+  
   Lemma Lift_ChrelO2: forall (sto: seq(T*T*O)),
       (Lift sto) [\in] ChrelO -> exists p: seq T,exists so: seq O, LiftO p so = sto.
   Proof.
@@ -650,6 +663,7 @@ Section LiftO3.
   Lemma U_equiv: forall (E: relation T), U_ge_1 E = U_ge_1' E.
   Proof.
     move => E;rewrite /U_ge_1 /U_ge_1' /setI /mkset predeqE => spa.
+    
     split. 
   Admitted.
 

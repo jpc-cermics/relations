@@ -272,7 +272,17 @@ Section Seq_lift.
   Proof.
     by elim => [// | x p ]; elim: p x => [// | x p Hr y H1 // H2].
   Qed.
-  
+
+  Lemma Lift_sz3: forall (p:seq T),
+      size(Lift p) > 0 -> size(p) = size(Lift p) +1. 
+  Proof.
+    move => p H1.
+    have H2:  size p >1. by apply Lift_sz2.
+    have H3:  size (Lift p) = (size p) -1 by apply Lift_sz.
+    rewrite H3 subn1 addn1. 
+    by have ->: (size p).-1.+1 = size p by apply: (ltn_predK H2).
+  Qed.
+
   Lemma Lift_szn': forall (p:seq T) (n:nat),
       size(Lift p) = n.+1 <-> size (p) = n.+2.
   Proof.
@@ -357,6 +367,12 @@ Section basic_pair_unpair.
 
   Lemma unpair_sz: forall (sts: seq (T*S)),
       size (unpair sts).1 = size (unpair sts).2. 
+  Proof.
+    by elim => [// | [t1 s1] sts Hrt];rewrite /= -[in RHS]Hrt. 
+  Qed.
+
+  Lemma unpair_sz1: forall (sts: seq (T*S)),
+      size (unpair sts).1 = size sts.
   Proof.
     by elim => [// | [t1 s1] sts Hrt];rewrite /= -[in RHS]Hrt. 
   Qed.
