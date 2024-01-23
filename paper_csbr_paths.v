@@ -485,7 +485,7 @@ Section Active_path_implies_Aw_s.
       rewrite /last /= in H5 H6.
       rewrite H5 H6.
       pose proof Active_path_cc_a H2 as [H7 [H8 [H9 H10]]].
-      rewrite /ComposeOe /mkset /fst /snd in H9.
+      rewrite /ChrelO /mkset /fst /snd in H9.
       rewrite H9 H5 H6 in H2 *.
       exists [:: (u, v, o1)],o2,z.
       split; first by [].
@@ -517,7 +517,7 @@ Section Active_path_implies_Aw_s.
       
       + move: H11 => /rcons_inj [_ _ H14];rewrite H13 in H14;clear H13.
         exists (rcons q (u, v, o1)),o2, v.
-        move: H7 => [/= H15 [H16 [/ComposeOe_eq H17  H18]]].
+        move: H7 => [/= H15 [H16 [/ChrelO_eq H17  H18]]].
         rewrite H17 in H4 *.
         split. 
         by [].
@@ -531,7 +531,7 @@ Section Active_path_implies_Aw_s.
            by right;split;[apply Last2|].
       + move: H11 => /rcons_inj [_ _ H14];rewrite H13 in H14;clear H13.
         exists (rcons q (u, v, o1)),o2, v.
-        move: H7 => [/= H15 [H16 [/ComposeOe_eq H17  H18]]].
+        move: H7 => [/= H15 [H16 [/ChrelO_eq H17  H18]]].
         rewrite H17 in H4 *.
         split. 
         by [].

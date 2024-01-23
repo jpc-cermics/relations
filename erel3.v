@@ -547,10 +547,7 @@ Section LiftO3.
   Qed.
   
   Definition ChrelO := [set ppa: (T*T*O)*(T*T*O) | (ppa.1.1).2 = (ppa.2.1).1].
-
-  Lemma ChrelO_eq: forall (pa1 pa2: (T*T*O)), ChrelO (pa1,pa2) <-> pa1.1.2 = pa2.1.1.
-  Proof. by []. Qed.
-
+  
   Lemma ChrelO_as_Prel: ChrelO = Prel (@Chrel T).
   Proof. by []. Qed.
   
@@ -691,6 +688,16 @@ Section LiftO3.
       by []. 
   Qed.
 
+  Lemma ChrelO_eq: forall (x y z t: T) (o1 o2:O),
+      ChrelO ((x,y,o1), (z,t,o2)) <-> y = z.
+  Proof. by []. Qed.
+
+  (* begin snippet D_U:: no-out *) 
+  Definition D_U (R E: relation T):=
+    [set spa | spa [\in] (Oedge E) /\
+                 (exists p, exists x,exists y,exists o, (LiftO (x::(rcons p y)) o) = spa /\ R (x,y))].
+  (* end snippet D_U *)
+
 End LiftO3.
 
 Section PathRel.
@@ -772,38 +779,6 @@ Section PathRel_Examples.
   
 End PathRel_Examples.
 
-Section Extended_oriented_paths.
-
-  Variables (T: Type).
-  
-  (* A relation on (Eo) *)
-  Definition ComposeOe' (oe1 oe2: T*T*O):= oe1.1.2 = oe2.1.1.
-
-  Definition ComposeOe := 
-    [set eo : (T*T*O) * (T*T*O) | eo.1.1.2 = eo.2.1.1].
-  
-  Lemma ComposeOe_eq: forall (x y z t: T) (o1 o2:O),
-      ComposeOe ((x,y,o1), (z,t,o2)) <-> y = z.
-  Proof. by []. Qed.
-
-  (* begin snippet EoPath:: no-out *) 
-  Definition ZZU_ge_1 (E: relation T):=
-    [set spa | spa [\in] (Oedge E) /\ (Lift spa) [\in] ComposeOe /\ size(spa) > 0].
-  (* end snippet EoPath *)
-  
-  (* begin snippet EPath3new:: no-out *) 
-  Definition ZZU_ge_1' (E: relation T):=
-    [set spa | spa [\in] (Oedge E) /\ (exists p,exists o, (LiftO p o) =spa /\ size(p) > 1)].
-  (* end snippet EPath3new *)
-
-  (* begin snippet D_U:: no-out *) 
-  Definition D_U (R E: relation T):=
-    [set spa | spa [\in] (Oedge E) /\
-                 (exists p, exists x,exists y,exists o, (LiftO (x::(rcons p y)) o) = spa /\ R (x,y))].
-  (* end snippet D_U *)
-
-End Extended_oriented_paths.
-
 Section Active_relation.
   (** * relation on EO where EO = (AxA)xO
    * this section is to be merged with previous stuffs 
@@ -814,7 +789,7 @@ Section Active_relation.
   (* Active as a relation on Eo) *)
   Definition ActiveOe (W: set T) (E: relation T) := 
     [set oe : (T*T*O) * (T*T*O) | 
-      Oedge E oe.1 /\ Oedge E oe.2 /\ (ComposeOe oe)
+      Oedge E oe.1 /\ Oedge E oe.2 /\ (ChrelO oe)
       /\ match (oe.1.2,oe.2.2, oe.1.1.2) with 
         | (P,P,v) => W.^c v
         | (N,N,v) => W.^c v
@@ -829,7 +804,7 @@ Section Active_relation.
   Qed.
 
   Lemma ActiveOe_Compose: forall (W: set T) (E: relation T) (eo : (T*T*O) * (T*T*O)),
-      eo \in (ActiveOe W E) -> ComposeOe eo. 
+      eo \in (ActiveOe W E) -> ChrelO eo. 
   Proof.
     by move => W E eo /inP [_ [_ [H3 _]]].
   Qed.
@@ -837,7 +812,7 @@ Section Active_relation.
   Lemma ActiveOe_o: forall (W: set T) (E: relation T) (x y z: T) (o:O),
       (ActiveOe W E) ((x,y,o),(y,z,o)) <-> (Oedge E (x,y,o)) /\ (Oedge E (y,z,o)) /\ W.^c y.
   Proof.
-    move => W E x y z o;rewrite /ActiveOe /mkset /ComposeOe /=.
+    move => W E x y z o;rewrite /ActiveOe /mkset /ChrelO /=.
     case: o.
     by split => [[? [? [_ ?]]] // | [? [? ?]]].
     by split => [[? [? [_ ?]]] // | [? [? ?]]].
@@ -1150,13 +1125,13 @@ Section Active_paths.
       - rewrite -rcons_cons -rcons_cons -rcons_cons -rcons_cons Active_path_rcrc.
         have -> : [:: (x, y, P); (y, z, P)] = rcons [:: (x, y, P)]  (y, z, P) by [].
         rewrite Active_path_rcrc /head.
-        move => [[H1 [H'2 [H'3 [/ComposeOe_eq H'4 H'5]]]] [H3 [H4 [_ H6]]]].
+        move => [[H1 [H'2 [H'3 [/ChrelO_eq H'4 H'5]]]] [H3 [H4 [_ H6]]]].
         by (exists [::z]).
       - move => [[t s] o] p Hr x y z u v w.
         rewrite rcons_cons rcons_cons Active_path_cc.
         elim: p Hr.
         + move => Hr [H1 H2].
-          move: (H1); rewrite Active_path_cc => [[_ [_ [_ [/ComposeOe_eq H3 _]]]]];
+          move: (H1); rewrite Active_path_cc => [[_ [_ [_ [/ChrelO_eq H3 _]]]]];
                                                rewrite <- H3 in *.
           elim: o H1 => [ /Hr [q [H1 H4]] | ].
           ++ exists [:: z & q].
@@ -1168,7 +1143,7 @@ Section Active_paths.
              by split.
         + move => [[a b] o2] p _ H1 H2.
           move: (H2);rewrite Active_path_cc rcons_cons rcons_cons;
-            move => [[_ [_ [_ [/ComposeOe_eq H6 _]]]] _].
+            move => [[_ [_ [_ [/ChrelO_eq H6 _]]]] _].
           rewrite <- H6 in *; clear H6.
           elim: o H2 => [[H2 H3] | ].
           ++ apply H1 in H2;move:H2 => [q H2].
