@@ -25,7 +25,9 @@ Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
 
+(* begin snippet dsepnota *)  
 Notation "( x [⊥d] y | W )" := (D_separated W E x y).
+(* end snippet dsepnota *)
 
 (** * some Lemmas for the paths part *)
   

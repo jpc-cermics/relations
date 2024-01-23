@@ -5,7 +5,7 @@
 \newif\ifpreprint
 % select preprinttrue (by uncommenting) if you want to generate the
 % preprint version with aditional materials
-\preprinttrue
+\preprintfalse
 % select (by uncommenting) preprintfalse if you want to obtain a version without moral relation
 % ready for submission.
 %\preprintfalse
@@ -247,7 +247,7 @@ it will be usefull, in this work, to convert node paths into edge paths and
 conversely and to check that edge paths satisfy given relations between successive
 edges. As an example, using the relation $C_{\textsc{H}}$ -- denote
 \texttt{Chrel} in Coq -- on the product set $T{\times}T$ defined by
-$((v_1, v_2)\, C_{\textsc{H}}\, (v_3 v_4) \iff v_2 = v_3)$, that is {\small
+$((v_1, v_2)\, C_{\textsc{H}}\, (v_3, v_4) \iff v_2 = v_3)$, that is {\small
   \inputsnippetsE{erel3/Chrel}{,}} we obtain four equivalent ways -- two are
 expressed as image of set and two as preimage of set -- of representing sequences
 of pairs of elements of $T$ such that successive pairs satisfy the
@@ -371,7 +371,7 @@ as for example in \texttt{\PY{n}{Lift}~\PY{o}{(}\PY{n}{x}\PY{o}{::(}\PY{n}{rcons
 intermediate nodes \texttt{p} of the \EdgePath\ \texttt{sp} are immediately obtained.
 
 As a first result linking (edge) paths and relations we can prove that 
-{\small \inputsnippetsE{erel3/TCP.tex}{,}
+{\small \inputsnippetsE{erel3/TCPn.tex}{,}
 which asserts that two nodes \texttt{(v1,v2)} are in relation through the transitive closure of a relation 
 \texttt{S}, that is \texttt{(v1,v2) $\in$ S.+} if and only if 
 there exists an edge path with endpoints \texttt{(v1,v2)} in the graph $(T,S)$.
@@ -481,7 +481,7 @@ construct a relation $\EDGEo$ given a relation $\EDGE$
 Finally, the set of
 \undirectedEdgePaths\ of size greater or equal to one,
 $\UPATH_{\ge 1}\np{\OrientedGraph}$ is defined by
-\inputsnippets{erel3/U_ge_1.tex,erel3/U_ge_1p.tex}
+{\small \inputsnippets{erel3/U_ge_1.tex,erel3/U_ge_1p.tex}}
 
 \medskip
 
@@ -693,6 +693,8 @@ complementary set.
 \end{definition} 
 Notice that any \undirectedEdgePath\ of length~0 or 1 is active by definition.
 
+{\small \inputsnippets{erel3/ActiveOe.tex,erel3/Aeop.tex}}
+
 We introduce in Definition~\ref{de:vertices-d-separated} a new binary relation
 between vertices: we say that 
 two vertices are (conditionally) directionally separated if and only if
@@ -701,26 +703,26 @@ This definition mimics Pearl's d-separation, but with two differences:
 the graph is not supposed to be acyclic, and the separation is between vertices
 and not between disjoint subsets. 
 
-  \begin{definition}
-    \label{de:vertices-d-separated}
-    Let \( \npOrientedGraph \) be a graph, 
-    and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.
-    % 
-%    Let $\bgent$, $\cgent\in \AGENT$ be two vertices.
-    We denote
-    \begin{equation}
-      \bgent \ConditionalDirectionalSeparation \cgent \mid \AgentSubsetW
-      \iff 
-      \bcDeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph} \subset
-      \BlockedUndirectedPaths{\graph}
-      \qquad \bp{ \forall \bgent,\cgent \in \AGENT }
-      \eqfinv
-      \label{eq:vertices-d-separated}
-    \end{equation}
-    and we say that the vertices~$\bgent$ and $\cgent$ are 
-    (conditionally) \emph{directionally separated}  (\wrt\ the subset~$\AgentSubsetW$).
-  \end{definition}
-
+\begin{definition}
+  \label{de:vertices-d-separated}
+  Let \( \npOrientedGraph \) be a graph, 
+  and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.
+  % 
+  % Let $\bgent$, $\cgent\in \AGENT$ be two vertices.
+  We denote
+  \begin{equation}
+    \bgent \ConditionalDirectionalSeparation \cgent \mid \AgentSubsetW
+    \iff 
+    \bcDeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph} \subset
+    \BlockedUndirectedPaths{\graph}
+    \qquad \bp{ \forall \bgent,\cgent \in \AGENT }
+    \eqfinv
+    \label{eq:vertices-d-separated}
+  \end{equation}
+  and we say that the vertices~$\bgent$ and $\cgent$ are 
+  (conditionally) \emph{directionally separated}  (\wrt\ the subset~$\AgentSubsetW$).
+\end{definition}
+{\small \inputsnippets{paper_csbr_paths/dsepnotan.tex,erel3/Active}}
 
 
 

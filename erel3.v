@@ -787,6 +787,7 @@ Section Active_relation.
   Variables (T: Type).
   
   (* Active as a relation on Eo) *)
+  (* begin snippet ActiveOe:: no-out *)  
   Definition ActiveOe (W: set T) (E: relation T) := 
     [set oe : (T*T*O) * (T*T*O) | 
       Oedge E oe.1 /\ Oedge E oe.2 /\ (ChrelO oe)
@@ -796,7 +797,8 @@ Section Active_relation.
         | (N,P,v) => W.^c v
         | (P,N,v) => (Fset E.* W) v
         end].
-    
+  (* end snippet ActiveOe *)  
+
   Lemma ActiveOe_Oedge: forall (W: set T) (E: relation T) (eo : (T*T*O) * (T*T*O)),
       (ActiveOe W E) eo -> Oedge E eo.1 /\ Oedge E eo.2.
   Proof.
@@ -844,6 +846,7 @@ Section Active_paths.
   
   (* Active is now almost expressed as a transitive closure 
    * on an lifted space (A * A) * O as it uses AllL *)
+  (* begin snippet Aeop:: no-out *)  
   Definition Active_path
     (W: set T) (E: relation T) (p: seq EO) (x y: T) :=
     match p with 
@@ -853,6 +856,7 @@ Section Active_paths.
       => eo1.1.1 = x /\ (last eo2 p).1.2 = y 
         /\ allL (ActiveOe W E) (belast eo2 p) eo1 (last eo2 p)
     end.
+  (* end snippet Aeop *)
   
   Definition R_o (o:O):= match o with | P => E | N=> E.-1 end.
 
@@ -1212,12 +1216,14 @@ Section Active.
   (** * The Active relation as a relation on AxA *)
 
   Variables (T: Type). 
-  
+
+  (* begin snippet Active:: no-out *)  
   Definition Active (W: set T) (E: relation T) (x y: T) :=
    (exists (p: seq (T*T*O)), Active_path W E p x y).
 
   Definition D_separated  (W: set T) (E: relation T) (x y: T) := 
     ~(Active W E x y).
+  (* end snippet Active *)  
 
   Lemma Deployment_to_Active_path:
     forall (W: set T) (E: relation T) (p: seq T) (x y: T) (o:O),
