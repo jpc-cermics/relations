@@ -469,7 +469,9 @@ Section pair_lift1.
   (** * pair combined with Lift *)
   Variables (T: Type).
   
+  (* begin snippet LiftO:: no-out *)  
   Definition LiftO (sa: seq T) (so: seq O) := pair (Lift sa) so.
+  (* end snippet LiftO *)  
 
   Lemma LiftO_c: forall  (p:seq T) (so: seq O) (x y: T) (o:O),
       LiftO [::x,y & p] [::o & so]= [::(x,y,o) & LiftO [::y & p] so].

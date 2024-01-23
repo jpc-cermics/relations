@@ -659,16 +659,16 @@ Section LiftO3.
     by apply Lift_LiftO.
   Qed.
 
-  (* begin snippet EPath2new:: no-out *) 
+  (* begin snippet U_ge_1:: no-out *) 
   Definition U_ge_1 (E: relation T):=
     [set sto | sto [\in] (Oedge E) /\  size(sto) > 0 /\ 
                  (Lift sto) [\in] ChrelO].
-  (* end snippet EPath2new *)
+  (* end snippet U_ge_1 *)
   
-  (* begin snippet EPath3new:: no-out *) 
+  (* begin snippet U_ge_1p:: no-out *) 
   Definition U_ge_1' (E: relation T):=
     [set sto | sto [\in] (Oedge E) /\ (exists p, exists so, size p > 1 /\ size p = size so + 1 /\ (LiftO p so) =sto)].
-  (* end snippet EPath3new *)
+  (* end snippet U_ge_1p *)
   
   Lemma U_equiv: forall (E: relation T), U_ge_1 E = U_ge_1' E.
   Proof.

@@ -242,7 +242,7 @@ $\Sequence_{n}(\fullset)$ coincide with the $\Lift_n$ mapping, that is
 ${\Lift}_{\vert\Sequence_n(\fullset)}= \Lift_n$ and for ${\Lift}\bp{\Sequence_{0}(\fullset) \cup\Sequence_{1}(\fullset)}$ is a singleton set composed of the empty list on $\fullset{\times}\fullset$.
 
 The lift operator $\Lift$ is implemented in Coq as a recursive mapping denoted
-\texttt{Lift}: {\small \inputsnippetsE{erel3/Lift.tex}{,} }
+\texttt{Lift}: {\small \inputsnippetsE{seq1/Lift.tex}{,} }
 it will be usefull, in this work, to convert node paths into edge paths and
 conversely and to check that edge paths satisfy given relations between successive
 edges. As an example, using the relation $C_{\textsc{H}}$ -- denote
@@ -472,7 +472,7 @@ The coq formalization of \undirectedEdgePaths\ paths of size greater or equal to
 one follows the same path as the one used for (edge) paths except that we use
 the oriented lift operator defined in Equation~\eqref{def:Lifto} implemented as 
 in Coq as follows
-{\small \inputsnippets{erel3/pair.tex,erel3/LiftO.tex}}
+{\small \inputsnippets{seq1/pair.tex,seq1/LiftO.tex}}
 Moreover, we have to
 check that elements of paths satisfy the $\EDGEo$ relation defined in
 Equation~\eqref{def:Eo_relation}. For that purpose,  the mapping \texttt{Oedge} is used to
@@ -481,7 +481,7 @@ construct a relation $\EDGEo$ given a relation $\EDGE$
 Finally, the set of
 \undirectedEdgePaths\ of size greater or equal to one,
 $\UPATH_{\ge 1}\np{\OrientedGraph}$ is defined by
-\inputsnippets{erel3/EoPath1.tex}
+\inputsnippets{erel3/U_ge_1.tex,erel3/U_ge_1p.tex}
 
 \medskip
 
