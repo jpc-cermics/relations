@@ -119,16 +119,6 @@ Section Seq_utilities.
     pose proof (seq_crc H1) as [q [x' [y' H2]]].
     by exists q;exists x';exists y';rewrite H2.
   Qed.
-
-  Lemma seq_cases_test: forall  (p:seq T),
-      True.
-  Proof.
-    move => p.
-    pose proof seq_cases p as [H1 | [[x H1] | [q [x [y H1]]]]].
-    by []. 
-    by [].
-    by [].
-  Qed.
   
 End Seq_utilities.
 
@@ -177,8 +167,26 @@ Section allset.
   Proof.
     by rewrite all_cat;split => [/andP | [-> ->]].
   Qed.
-  
+
 End allset.
+
+Section allset1.
+
+  Variables (T: Type) (X Y: set T) (p q: seq T).
+
+  Lemma allset_I': p [\in] (X `&` Y) <-> p [\in] X && p [\in] Y. 
+  Proof.
+    pose proof intersectionSr.
+    have H1: (X `&` Y) `<=` X by rewrite /setI /mkset /subset => [t [? ?]].
+    have H2: (X `&` Y) `<=` Y by rewrite /setI /mkset /subset => [t [? ?]].
+    split => [H3 | ]. 
+    by apply/andP;split;[apply: (allset_subset H1 H3)| apply: (allset_subset H2 H3)].
+    elim: p => [// |  x spa Hr /andP H3].
+    move: H3; rewrite !allset_cons => [[[H3 H4] [H5 H6]]].
+    by split;[rewrite /setI /mkset | apply Hr;apply/andP].
+  Qed.
+  
+End allset1.
 
 Section Seq_lift. 
   (** * Lift operation on sequences *) 
@@ -432,20 +440,21 @@ Section Rpaths.
 End Rpaths.
   
 Notation "p [L\in] R" := (Lift p ) [\in] R (at level 4, no associativity). 
-Notation "p [-∈-] R" := (RPath R p) (at level 4, no associativity). 
+Notation "p [Suc\in] R" := (RPath R p) (at level 4, no associativity). 
 
 Section Rpaths1.
   
   Variables (T: Type) (R: relation T) (X: set T).
 
-  Lemma Rpath_equiv': forall (p: seq T), p [-∈-] R <-> p [L\in] R.
+  Lemma Rpath_equiv': forall (p: seq T), p [Suc\in] R <-> p [L\in] R.
   Proof.
     by move => p;rewrite Epath_equiv.
   Qed.
   
-  Lemma Rpath_L1_n: forall (n:nat) (p: seq T), 
-      size(p) = n -> ( p [\in] X -> p [L\in] (X `*` X)).
+  Lemma Rpath_L1: forall (p: seq T), p [\in] X -> p [L\in] (X `*` X). 
   Proof.
+    have H1: forall (n:nat) (p': seq T),
+        size(p') = n -> ( p' [\in] X -> p' [L\in] (X `*` X)).
     elim => [p /size0nil -> //| n Hr p H1].
     pose proof (seq_n H1) as [q [x [H2 H3]]].
     rewrite H2 allset_cons.
@@ -453,13 +462,10 @@ Section Rpaths1.
     rewrite Lift_c allset_cons.
     move: (H5);rewrite allset_cons => [[H6 _]].
     by split;[ | apply Hr].
-  Qed.
 
-  Lemma Rpath_L1: forall (p: seq T), p [\in] X -> p [L\in] (X `*` X). 
-  Proof.
-    by move => p; apply Rpath_L1_n with (size p).
+    by move => p; apply H1 with (size p).
   Qed.
-
+  
   Lemma Rpath_L2: forall (p: seq T), size(p) > 1 /\ p [L\in] (X `*` X) -> p [\in] X.
   Proof.
     move => p [H1 H2].
@@ -472,6 +478,21 @@ Section Rpaths1.
     by rewrite allset_cons.
   Qed.
 
+  Lemma Rpath_L3: forall (p: seq T), p [\in] X /\ p [Suc\in] R -> p [L\in] ((X `*` X)`&`R) . 
+  Proof.
+    move => p [/Rpath_L1 H1 /Rpath_equiv' H2].
+    by apply allset_I'; rewrite H1 H2.
+  Qed.
+
+  Lemma Rpath_L4: forall (p: seq T), size(p) > 1 /\ p [L\in] ((X `*` X)`&`R) -> p [\in] X /\ p [Suc\in] R.
+  Proof.
+    by move => p;rewrite allset_I';move => [H1 /andP [H2 /Rpath_equiv' H3]];split;[apply: Rpath_L2|].
+  Qed.
+
+  Definition REpath_eq1 := [set p | size(p) = 1 /\ (p [\in] X) ]. 
+  Definition REpath_gt1 := [set p | size(p) > 1 /\ p [\in] X /\ p [Suc\in] R].
+  Definition REpath := REpath_eq1 `|` REpath_gt1. 
+  
 End Rpaths1.
   
 Section basic_pair_unpair.
