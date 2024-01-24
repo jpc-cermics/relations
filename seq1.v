@@ -174,7 +174,7 @@ Section allset1.
 
   Variables (T: Type) (X Y: set T) (p q: seq T).
 
-  Lemma allset_I': p [\in] (X `&` Y) <-> p [\in] X && p [\in] Y. 
+  Lemma allset_I: p [\in] (X `&` Y) <-> p [\in] X && p [\in] Y. 
   Proof.
     pose proof intersectionSr.
     have H1: (X `&` Y) `<=` X by rewrite /setI /mkset /subset => [t [? ?]].
@@ -481,12 +481,12 @@ Section Rpaths1.
   Lemma Rpath_L3: forall (p: seq T), p [\in] X /\ p [Suc\in] R -> p [L\in] ((X `*` X)`&`R) . 
   Proof.
     move => p [/Rpath_L1 H1 /Rpath_equiv' H2].
-    by apply allset_I'; rewrite H1 H2.
+    by apply allset_I; rewrite H1 H2.
   Qed.
 
   Lemma Rpath_L4: forall (p: seq T), size(p) > 1 /\ p [L\in] ((X `*` X)`&`R) -> p [\in] X /\ p [Suc\in] R.
   Proof.
-    by move => p;rewrite allset_I';move => [H1 /andP [H2 /Rpath_equiv' H3]];split;[apply: Rpath_L2|].
+    by move => p;rewrite allset_I;move => [H1 /andP [H2 /Rpath_equiv' H3]];split;[apply: Rpath_L2|].
   Qed.
 
   Definition REpath_eq1 := [set p | size(p) = 1 /\ (p [\in] X) ]. 

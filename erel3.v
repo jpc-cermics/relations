@@ -56,19 +56,6 @@ Section allset2.
     move => E;elim => [ // | [x y] spa Hr].
     by rewrite map_cons !allset_cons Hr.
   Qed.
-
-  Lemma allset_I: forall (R E: relation T) (spa: seq (T * T)), 
-      spa [\in] (R `&` E) <-> spa [\in] R && spa [\in] E. 
-  Proof.
-    move => R E spa. 
-    have H1: (R `&` E) `<=` E by apply intersectionSr.
-    have H2: (R `&` E) `<=` R by apply intersectionSl.
-    split => [H3 | ]. 
-    by apply/andP;split;[apply: (allset_subset H2 H3)| apply: (allset_subset H1 H3)].
-    elim: spa => [// |  x spa Hr /andP H3].
-    move: H3; rewrite !allset_cons => [[[H3 H4] [H5 H6]]].
-    by split;[rewrite /setI /mkset | apply Hr;apply/andP].
-  Qed.
   
   Lemma allset_Rr: forall (X: set T) (x y: T) (p: seq T),
       (Lift (x::(rcons p y))) [\in] R_(X) <-> (rcons p y) [\in] X.
