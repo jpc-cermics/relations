@@ -4,7 +4,9 @@ assets_root := $(snippets_root)/assets
 
 include config.mk
 
-default: all  snippets/erel3/D_Un.tex snippets/erel3/TCPn.tex snippets/paper_csbr_paths/dsepnotan.tex
+SNIPPETS =  snippets/erel3/D_Un.tex snippets/erel3/TCPn.tex snippets/paper_csbr_paths/dsepnotan.tex
+
+all: allstd allplus
 
 targets.mk: gen_targets.py
 	@$(PYTHON) gen_targets.py "$(coq_root)" "$(snippets_root)" > "$@"
@@ -13,7 +15,7 @@ include targets.mk
 
 .PHONY: all clean
 
-all: $(targets)
+allstd: $(targets) 
 	@$(PYTHON) ./driver.py --frontend coq --backend assets --output-directory $(assets_root) -
 
 clean:
@@ -26,6 +28,8 @@ ignore:
 new: snippets/erel3/D_Un.tex
 
 SED= -e 's/{exists}/{\\(\\exists\\)}/g' -e 's/{forall}/{\\(\\forall\\)}/g' -e 's/⊥/\\(\\bot\\))/g'
+
+allplus: $(SNIPPETS)
 
 snippets/erel3/D_Un.tex : snippets/erel3/D_U.tex
 	@sed $(SED)  $< > $@

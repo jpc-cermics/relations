@@ -15,7 +15,7 @@ From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
 Set Warnings "parsing coercions".
 
-(* From RL Require Import  ssrel rel.  *)
+From RL Require Import ssrel rel. 
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -24,6 +24,7 @@ Unset Printing Implicit Defensive.
 Local Open Scope classical_set_scope.
 
 Reserved Notation "p [\in] X" (at level 4, no associativity). 
+Reserved Notation "p [--] X" (at level 4, no associativity). 
 (* begin snippet all_notation:: no-out *)  
 Notation "p [\in] X" := (all (fun x => x \in X) p). 
 (* end snippet all_notation *)  
@@ -95,6 +96,18 @@ Section Seq_utilities.
       have /nilP H4: size q == 0 by [].
       by exists x,y;rewrite H4.
   Qed.
+
+  Lemma seq_n: forall (n:nat) (p: seq T), 
+      size p = n.+1 -> exists q,exists x, p = [::x & q] /\ size(q) = n.
+  Proof.
+    elim => [| n Hn p H1].
+    + elim => [_ // | t p H1 /= /succn_inj/size0nil H2]. 
+      by rewrite H2;exists [::], t.
+    + have H2: size(p) > 0.  by rewrite H1. 
+      pose proof (seq_c H2) as [q [x H3]].
+      rewrite H3 /= in H1. apply succn_inj in H1.
+      by exists q, x. 
+  Qed.
   
   Lemma seq_cases: forall (p: seq T), 
       p=[::] \/ (exists x, p=[::x]) \/ exists (q:seq T), exists (x y:T), p=x::(rcons q y).
@@ -118,6 +131,54 @@ Section Seq_utilities.
   Qed.
   
 End Seq_utilities.
+
+
+Section allset.
+  (** * utility lemmata for seq function all used with sets*)
+
+  Variables (T: Type) (X Y: set T) (p q: seq T) (x:T).
+
+  (* begin snippet Sn:: no-out *)  
+  Definition Sn (T:Type) (n: nat) (D: set T):= [set p| p [\in] D/\size(p)=n].
+  (* end snippet Sn *)
+  
+  Lemma allsetP: X x /\ p [\in] X <-> (x \in X) && (p [\in] X).
+  Proof.
+    by split => [[/mem_set -> ->] // | /andP [/set_mem H1 H2]].
+  Qed.
+  
+  Lemma allset_consb: ((x::p) [\in] X) <-> (x \in X) && p [\in] X.
+  Proof. by split. Qed.
+
+  Lemma allset_cons:  ((x::p) [\in]  X) <->  X x /\ p [\in] X.
+  Proof.
+    by rewrite allset_consb allsetP.
+  Qed.
+  
+  Lemma allset_subset: (X `<=` Y) -> (p [\in]  X) -> (p [\in] Y).
+  Proof.
+    elim: p => [ // | x' p' H1 H2 /andP [H3 H4]]. 
+    apply/andP;split.
+    by apply: mem_set;apply: H2; apply set_mem. 
+    by apply H1.
+  Qed.
+  
+  Lemma allset_rcons: (rcons p x) [\in] X <-> p [\in] X /\ X x.
+  Proof.
+    by rewrite all_rcons andC allsetP.
+  Qed. 
+    
+  Lemma allset_rev: p [\in] X <->  (rev p) [\in] X.
+  Proof.
+    by rewrite all_rev.
+  Qed. 
+  
+  Lemma allset_cat: (p++q) [\in] X <-> p [\in] X /\ q [\in] X.
+  Proof.
+    by rewrite all_cat;split => [/andP | [-> ->]].
+  Qed.
+  
+End allset.
 
 Section Seq_lift. 
   (** * Lift operation on sequences *) 
@@ -200,8 +261,7 @@ Section Seq_lift.
        -rev_cons H1 Lift_c rev_cons map_rcons.
   Qed.
   
-  (** Left inverse of Lift when p is not the empty list *)
-  
+  (** Left inverse of Lift *)
   Fixpoint UnLift (p: seq (T * T)) (t: T):= 
     match p with 
     | [::] => [::t]
@@ -314,10 +374,110 @@ Section Seq_lift.
 
 End Seq_lift.
 
+Section Rpaths. 
+  (** * sequences such that consecutive elements satisfy a relation *)
+    
+  Variables (T: Type).
+
+  (* an inductive definition *)
+  Inductive RPath (E: relation T): seq T -> Prop :=
+  | pp_void : RPath E [::]
+  | pp_two (x: T) (ep: seq T) : 
+    RPath E ep ->
+    ep = [::] \/ (exists (y: T), exists (ep1: seq T), ep = [::y & ep1] /\ E (x,y))
+    -> RPath E ([:: x & ep]).
+
+  Definition RPath1' (E: relation T) := [set p: seq T | RPath E p /\ size(p) >= 2].
+  (* a definition using Lift *)
+  Definition RPath1 (E: relation T):=[set p: seq T| (Lift p) [\in] E /\ size(p) >= 2].
+
+  Section RPath1_RPath1'.
+
+    (* intermediate Lemma *)
+    Lemma Epath_equiv_rc_: forall (E:relation T) (p: seq T) (x y: T),
+        (Lift (x::(rcons p y))) [\in] E <-> RPath E (x::(rcons p y)).
+    Proof.
+      split.
+      - elim: p x y => [ //= x y /andP [/inP H2 _] | z p Hr x y ].
+        by apply pp_two;[ apply pp_two;[constructor | left] | right; exists y, [::]].
+        rewrite rcons_cons Lift_c allset_cons andC;
+            by move => [H1 H2];apply pp_two;[ apply Hr | right; exists z, (rcons p y)].
+      - move => H.
+        elim/RPath_ind: H => [// | x' y' ep H1 [-> // | [y1 [ep1 [H2 H3]]]]].
+        by rewrite H2 in H1 *; rewrite Lift_c allset_cons //.
+    Qed.
+    
+    Lemma Epath_equiv: forall (E:relation T) (p: seq T),
+        (Lift p ) [\in] E <-> RPath E p.
+    Proof.
+      move => E p.
+      (* we use seq_cases to explore the three cases *)
+      pose proof seq_cases p as [H1 | [[x' H1] | [x' [y' [q H1]]]]];rewrite H1.
+      by split => H;[apply pp_void | ].
+      by split => H;[apply pp_two;[apply pp_void | left] | ].
+      by rewrite Epath_equiv_rc_.
+    Qed.
+    
+    Lemma Epath_eq: forall (E:relation T),  RPath1 E = RPath1' E.
+    Proof.
+      move => E.
+      rewrite /RPath1 /RPath1' /mkset predeqE => p.
+      split => [[H1 H2] | [H1 H2]].
+      by split;[rewrite -Epath_equiv |].
+      by split;[rewrite Epath_equiv  |].
+    Qed.
+
+  End RPath1_RPath1'.
+
+End Rpaths.
+  
+Notation "p [L\in] R" := (Lift p ) [\in] R (at level 4, no associativity). 
+Notation "p [-∈-] R" := (RPath R p) (at level 4, no associativity). 
+
+Section Rpaths1.
+  
+  Variables (T: Type) (R: relation T) (X: set T).
+
+  Lemma Rpath_equiv': forall (p: seq T), p [-∈-] R <-> p [L\in] R.
+  Proof.
+    by move => p;rewrite Epath_equiv.
+  Qed.
+  
+  Lemma Rpath_L1_n: forall (n:nat) (p: seq T), 
+      size(p) = n -> ( p [\in] X -> p [L\in] (X `*` X)).
+  Proof.
+    elim => [p /size0nil -> //| n Hr p H1].
+    pose proof (seq_n H1) as [q [x [H2 H3]]].
+    rewrite H2 allset_cons.
+    elim: q x H2 H3 => [// | y r _ x' H2 H3 [H4 H5]].
+    rewrite Lift_c allset_cons.
+    move: (H5);rewrite allset_cons => [[H6 _]].
+    by split;[ | apply Hr].
+  Qed.
+
+  Lemma Rpath_L1: forall (p: seq T), p [\in] X -> p [L\in] (X `*` X). 
+  Proof.
+    by move => p; apply Rpath_L1_n with (size p).
+  Qed.
+
+  Lemma Rpath_L2: forall (p: seq T), size(p) > 1 /\ p [L\in] (X `*` X) -> p [\in] X.
+  Proof.
+    move => p [H1 H2].
+    pose proof (seq_cc H1) as [q [x [y H3]]]. 
+    move: H2; rewrite H3 Lift_c 2!allset_cons.
+    clear H3.
+    elim: q y => [y [[H2 H3] _] | z q Hr y [[H2 H2'] H3]];first by rewrite allset_cons;split.  
+    move: H3; rewrite Lift_c allset_cons => [[[ H3 H3'] H4]].
+    have [H5 H6]: X x /\ [:: z & q] [\in] X by apply Hr.
+    by rewrite allset_cons.
+  Qed.
+
+End Rpaths1.
+  
 Section basic_pair_unpair.
   (** * pair sequences *)
   Variables (T S: Type).
-  
+
   (* we need an extra element as the two sequence may 
    * differ in size *)
   Fixpoint pair_ (s: S) (st: seq T) (so: seq S):= 

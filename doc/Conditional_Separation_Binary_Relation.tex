@@ -31,6 +31,24 @@
 \usepackage{causal}
 \usepackage{snippets}
 
+% margin bars 
+\usepackage{tikz}
+\usetikzlibrary{tikzmark}
+
+\newcounter{coqbar}
+\newcommand{\coqbarcolor}{red}
+\newcommand{\coqstart}[1][red]{%
+    \renewcommand{\coqbarcolor}{#1}%
+    \stepcounter{coqbar}%
+    \tikzmarknode{chbar-\thecoqbar-start}{\strut}%
+}
+\newcommand{\coqend}{%
+    \tikzmarknode{chbar-\thecoqbar-end}{\strut}%
+    \begin{tikzpicture}[remember picture, overlay]
+        \draw[very thick, \coqbarcolor] ([xshift={\oddsidemargin+1in-10pt}]current page.west |- chbar-\thecoqbar-start.north) -- ([xshift={\oddsidemargin+1in-10pt}]current page.west |- chbar-\thecoqbar-end.south);
+    \end{tikzpicture}%
+}
+
 % START
 % macros to remove in submissions
 \usepackage{amsmath}
@@ -194,12 +212,14 @@ relation (generally denoted by~$\sim$ or~$\equiv$).
 An \emph{equivalence relation} is a reflexive, symmetric and transitive binary
 relation.
 
+\coqstart
 Relations are implemented as sets on a product space using the classical sets implemented in
 \texttt{classical\_sets.v} from the Coq mathcomp library~\cite{MathComp:2022}
 using ssreflect tactics~\cite{Gonthier-Mahboubi-Tassi:2016} 
 \inputsnippetsE{ssrel/relation.tex}{.}
 As described in more details below, we have developed a library for relations taking into account all the
-definitions recalled at the begining of this section.
+definitions recalled at the begining of this section.\coqend
+
 % ,ssrel/clos_refl_trans.tex,ssrel/clos_rt.tex}
 \subsection{Sequences sets and relations}
 \label{sec:sequences}
@@ -215,13 +235,16 @@ set~$\Set$, $\Sequence_n(\Set)= \SetProd{\Set}{n}$ ($\Sequence_0(\Set)$ being th
 $\Sequence_{\ge n}(\Set)$ the set of finite sequences of length greater or equal
 to $n$ of elements of the set $\Set$, that is the disjoint union
 $\sqcup_{k\ge n} \Sequence_k(\Set)$. The set $\Sequence_{\ge 0}(\Set)$ will be denoted by $\Sequence(\Set)$.
-
-\paragraph{(Coq)} The sets $\Sequence_{\ge n}(\fullset)$ and
+\medskip
+\coqstart
+The sets $\Sequence_{\ge n}(\fullset)$ and
 $\Sequence_{n}(\fullset)$ are implemented in Coq using sequences of elements of
 type \texttt{T} and the restriction to elements in a subset
 \texttt{(\PY{n+nv}{D}: set T)} is obtained using the function \texttt{all}.  As
 an example $\Sequence_{n}(D)$ is implemented as follows {\small
   \inputsnippets{erel3/all_notation.tex,erel3/Sn.tex}}
+\coqend
+
 
 Now, for $n\ge 2$, we consider a lift operator
 \[\Lift_n: \Sequence_{n}(\fullset)\to \Sequence_{n{-}1}(\fullset{\times}\fullset)\eqfinv\]
@@ -241,6 +264,7 @@ Then, using the sequence of mapping $\nseqa{\Lift_n}{n\ge 2}$ we define a lift o
 $\Sequence_{n}(\fullset)$ coincide with the $\Lift_n$ mapping, that is
 ${\Lift}_{\vert\Sequence_n(\fullset)}= \Lift_n$ and for ${\Lift}\bp{\Sequence_{0}(\fullset) \cup\Sequence_{1}(\fullset)}$ is a singleton set composed of the empty list on $\fullset{\times}\fullset$.
 
+\coqstart
 The lift operator $\Lift$ is implemented in Coq as a recursive mapping denoted
 \texttt{Lift}: {\small \inputsnippetsE{seq1/Lift.tex}{,} }
 it will be usefull, in this work, to convert node paths into edge paths and
@@ -253,7 +277,7 @@ expressed as image of set and two as preimage of set -- of representing sequence
 of pairs of elements of $T$ such that successive pairs satisfy the
 $C_{\textsc{H}}$ relation. We obtain that \texttt{(Im 2) = (Im1 2) = (Pre 0) = (Pre1 1)}, 
 where the four paths sets are defined by 
-{\small \inputsnippets{erel3/Lift_lemma2.tex}}
+{\small \inputsnippets{erel3/Lift_lemma2.tex}}\coqend
 
 The Lift operator satisfy the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{ \Sequence(\texttt{Chrel})}$\footnote{%
   Note that mathematically, two different Lift operators appear in this equation as their domain is not the same.

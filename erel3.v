@@ -45,53 +45,6 @@ Section Types.
 
 End Types.
 
-Section allset.
-  (** * utility lemmata for seq function all used with sets*)
-
-  Variables (T: Type) (X Y: set T) (p q: seq T) (x:T).
-
-  (* begin snippet Sn:: no-out *)  
-  Definition Sn (T:Type) (n: nat) (D: set T):= [set p| p [\in] D/\size(p)=n].
-  (* end snippet Sn *)
-  
-  Lemma allsetP: X x /\ p [\in] X <-> (x \in X) && (p [\in] X).
-  Proof.
-    by split => [[/mem_set -> ->] // | /andP [/set_mem H1 H2]].
-  Qed.
-  
-  Lemma allset_consb: ((x::p) [\in] X) <-> (x \in X) && p [\in] X.
-  Proof. by split. Qed.
-
-  Lemma allset_cons:  ((x::p) [\in]  X) <->  X x /\ p [\in] X.
-  Proof.
-    by rewrite allset_consb allsetP.
-  Qed.
-  
-  Lemma allset_subset: (X `<=` Y) -> (p [\in]  X) -> (p [\in] Y).
-  Proof.
-    elim: p => [ // | x' p' H1 H2 /andP [H3 H4]]. 
-    apply/andP;split.
-    by apply: mem_set;apply: H2; apply set_mem. 
-    by apply H1.
-  Qed.
-  
-  Lemma allset_rcons: (rcons p x) [\in] X <-> p [\in] X /\ X x.
-  Proof.
-    by rewrite all_rcons andC allsetP.
-  Qed. 
-    
-  Lemma allset_rev: p [\in] X <->  (rev p) [\in] X.
-  Proof.
-    by rewrite all_rev.
-  Qed. 
-  
-  Lemma allset_cat: (p++q) [\in] X <-> p [\in] X /\ q [\in] X.
-  Proof.
-    by rewrite all_cat;split => [/andP | [-> ->]].
-  Qed.
-  
-End allset.
-
 Section allset2.
   (** * allset for a product type (T *T) *)
 
