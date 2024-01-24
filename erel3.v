@@ -98,7 +98,7 @@ Section allset2.
 End allset2.
 
 Section allset_Lifted.
-  (** *  all on a lifted sequence  *)
+  (** *  allset on a lifted sequence  *)
   
   Variables (T: Type).
   Definition allL (E: relation T) (p: seq T) (x y:T) := 
@@ -189,67 +189,6 @@ Section allset_Lifted.
   Qed.
   
 End allset_Lifted.
-
-Section Edge_paths.
-  (** * (edge) paths equivalent definitions with the help of all and Lift  *) 
-    
-  Variables (T: Type).
-  
-  (* The definition of (edge) paths of length greater or equal to one *)
-  
-  (* begin snippet EPath1:: no-out *) 
-  Definition EPath1 (E: relation T):=[set p: seq T| (Lift p) [\in] E /\ size(p) >= 2].
-  (* end snippet EPath1 *)
-
-  (* an equivalent definition not using the lift operation *)
-  Inductive EPath (E: relation T): seq T -> Prop :=
-  | pp_void : EPath E [::]
-  | pp_two (x: T) (ep: seq T) : 
-    EPath E ep ->
-    ep = [::] \/ (exists (y: T), exists (ep1: seq T), ep = [::y & ep1] /\ E (x,y))
-    -> EPath E ([:: x & ep]).
-  
-  Definition EPath1' (E: relation T) := [set p: seq T | EPath E p /\ size(p) >= 2].
-  
-  Section EPath1_EPath1'.
-
-    (* intermediate Lemma *)
-    Lemma Epath_equiv_rc_: forall (E:relation T) (p: seq T) (x y: T),
-        (Lift (x::(rcons p y))) [\in] E <-> EPath E (x::(rcons p y)).
-    Proof.
-      split.
-      - elim: p x y => [ //= x y /andP [/inP H2 _] | z p Hr x y ].
-        by apply pp_two;[ apply pp_two;[constructor | left] | right; exists y, [::]].
-        rewrite rcons_cons Lift_c allset_cons andC;
-            by move => [H1 H2];apply pp_two;[ apply Hr | right; exists z, (rcons p y)].
-      - move => H.
-        elim/EPath_ind: H => [// | x' y' ep H1 [-> // | [y1 [ep1 [H2 H3]]]]].
-        by rewrite H2 in H1 *; rewrite Lift_c allset_cons //.
-    Qed.
-    
-    Lemma Epath_equiv: forall (E:relation T) (p: seq T),
-        (Lift p ) [\in] E <-> EPath E p.
-    Proof.
-      move => E p.
-      (* we use seq_cases to explore the three cases *)
-      pose proof seq_cases p as [H1 | [[x' H1] | [x' [y' [q H1]]]]];rewrite H1.
-      by split => H;[apply pp_void | ].
-      by split => H;[apply pp_two;[apply pp_void | left] | ].
-      by rewrite Epath_equiv_rc_.
-    Qed.
-    
-    Lemma Epath_eq: forall (E:relation T),  EPath1 E = EPath1' E.
-    Proof.
-      move => E.
-      rewrite /EPath1 /EPath1' /mkset predeqE => p.
-      split => [[H1 H2] | [H1 H2]].
-      by split;[rewrite -Epath_equiv |].
-      by split;[rewrite Epath_equiv  |].
-    Qed.
-
-  End EPath1_EPath1'.
-
-End Edge_paths.
 
 Section Lift2.
   (** * Multiple definitions of edge paths *) 
@@ -382,7 +321,8 @@ Section Lift2.
   Proof. by move => E;rewrite /P_ge_1 /setI /mkset predeqE => spa. Qed.
 
   Lemma P_ge_1'_lemma: forall (E: relation T), 
-      P_ge_1' E =[set spa | spa [\in] E] `&` [set spa | (exists p, (Lift p) =spa /\ size(p) > 1)].
+      P_ge_1' E =[set spa | spa [\in] E] `&`
+                   [set spa | (exists p, (Lift p) =spa /\ size(p) > 1)].
   Proof. by move => E;rewrite /P_ge_1 /setI /mkset predeqE => spa. Qed.
   
   Lemma P_equiv: forall (E: relation T), P_ge_1 E = P_ge_1' E.
@@ -607,7 +547,8 @@ Section LiftO3.
   
   (* begin snippet U_ge_1p:: no-out *) 
   Definition U_ge_1' (E: relation T):=
-    [set sto | sto [\in] (Oedge E) /\ (exists p, exists so, size p > 1 /\ size p = size so + 1 /\ (LiftO p so) =sto)].
+    [set sto | sto [\in] (Oedge E) /\
+                 (exists p, exists so, size p > 1 /\ size p = size so + 1 /\ (LiftO p so) =sto)].
   (* end snippet U_ge_1p *)
   
   Lemma U_equiv: forall (E: relation T), U_ge_1 E = U_ge_1' E.
