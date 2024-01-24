@@ -669,6 +669,16 @@ Section Active_relation.
   
   (* Active as a relation on Eo) *)
   (* begin snippet ActiveOe:: no-out *)  
+
+  Definition Active_  (W: set T) (E: relation T) := 
+    [set oe : (T*T*O) * (T*T*O)|
+      match (oe.1.2,oe.2.2, oe.1.1.2) with 
+      | (P,P,v) => W.^c v | (N,N,v) => W.^c v | (N,P,v) => W.^c v
+      | (P,N,v) => (Fset E.* W) v end].
+
+  Definition Active' (W: set T) (E: relation T) :=  
+    ((Oedge E) `*` Oedge E) `&` (@ChrelO T) `&`  (Active_ W E).
+  
   Definition ActiveOe (W: set T) (E: relation T) := 
     [set oe : (T*T*O) * (T*T*O) | 
       Oedge E oe.1 /\ Oedge E oe.2 /\ (ChrelO oe)
@@ -680,6 +690,14 @@ Section Active_relation.
         end].
   (* end snippet ActiveOe *)  
 
+  Lemma Active_iff: forall (W: set T) (E: relation T), 
+      Active' W E = ActiveOe W E.
+  Proof.
+    move => W E.
+    rewrite /Active' /Active_ /ActiveOe /setI /mkset predeqE => [[eo1 eo2]].
+    by split => [[[[H1 H1'] H2] H3] // | [H1 [H2 [H3 H4]]]].
+  Qed.
+  
   Lemma ActiveOe_Oedge: forall (W: set T) (E: relation T) (eo : (T*T*O) * (T*T*O)),
       (ActiveOe W E) eo -> Oedge E eo.1 /\ Oedge E eo.2.
   Proof.
