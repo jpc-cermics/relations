@@ -242,7 +242,7 @@ $\Sequence_{n}(\fullset)$ are implemented in Coq using sequences of elements of
 type \texttt{T} and the restriction to elements in a subset
 \texttt{(\PY{n+nv}{D}: set T)} is obtained using the function \texttt{all}.  As
 an example $\Sequence_{n}(D)$ is implemented as follows {\small
-  \inputsnippets{erel3/all_notation.tex,seq1/Sn.tex}}
+  \inputsnippets{erel3/all_notation-n.tex,seq1/Sn-n.tex}}
 \coqend
 
 Now, for $n\ge 2$, we consider a lift operator
@@ -276,7 +276,7 @@ expressed as image of set and two as preimage of set -- of representing sequence
 of pairs of elements of $T$ such that successive pairs satisfy the
 $C_{\textsc{H}}$ relation. We obtain that \texttt{(Im 2) = (Im1 2) = (Pre 0) = (Pre1 1)}, 
 where the four paths sets are defined by 
-{\small \inputsnippets{erel3/Lift_lemma2.tex}}\coqend
+{\small \inputsnippets{erel3/Lift_lemma2-n.tex}}\coqend
 
 The Lift operator satisfy the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{ \Sequence(\texttt{Chrel})}$\footnote{%
   Note that mathematically, two different Lift operators appear in this equation as their domain is not the same.
@@ -394,7 +394,7 @@ as for example in \texttt{\PY{n}{Lift}~\PY{o}{(}\PY{n}{x}\PY{o}{::(}\PY{n}{rcons
 intermediate nodes \texttt{p} of the \EdgePath\ \texttt{sp} are immediately obtained.
 
 As a first result linking (edge) paths and relations we can prove that 
-{\small \inputsnippetsE{erel3/TCPn.tex}{,}
+{\small \inputsnippetsE{erel3/TCP-n.tex}{,}
 which asserts that two nodes \texttt{(v1,v2)} are in relation through the transitive closure of a relation 
 \texttt{S}, that is \texttt{(v1,v2) $\in$ S.+} if and only if 
 there exists an edge path with endpoints \texttt{(v1,v2)} in the graph $(T,S)$.
@@ -745,7 +745,7 @@ and not between disjoint subsets.
   and we say that the vertices~$\bgent$ and $\cgent$ are 
   (conditionally) \emph{directionally separated}  (\wrt\ the subset~$\AgentSubsetW$).
 \end{definition}
-{\small \inputsnippets{paper_csbr_paths/dsepnotan.tex,erel3/Active}}
+{\small \inputsnippets{paper_csbr_paths/dsepnota-n.tex,erel3/Active-n}}
 
 
 
@@ -1490,7 +1490,7 @@ give for each lemma its Coq name. \coqend
 \end{lemma}
 
 \coqstart We give here, as an example, the Lemma~\ref{le:L7} as written in Coq to 
-{\small \inputsnippets{paper_csbr/L7_csbrn.tex}} \coqend.
+{\small \inputsnippets{paper_csbr/L7_csbr-n.tex}} \coqend.
 
 \begin{proof}\quad
 
