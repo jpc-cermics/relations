@@ -4,7 +4,10 @@ assets_root := $(snippets_root)/assets
 
 include config.mk
 
-SNIPPETS =  snippets/erel3/D_Un.tex snippets/erel3/TCPn.tex snippets/paper_csbr_paths/dsepnotan.tex
+SNIPPETS =  snippets/erel3/D_Un.tex \
+	snippets/erel3/TCPn.tex \
+	snippets/paper_csbr_paths/dsepnotan.tex \
+	snippets/paper_csbr/L7_csbrn.tex \
 
 all: allstd allplus
 
@@ -27,7 +30,8 @@ ignore:
 
 new: snippets/erel3/D_Un.tex
 
-SED= -e 's/{exists}/{\\(\\exists\\)}/g' -e 's/{forall}/{\\(\\forall\\)}/g' -e 's/⊥/\\(\\bot\\))/g'
+SED= -e 's/{exists}/{\\(\\exists\\)}/g' -e 's/{forall}/{\\(\\forall\\)}/g' -e 's/⊥/\\(\\bot\\))/g' \
+	-e 's/Δ/\\(\\Delta\\))/g'
 
 allplus: $(SNIPPETS)
 
@@ -40,4 +44,6 @@ snippets/erel3/TCPn.tex : snippets/erel3/TCP.tex
 snippets/paper_csbr_paths/dsepnotan.tex : snippets/paper_csbr_paths/dsepnota.tex
 	@sed $(SED)  $< > $@
 
+snippets/paper_csbr/L7_csbrn.tex : snippets/paper_csbr/L7_csbr.tex 
+	@sed $(SED)  $< > $@
 

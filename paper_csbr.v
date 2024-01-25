@@ -39,7 +39,8 @@ Section Paper.
   Proof.
     apply Th4.
   Qed.
-  
+
+  (* begin snippet L7_csbr:: no-out *)    
   Lemma  L7_csbr:
     (Emw.* `;` Ew.* ) = ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw)
     /\ Cw `;` (Emw .* ) `;` (Ew .* ) = Cw `;` ('Δ `|` Bmw `;` Δ_(W.^c) `|` Kw)
@@ -48,6 +49,7 @@ Section Paper.
   Proof.
     apply L7.
   Qed.
+  (* end snippet L7_csbr *)    
   
   Lemma L8_csbr:
     Aw_s = 'Δ `|` Aw_sp `|` Aw_sm

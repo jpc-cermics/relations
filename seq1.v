@@ -119,6 +119,17 @@ Section Seq_utilities.
     pose proof (seq_crc H1) as [q [x' [y' H2]]].
     by exists q;exists x';exists y';rewrite H2.
   Qed.
+
+  Lemma seq_cases1: forall (p: seq T), 
+      p=[::] \/ (exists x, p=[::x]) \/ exists (q:seq T), exists (x y:T), p=[::x,y & q].
+  Proof.
+    elim => [| x p _]; first by left.
+    elim: p => [ | y p _]; first by right;left;(exists x).
+    right;right.
+    have H1: size([:: x, y & p]) > 1 by [].
+    pose proof (seq_cc H1) as [q [x' [y' H2]]].
+    by exists q;exists x';exists y';rewrite H2.
+  Qed.
   
 End Seq_utilities.
 
@@ -180,7 +191,8 @@ Section allset1.
     have H1: (X `&` Y) `<=` X by rewrite /setI /mkset /subset => [t [? ?]].
     have H2: (X `&` Y) `<=` Y by rewrite /setI /mkset /subset => [t [? ?]].
     split => [H3 | ]. 
-    by apply/andP;split;[apply: (allset_subset H1 H3)| apply: (allset_subset H2 H3)].
+    by apply/andP;split;[apply: (allset_subset H1 H3)
+                        | apply: (allset_subset H2 H3)].
     elim: p => [// |  x spa Hr /andP H3].
     move: H3; rewrite !allset_cons => [[[H3 H4] [H5 H6]]].
     by split;[rewrite /setI /mkset | apply Hr;apply/andP].
@@ -196,7 +208,7 @@ Section Seq_lift.
   Fixpoint Lift (p: seq T): seq (T * T) := 
     match p with 
     | x :: [:: y & p] as p1 => (x,y)::(Lift p1)
-    | _ => @nil (prod T T)
+    | _ => Nil (T*T)
     end.
   (* end snippet Lift *)  
   
@@ -439,7 +451,7 @@ Section Rpaths.
 
 End Rpaths.
   
-Notation "p [L\in] R" := (Lift p ) [\in] R (at level 4, no associativity). 
+Notation "p [L\in] R" := (Lift p) [\in] R (at level 4, no associativity). 
 Notation "p [Suc\in] R" := (RPath R p) (at level 4, no associativity). 
 
 Section Rpaths1.

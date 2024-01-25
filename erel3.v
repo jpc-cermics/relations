@@ -200,9 +200,6 @@ Section Lift2.
   Definition Chrel  := [set ppa : (T * T)*(T * T) | (ppa.1).2 = (ppa.2).1].
   (* end snippet Chrel *)  
 
-  Lemma Chrel_eq: forall (pa1 pa2: (T*T)), Chrel (pa1,pa2) <-> pa1.2 = pa2.1.
-  Proof. by []. Qed.
-  
   Lemma Lift_Lift: forall (p:seq T), (Lift (Lift p)) [\in] Chrel. 
   Proof.
     move => p. 

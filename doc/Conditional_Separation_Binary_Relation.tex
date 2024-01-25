@@ -242,9 +242,8 @@ $\Sequence_{n}(\fullset)$ are implemented in Coq using sequences of elements of
 type \texttt{T} and the restriction to elements in a subset
 \texttt{(\PY{n+nv}{D}: set T)} is obtained using the function \texttt{all}.  As
 an example $\Sequence_{n}(D)$ is implemented as follows {\small
-  \inputsnippets{erel3/all_notation.tex,erel3/Sn.tex}}
+  \inputsnippets{erel3/all_notation.tex,seq1/Sn.tex}}
 \coqend
-
 
 Now, for $n\ge 2$, we consider a lift operator
 \[\Lift_n: \Sequence_{n}(\fullset)\to \Sequence_{n{-}1}(\fullset{\times}\fullset)\eqfinv\]
@@ -1420,14 +1419,25 @@ Definition~\ref{de:all_the_relations}.
 In~\S\ref{appendix_Definitions_binary_relations},
 we define new binary relations and we establish properties.
 
+\coqstart The Coq proofs follows the mathematical proofs with the help of a developed library encoding most of usefull 
+binary relations and needed operators. As relations are coded as sets the library we have developed is based on the 
+mathcomp implementation of sets \texttt{classical\_sets.v} and contains a ssreflect reimplementation of transitive (reflexive) 
+closures of relation that are found in the Coq standard library.
+Moreover, as proofs use intensively associative and commutative properties of union and intersection of relations 
+we use the \texttt{AAC\_tactics} to ease equality proofs between long expressions with relations containing unions intersections 
+composition and diagonal relations. For this to be possible, some specific propeties of relations with respect to \texttt{AAC} 
+are to be listed and proved in Coq. This is done in \texttt{aacset.v}.\coqend
 
 \subsubsection{Lemmas on the binary relations of Definition~\ref{de:all_the_relations}}
 \label{appendix_Lemmas_binary_relations}
 
 We refer the reader to Definition~\ref{de:all_the_relations}
-for the definitions of basic binary relations.
+for the definitions of basic binary relations. 
+\coqstart As already explained the Coq proofs closely follow the mathematical proofs given here and we will 
+give for each lemma its Coq name. \coqend
 
-\begin{lemma}
+\begin{lemma}[\texttt{L7}]
+  \label{le:L7}
   We have that
   \begin{subequations}
     \begin{align}
@@ -1479,8 +1489,8 @@ for the definitions of basic binary relations.
   \end{subequations}
 \end{lemma}
 
-
-
+\coqstart We give here, as an example, the Lemma~\ref{le:L7} as written in Coq to 
+{\small \inputsnippets{paper_csbr/L7_csbrn.tex}} \coqend.
 
 \begin{proof}\quad
 
