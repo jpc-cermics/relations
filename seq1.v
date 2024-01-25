@@ -55,7 +55,7 @@ Section Seq_utilities.
     pose proof seq_rc H4 as [r [z H5]].
     by exists r,z,x;rewrite H3 H5.
   Qed.
-
+  
   Lemma seq_crc: forall (p: seq T), 
       1 < size p -> exists (q:seq T) (x y:T), p = x::(rcons q y).
   Proof.
@@ -212,10 +212,22 @@ Section Seq_lift.
     end.
   (* end snippet Lift *)  
   
+  (* another equivalent definition *)
+  Definition Lift' (t:T) (p: seq T) := 
+    (behead (pairmap (fun x y => (x,y)) t p)).
+
   Lemma Lift_c: forall (p:seq T) (x y: T),
       Lift [::x,y & p] = [::(x,y) & Lift [::y & p]].
   Proof.
     by move => p x y; split.
+  Qed.
+
+  Lemma Lift_eq: forall (t:T) (p:seq T), Lift p = Lift' t p.
+  Proof.
+    move => t.
+    elim => [// | t1 p _].
+    elim: p t1 => [// | t2 p H1 t1]. 
+    by rewrite Lift_c H1.
   Qed.
   
   Lemma Lift_crc: forall (p:seq T) (x y: T),
@@ -394,74 +406,49 @@ Section Seq_lift.
 
 End Seq_lift.
 
+Notation "p [L\in] R" := (Lift p) [\in] R (at level 4, no associativity). 
+
 Section Rpaths. 
   (** * sequences such that consecutive elements satisfy a relation *)
     
   Variables (T: Type).
 
   (* an inductive definition *)
-  Inductive RPath (E: relation T): seq T -> Prop :=
-  | pp_void : RPath E [::]
-  | pp_two (x: T) (ep: seq T) : 
-    RPath E ep ->
-    ep = [::] \/ (exists (y: T), exists (ep1: seq T), ep = [::y & ep1] /\ E (x,y))
-    -> RPath E ([:: x & ep]).
+  Inductive RPath (R: relation T): seq T -> Prop :=
+  | pp_void : RPath R [::]
+  | pp_two (t: T) (st: seq T) : 
+    RPath R st ->
+    st = [::] \/ (exists (t': T), exists (st': seq T), st = [::t' & st'] /\ R (t,t'))
+    -> RPath R ([:: t & st]).
 
-  Definition RPath1' (E: relation T) := [set p: seq T | RPath E p /\ size(p) >= 2].
-  (* a definition using Lift *)
-  Definition RPath1 (E: relation T):=[set p: seq T| (Lift p) [\in] E /\ size(p) >= 2].
+  Notation "p [Suc\in] R" := (RPath R p) (at level 4, no associativity). 
 
-  Section RPath1_RPath1'.
-
-    (* intermediate Lemma *)
-    Lemma Epath_equiv_rc_: forall (E:relation T) (p: seq T) (x y: T),
-        (Lift (x::(rcons p y))) [\in] E <-> RPath E (x::(rcons p y)).
-    Proof.
-      split.
-      - elim: p x y => [ //= x y /andP [/inP H2 _] | z p Hr x y ].
-        by apply pp_two;[ apply pp_two;[constructor | left] | right; exists y, [::]].
-        rewrite rcons_cons Lift_c allset_cons andC;
-            by move => [H1 H2];apply pp_two;[ apply Hr | right; exists z, (rcons p y)].
-      - move => H.
-        elim/RPath_ind: H => [// | x' y' ep H1 [-> // | [y1 [ep1 [H2 H3]]]]].
-        by rewrite H2 in H1 *; rewrite Lift_c allset_cons //.
-    Qed.
-    
-    Lemma Epath_equiv: forall (E:relation T) (p: seq T),
-        (Lift p ) [\in] E <-> RPath E p.
-    Proof.
-      move => E p.
-      (* we use seq_cases to explore the three cases *)
-      pose proof seq_cases p as [H1 | [[x' H1] | [x' [y' [q H1]]]]];rewrite H1.
-      by split => H;[apply pp_void | ].
-      by split => H;[apply pp_two;[apply pp_void | left] | ].
-      by rewrite Epath_equiv_rc_.
-    Qed.
-    
-    Lemma Epath_eq: forall (E:relation T),  RPath1 E = RPath1' E.
-    Proof.
-      move => E.
-      rewrite /RPath1 /RPath1' /mkset predeqE => p.
-      split => [[H1 H2] | [H1 H2]].
-      by split;[rewrite -Epath_equiv |].
-      by split;[rewrite Epath_equiv  |].
-    Qed.
-
-  End RPath1_RPath1'.
-
+  Lemma RPath_equiv: forall (R:relation T) (p: seq T),
+      p [L\in] R <-> p [Suc\in] R.
+  Proof.
+    move => R p.
+    (* we use seq_cases to explore the three cases *)
+    pose proof seq_cases p as [H1 | [[x H1] | [q [x [y H1]]]]];rewrite H1.
+    by split => H;[apply pp_void | ].
+    by split => H;[apply pp_two;[apply pp_void | left] | ].
+    clear H1.
+    split.
+    - elim: q x y => [ //= x y /andP [/inP H2 _] | z q Hr x y ].
+      by apply pp_two;[ apply pp_two;[constructor | left] | right; exists y, [::]].
+      rewrite rcons_cons Lift_c allset_cons andC;
+        by move => [H1 H2];apply pp_two;[ apply Hr | right; exists z, (rcons q y)].
+    - move => H.
+      elim/RPath_ind: H => [// | x' y' ep H1 [-> // | [y1 [ep1 [H2 H3]]]]].
+      by rewrite H2 in H1 *; rewrite Lift_c allset_cons //.
+  Qed.
+      
 End Rpaths.
-  
-Notation "p [L\in] R" := (Lift p) [\in] R (at level 4, no associativity). 
+
 Notation "p [Suc\in] R" := (RPath R p) (at level 4, no associativity). 
 
 Section Rpaths1.
   
   Variables (T: Type) (R: relation T) (X: set T).
-
-  Lemma Rpath_equiv': forall (p: seq T), p [Suc\in] R <-> p [L\in] R.
-  Proof.
-    by move => p;rewrite Epath_equiv.
-  Qed.
   
   Lemma Rpath_L1: forall (p: seq T), p [\in] X -> p [L\in] (X `*` X). 
   Proof.
@@ -492,13 +479,14 @@ Section Rpaths1.
 
   Lemma Rpath_L3: forall (p: seq T), p [\in] X /\ p [Suc\in] R -> p [L\in] ((X `*` X)`&`R) . 
   Proof.
-    move => p [/Rpath_L1 H1 /Rpath_equiv' H2].
+    move => p [/Rpath_L1 H1 /RPath_equiv H2].
     by apply allset_I; rewrite H1 H2.
   Qed.
 
   Lemma Rpath_L4: forall (p: seq T), size(p) > 1 /\ p [L\in] ((X `*` X)`&`R) -> p [\in] X /\ p [Suc\in] R.
   Proof.
-    by move => p;rewrite allset_I;move => [H1 /andP [H2 /Rpath_equiv' H3]];split;[apply: Rpath_L2|].
+    by move => p;rewrite allset_I;move => [H1 /andP [H2 /RPath_equiv H3]];
+                                        split;[apply: Rpath_L2|].
   Qed.
 
   Definition REpath_eq1 := [set p | size(p) = 1 /\ (p [\in] X) ]. 
