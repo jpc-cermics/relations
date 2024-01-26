@@ -228,7 +228,9 @@ definitions recalled at the begining of this section.\coqend
 To formalize in Coq graph paths we use sequences (defined in mathcomp
 \texttt{seq.v}) combined with set formalization (defined in mathcomp
 \texttt{classical\_sets}). To describe the formalization we start by introducing some
-notations. We consider a set $\fullset$, and for any set ${\Set} \subset \fullset$ and $n\in \NN$,
+notations.
+
+\paragraph{$\bullet$ \texttt{p [\in X]}.} We consider a set $\fullset$, and for any set ${\Set} \subset \fullset$ and $n\in \NN$,
 we denote by
 $\Sequence_n(\Set)$ the set of sequences of length $n$ of elements of the
 set~$\Set$, $\Sequence_n(\Set)= \SetProd{\Set}{n}$ ($\Sequence_0(\Set)$ being the singleton set with the empty sequence) and by
@@ -236,47 +238,51 @@ $\Sequence_{\ge n}(\Set)$ the set of finite sequences of length greater or equal
 to $n$ of elements of the set $\Set$, that is the disjoint union
 $\sqcup_{k\ge n} \Sequence_k(\Set)$. The set $\Sequence_{\ge 0}(\Set)$ will be denoted by $\Sequence(\Set)$.
 \medskip
-\coqstart
-The sets $\Sequence_{\ge n}(\fullset)$ and
-$\Sequence_{n}(\fullset)$ are implemented in Coq using sequences of elements of
-type \texttt{T} and the restriction to elements in a subset
-\texttt{(\PY{n+nv}{D}: set T)} is obtained using the function \texttt{all}.  As
-an example $\Sequence_{n}(D)$ is implemented as follows {\small
-  \inputsnippets{erel3/all_notation-n.tex,seq1/Sn-n.tex}}
-\coqend
 
-Now, for $n\ge 2$, we consider a lift operator
-\[\Lift_n: \Sequence_{n}(\fullset)\to \Sequence_{n{-}1}(\fullset{\times}\fullset)\eqfinv\]
-transforming a sequence of elements of
-$\fullset$ of length $n$
+\coqstart The sets $\Sequence_{\ge n}(\fullset)$ and $\Sequence_{n}(\fullset)$ are
+formalized in Coq in the mathcomp library as sequences of elements of type
+\texttt{T} and the restriction to elements in a subset \texttt{(\PY{n+nv}{D}:
+  set T)} is obtained using the function \texttt{all} (in mathcomp
+ mathcomp library\texttt{seq.v}).  As an example $\Sequence_{n}(D)$ is implemented as follows
+{\small \inputsnippets{erel3/all_notation-n.tex,seq1/Sn-n.tex}}\coqend
+
+\paragraph{$\bullet$ \texttt{Lift p}.} Then, we define a lift operator
+\[ \Lift: \Sequence(\fullset) \to \Sequence(\fullset{\times}\fullset)
+  \eqfinv\] such that, for all $n \ge 2$, the restriction of the operator
+$\Lift$ to the set $\Sequence_{n}(\fullset)$ coincide with the
+mapping \(\Lift_n: \Sequence_{n}(\fullset)\to \Sequence_{n{-}1}(\fullset{\times}\fullset)\)
+transforming a sequence of elements of $\fullset$ of length $n$
 into a sequence of oriented pairs in $\fullset{\times}\fullset$ of length $n{-}1$
 \begin{align}
   \forall (\vertex_1,\dots, \vertex_n)\in \SetProd{\fullset}{n}
   \eqsepv
   \Lift_n(\vertex_1,\dots, \vertex_n) = \bp{\np{\vertex_1, \vertex_2},\np{\vertex_2, \vertex_3},\dots,
   \np{\vertex_{n-1},\vertex_n}}
-  \eqfinp
+  \eqfinv
 \end{align}
-Then, using the sequence of mapping $\nseqa{\Lift_n}{n\ge 2}$ we define a lift operator
-\[ \Lift: \Sequence(\fullset) \to \Sequence(\fullset{\times}\fullset)
-  \eqfinv\] such that for all $n \ge 2$ the restriction of $\Lift$ to the set
-$\Sequence_{n}(\fullset)$ coincide with the $\Lift_n$ mapping, that is
-${\Lift}_{\vert\Sequence_n(\fullset)}= \Lift_n$ and for ${\Lift}\bp{\Sequence_{0}(\fullset) \cup\Sequence_{1}(\fullset)}$ is a singleton set composed of the empty list on $\fullset{\times}\fullset$.
+and the restriction of the operator $\Lift$ on
+$\Sequence_{0}(\fullset) \cup\Sequence_{1}(\fullset)$ is the constant mapping giving the empty list on $\fullset{\times}\fullset$.
 
-\coqstart
-The lift operator $\Lift$ is implemented in Coq as a recursive mapping denoted
+\coqstart The lift operator $\Lift$ is implemented in Coq as a recursive mapping denoted
 \texttt{Lift}: {\small \inputsnippetsE{seq1/Lift.tex}{,} }
-it will be usefull, in this work, to convert node paths into edge paths and
-conversely and to check that edge paths satisfy given relations between successive
-edges. As an example, using the relation $C_{\textsc{H}}$ -- denote
-\texttt{Chrel} in Coq -- on the product set $T{\times}T$ defined by
+and note that using Coq polymorphism the list operator is parameterized by a type
+and thus can be used also to Lift a sequence of edeges (in $\fullset\times\fullset$) into
+a sequence of pair of edges.
+\coqend
+
+\paragraph{$\bullet$ \texttt{p [Suc\in] R}.} It will be usefull, in this work, to
+to check that successive elements of a sequence whose elements are in $\fullset$ belong to a subset of $\fullset\times\fullset$ that is satisfy a relation on $\fullset$.
+
+As an example, using the
+relation $C_{\textsc{H}}$ -- denote \texttt{Chrel} in Coq -- on the product set
+$T{\times}T$ defined by
 $((v_1, v_2)\, C_{\textsc{H}}\, (v_3, v_4) \iff v_2 = v_3)$, that is {\small
   \inputsnippetsE{erel3/Chrel}{,}} we obtain four equivalent ways -- two are
 expressed as image of set and two as preimage of set -- of representing sequences
 of pairs of elements of $T$ such that successive pairs satisfy the
-$C_{\textsc{H}}$ relation. We obtain that \texttt{(Im 2) = (Im1 2) = (Pre 0) = (Pre1 1)}, 
-where the four paths sets are defined by 
-{\small \inputsnippets{erel3/Lift_lemma2-n.tex}}\coqend
+$C_{\textsc{H}}$ relation. We obtain that \texttt{(Im 2) = (Im1 2) = (Pre 0) =
+  (Pre1 1)}, where the four paths sets are defined by {\small
+  \inputsnippets{erel3/Lift_lemma2-n.tex}}
 
 The Lift operator satisfy the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{ \Sequence(\texttt{Chrel})}$\footnote{%
   Note that mathematically, two different Lift operators appear in this equation as their domain is not the same.
