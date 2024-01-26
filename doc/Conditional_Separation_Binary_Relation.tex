@@ -43,11 +43,16 @@
     \tikzmarknode{chbar-\thecoqbar-start}{\strut}%
 }
 \newcommand{\coqend}{%
-    \tikzmarknode{chbar-\thecoqbar-end}{\strut}%
-    \begin{tikzpicture}[remember picture, overlay]
-        \draw[very thick, \coqbarcolor] ([xshift={\oddsidemargin+1in-10pt}]current page.west |- chbar-\thecoqbar-start.north) -- ([xshift={\oddsidemargin+1in-10pt}]current page.west |- chbar-\thecoqbar-end.south);
-    \end{tikzpicture}%
+  \tikzmarknode{chbar-\thecoqbar-end}{\strut}%
+  \begin{tikzpicture}[remember picture, overlay]
+    \draw[very thick, \coqbarcolor] ([xshift={\oddsidemargin+1in-10pt}]current page.west |- chbar-\thecoqbar-start.north) -- ([xshift={\oddsidemargin+1in-10pt}]current page.west |- chbar-\thecoqbar-end.south);
+  \end{tikzpicture}%
 }
+
+\newcommand{\pinX}{\PY{n}{p}~\PY{n}{$[\in]$}~\PY{n}{X}}
+\newcommand{\Liftp}{\PY{n}{Lift}~\PY{n}{p}}
+\newcommand{\pSucR}{\PY{n}{p}~\PY{o}{$[\text{Suc}{\in}]$}~\PY{n}{R}}
+\newcommand{\Liftpin}{\PY{n}{p}~\PY{o}{$[\text{L}{\in}]$}~\PY{n}{R}}
 
 % START
 % macros to remove in submissions
@@ -225,12 +230,12 @@ definitions recalled at the begining of this section.\coqend
 \label{sec:sequences}
 \newcommand{\fullset}{T}
 
-To formalize in Coq graph paths we use sequences (defined in mathcomp
+To formalize graph paths we use sequences (as defined in mathcomp
 \texttt{seq.v}) combined with set formalization (defined in mathcomp
 \texttt{classical\_sets}). To describe the formalization we start by introducing some
 notations.
 
-\paragraph{$\bullet$ \texttt{p [\in X]}.} We consider a set $\fullset$, and for any set ${\Set} \subset \fullset$ and $n\in \NN$,
+\paragraph{$\bullet$ \protect\pinX.} We consider a set $\fullset$, and for any set ${\Set} \subset \fullset$ and $n\in \NN$,
 we denote by
 $\Sequence_n(\Set)$ the set of sequences of length $n$ of elements of the
 set~$\Set$, $\Sequence_n(\Set)= \SetProd{\Set}{n}$ ($\Sequence_0(\Set)$ being the singleton set with the empty sequence) and by
@@ -246,7 +251,7 @@ formalized in Coq in the mathcomp library as sequences of elements of type
  mathcomp library\texttt{seq.v}).  As an example $\Sequence_{n}(D)$ is implemented as follows
 {\small \inputsnippets{erel3/all_notation-n.tex,seq1/Sn-n.tex}}\coqend
 
-\paragraph{$\bullet$ \texttt{Lift p}.} Then, we define a lift operator
+\paragraph{$\bullet$ (\protect\Liftp) and (\protect\Liftpin).} Then, we define a lift operator
 \[ \Lift: \Sequence(\fullset) \to \Sequence(\fullset{\times}\fullset)
   \eqfinv\] such that, for all $n \ge 2$, the restriction of the operator
 $\Lift$ to the set $\Sequence_{n}(\fullset)$ coincide with the
@@ -270,14 +275,34 @@ and thus can be used also to Lift a sequence of edeges (in $\fullset\times\fulls
 a sequence of pair of edges.
 \coqend
 
-\paragraph{$\bullet$ \texttt{p [Suc\in] R}.} It will be usefull, in this work, to
-to check that successive elements of a sequence whose elements are in $\fullset$ belong to a subset of $\fullset\times\fullset$ that is satisfy a relation on $\fullset$.
+The notation $\protect\Liftpin$ is used to denote the
+expression {\PY{n}{(Lift p)}~\PY{o}{$[{\in}]$}~\PY{n}{R}}.
 
-As an example, using the
+\paragraph{$\bullet$ \protect\pSucR.} We must be able to check that successive elements of a
+sequence whose elements are in $\fullset$ belong to a subset of
+$\fullset{\times}\fullset$, that is satisfy a relation on $\fullset$.
+
+
+\coqstart This is easily implemented
+with an inductive predicate (\texttt{Rpath} in \texttt{seq1.v})
+{\small \inputsnippetsE{seq1/RPath.tex}{,}}
+that we do not detail here as we prove that it can be equivalently implemented with the Lift mapping
+as we have
+{\small \inputsnippets{seq1/RPath_equiv.tex}}\coqend
+
+As a first example, using the
 relation $C_{\textsc{H}}$ -- denote \texttt{Chrel} in Coq -- on the product set
 $T{\times}T$ defined by
-$((v_1, v_2)\, C_{\textsc{H}}\, (v_3, v_4) \iff v_2 = v_3)$, that is {\small
-  \inputsnippetsE{erel3/Chrel}{,}} we obtain four equivalent ways -- two are
+$((v_1, v_2)\, C_{\textsc{H}}\, (v_3, v_4) \iff v_2 = v_3)$, that is
+{\small \inputsnippetsE{erel3/Chrel}{,}} 
+the fact that lifted sequences are well chained sequences is proved as 
+{\small \inputsnippets{erel3/Lift_Suc.tex}}
+
+As a second example, if the elements of a sequence belong to a set $X$, then the 
+elements of the lifted sequence belong to the product relation $X{\times}X$
+{\small \inputsnippets{seq1/RPath_L1.tex}}
+
+four equivalent ways -- two are
 expressed as image of set and two as preimage of set -- of representing sequences
 of pairs of elements of $T$ such that successive pairs satisfy the
 $C_{\textsc{H}}$ relation. We obtain that \texttt{(Im 2) = (Im1 2) = (Pre 0) =

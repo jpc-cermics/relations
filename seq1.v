@@ -25,6 +25,9 @@ Local Open Scope classical_set_scope.
 
 Reserved Notation "p [\in] X" (at level 4, no associativity). 
 Reserved Notation "p [--] X" (at level 4, no associativity). 
+Reserved Notation "p [L\in] R" (at level 4, no associativity).
+Reserved Notation "p [Suc\in] R" (at level 4, no associativity).
+
 (* begin snippet all_notation:: no-out *)  
 Notation "p [\in] X" := (all (fun x => x \in X) p). 
 (* end snippet all_notation *)  
@@ -406,14 +409,15 @@ Section Seq_lift.
 
 End Seq_lift.
 
-Notation "p [L\in] R" := (Lift p) [\in] R (at level 4, no associativity). 
+(* begin snippet Liftnota:: no-out *)
+Notation "p [L\in] R" := (Lift p) [\in] R.
+(* end snippet Liftnota *)
 
 Section Rpaths. 
   (** * sequences such that consecutive elements satisfy a relation *)
     
   Variables (T: Type).
 
-  (* an inductive definition *)
   Inductive RPath (R: relation T): seq T -> Prop :=
   | pp_void : RPath R [::]
   | pp_two (t: T) (st: seq T) : 
@@ -421,10 +425,13 @@ Section Rpaths.
     st = [::] \/ (exists (t': T), exists (st': seq T), st = [::t' & st'] /\ R (t,t'))
     -> RPath R ([:: t & st]).
 
-  Notation "p [Suc\in] R" := (RPath R p) (at level 4, no associativity). 
+  (* begin snippet RPath:: no-out *)  
+  Notation "p [Suc\in] R" := (RPath R p).
+  (* end snippet RPath *)  
 
-  Lemma RPath_equiv: forall (R:relation T) (p: seq T),
-      p [L\in] R <-> p [Suc\in] R.
+  (* begin snippet RPath_equiv:: no-out *)  
+  Lemma RPath_equiv: forall (R:relation T) (p: seq T),  p [L\in] R <-> p [Suc\in] R.
+  (* end snippet RPath_equiv *)  
   Proof.
     move => R p.
     (* we use seq_cases to explore the three cases *)
@@ -450,7 +457,9 @@ Section Rpaths1.
   
   Variables (T: Type) (R: relation T) (X: set T).
   
+  (* begin snippet Rpath_L1:: no-out *)  
   Lemma Rpath_L1: forall (p: seq T), p [\in] X -> p [L\in] (X `*` X). 
+  (* end snippet Rpath_L1 *)  
   Proof.
     have H1: forall (n:nat) (p': seq T),
         size(p') = n -> ( p' [\in] X -> p' [L\in] (X `*` X)).

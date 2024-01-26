@@ -213,6 +213,13 @@ Section Lift2.
     by rewrite 3!Lift_c allset_cons -Lift_c;split;[ |apply Hr].
   Qed.
 
+  (* begin snippet Lift_Suc:: no-out *)  
+  Lemma Lift_Suc: forall (p:seq T), (Lift p) [Suc\in] Chrel. 
+  (* end snippet Lift_Suc *)  
+  Proof.
+    by move => p; rewrite -RPath_equiv; apply Lift_Lift.
+  Qed.
+  
   Lemma Lift_Chrel_n_imp: forall (n: nat) (spa : seq (T*T)),
       size(spa)= n.+2 -> (Lift spa) [\in] Chrel -> exists p: seq T, Lift p = spa.
   Proof.
