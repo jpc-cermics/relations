@@ -82,12 +82,13 @@ Section allset2.
 
 End allset2.
 
+Notation "[L: x ; p ; y `\in` E ]" := ((Lift (x::(rcons p y))) [\in] E).
+
 Section allset_Lifted.
   (** *  allset on a lifted sequence  *)
   
   Variables (T: Type).
-  Definition allL (E: relation T) (p: seq T) (x y:T) := 
-    (Lift (x::(rcons p y))) [\in] E.
+  Definition allL (E: relation T) (p: seq T) (x y:T) := [L: x; p ;y `\in` E].
   
   Lemma allL0 : forall (E: relation T) (x y : T),
       allL E [::] x y = ((x,y) \in E).
@@ -130,7 +131,7 @@ Section allset_Lifted.
   Qed.
   
   Lemma allL_WS_iff: forall (E: relation T) (W:set T) (p: seq T) (x y: T),
-      allL (Δ_(W.^c) `;` E) p x y <-> all (fun x => x \in W.^c) (x::p) && allL E p x y.
+      allL (Δ_(W.^c) `;` E) p x y <-> (x::p) [\in] W.^c && allL E p x y.
   Proof.
     move => E W p x y.
     have H1: (L_(W.^c) `&` E) `<=` E by apply intersectionSr.
@@ -142,7 +143,7 @@ Section allset_Lifted.
   Qed.
   
   Lemma allL_SW_iff: forall (E: relation T) (W:set T) (p: seq T) (x y: T),
-      allL (E `;` Δ_(W.^c)) p x y <-> all (fun x => x \in W.^c) (rcons p y) && allL E p x y.
+      allL (E `;` Δ_(W.^c)) p x y <-> (rcons p y) [\in] W.^c && allL E p x y.
   Proof.
     move => E W p x y.
     have H1: (E `&` L_(W.^c)) `<=` E by apply intersectionSl.
@@ -163,7 +164,7 @@ Section allset_Lifted.
   Qed.
   
   Lemma allL_All: forall (E: relation T) (p: seq T) (x y: T),
-      allL E p x y -> all (fun x => x \in (E.+)#_(y)) (x::p).
+      allL E p x y -> (x::p) [\in] (E.+)#_(y).
   Proof.
     move => E p x y.
     elim: p x. 
@@ -323,8 +324,26 @@ Section Lift2.
     move => [H1 [p [H2 H3]]].
     split. by []. split. rewrite Lift_Chrel. by exists p. by rewrite -H2  Lift_sz2.
   Qed.
-  
+
 End Lift2.
+
+Section REpaths.
+  (** * [set p | p [\in] E /\ p [Suc\in] R] *)
+  
+  Variables (T: Type).
+  
+  Definition REpaths (E: relation T) (R: relation (T*T)) := 
+    [set p | p [\in] E /\ p [Suc\in] (@Chrel T) /\ p [Suc\in] R].
+  
+  Lemma REpath_iff: forall (E: relation T) (R: relation (T*T)),
+      [set p | p [\in] E /\ p [Suc\in] (@Chrel T) /\ p [Suc\in] R]
+    = [set p | p = [::]] 
+        `|` [set p | size(p) = 1 /\ (p [\in] E) ] 
+        `|` [set p | size(p) > 1 /\ p [Suc\in] ((E `*` E)`&` (@Chrel T) `&`R)]. 
+  Proof.
+  Admitted.
+  
+End REpaths.
 
 Section LiftO2.
   (** * Multiple definitions of extended oriented edge paths *) 
@@ -626,8 +645,8 @@ Section PathRel_Examples.
 
   Lemma clos_t_to_paths_l : forall (x y: T),
       (Δ_(W.^c) `;` E).+ (x, y) ->
-      (exists (p: seq T), all (fun x => x \in W.^c) (x::p) /\ allL E p x y
-                     /\ all (fun x => x \in ((Δ_(W.^c) `;` E).+)#_(y)) (x::p)).
+      (exists (p: seq T), (x::p) [\in] W.^c /\ allL E p x y
+                     /\ (x::p) [\in] ((Δ_(W.^c) `;` E).+)#_(y)).
   Proof.
     move => x y; rewrite {1}TCP; move => [p /= H1]; exists p.
     move: (H1) => /allL_WS_iff/andP [H2 H2'].
@@ -637,8 +656,8 @@ Section PathRel_Examples.
   
   Lemma clos_t_to_paths_r : forall (x y: T),
       (E `;` Δ_(W.^c)).+ (x, y) ->
-      (exists (p: seq T), (all (fun z => z \in W.^c) (rcons p y) /\ allL E p x y)
-                     /\ all (fun z => z \in ((Δ_(W.^c) `;` E.-1).+)#_(x)) (y::(rev p))).
+      (exists (p: seq T), (rcons p y) [\in] W.^c /\ allL E p x y
+                     /\ (y::(rev p)) [\in] ((Δ_(W.^c) `;` E.-1).+)#_(x)).
   Proof.
     move => x y; rewrite {1}TCP; move  => [p H1]; exists p.
     rewrite allL_rev inverse_compose DeltaE_inverse /= in H1.
@@ -1115,8 +1134,8 @@ Section Active.
 
   Lemma Deployment_to_Active_path:
     forall (W: set T) (E: relation T) (p: seq T) (x y: T) (o:O),
-      ( all (fun x => x \in W.^c) p /\ allL (R_o E o) p x y )
-        <-> Active_path W E (Lifto (x::(rcons p y)) o) x y.
+      p [\in] W.^c /\ allL (R_o E o) p x y 
+      <-> Active_path W E (Lifto (x::(rcons p y)) o) x y.
   Proof.
     split.
     + elim: p x y => [x y [_ /allL0' /R_o' _] // | ]. 
@@ -1156,14 +1175,14 @@ Section Active.
   Qed.
   
   Lemma Deployment_to_Active: forall (W: set T) (E: relation T) (p: seq T) (x y: T),
-      (all (fun x => x \in W.^c) p /\ allL E p x y) -> Active W E x y.
+      p [\in] W.^c /\ allL E p x y -> Active W E x y.
   Proof.
     move => W E p x y [H1 H2].
     by exists (Lifto (x::(rcons p y)) P); apply Deployment_to_Active_path;split.
   Qed.
 
   Lemma Deployment_inv_to_Active: forall (W: set T) (E: relation T) (p: seq T) (x y: T),
-      (all (fun x => x \in W.^c) p /\ allL E.-1 p x y) -> Active W E x y.
+      p [\in] W.^c /\ allL E.-1 p x y -> Active W E x y.
   Proof.
     move => W E p x y [H1 H2].
     by exists (Lifto (x::(rcons p y)) N); apply Deployment_to_Active_path;split.

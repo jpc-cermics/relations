@@ -72,7 +72,7 @@ Section Bw_implies_active_path.
   Lemma Bwpath: forall (x y:A),
       Bw (x,y) -> (exists (p: seq A),
                    Active_path W E (Lifto (x::(rcons p y)) P) x y
-                   /\ all (fun z => z \in (Ew.+)#_(y)) p).
+                   /\ p [\in] (Ew.+)#_(y)).
   Proof.
     rewrite /Bw -DuT_eq_Tstar /mkset .
     move => x y [x1 [/= H1 [/Delta_Id <- | H2]]];first by (exists [::]).
@@ -99,7 +99,7 @@ Section Bw_implies_active_path.
   Lemma Bwpath': forall (x y:A),
       (Bw (x, y)) /\ W.^c x -> (exists (p: seq A),
                                 Active_path W E (Lifto (x::(rcons p y)) P) x y
-                                /\ all (fun z => z \in (Ew.+)#_(y)) (x::p)).
+                                /\ (x::p) [\in] (Ew.+)#_(y)).
   Proof.
     move => x y [[x1 [H1 H2]] H3]. 
     have H4: Ew.+ (x, y) by rewrite -r_clos_rt_clos_t;exists x1;split;[exists x;split | ].
@@ -115,7 +115,7 @@ Section Bmw_implies_active_path.
   (** * Lemma 10 (33b) *)
   Lemma Bmwpath: forall (x y:A),
       Bmw (x, y) -> (exists (p: seq A), Active_path W E (Lifto (x::(rcons p y)) N) x y
-                               /\ all (fun z => z \in (Ew.+)#_(x)) p).
+                               /\ p [\in] (Ew.+)#_(x)).
   Proof.
     rewrite /Bmw /inverse /Bw -DuT_eq_Tstar.
     move => x y [x1 [/= H1 [/Delta_Id <- | H2]]];first by (exists [::]).
@@ -146,7 +146,7 @@ Section Bmw_implies_active_path.
   Lemma Bmwpath': forall (x y:A),
       Bmw (x, y) /\ W.^c y -> 
       (exists (p: seq A), Active_path W E (Lifto (x::(rcons p y)) N) x y
-                     /\ all (fun z => z \in (Ew.+)#_(x)) (rcons p y)).
+                     /\ (rcons p y) [\in] (Ew.+)#_(x)).
   Proof.
     move => x y [[x1 [H1 H2]] H3]. 
     have H4: Ew.+ (y, x) by rewrite -r_clos_rt_clos_t;exists x1;split;[exists y;split | ].
@@ -166,8 +166,8 @@ Section Kw_implies_active_path.
       Kw (x, y) -> (exists (p q: seq A),exists t,
                       Active_path W E 
                         ((Lifto (x::(rcons p t)) N)++(Lifto (t::(rcons q y)) P )) x y
-                      /\ all (fun z=> z\in (Ew.+)#_(x)) (rcons p t) 
-                      /\ all (fun z=> z\in (Ew.+)#_(y)) (t::q)).
+                      /\ (rcons p t) [\in] (Ew.+)#_(x)
+                      /\ (t::q) [\in] (Ew.+)#_(y)).
   Proof.
     move => x y [z [ [t [H2 [/= H3 <-]]] /= H4]]. 
     pose proof (Bmwpath' (conj H2 H3)) as [p [H5 H6]].

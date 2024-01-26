@@ -413,7 +413,7 @@ End Seq_lift.
 Notation "p [L\in] R" := (Lift p) [\in] R.
 (* end snippet Liftnota *)
 
-Section Rpaths. 
+Section RPaths. 
   (** * sequences such that consecutive elements satisfy a relation *)
     
   Variables (T: Type).
@@ -449,7 +449,7 @@ Section Rpaths.
       by rewrite H2 in H1 *; rewrite Lift_c allset_cons //.
   Qed.
       
-End Rpaths.
+End RPaths.
 
 Notation "p [Suc\in] R" := (RPath R p) (at level 4, no associativity). 
 
@@ -497,11 +497,45 @@ Section Rpaths1.
     by move => p;rewrite allset_I;move => [H1 /andP [H2 /RPath_equiv H3]];
                                         split;[apply: Rpath_L2|].
   Qed.
-
-  Definition REpath_eq1 := [set p | size(p) = 1 /\ (p [\in] X) ]. 
-  Definition REpath_gt1 := [set p | size(p) > 1 /\ p [\in] X /\ p [Suc\in] R].
-  Definition REpath := REpath_eq1 `|` REpath_gt1. 
   
+  Lemma Rpath_iff1 : 
+    [set p | size(p) > 0 /\ p [\in] X /\ p [Suc\in] R]
+    = [set p | size(p) = 1 /\ (p [\in] X) ] `|` [set p | size(p) > 1 /\ p [L\in] ((X `*` X)`&`R)]. 
+  Proof.
+    rewrite /setU /mkset predeqE => [p].
+    split.
+    - elim: p => [[? _] // | t p _ ]. 
+      elim: p => [[_ [H1 _]] // | t' q Hr [H1 [H2 H3]]];first by left.
+      right. split. by []. by apply Rpath_L3.
+    - elim: p => [ [[? _] // | [? _] //] | t p _].
+      rewrite -RPath_equiv. 
+      elim: p => [ [[_ H1] // | [? _] //] | t' p'' _ [[? _]// | [_ ?]]].
+      split. by [].
+      rewrite RPath_equiv. 
+      by apply Rpath_L4.
+  Qed.
+
+  Lemma Rpath_iff2 : 
+    [set p | p [\in] X /\ p [Suc\in] R] 
+    = [set p | p = [::]] `|` [set p | size(p) > 0 /\ p [\in] X /\ p [Suc\in] R].
+  Proof.
+    rewrite /setU /mkset predeqE => [p].
+    split.
+    by elim: p => [[? _] // | t p _ ];[left | right].
+    rewrite -RPath_equiv.
+    elim: p => [[_ /= // | [? _] //] | t p _ [? // | [_ [? ?]] //]].
+  Qed.
+
+  Lemma Rpath_iff :
+    [set p | p [\in] X /\ p [Suc\in] R]
+    =   [set p | p = [::]] 
+          `|` [set p | size(p) = 1 /\ (p [\in] X) ] 
+          `|` [set p | size(p) > 1 /\ p [L\in] ((X `*` X)`&`R)]. 
+  Proof.
+    rewrite -[RHS]setUA -[in RHS]Rpath_iff1 -[in RHS]Rpath_iff2.
+    by [].
+  Qed.
+
 End Rpaths1.
   
 Section basic_pair_unpair.
