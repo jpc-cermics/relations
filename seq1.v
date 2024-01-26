@@ -486,20 +486,19 @@ Section Rpaths1.
     by rewrite allset_cons.
   Qed.
 
-  Lemma Rpath_L3: forall (p: seq T), p [\in] X /\ p [Suc\in] R -> p [L\in] ((X `*` X)`&`R) . 
+  Lemma Rpath_L3: forall (p: seq T), p [\in] X /\ p [L\in] R -> p [L\in] ((X `*` X)`&`R) . 
   Proof.
-    move => p [/Rpath_L1 H1 /RPath_equiv H2].
+    move => p [/Rpath_L1 H1 H2].
     by apply allset_I; rewrite H1 H2.
   Qed.
 
-  Lemma Rpath_L4: forall (p: seq T), size(p) > 1 /\ p [L\in] ((X `*` X)`&`R) -> p [\in] X /\ p [Suc\in] R.
+  Lemma Rpath_L4: forall (p: seq T), size(p) > 1 /\ p [L\in] ((X `*` X)`&`R) -> p [\in] X /\ p [L\in] R.
   Proof.
-    by move => p;rewrite allset_I;move => [H1 /andP [H2 /RPath_equiv H3]];
-                                        split;[apply: Rpath_L2|].
+    by move => p;rewrite allset_I;move => [H1 /andP [H2 H3]];split;[apply: Rpath_L2|].
   Qed.
   
   Lemma Rpath_iff1 : 
-    [set p | size(p) > 0 /\ p [\in] X /\ p [Suc\in] R]
+    [set p | size(p) > 0 /\ p [\in] X /\ p [L\in] R]
     = [set p | size(p) = 1 /\ (p [\in] X) ] `|` [set p | size(p) > 1 /\ p [L\in] ((X `*` X)`&`R)]. 
   Proof.
     rewrite /setU /mkset predeqE => [p].
@@ -508,26 +507,23 @@ Section Rpaths1.
       elim: p => [[_ [H1 _]] // | t' q Hr [H1 [H2 H3]]];first by left.
       right. split. by []. by apply Rpath_L3.
     - elim: p => [ [[? _] // | [? _] //] | t p _].
-      rewrite -RPath_equiv. 
       elim: p => [ [[_ H1] // | [? _] //] | t' p'' _ [[? _]// | [_ ?]]].
       split. by [].
-      rewrite RPath_equiv. 
       by apply Rpath_L4.
   Qed.
-
+  
   Lemma Rpath_iff2 : 
-    [set p | p [\in] X /\ p [Suc\in] R] 
-    = [set p | p = [::]] `|` [set p | size(p) > 0 /\ p [\in] X /\ p [Suc\in] R].
+    [set p | p [\in] X /\ p [L\in] R] 
+    = [set p | p = [::]] `|` [set p | size(p) > 0 /\ p [\in] X /\ p [L\in] R].
   Proof.
     rewrite /setU /mkset predeqE => [p].
     split.
     by elim: p => [[? _] // | t p _ ];[left | right].
-    rewrite -RPath_equiv.
     elim: p => [[_ /= // | [? _] //] | t p _ [? // | [_ [? ?]] //]].
   Qed.
 
   Lemma Rpath_iff :
-    [set p | p [\in] X /\ p [Suc\in] R]
+    [set p | p [\in] X /\ p [L\in] R]
     =   [set p | p = [::]] 
           `|` [set p | size(p) = 1 /\ (p [\in] X) ] 
           `|` [set p | size(p) > 1 /\ p [L\in] ((X `*` X)`&`R)]. 
