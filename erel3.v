@@ -23,21 +23,6 @@ Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
 
-(* Notation used 
- * st is a sequence of elements of Type T
- * Variables (st: seq T).
- * stt is a sequence of elements of the product Type T*T 
- * Variables (stt: seq (T*T)).
- * On veut manipuler des relations sur T et des relations sur T*T 
- * Variables (R_T: relation T)
- * Variables (R_T2: relation T*T)
- *)
-
-Reserved Notation "p [\in] X" (at level 4, no associativity). 
-(* begin snippet all_notation:: no-out *)  
-Notation "p [\in] X" := (all (fun x => x \in X) p). 
-(* end snippet all_notation *)  
-
 Section Types.
   (** * Needed Types *)
   Variables (T O: Type).

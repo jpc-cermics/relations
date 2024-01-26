@@ -282,27 +282,26 @@ expression {\PY{n}{(Lift p)}~\PY{o}{$[{\in}]$}~\PY{n}{R}}.
 sequence whose elements are in $\fullset$ belong to a subset of
 $\fullset{\times}\fullset$, that is satisfy a relation on $\fullset$.
 
-
 \coqstart This is easily implemented
 with an inductive predicate (\texttt{Rpath} in \texttt{seq1.v})
 {\small \inputsnippetsE{seq1/RPath.tex}{,}}
 that we do not detail here as we prove that it can be equivalently implemented with the Lift mapping
 as we have
-{\small \inputsnippets{seq1/RPath_equiv.tex}}\coqend
+{\small \inputsnippets{seq1/RPath_equiv-n.tex}}\coqend
 
-As a first example, using the
-relation $C_{\textsc{H}}$ -- denote \texttt{Chrel} in Coq -- on the product set
-$T{\times}T$ defined by
-$((v_1, v_2)\, C_{\textsc{H}}\, (v_3, v_4) \iff v_2 = v_3)$, that is
-{\small \inputsnippetsE{erel3/Chrel}{,}} 
-the fact that lifted sequences are well chained sequences is proved as 
-{\small \inputsnippets{erel3/Lift_Suc.tex}}
+As a first example, consider the
+relation $C_{\textsc{H}}$ -- denoted by \texttt{Chrel} in Coq -- on the product set
+$T{\times}T$ defined by $((v_1, v_2)\, C_{\textsc{H}}\, (v_3, v_4) \iff v_2 = v_3)$,
+{\small \inputsnippetsE{erel3/Chrel}{.}}
+Now, the fact that lifted sequences are well chained sequences can be stated as proving the following lemma
+{\small \inputsnippets{erel3/Lift_Suc-n.tex}}
 
 As a second example, if the elements of a sequence belong to a set $X$, then the 
-elements of the lifted sequence belong to the product relation $X{\times}X$
-{\small \inputsnippets{seq1/RPath_L1.tex}}
+elements of the lifted sequence belong to the product relation $X{\times}X$ as proved in the following lemma
+{\small \inputsnippets{seq1/Rpath_L1-n.tex}}
 
-four equivalent ways -- two are
+\paragraph{$\bullet$ (\texttt{seq T}) and (\texttt{seq (T*T)}).}
+XXXX four equivalent ways -- two are
 expressed as image of set and two as preimage of set -- of representing sequences
 of pairs of elements of $T$ such that successive pairs satisfy the
 $C_{\textsc{H}}$ relation. We obtain that \texttt{(Im 2) = (Im1 2) = (Pre 0) =
@@ -315,6 +314,8 @@ The Lift operator satisfy the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{
   type polymorphism}
 proved in Coq in Lemma \texttt{Lift\_lemma}
 {\small \inputsnippets{erel3/Lift_lemma}}
+
+\paragraph{$\bullet$ XXX}
 
 \subsubsection{Extended-oriented paths in a (directed simple) graph (permitting loops)}
 
