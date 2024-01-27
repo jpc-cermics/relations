@@ -327,36 +327,6 @@ Section Lift2.
 
 End Lift2.
 
-Section REpaths.
-  (** * [set p | p [\in] E /\ p [Suc\in] R] *)
-  
-  Variables (T: Type).
-  
-  Definition REpaths (E: relation T) (R: relation (T*T)) := 
-    [set p | p [\in] E /\ p [L\in] (@Chrel T) /\ p [L\in] R].
-  
-  Lemma REpath_iff1: forall (E: relation T) (R: relation (T*T)),
-      [set p | p [\in] E /\ p [L\in] ((@Chrel T) `&` R)]
-    = [set p | p = [::]] 
-        `|` [set p | size(p) = 1 /\ (p [\in] E) ] 
-        `|` [set p | size(p) > 1 /\ p [L\in] ((E `*` E)`&` ((@Chrel T) `&`R))]. 
-  Proof.
-    by move => E R;rewrite -[RHS]Rpath_iff.
-  Qed.
-
-  Lemma REpath_iff2: forall (E: relation T) (R: relation (T*T)),
-      [set p | p [\in] E /\ p [L\in] ((@Chrel T) `&` R)]
-      = [set p | p [\in] E /\ p [L\in] (@Chrel T) /\ p [L\in] R].
-  Proof.
-    move => E R. rewrite /mkset predeqE => p.
-    split => [ [H1 /allset_I/andP [H2 H3]]// | [H1 [H2 H3]] ].
-    by rewrite allset_I H1 H2 H3.
-  Qed.
-  
-  (** * XXXXX we want here to go up to vertex paths *) 
-  
-End REpaths.
-
 Section LiftO2.
   (** * Multiple definitions of extended oriented edge paths *) 
   

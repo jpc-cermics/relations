@@ -24,7 +24,6 @@ Unset Printing Implicit Defensive.
 Local Open Scope classical_set_scope.
 
 Reserved Notation "p [\in] X" (at level 4, no associativity). 
-Reserved Notation "p [--] X" (at level 4, no associativity). 
 Reserved Notation "p [L\in] R" (at level 4, no associativity).
 Reserved Notation "p [Suc\in] R" (at level 4, no associativity).
 
@@ -32,8 +31,58 @@ Reserved Notation "p [Suc\in] R" (at level 4, no associativity).
 Notation "p [\in] X" := (all (fun x => x \in X) p). 
 (* end snippet all_notation *)  
 
+Section Lift_def.
+  (** * Lift operation on sequences *) 
+  Variables (T: Type).
+  
+  (* begin snippet Lift:: no-out *)  
+  Fixpoint Lift (p: seq T): seq (T * T) := 
+    match p with 
+    | x :: [:: y & p] as p1 => (x,y)::(Lift p1)
+    | _ => Nil (T*T)
+    end.
+  (* end snippet Lift *)  
+  
+  (* another equivalent definition *)
+  Definition Lift' (t:T) (p: seq T) := 
+    (behead (pairmap (fun x y => (x,y)) t p)).
+  
+  Lemma Lift_eq: forall (t:T) (p:seq T), Lift p = Lift' t p.
+  Proof.
+    move => t;elim => [// | t1 p _];elim: p t1 => [// | t2 p H1 t1 //]. 
+    have -> : Lift [:: t1, t2 & p] = (t1,t2)::(Lift [::t2 & p]) by split.
+    by rewrite H1.
+  Qed.
+
+End Lift_def.
+
+(* begin snippet Liftnota:: no-out *)
+Notation "p [L\in] R" := (Lift p) [\in] R.
+(* end snippet Liftnota *)
+
+Section Suc_def.
+  (** * p [Suc\in] R: consecutive elements of p satisfy relation R *)
+  (** * we later prove that: p [L\in] R <-> p [Suc\in] R *)
+    
+  Variables (T: Type).
+
+  Inductive RPath (R: relation T): seq T -> Prop :=
+  | pp_void : RPath R [::]
+  | pp_two (t: T) (st: seq T) : 
+    RPath R st ->
+    st = [::] \/ (exists (t': T), exists (st': seq T), st = [::t' & st'] /\ R (t,t'))
+    -> RPath R ([:: t & st]).
+  
+  (* begin snippet RPath:: no-out *)  
+  Notation "p [Suc\in] R" := (RPath R p).
+  (* end snippet RPath *)  
+      
+End Suc_def. 
+
+Notation "p [Suc\in] R" := (RPath R p) (at level 4, no associativity). 
+
 Section Seq_utilities.
-  (** * some utilities on seq *)
+  (** * some utilities for sequences *)
   Variables (T: Type).
 
   Lemma seq_rc: forall (p: seq T), 
@@ -136,103 +185,16 @@ Section Seq_utilities.
   
 End Seq_utilities.
 
+Section Lift_props. 
 
-Section allset.
-  (** * utility lemmata for seq function all used with sets*)
-
-  Variables (T: Type) (X Y: set T) (p q: seq T) (x:T).
-
-  (* begin snippet Sn:: no-out *)  
-  Definition Sn (T:Type) (n: nat) (D: set T):= [set p| p [\in] D/\size(p)=n].
-  (* end snippet Sn *)
-  
-  Lemma allsetP: X x /\ p [\in] X <-> (x \in X) && (p [\in] X).
-  Proof.
-    by split => [[/mem_set -> ->] // | /andP [/set_mem H1 H2]].
-  Qed.
-  
-  Lemma allset_consb: ((x::p) [\in] X) <-> (x \in X) && p [\in] X.
-  Proof. by split. Qed.
-
-  Lemma allset_cons:  ((x::p) [\in]  X) <->  X x /\ p [\in] X.
-  Proof.
-    by rewrite allset_consb allsetP.
-  Qed.
-  
-  Lemma allset_subset: (X `<=` Y) -> (p [\in]  X) -> (p [\in] Y).
-  Proof.
-    elim: p => [ // | x' p' H1 H2 /andP [H3 H4]]. 
-    apply/andP;split.
-    by apply: mem_set;apply: H2; apply set_mem. 
-    by apply H1.
-  Qed.
-  
-  Lemma allset_rcons: (rcons p x) [\in] X <-> p [\in] X /\ X x.
-  Proof.
-    by rewrite all_rcons andC allsetP.
-  Qed. 
-    
-  Lemma allset_rev: p [\in] X <->  (rev p) [\in] X.
-  Proof.
-    by rewrite all_rev.
-  Qed. 
-  
-  Lemma allset_cat: (p++q) [\in] X <-> p [\in] X /\ q [\in] X.
-  Proof.
-    by rewrite all_cat;split => [/andP | [-> ->]].
-  Qed.
-
-End allset.
-
-Section allset1.
-
-  Variables (T: Type) (X Y: set T) (p q: seq T).
-
-  Lemma allset_I: p [\in] (X `&` Y) <-> p [\in] X && p [\in] Y. 
-  Proof.
-    pose proof intersectionSr.
-    have H1: (X `&` Y) `<=` X by rewrite /setI /mkset /subset => [t [? ?]].
-    have H2: (X `&` Y) `<=` Y by rewrite /setI /mkset /subset => [t [? ?]].
-    split => [H3 | ]. 
-    by apply/andP;split;[apply: (allset_subset H1 H3)
-                        | apply: (allset_subset H2 H3)].
-    elim: p => [// |  x spa Hr /andP H3].
-    move: H3; rewrite !allset_cons => [[[H3 H4] [H5 H6]]].
-    by split;[rewrite /setI /mkset | apply Hr;apply/andP].
-  Qed.
-  
-End allset1.
-
-Section Seq_lift. 
-  (** * Lift operation on sequences *) 
   Variables (T: Type).
   
-  (* begin snippet Lift:: no-out *)  
-  Fixpoint Lift (p: seq T): seq (T * T) := 
-    match p with 
-    | x :: [:: y & p] as p1 => (x,y)::(Lift p1)
-    | _ => Nil (T*T)
-    end.
-  (* end snippet Lift *)  
-  
-  (* another equivalent definition *)
-  Definition Lift' (t:T) (p: seq T) := 
-    (behead (pairmap (fun x y => (x,y)) t p)).
-
   Lemma Lift_c: forall (p:seq T) (x y: T),
       Lift [::x,y & p] = [::(x,y) & Lift [::y & p]].
   Proof.
     by move => p x y; split.
   Qed.
 
-  Lemma Lift_eq: forall (t:T) (p:seq T), Lift p = Lift' t p.
-  Proof.
-    move => t.
-    elim => [// | t1 p _].
-    elim: p t1 => [// | t2 p H1 t1]. 
-    by rewrite Lift_c H1.
-  Qed.
-  
   Lemma Lift_crc: forall (p:seq T) (x y: T),
       Lift (x::(rcons p y)) = (x,(head y p))::(Lift (rcons p y)).
   Proof.
@@ -407,27 +369,132 @@ Section Seq_lift.
       by rewrite H4 subn1 ltn_predRL.
   Qed.
 
-End Seq_lift.
+End Lift_props. 
 
-(* begin snippet Liftnota:: no-out *)
-Notation "p [L\in] R" := (Lift p) [\in] R.
-(* end snippet Liftnota *)
+Section allset.
+  (** * utilities for p [\in] X, X: set T *)
 
-Section RPaths. 
-  (** * sequences such that consecutive elements satisfy a relation *)
-    
   Variables (T: Type).
 
-  Inductive RPath (R: relation T): seq T -> Prop :=
-  | pp_void : RPath R [::]
-  | pp_two (t: T) (st: seq T) : 
-    RPath R st ->
-    st = [::] \/ (exists (t': T), exists (st': seq T), st = [::t' & st'] /\ R (t,t'))
-    -> RPath R ([:: t & st]).
+  (* begin snippet Sn:: no-out *)  
+  Definition Sn (T:Type) (n: nat) (D: set T):= [set p| p [\in] D/\size(p)=n].
+  (* end snippet Sn *)
+  
+  Lemma allsetP: forall (X: set T) (p: seq T) (x:T),
+      X x /\ p [\in] X <-> (x \in X) && (p [\in] X).
+  Proof.
+    by split => [[/mem_set -> ->] // | /andP [/set_mem H1 H2]].
+  Qed.
+  
+  Lemma allset_consb: forall (X: set T) (p: seq T) (x:T),
+      ((x::p) [\in] X) <-> (x \in X) && p [\in] X.
+  Proof. by split. Qed.
 
-  (* begin snippet RPath:: no-out *)  
-  Notation "p [Suc\in] R" := (RPath R p).
-  (* end snippet RPath *)  
+  Lemma allset_cons: forall (X: set T) (p: seq T) (x:T),
+      ((x::p) [\in]  X) <->  X x /\ p [\in] X.
+  Proof.
+    by move=> X p x;rewrite allset_consb allsetP.
+  Qed.
+  
+  Lemma allset_subset: forall (X Y: set T) (p: seq T), 
+      (X `<=` Y) -> (p [\in]  X) -> (p [\in] Y).
+  Proof.
+    move => X Y;elim => [ // | x' p' H1 H2 /andP [H3 H4]]. 
+    apply/andP;split.
+    by apply: mem_set;apply: H2; apply set_mem. 
+    by apply H1.
+  Qed.
+  
+  Lemma allset_rcons: forall (X: set T) (p: seq T) (x:T),
+      (rcons p x) [\in] X <-> p [\in] X /\ X x.
+  Proof.
+    by move => X p x;rewrite all_rcons andC allsetP.
+  Qed. 
+    
+  Lemma allset_rev: forall (X: set T) (p: seq T),
+      p [\in] X <->  (rev p) [\in] X.
+  Proof.
+    by move => X p;rewrite all_rev.
+  Qed. 
+  
+  Lemma allset_cat: forall (X: set T) (p q: seq T),
+      (p++q) [\in] X <-> p [\in] X /\ q [\in] X.
+  Proof.
+    by move=> X p q;rewrite all_cat;split => [/andP | [-> ->]].
+  Qed.
+
+  Lemma allset_I: forall (X Y: set T) (p: seq T),
+    p [\in] (X `&` Y) <-> p [\in] X && p [\in] Y. 
+  Proof.
+    move => X Y p.
+    pose proof intersectionSr.
+    have H1: (X `&` Y) `<=` X by rewrite /setI /mkset /subset => [t [? ?]].
+    have H2: (X `&` Y) `<=` Y by rewrite /setI /mkset /subset => [t [? ?]].
+    split => [H3 | ]. 
+    by apply/andP;split;[apply: (allset_subset H1 H3)
+                        | apply: (allset_subset H2 H3)].
+    elim: p => [// |  x spa Hr /andP H3].
+    move: H3; rewrite !allset_cons => [[[H3 H4] [H5 H6]]].
+    by split;[rewrite /setI /mkset | apply Hr;apply/andP].
+  Qed.
+  
+End allset.
+
+Section allset2.
+  (** * extra utilities for p [\in] R, R: relation T *)
+  Variables (T: Type).
+  
+  Lemma allset_inv: forall (E: relation T) (spa: seq (T * T)), 
+      spa [\in] E <-> (map (fun tt => (tt.2,tt.1)) spa) [\in] E.-1. 
+  Proof.
+    move => E;elim => [ // | [x y] spa Hr].
+    by rewrite map_cons !allset_cons Hr.
+  Qed.
+  
+  Lemma allset_Rr: forall (X: set T) (x y: T) (p: seq T),
+      (Lift (x::(rcons p y))) [\in] R_(X) <-> (rcons p y) [\in] X.
+  Proof.
+    move => X x y p.
+    elim: p x. 
+    - rewrite /= /Rr; split => [/andP [/inP H1 _] | /andP [/inP H1 _]].
+      by rewrite /mkset /= in H1;apply mem_set in H1;rewrite H1.
+      by apply/andP;split;[ apply/inP;rewrite /mkset /= |].
+    - move => z p Hr x; rewrite rcons_cons Lift_c 2!allset_cons.
+      split => [ [? /Hr ?] // | [? ?]].
+      by split;[| apply Hr].
+  Qed.
+
+  Lemma allset_Lr: forall (X: set T) (x y: T) (p: seq T),
+      (Lift (x::(rcons p y))) [\in] L_(X) <-> (x::p) [\in] X.
+  Proof.
+    move => X x y p.
+    elim: p x. 
+    - rewrite /= /Lr; split => [/andP [/inP H1 _] | /andP [/inP H1 _]].
+      by rewrite /mkset /= in H1;apply mem_set in H1;rewrite H1.
+      by apply/andP;split;[ apply/inP;rewrite /mkset /= |].
+    - move => z p Hr x; rewrite rcons_cons Lift_c 2!allset_cons.
+      split => [ [? /Hr ?] // | [? ?]].
+      by split;[| apply Hr].
+  Qed.
+  
+  Lemma allset_Dl: forall (X: set T) (E: relation T) (x y: T) (p: seq T),
+      (Lift (x::(rcons p y))) [\in] (Δ_(X)`;`E) -> (x::p) [\in] X.
+  Proof.
+    by move => X E x y p;rewrite DeltaLco allset_I => /andP [/allset_Lr H1 _].
+  Qed.
+
+  Lemma allset_Dr: forall (X: set T) (E: relation T) (x y: T) (p: seq T),
+      (Lift (x::(rcons p y))) [\in] (E`;`Δ_(X)) -> (rcons p y) [\in] X.
+  Proof.
+    by move => X E x y p;rewrite DeltaRco allset_I => /andP [_ /allset_Rr H1].
+  Qed.
+
+End allset2.
+
+Section Suc_as_Lift. 
+  (** * p [L\in] R <-> p [Suc\in] *)
+    
+  Variables (T: Type).
 
   (* begin snippet RPath_equiv:: no-out *)  
   Lemma RPath_equiv: forall (R:relation T) (p: seq T),  p [L\in] R <-> p [Suc\in] R.
@@ -448,13 +515,12 @@ Section RPaths.
       elim/RPath_ind: H => [// | x' y' ep H1 [-> // | [y1 [ep1 [H2 H3]]]]].
       by rewrite H2 in H1 *; rewrite Lift_c allset_cons //.
   Qed.
-      
-End RPaths.
 
-Notation "p [Suc\in] R" := (RPath R p) (at level 4, no associativity). 
+End Suc_as_Lift. 
 
-Section Rpaths1.
-  
+Section seq_subsets.
+  (** * p: seq T, p [\in] X and p [L\in] R] *)
+
   Variables (T: Type) (R: relation T) (X: set T).
   
   (* begin snippet Rpath_L1:: no-out *)  
@@ -532,7 +598,40 @@ Section Rpaths1.
     by [].
   Qed.
 
-End Rpaths1.
+End seq_subsets.
+
+Section seq_pairs_subsets.
+  (** * p: seq (T*T), p [\in] E and p [L\in] R] *)
+  
+  Variables (T: Type).
+
+  (* A relation on (T*T) (Ch for Chain) *)
+  (* begin snippet Chrel:: no-out *)  
+  Definition Chrel  := [set ppa : (T * T)*(T * T) | (ppa.1).2 = (ppa.2).1].
+  (* end snippet Chrel *)  
+  
+  Definition REpaths (E: relation T) (R: relation (T*T)) := 
+    [set p | p [\in] E /\ p [L\in] Chrel /\ p [L\in] R].
+  
+  Lemma REpath_iff1: forall (E: relation T) (R: relation (T*T)),
+      [set p | p [\in] E /\ p [L\in] (Chrel `&` R)]
+    = [set p | p = [::]] 
+        `|` [set p | size(p) = 1 /\ (p [\in] E) ] 
+        `|` [set p | size(p) > 1 /\ p [L\in] ((E `*` E)`&` (Chrel `&` R))]. 
+  Proof.
+    by move => E R;rewrite -[RHS]Rpath_iff.
+  Qed.
+
+  Lemma REpath_iff2: forall (E: relation T) (R: relation (T*T)),
+      [set p | p [\in] E /\ p [L\in] (Chrel `&` R)]
+      = [set p | p [\in] E /\ p [L\in] Chrel /\ p [L\in] R].
+  Proof.
+    move => E R. rewrite /mkset predeqE => p.
+    split => [ [H1 /allset_I/andP [H2 H3]]// | [H1 [H2 H3]] ].
+    by rewrite allset_I H1 H2 H3.
+  Qed.
+
+End seq_pairs_subsets.
   
 Section basic_pair_unpair.
   (** * pair sequences *)
