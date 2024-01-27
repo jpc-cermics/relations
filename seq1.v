@@ -186,7 +186,7 @@ Section Seq_utilities.
 End Seq_utilities.
 
 Section Lift_props. 
-
+  (** * properties of the Lift mapping *)
   Variables (T: Type).
   
   Lemma Lift_c: forall (p:seq T) (x y: T),
@@ -490,6 +490,101 @@ Section allset2.
   Qed.
 
 End allset2.
+
+Notation "[L: x ; p ; y `\in` E ]" := ((Lift (x::(rcons p y))) [\in] E).
+
+Section allset_Lifted.
+  (** * properties of p [L\in] R for p: seq T  *)
+  (** * with specified p endpoints *)
+  
+  Variables (T: Type).
+  Definition allL (E: relation T) (p: seq T) (x y:T) := [L: x; p ;y `\in` E].
+  
+  Lemma allL0 : forall (E: relation T) (x y : T),
+      allL E [::] x y = ((x,y) \in E).
+  Proof.
+    by move => E x y;rewrite /allL Lift_c /andP /= andbT. 
+  Qed.
+
+  Lemma allL0' : forall (E: relation T) (x y : T),
+      allL E [::] x y <-> E (x,y).
+  Proof.
+    by move => E x y;rewrite allL0;split=> [/set_mem H1 // | /inP H1]. 
+  Qed.
+  
+  Lemma allL_c: forall (E: relation T) (p: seq T) (x y z: T),
+      allL E (z::p) x y <-> ((x, z) \in E) && allL E p z y.
+  Proof.
+    by move => E p x y z;split;[rewrite /allL rcons_cons Lift_c allset_cons |].
+  Qed.
+
+  Lemma allL_rc: forall (E: relation T) (p: seq T) (x y z: T),
+      allL E (rcons p z) x y <-> ((z,y) \in E) && allL E p x z.
+  Proof.
+    move => E p x y z;split.
+    by rewrite /allL -rcons_cons Lift_rcc allset_rcons last_rcons;move => [-> /inP ->].
+    by move => /andP [/inP ? ?];rewrite /allL -rcons_cons Lift_rcc allset_rcons last_rcons. 
+  Qed.
+  
+  Lemma allL_cat: forall (E: relation T) (p q: seq T) (x y z: T),
+      allL E ((rcons p y) ++ q) x z <-> allL E p x y && allL E q y z.
+  Proof.
+    move => E p q x y z.
+    rewrite /allL cat_rcons rcons_cat rcons_cons -cat_rcons Lift_cat_crc allset_cat.
+    by split => [ [? ?] | /andP [? ?]];[apply/andP |].
+  Qed.
+  
+  Lemma allL_subset: forall (E R: relation T) (p: seq T) (x y: T),
+      (E `<=` R) -> allL E p x y -> allL R p x y.
+  Proof.
+    by move => E R p x y H1 H2;apply allset_subset with E.
+  Qed.
+  
+  Lemma allL_WS_iff: forall (E: relation T) (W:set T) (p: seq T) (x y: T),
+      allL (Δ_(W.^c) `;` E) p x y <-> (x::p) [\in] W.^c && allL E p x y.
+  Proof.
+    move => E W p x y.
+    have H1: (L_(W.^c) `&` E) `<=` E by apply intersectionSr.
+    have H2: (L_(W.^c) `&` E) `<=` L_(W.^c) by apply intersectionSl.
+    pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) L_(W.^c)) as H3.
+    pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) E) as H4.    
+    rewrite DeltaLco /allL allset_I.
+    by split => /andP [/allset_Lr H5 H6];[apply /andP | apply /andP].
+  Qed.
+  
+  Lemma allL_SW_iff: forall (E: relation T) (W:set T) (p: seq T) (x y: T),
+      allL (E `;` Δ_(W.^c)) p x y <-> (rcons p y) [\in] W.^c && allL E p x y.
+  Proof.
+    move => E W p x y.
+    have H1: (E `&` L_(W.^c)) `<=` E by apply intersectionSl.
+    have H2: (E `&` L_(W.^c)) `<=` L_(W.^c) by apply intersectionSr.
+    pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) L_(W.^c)) as H3.
+    pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) E) as H4.    
+    rewrite DeltaRco /allL allset_I; split => /andP [H5 H6]. 
+    by rewrite allset_Rr in H6; apply /andP; split. 
+    by apply /andP; split;[| rewrite allset_Rr].
+  Qed.
+  
+  Lemma allL_rev: forall (E: relation T) (p: seq T) (x y: T),
+      allL E p x y <->  allL E.-1 (rev p) y x.
+  Proof.
+    move => E p x y. 
+    have H1: (y :: rcons (rev p) x) = rev (x::(rcons p y)) by rewrite rev_cons rev_rcons -rcons_cons.
+    by rewrite /allL allset_rev allset_inv H1 Lift_rev.
+  Qed.
+  
+  Lemma allL_All: forall (E: relation T) (p: seq T) (x y: T),
+      allL E p x y -> (x::p) [\in] (E.+)#_(y).
+  Proof.
+    move => E p x y.
+    elim: p x. 
+    by move => x;rewrite /allL /= => /andP [/inP H1 _];apply /andP;split;[apply mem_set;apply Fset_t1|].
+    move => z p Hr x;rewrite allL_c => /andP [/inP H1 /Hr H2].
+    move: (H2);rewrite allset_cons => [[H3 H4]].
+    by rewrite allset_cons;split;[ apply Fset_t2; exists z |].
+  Qed.
+  
+End allset_Lifted.
 
 Section Suc_as_Lift. 
   (** * p [L\in] R <-> p [Suc\in] *)
