@@ -616,9 +616,9 @@ End Suc_as_Lift.
 
 Section Lift_bijective.
   (** * Lift is a bijection between D:= [set p:seq T | size(p) > 1] and Lift D *)
-  
   Variables (T: Type).
   
+  (* A relation on (T*T) (Ch for Chain) *)
   (* begin snippet Chrel:: no-out *)  
   Definition Chrel  := [set ppa : (T * T)*(T * T) | (ppa.1).2 = (ppa.2).1].
   (* end snippet Chrel *)  
