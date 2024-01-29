@@ -369,8 +369,45 @@ Section Lift_props.
       by rewrite H4 subn1 ltn_predRL.
   Qed.
 
-
 End Lift_props. 
+
+Section epts.
+
+  (** * utilities for p [\in] X, X: set T *)
+
+  Variables (T: Type).
+  
+  Definition Ta (p: seq (T*T)) (t:T) := 
+    (head (t,t) p).1.
+
+  Definition He (p: seq (T*T)) (t:T) := 
+    (last (t,t) p).2.
+
+  Definition In (p: seq (T*T)) (t:T) := 
+    (behead (behead (belast t (UnLift p t)))).
+  
+  Lemma DecompTa: forall (p: seq T) (x y t:T),
+      Ta (Lift (x::(rcons p y))) t = x.
+  Proof.
+    elim => [x y t //= | x' p Hr x y t].
+    by rewrite Lift_crc rcons_cons /Ta /=. 
+  Qed.
+
+  Lemma DecompHe: forall (p: seq T) (x y t:T),
+      Ta (Lift (x::(rcons p y))) t = x.
+  Proof.
+    elim => [x y t //= | x' p Hr x y t].
+    by rewrite Lift_crc rcons_cons /Ta /=. 
+  Qed.
+
+  Lemma DecompIn: forall (p: seq T) (x y t:T),
+      In (Lift (x::(rcons p y))) t = p.
+  Proof.
+    elim => [x y t //= | x' p Hr x y t].
+    rewrite Lift_crc.
+  Admitted.
+  
+End epts.
 
 Section allset.
   (** * utilities for p [\in] X, X: set T *)
