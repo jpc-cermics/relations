@@ -375,6 +375,11 @@ Section epts.
 
   (** * utilities for p [\in] X, X: set T *)
 
+  (* plutot voir les operation Ta He In 
+   * comme des operations sur UnLift 
+   * pour profiter de Lift UnLift = UnLift Lift = Id 
+   *)
+  
   Variables (T: Type).
   
   Definition Ta (p: seq (T*T)) (t:T) := 
