@@ -249,7 +249,7 @@ formalized in Coq in the mathcomp library as sequences of elements of type
 \texttt{T} and the restriction to elements in a subset \texttt{(\PY{n+nv}{D}:
   set T)} is obtained using the function \texttt{all} (in mathcomp
  mathcomp library\texttt{seq.v}).  As an example $\Sequence_{n}(D)$ is implemented as follows
-{\small \inputsnippets{erel3/all_notation-n.tex,seq1/Sn-n.tex}}\coqend
+{\small \inputsnippets{seq1/all_notation-n.tex,seq1/Sn-n.tex}}\coqend
 
 \paragraph{$\bullet$ (\protect\Liftp) and (\protect\Liftpin).} Then, we define a lift operator
 \[ \Lift: \Sequence(\fullset) \to \Sequence(\fullset{\times}\fullset)
@@ -286,15 +286,15 @@ $\fullset{\times}\fullset$, that is satisfy a relation on $\fullset$.
 with an inductive predicate (\texttt{Rpath} in \texttt{seq1.v})
 {\small \inputsnippetsE{seq1/RPath.tex}{,}}
 that we do not detail here as we prove that it can be equivalently implemented with the Lift mapping
-as we have
+(which enable more computational proofs) as we have
 {\small \inputsnippets{seq1/RPath_equiv-n.tex}}\coqend
 
 As a first example, consider the
 relation $C_{\textsc{H}}$ -- denoted by \texttt{Chrel} in Coq -- on the product set
 $T{\times}T$ defined by $((v_1, v_2)\, C_{\textsc{H}}\, (v_3, v_4) \iff v_2 = v_3)$,
-{\small \inputsnippetsE{erel3/Chrel}{.}}
+{\small \inputsnippetsE{seq1/Chrel}{.}}
 Now, the fact that lifted sequences are well chained sequences can be stated as proving the following lemma
-{\small \inputsnippets{erel3/Lift_Suc-n.tex}}
+{\small \inputsnippets{seq1/Lift_Suc-n.tex}}
 
 As a second example, if the elements of a sequence belong to a set $X$, then the 
 elements of the lifted sequence belong to the product relation $X{\times}X$ as proved in the following lemma
@@ -306,14 +306,14 @@ expressed as image of set and two as preimage of set -- of representing sequence
 of pairs of elements of $T$ such that successive pairs satisfy the
 $C_{\textsc{H}}$ relation. We obtain that \texttt{(Im 2) = (Im1 2) = (Pre 0) =
   (Pre1 1)}, where the four paths sets are defined by {\small
-  \inputsnippets{erel3/Lift_lemma2-n.tex}}
+  \inputsnippets{seq1/Lift_lemma2-n.tex}}
 
 The Lift operator satisfy the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{ \Sequence(\texttt{Chrel})}$\footnote{%
   Note that mathematically, two different Lift operators appear in this equation as their domain is not the same.
   Nevertheless, we use the same notation as in Coq they are implemented with the same \texttt{List} function using
   type polymorphism}
 proved in Coq in Lemma \texttt{Lift\_lemma}
-{\small \inputsnippets{erel3/Lift_lemma}}
+{\small \inputsnippets{seq1/Lift_lemma}}
 
 \paragraph{$\bullet$ XXX}
 
@@ -410,7 +410,7 @@ and coincide with the set $\sqcup_{n'\ge n} \PATH_{n'}\np{\OrientedGraph}$.
 
 Using the tools introduced in Section~\ref{sec:sequences} and Equation~\eqref{def:epaths_gt1} we obtain in Coq
 the following three equivalent definitions of $P_{\ge 1}$
-{\small \inputsnippetsE{erel3/EPath2new.tex,erel3/EPath3new,erel3/EPath2inter}{,}}
+%%{\small \inputsnippetsE{seq1/EPath2new.tex,seq1/EPath3new,seq1/EPath2inter}{,}}
 where \texttt{`\&`} is the set intersection as defined in \texttt{classical\_sets.v}.
 
 \medskip

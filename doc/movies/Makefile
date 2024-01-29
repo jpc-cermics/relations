@@ -8,14 +8,11 @@ SNIPPETS = \
 	snippets/erel3/ActiveOe-n.tex \
 	snippets/erel3/Active-n.tex \
 	snippets/erel3/Aeop-n.tex \
-	snippets/erel3/all_notation-n.tex \
-	snippets/erel3/Chrel-n.tex \
+	snippets/seq1/all_notation-n.tex \
+	snippets/seq1/Chrel-n.tex \
 	snippets/erel3/D_U-n.tex \
-	snippets/erel3/EPath2inter-n.tex \
-	snippets/erel3/EPath2new-n.tex \
-	snippets/erel3/EPath3new-n.tex \
-	snippets/erel3/Lift_lemma2-n.tex \
-	snippets/erel3/Lift_lemma-n.tex \
+	snippets/seq1/Lift_lemma2-n.tex \
+	snippets/seq1/Lift_lemma-n.tex \
 	snippets/erel3/Oedge-n.tex \
 	snippets/erel3/TCP-n.tex \
 	snippets/erel3/U_ge_1p-n.tex \
@@ -35,7 +32,7 @@ SNIPPETS = \
 	snippets/ssrel/clos_rt-n.tex \
 	snippets/ssrel/relation-n.tex \
 	snippets/seq1/RPath_equiv-n.tex \
-	snippets/erel3/Lift_Suc-n.tex \
+	snippets/seq1/Lift_Suc-n.tex \
 	snippets/seq1/Rpath_L1-n.tex \
 
 
