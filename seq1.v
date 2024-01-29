@@ -371,48 +371,6 @@ Section Lift_props.
 
 End Lift_props. 
 
-Section epts.
-
-  (** * utilities for p [\in] X, X: set T *)
-
-  (* plutot voir les operation Ta He In 
-   * comme des operations sur UnLift 
-   * pour profiter de Lift UnLift = UnLift Lift = Id 
-   *)
-  
-  Variables (T: Type).
-  
-  Definition Ta (p: seq (T*T)) (t:T) := 
-    (head (t,t) p).1.
-
-  Definition He (p: seq (T*T)) (t:T) := 
-    (last (t,t) p).2.
-
-  Definition In (p: seq (T*T)) (t:T) := 
-    (behead (behead (belast t (UnLift p t)))).
-  
-  Lemma DecompTa: forall (p: seq T) (x y t:T),
-      Ta (Lift (x::(rcons p y))) t = x.
-  Proof.
-    elim => [x y t //= | x' p Hr x y t].
-    by rewrite Lift_crc rcons_cons /Ta /=. 
-  Qed.
-
-  Lemma DecompHe: forall (p: seq T) (x y t:T),
-      Ta (Lift (x::(rcons p y))) t = x.
-  Proof.
-    elim => [x y t //= | x' p Hr x y t].
-    by rewrite Lift_crc rcons_cons /Ta /=. 
-  Qed.
-
-  Lemma DecompIn: forall (p: seq T) (x y t:T),
-      In (Lift (x::(rcons p y))) t = p.
-  Proof.
-    elim => [x y t //= | x' p Hr x y t].
-    rewrite Lift_crc.
-  Admitted.
-  
-End epts.
 
 Section allset.
   (** * utilities for p [\in] X, X: set T *)
@@ -848,6 +806,54 @@ Section Lift_bijective.
   Qed.
 
 End Lift_bijective.
+
+Section epts.
+  (** * endpoints  *)
+
+  Variables (T: Type) (t:T).
+  
+  Definition He_D (p: seq T) := (head t p).
+
+  Definition La_D (p: seq T) := (last t p).
+  
+  Definition In_D (p: seq T) := 
+    behead (behead (belast t p)).
+
+  Definition He_I (p: seq (T*T)) := He_D (UnLift p t).
+
+  Definition La_I (p: seq (T*T)) := La_D (UnLift p t).
+  
+  Definition In_I (p: seq (T*T)) := In_D (UnLift p t).
+  
+  Definition D1 (x y :T) := [set p:seq T | He_D p = x /\ La_D p = y].
+  Definition I1 (x y :T) := [set p:seq (T*T) | He_I p = x /\ La_I p = y ].
+  
+  Lemma Lift_epts_image: forall (p: seq T) (x y:T),
+      p \in ((D1 x y)`&` (@D T))-> (Lift p) \in (I1 x y)`&` (@I T).
+  Proof.
+    move => p x y.
+    move => /inP [[H1 H2] /inP H3].
+    pose proof (Lift_image H3) as H4.
+    move: H4 => /inP [H4 H5].
+    rewrite inP /setI.
+    split. 
+    - rewrite /I1 /= /He_I /La_I.
+      have -> : (UnLift (Lift p) t) = p 
+        by rewrite Lift_sz2 in H4;apply: UnLift_left H4.
+      by [].
+    - by []. 
+  Qed.
+
+  Lemma UnLift_epts_image: forall (p: seq (T*T)) (x y:T),
+      p \in ((I1 x y)`&` (@I T))-> (UnLift p t) \in (D1 x y)`&` (@D T).
+  Proof.
+    move => p x y.
+    move => /inP [[H1 H2] /inP H3].
+    pose proof (UnLift_image H3) t as H4.
+    by rewrite inP /setI;split;[ | apply inP].
+  Qed.
+
+End epts.
 
 Section seq_subsets.
   (** * p: seq T, p [\in] X and p [L\in] R] *)
