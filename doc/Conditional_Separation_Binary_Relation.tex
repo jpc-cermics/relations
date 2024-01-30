@@ -283,7 +283,7 @@ sequence whose elements are in $\fullset$ belong to a subset of
 $\fullset{\times}\fullset$, that is satisfy a relation on $\fullset$.
 
 \coqstart This is easily implemented
-with an inductive predicate (\texttt{Rpath} in \texttt{seq1.v})
+with the help of an inductive predicate (\texttt{RPath} in \texttt{seq1.v})
 {\small \inputsnippetsE{seq1/RPath.tex}{,}}
 that we do not detail here as we prove that it can be equivalently implemented with the Lift mapping
 (which enable more computational proofs) as we have
@@ -320,7 +320,7 @@ The Lift operator satisfy the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{
 proved in Coq in Lemma \texttt{Lift\_lemma}
 {\small \inputsnippets{seq1/Lift_lemma}}
 
-\subsubsection{Extended-oriented paths in a (directed simple) graph (permitting loops)}
+\subsubsection{Edge paths in a (directed simple) graph (permitting loops)}
 
 Let $\VERTEX$ be a nonempty set (finite or not), whose elements are called \emph{vertices}.  Let
 \( \EDGE \subset \VERTEX\times\VERTEX \) be a relation on~$\VERTEX$, whose
@@ -381,9 +381,8 @@ we formally define an \EdgePath\ in $(\VERTEX,\EDGE)$ (in our sense)
 as the classical notion of path in a graph~\citep{Diestel}.
 We also define an \undirectedEdgePath\ in $(\VERTEX,\EDGE)$ (in our sense)
 as what corresponds to chain path in~\citep{Lauritzen-et-al-1990}.
-\medskip
 
-\noindent $\bullet$ Definition of \emph{\EdgePath}.
+\paragraph{$\bullet$ Definition of \emph{\EdgePath}.}
 The set of \emph{\EdgePath} of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$ is defined by
 \begin{align}
   \PATH_n \np{\OrientedGraph} %    \PATH^n\np{\graph}
@@ -403,9 +402,13 @@ The set of finite (edge) paths of length greater or equal to $n\ge1$ relative to
 the following formalization of $P_{> n}$
 {\small \inputsnippetsE{seq1/EPath_gt-n.tex}{,}}
 where \texttt{E} is the edge relation $\EDGE$ and where \texttt{Chrel} we defined in Section~\ref{sec:sequences}. \coqend
-\medskip
 
-The first element~$\tail{\vertex_1}$ of an \EdgePath\
+We denote by $\cardinal{\path}$ the length of a path $\path \in
+\PATH\np{\OrientedGraph}$.
+An \emph{\EdgeSubPath} of the \EdgePath~$\path$ is an \EdgePath\ obtained by a
+subsequence of consecutive indices.
+
+\paragraph{$\bullet$ Definition of endpoints.} The first element~$\tail{\vertex_1}$ of an \EdgePath\
 \( \path=\bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \) is the
 \emph{tail of the \EdgePath}, whereas the last one~$\head{\vertex_n}$ is the
 \emph{head of the \EdgePath}.  Both tail (obtained with function \texttt{head}
@@ -415,18 +418,64 @@ to one is given as a Lifted sequence of elements of $T$
 as for example in \texttt{\PY{n}{Lift}~\PY{o}{(}\PY{n}{x}\PY{o}{::(}\PY{n}{rcons}~\PY{n}{p}~\PY{n}{y}\PY{o}{))}~\PY{o}{=}~\PY{n}{sp}\PY{o}{.}} the endpoints \texttt{(x,y)} and the
 intermediate nodes \texttt{p} of the \EdgePath\ \texttt{sp} are immediately obtained.
 
-As a first result linking (edge) paths and relations we can prove that 
+\paragraph{$\bullet$ Transitive closure and edge paths.} As a first result linking (edge) paths and relations we can prove that 
 {\small \inputsnippetsE{erel3/TCP-n.tex}{,}
 which asserts that two nodes \texttt{(v1,v2)} are in relation through the transitive closure of a relation 
 \texttt{S}, that is \texttt{(v1,v2) $\in$ S.+} if and only if 
 there exists an edge path with endpoints \texttt{(v1,v2)} in the graph $(T,S)$.
 
-We denote by $\cardinal{\path}$ the length of a path $\path \in
-\PATH\np{\OrientedGraph}$.
-An \emph{\EdgeSubPath} of the \EdgePath~$\path$ is an \EdgePath\ obtained by a
-subsequence of consecutive indices.
+\paragraph{$\bullet$ Deployment in paths.} We denote by \( \Projection^n: \PATH^n \np{\OrientedGraph}
+\to\VERTEX\times\VERTEX \) the \emph{projection
+  on the tail and head endpoints} of an \EdgePath\ of length~$n$.
+It is defined, for \( \path\in\PATH^n\np{\OrientedGraph}\), by 
+\(\Projection^n\np{\path}=
+\Projection^n\np{(\tail{\vertex_i},\head{\vertex_i})_{i\in\ic{1,n}}} 
+= \np{\tail{\vertex_1},\head{\vertex_{n}}}\).
+We denote by \( \Projection: \PATH \np{\OrientedGraph} \to \VERTEX\times\VERTEX \) 
+the projection mapping on the tail and head endpoints defined by
+\begin{subequations}
+  \begin{equation}
+    \forall \path\in \PATH\np{\OrientedGraph}
+    \eqsepv
+    \Projection\np{\path} = \Projection^{\cardinal{\path}}\np{\path} \in \VERTEX\times\VERTEX 
+    \eqfinp
+    \label{eq:Projection_PATH}
+  \end{equation}
+  We also distinguish the tail and the head endpoints projection mappings by
+  \begin{equation}
+    \Projection=\np{\Tail{\Projection},\Head{\Projection}}
+    \mtext{ where }
+    \Tail{\Projection}: \PATH \np{\OrientedGraph} \to \VERTEX
+    \mtext{ and }
+    \Head{\Projection}: \PATH \np{\OrientedGraph} \to \VERTEX
+    \eqfinp 
+    \label{eq:Projection_PATH_first_and_last}
+  \end{equation}  
+\end{subequations}
 
-\medskip
+Now, with any binary relation \( \relation \subset \VERTEX{\times}\VERTEX \),
+we associate the subset~\( \DeploymentInPaths{\relation}{\OrientedGraph} \)
+of~\( \PATH\np{\OrientedGraph} \),
+that we call the \emph{deployment in paths},
+defined by 
+\begin{equation}
+  \forall \relation \subset \VERTEX\times\VERTEX 
+  \eqsepv 
+  \DeploymentInPaths{\relation}{\OrientedGraph}
+  = \Projection^{-1}(\relation) \subset \PATH\np{\OrientedGraph} 
+  \eqfinv
+  \label{eq:DeploymentInPaths}
+\end{equation}
+where the projection~\( \Projection \) has been defined
+in~\eqref{eq:Projection_PATH}.
+The deployment in paths~\( \DeploymentInPaths{\relation}{\OrientedGraph} \)
+is made of the \EdgePaths\  whose endpoints satisfy the 
+binary relation~\( \relation \).
+
+ZZZZ here we need Coq code to illustrate. 
+
+\subsubsection{Extended-oriented paths in a (directed simple) graph (permitting loops)}
+
 \noindent $\bullet$ Definition of \emph{\undirectedEdgePath}. To define
 \emph{\undirectedEdgePath}, we consider a finite set ${\Orientation}=\na{-1,+1}$
 taking two possible values and implemented in Coq a an inductive type taking two
@@ -546,7 +595,7 @@ the projection mapping on the tail and head endpoints defined by
     \eqsepv
     \Projection\np{\path} = \Projection^{\cardinal{\path}}\np{\path} \in \VERTEX\times\VERTEX 
     \eqfinp
-    \label{eq:Projection_PATH}
+    \label{ZZeq:Projection_PATH}
   \end{equation}
   We also distinguish the tail and the head endpoints projection mappings by
   \begin{equation}
@@ -556,7 +605,7 @@ the projection mapping on the tail and head endpoints defined by
     \mtext{ and }
     \Head{\Projection}: \PATH \np{\OrientedGraph} \to \VERTEX
     \eqfinp 
-    \label{eq:Projection_PATH_first_and_last}
+    \label{ZZeq:Projection_PATH_first_and_last}
   \end{equation}  
   We use the notation \( \Projection_{\UPATH}: \UPATH \np{\OrientedGraph} \to\VERTEX\times\VERTEX \) 
   to denote the projection mappings on the tail and head endpoints of an \undirectedEdgePath. 
@@ -566,18 +615,8 @@ the projection mapping on the tail and head endpoints defined by
     \eqsepv
     \forall \np{\path,\orient}\in \UPATH\np{\OrientedGraph}
     \eqfinp
-    \label{eq:Projection}
+    \label{ZZeq:Projection}
   \end{equation}
-  % \mdl{cette notation ne semble pas utilisée}
-  % \rouge{  We also distinguish the tail and the head endpoints by
-  % \begin{equation}
-  %   \Projection_{\UPATH}=\np{\Tail{\Projection_{\UPATH}},\Head{\Projection_{\UPATH}}}
-  %   \mtext{ where }
-  %   \Tail{\Projection_{\UPATH}}: \UPATH \np{\OrientedGraph} \to \VERTEX
-  %   \mtext{ and }
-  %   \Head{\Projection_{\UPATH}}: \UPATH \np{\OrientedGraph} \to \VERTEX
-  %   \eqfinp 
-  % \end{equation}  }
 \end{subequations}
 \medskip
 
@@ -654,7 +693,7 @@ binary relation~\( \relation \).
 %
 We also associate with~\( \relation \)
 the subset~\( \DeploymentInPaths{\relation}{\OrientedGraph} \)
-of~\( \UPATH\np{\OrientedGraph} \),
+of~\( \PATH\np{\OrientedGraph} \),
 that we call the \emph{deployment in paths},
 defined by 
 \begin{equation}

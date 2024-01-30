@@ -677,8 +677,7 @@ Section Lift_bijective.
   Qed.
   
   (* begin snippet Lift_inj:: no-out *) 
-  Lemma Lift_inj: forall (p q: seq T),
-      p \in D -> Lift p = Lift q -> p = q.
+  Lemma Lift_inj: forall (p q: seq T), p \in D -> Lift p = Lift q -> p = q.
   (* end snippet Lift_inj *) 
   Proof.
     rewrite /D /mkset.
@@ -703,8 +702,7 @@ Section Lift_bijective.
   Qed.
   
   (* begin snippet Lift_surj:: no-out *) 
-  Lemma Lift_surj: forall (p: seq (T*T)),
-      p \in I -> exists q, q\in D /\ (Lift q)=p. 
+  Lemma Lift_surj: forall (p: seq (T*T)), p \in I -> exists q, q\in D /\ (Lift q)=p. 
   (* end snippet Lift_surj *) 
   Proof.
     move => p H0; move: (H0);rewrite /I /mkset => /inP [H1 H2].
