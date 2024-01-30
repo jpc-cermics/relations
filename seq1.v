@@ -825,6 +825,23 @@ Section epts.
   Definition In_D (p: seq T) := 
     behead (behead (belast t p)).
 
+  Definition decomp (p: seq T) := (He_D p, In_D p, La_D p).
+  Definition comp (tr: T*(seq T)* T) := tr.1.1::(rcons tr.1.2 tr.2).
+
+  Lemma Lxx: forall (p:seq T), size(p)> 1 -> comp (decomp p) = p.
+  Proof. 
+    move => p.
+    pose proof seq_cases p as [H1 | [[x H1] | [r [x [y H1]]]]];rewrite H1 //.
+    move => _.
+    by rewrite /decomp /comp /He_D /In_D /La_D /= belast_rcons last_rcons /=.
+  Qed.
+
+  Lemma Lyy: forall (tr: T*(seq T)* T),  decomp (comp tr) = tr.
+  Proof. 
+    move => [[x p] y].
+    by rewrite /comp /decomp /In_D /La_D /He_D /=  belast_rcons last_rcons /=.
+  Qed.
+  
   Definition He_I (p: seq (T*T)) := He_D (UnLift p t).
 
   Definition La_I (p: seq (T*T)) := La_D (UnLift p t).
