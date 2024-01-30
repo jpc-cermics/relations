@@ -37,6 +37,7 @@ SNIPPETS = \
 	snippets/seq1/DI-n.tex \
 	snippets/seq1/Lift_inj-n.tex \
 	snippets/seq1/Lift_surj-n.tex \
+	snippets/seq1/Epath_gt-n.tex \
 
 
 all: allstd allplus

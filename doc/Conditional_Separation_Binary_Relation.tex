@@ -369,10 +369,10 @@ or, equivalently, if
 \( \EDGE \cap \Converse{\EDGE}=\emptyset \), that is, 
 when no two edges have the same endpoints.
 
-A graph $(\VERTEX,\EDGE)$ is given in Coq by a type \texttt{(T: Type)} and a relation on
+\coqstart A graph $(\VERTEX,\EDGE)$ is given in Coq by a type \texttt{(T: Type)} and a relation on
 \texttt{T} which is a set in the product type \texttt{set T*T}, that is
 $(\EDGE:\texttt{set T*T})$. Thus, the (classical) set definition of mathcomp
-analysis \texttt{classical\_sets.v} is used to formalize a graph.
+analysis \texttt{classical\_sets.v} is used to formalize a graph. \coqend
 \medskip
 
 In graph theory, one finds the notions of path, chain and walk. 
@@ -384,38 +384,25 @@ as what corresponds to chain path in~\citep{Lauritzen-et-al-1990}.
 \medskip
 
 \noindent $\bullet$ Definition of \emph{\EdgePath}.
-Using the notations introduced in Section~\ref{sec:sequences}, 
-the set of \emph{\EdgePath} of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$ is defined by
-\begin{equation}
-  \PATH_n\np{\OrientedGraph} =
-  \Lift \bp{ \Sequence_{n+1}(\VERTEX)} \cap \Sequence_{n}(\EDGE)
-  \eqsepv
-\end{equation}
-and satisfy $\PATH_n\np{\OrientedGraph} \subset \Sequence_{n}(\EDGE)$$ \subset \Sequence_{n}(\VERTEX{\times}\VERTEX))$.
-Moreover, it easily follows from the definition of $\PATH_n\np{\OrientedGraph}$ that we also have the followin equality
+The set of \emph{\EdgePath} of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$ is defined by
 \begin{align}
-  \PATH_\np{\OrientedGraph} %    \PATH^n\np{\graph}
+  \PATH_n \np{\OrientedGraph} %    \PATH^n\np{\graph}
   &=
     \Bset{ \bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \in \SetProd{\EDGE}{n} }
     { \head{\vertex_i}=\tail{\vertex_{i+1}} \text{ for } i\in\ic{1,n{-}1}}
     \eqfinp
 \end{align}
 The set of finite (edge) paths of length greater or equal to $n\ge1$ relative to the graph~$\npOrientedGraph$ is defined by
-\begin{align}
-  \PATH_{\ge n}\np{\OrientedGraph}
-  &=
-    \Lift\bp{ \Sequence_{\ge n+1}(\VERTEX)} \cap \Sequence_{\ge n}(\EDGE)
-    \label{def:epaths_gt1}
-    \eqfinv
-\end{align}
-and satisfy $\PATH_{\ge n}\np{\OrientedGraph} \subset \Sequence_{\ge n}(\EDGE)$$ \subset \Sequence_{\ge n}(\VERTEX{\times}\VERTEX)$
-and coincide with the set $\sqcup_{n'\ge n} \PATH_{n'}\np{\OrientedGraph}$.
+\begin{equation}
+  \PATH_{\ge n}\np{\OrientedGraph} = \sqcup_{n'\ge n} \PATH_{n'}\np{\OrientedGraph}
+  \label{def:epaths_gt1}
+  \eqfinp
+\end{equation}
 
-Using the tools introduced in Section~\ref{sec:sequences} and Equation~\eqref{def:epaths_gt1} we obtain in Coq
-the following three equivalent definitions of $P_{\ge 1}$
-%%{\small \inputsnippetsE{seq1/EPath2new.tex,seq1/EPath3new,seq1/EPath2inter}{,}}
-where \texttt{`\&`} is the set intersection as defined in \texttt{classical\_sets.v}.
-
+\coqstart Using the tools introduced in Section~\ref{sec:sequences} and Equation~\eqref{def:epaths_gt1} we obtain 
+the following formalization of $P_{> n}$
+{\small \inputsnippetsE{seq1/EPath_gt-n.tex}{,}}
+where \texttt{E} is the edge relation $\EDGE$ and where \texttt{Chrel} we defined in Section~\ref{sec:sequences}. \coqend
 \medskip
 
 The first element~$\tail{\vertex_1}$ of an \EdgePath\

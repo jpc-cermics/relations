@@ -965,8 +965,11 @@ Section seq_pairs_subsets.
   
   Variables (T: Type).
 
-  (* A relation on (T*T) (Ch for Chain) *)
-
+  (* begin snippet Epath_gt:: no-out *)  
+  Definition Epaths_gt (n: nat) (E: relation T)  := 
+    [set p | size(p) > n /\ p [\in] E /\ p [Suc\in] (@Chrel T)].
+  (* end snippet Epath_gt *)  
+  
   Definition REpaths (E: relation T) (R: relation (T*T)) := 
     [set p | p [\in] E /\ p [L\in] (@Chrel T) /\ p [L\in] R].
   
