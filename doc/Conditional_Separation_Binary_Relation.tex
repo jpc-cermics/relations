@@ -300,6 +300,11 @@ As a second example, if the elements of a sequence belong to a set $X$, then the
 elements of the lifted sequence belong to the product relation $X{\times}X$ as proved in the following lemma
 {\small \inputsnippets{seq1/Rpath_L1-n.tex}}
 
+\paragraph{$\bullet$ \texttt{Lift} bijection.} The Lift operation when restricted to the subset \texttt{D} is bijective
+onto its image \texttt{I}
+{\small \inputsnippets{seq1/DI.tex,seq1/Lift_inj-n.tex,seq1/Lift_surj-n.tex}}
+The inverse of \texttt{Lift} is obtained with the recursive mapping \texttt{UnLift}. 
+
 \paragraph{$\bullet$ (\texttt{seq T}) and (\texttt{seq (T*T)}).}
 XXXX four equivalent ways -- two are
 expressed as image of set and two as preimage of set -- of representing sequences
@@ -314,8 +319,6 @@ The Lift operator satisfy the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{
   type polymorphism}
 proved in Coq in Lemma \texttt{Lift\_lemma}
 {\small \inputsnippets{seq1/Lift_lemma}}
-
-\paragraph{$\bullet$ XXX}
 
 \subsubsection{Extended-oriented paths in a (directed simple) graph (permitting loops)}
 

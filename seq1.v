@@ -636,8 +636,10 @@ Section Lift_bijective.
     by rewrite 3!Lift_c allset_cons -Lift_c;split;[ |apply Hr].
   Qed.
 
+  (* begin snippet DI:: no-out *)  
   Definition D := [set p:seq T | size(p) > 1].
   Definition I := [set p:seq (T*T) | size(p) > 0 /\ p [Suc\in] Chrel].
+  (* end snippet DI *)
   
   Lemma Lift_image: forall (p: seq T),
       p \in D -> (Lift p) \in I.
@@ -645,7 +647,7 @@ Section Lift_bijective.
     rewrite /D /I /mkset; move => p /inP H1;rewrite inP Lift_sz2.
     by split;[ | rewrite -RPath_equiv;apply Lift_Lift].
   Qed.
-  
+
   Lemma UnLift_image: forall (p: seq (T*T)),
       p \in I -> (forall (z:T), (UnLift p z) \in D).
   Proof.
@@ -674,8 +676,10 @@ Section Lift_bijective.
     by have -> : y=x' by [].
   Qed.
   
+  (* begin snippet Lift_inj:: no-out *) 
   Lemma Lift_inj: forall (p q: seq T),
       p \in D -> Lift p = Lift q -> p = q.
+  (* end snippet Lift_inj *) 
   Proof.
     rewrite /D /mkset.
     move => p q /inP H1 H2.
@@ -698,8 +702,10 @@ Section Lift_bijective.
     by rewrite -H5 -H6 H4.
   Qed.
   
+  (* begin snippet Lift_surj:: no-out *) 
   Lemma Lift_surj: forall (p: seq (T*T)),
       p \in I -> exists q, q\in D /\ (Lift q)=p. 
+  (* end snippet Lift_surj *) 
   Proof.
     move => p H0; move: (H0);rewrite /I /mkset => /inP [H1 H2].
     pose proof (seq_c H1) as [_ [[x _] _]].
