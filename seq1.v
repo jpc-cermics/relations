@@ -865,29 +865,39 @@ Section epts.
   Qed.
   
   (* begin snippet D_P:: no-out *)  
-  Definition D_P (R E: relation T) (x y:T) := 
-    [set p | size(p) > 0 /\ (decompE p).1 = (x,y) /\ R (x,y) /\ p [\in] E /\ p [Suc\in] (@Chrel T)].
+  Definition D_P (R E: relation T):= 
+    [set spt | size(spt) > 0 /\ R (decompE spt).1 /\ spt [\in] E /\ spt [Suc\in] (@Chrel T)].
   (* end snippet D_P *)  
 
+  (* begin snippet D_P1:: no-out *)  
+  Definition D_P1 (x y: T) (E: relation T):= D_P [set (x,y)] E.
+  (* end snippet D_P1 *)  
+
   (* begin snippet D_V:: no-out *)  
-  Definition D_V (R E: relation T) (x y:T):= 
-    [set p | size(p) > 1 /\ (decomp p).1 = (x,y) /\  R (x,y) /\ p [Suc\in] E ].
+  Definition D_V (R E: relation T) := 
+    [set st | size(st) > 1 /\ R (decomp st).1 /\ st [Suc\in] E ].
   (* end snippet D_V *)  
 
+  (* begin snippet D_V1:: no-out *)  
+  Definition D_V1 (x y:T) (E: relation T) := D_V [set (x,y)] E.
+  (* end snippet D_V1 *)  
+  
   (* begin snippet DP_DV:: no-out *)  
-  Lemma DP_DV: forall  (R E: relation T) (x y:T),
-      image (D_V R E x y)  (@Lift T) = (D_P R E x y).
+  Lemma DP_DV: forall  (R E: relation T),
+      image (D_V R E)  (@Lift T) = (D_P R E).
   (* end snippet DP_DV:: no-out *)  
   Proof.
-    move => R E x y.
+    move => R E.
     rewrite /D_V /D_P /mkset predeqE => q.
-    split => [ [p [H1 [H2 [H3 H4]]] <-] | [H1 [H2 [H3 [H4 H5]]]]].
-    - move: (H1) => /Lift_sz2 H1'.
+    split. 
+    - move => [p [H1 [H2 H3]] <-].
+      move: (H1) => /Lift_sz2 H1'.
       rewrite /decompE.
       have -> : (UnLift (Lift p) t) = p by apply UnLift_left. 
       rewrite RPath_equiv.
       by pose proof Lift_Suc p as H5.
-    - have H6 : Lift (UnLift q t) = q  by apply Lift_UnLift;rewrite inP /I. 
+    - move => [H1 [H2 [H3 H4]]].
+      have H6 : Lift (UnLift q t) = q  by apply Lift_UnLift;rewrite inP /I. 
       have H7: 1 < size (UnLift q t) by rewrite -H6 Lift_sz2 in H1.
       rewrite -H6 /=.
       by exists (UnLift q t);[rewrite -RPath_equiv H6|]. 
