@@ -216,23 +216,24 @@ A \emph{partial equivalence relation} is a symmetric and transitive binary
 relation (generally denoted by~$\sim$ or~$\equiv$).
 An \emph{equivalence relation} is a reflexive, symmetric and transitive binary
 relation.
+\bigskip
 
 \coqstart
-Relations are implemented as sets on a product space using the classical sets implemented in
+Binary relations are implemented as sets on a product space using the classical sets implemented in
 \texttt{classical\_sets.v} from the Coq mathcomp library~\cite{MathComp:2022}
 using ssreflect tactics~\cite{Gonthier-Mahboubi-Tassi:2016} 
 \inputsnippetsE{ssrel/relation.tex}{.}
 As described in more details below, we have developed a library for relations taking into account all the
-definitions recalled at the begining of this section.\coqend
+definitions recalled at the beginning of this section.\coqend
 
 % ,ssrel/clos_refl_trans.tex,ssrel/clos_rt.tex}
 \subsection{Sequences sets and relations}
 \label{sec:sequences}
 \newcommand{\fullset}{T}
 
-To formalize graph paths we use sequences (as defined in mathcomp
+To formalize graph paths, we use sequences (as defined in mathcomp
 \texttt{seq.v}) combined with set formalization (defined in mathcomp
-\texttt{classical\_sets}). To describe the formalization we start by introducing some
+\texttt{classical\_sets}). To describe the formalization, we start by introducing some
 notations.
 
 \paragraph{$\bullet$ \protect\pinX.} We consider a set $\fullset$, and for any set ${\Set} \subset \fullset$ and $n\in \NN$,
@@ -240,24 +241,23 @@ we denote by
 $\Sequence_n(\Set)$ the set of sequences of length $n$ of elements of the
 set~$\Set$, $\Sequence_n(\Set)= \SetProd{\Set}{n}$ ($\Sequence_0(\Set)$ being the singleton set with the empty sequence) and by
 $\Sequence_{\ge n}(\Set)$ the set of finite sequences of length greater or equal
-to $n$ of elements of the set $\Set$, that is the disjoint union
-$\sqcup_{k\ge n} \Sequence_k(\Set)$. The set $\Sequence_{\ge 0}(\Set)$ will be denoted by $\Sequence(\Set)$.
+to $n$ of elements of the set $\Set$, that is, the disjoint union
+$\sqcup_{k\ge n} \Sequence_k(\Set)$. The largest set $\Sequence_{\ge 0}(\Set)$ will be denoted by $\Sequence(\Set)$.
 \medskip
 
 \coqstart The sets $\Sequence_{\ge n}(\fullset)$ and $\Sequence_{n}(\fullset)$ are
 formalized in Coq in the mathcomp library as sequences of elements of type
 \texttt{T} and the restriction to elements in a subset \texttt{(\PY{n+nv}{D}:
-  set T)} is obtained using the function \texttt{all} (in mathcomp
- mathcomp library\texttt{seq.v}).  As an example $\Sequence_{n}(D)$ is implemented as follows
-{\small \inputsnippets{seq1/all_notation-n.tex,seq1/Sn-n.tex}}\coqend
+  set T)} is obtained using the function \texttt{all} (in mathcomp mathcomp
+library\texttt{seq.v}).  As an example, the set $\Sequence_{n}(D)$ is
+implemented as follows {\small \inputsnippets{seq1/all_notation-n.tex,seq1/Sn-n.tex}}\coqend
 
 \paragraph{$\bullet$ (\protect\Liftp) and (\protect\Liftpin).} Then, we define a lift operator
+\mdl{motivation} 
 \[ \Lift: \Sequence(\fullset) \to \Sequence(\fullset{\times}\fullset)
-  \eqfinv\] such that, for all $n \ge 2$, the restriction of the operator
-$\Lift$ to the set $\Sequence_{n}(\fullset)$ coincide with the
+  \eqfinv\] such that, i) for all $n \ge 2$, the restriction of the operator
+$\Lift$ to the set $\Sequence_{n}(\fullset)$ coincides with the
 mapping \(\Lift_n: \Sequence_{n}(\fullset)\to \Sequence_{n{-}1}(\fullset{\times}\fullset)\)
-transforming a sequence of elements of $\fullset$ of length $n$
-into a sequence of oriented pairs in $\fullset{\times}\fullset$ of length $n{-}1$
 \begin{align}
   \forall (\vertex_1,\dots, \vertex_n)\in \SetProd{\fullset}{n}
   \eqsepv
@@ -265,12 +265,14 @@ into a sequence of oriented pairs in $\fullset{\times}\fullset$ of length $n{-}1
   \np{\vertex_{n-1},\vertex_n}}
   \eqfinv
 \end{align}
-and the restriction of the operator $\Lift$ on
+transforming a sequence of elements of $\fullset$ of length $n$
+into a sequence of oriented pairs in $\fullset{\times}\fullset$ of length $n{-}1$
+and ii) the restriction of the operator $\Lift$ on
 $\Sequence_{0}(\fullset) \cup\Sequence_{1}(\fullset)$ is the constant mapping giving the empty list on $\fullset{\times}\fullset$.
 
 \coqstart The lift operator $\Lift$ is implemented in Coq as a recursive mapping
-denoted \texttt{Lift}: {\small \inputsnippetsE{seq1/Lift.tex}{.} } We note that
-thanks to Coq polymorphism the Lift mapping is parameterized by a type and thus
+denoted \texttt{Lift}: {\small \inputsnippetsE{seq1/Lift.tex}{.} } We note that,
+thanks to Coq polymorphism, the lift mapping is parameterized by a type and thus
 can be used to lift a sequence of vertices into a sequences of edges but also to
 lift sequence of edges (in $\fullset\times\fullset$) into a sequence of pair of
 edges.  \coqend
@@ -279,17 +281,17 @@ The notation $\protect\Liftpin$ is used to denote the
 expression {\PY{n}{(Lift p)}~\PY{o}{$[{\in}]$}~\PY{n}{R}}.
 
 \paragraph{$\bullet$ \protect\pSucR.} We must be able to check that successive elements of a
-sequence whose elements are in $\fullset$ belong to a subset of
-$\fullset{\times}\fullset$, that is satisfy a relation on $\fullset$.
+sequence whose elements are in $\fullset$ belong to a given subset $R$ of
+$\fullset{\times}\fullset$, that is, satisfy a relation $R$ on $\fullset$.
 
 \coqstart This is easily implemented
 with the help of an inductive predicate (\texttt{RPath} in \texttt{seq1.v})
 {\small \inputsnippetsE{seq1/RPath.tex}{,}}
 \noindent that we do not detail here as we prove that it can be equivalently implemented with the Lift mapping
-(which enable more computational proofs) as we have
+(which enables more computational proofs) as we have
 {\small \inputsnippets{seq1/RPath_equiv-n.tex}}\coqend
 
-As a first example, consider the
+As a first example, consider the (chain) 
 relation $C_{\textsc{H}}$ -- denoted by \texttt{Chrel} in Coq -- on the product set
 $T{\times}T$ defined by $((v_1, v_2)\, C_{\textsc{H}}\, (v_3, v_4) \iff v_2 = v_3)$,
 {\small \inputsnippetsE{seq1/Chrel}{.}}
@@ -300,25 +302,25 @@ As a second example, if the elements of a sequence belong to a set $X$, then the
 elements of the lifted sequence belong to the product relation $X{\times}X$ as proved in the following lemma
 {\small \inputsnippets{seq1/Rpath_L1-n.tex}}
 
-\paragraph{$\bullet$ \texttt{Lift} bijection.} The Lift operation when restricted to the subset \texttt{D} is bijective
-onto its image \texttt{I}
+\paragraph{$\bullet$ \texttt{Lift} bijection.} The lift operation, when restricted to the subset \texttt{D} defined below,
+is bijective onto its image \texttt{I}
 {\small \inputsnippets{seq1/DI-n.tex,seq1/Lift_inj-n.tex,seq1/Lift_surj-n.tex}}
 The inverse of \texttt{Lift} is obtained with the recursive mapping \texttt{UnLift} (not detailed here). 
 
-\paragraph{$\bullet$ (\texttt{seq T}) and (\texttt{seq (T*T)}).}
-XXXX INUTILE ? four equivalent ways -- two are
-expressed as image of set and two as preimage of set -- of representing sequences
-of pairs of elements of $T$ such that successive pairs satisfy the
-$C_{\textsc{H}}$ relation. We obtain that \texttt{(Im 2) = (Im1 2) = (Pre 0) =
-  (Pre1 1)}, where the four paths sets are defined by {\small
-  \inputsnippets{seq1/Lift_lemma2-n.tex}}
+% \paragraph{$\bullet$ (\texttt{seq T}) and (\texttt{seq (T*T)}).}
+% XXXX INUTILE ? four equivalent ways -- two are
+% expressed as image of set and two as preimage of set -- of representing sequences
+% of pairs of elements of $T$ such that successive pairs satisfy the
+% $C_{\textsc{H}}$ relation. We obtain that \texttt{(Im 2) = (Im1 2) = (Pre 0) =
+%   (Pre1 1)}, where the four paths sets are defined by {\small
+%   \inputsnippets{seq1/Lift_lemma2-n.tex}}
 
-The Lift operator satisfy the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{ \Sequence(\texttt{Chrel})}$\footnote{%
-  Note that mathematically, two different Lift operators appear in this equation as their domain is not the same.
-  Nevertheless, we use the same notation as in Coq they are implemented with the same \texttt{List} function using
-  type polymorphism}
-proved in Coq in Lemma \texttt{Lift\_lemma}
-{\small \inputsnippets{seq1/Lift_lemma}}
+% The Lift operator satisfy the equality $\Lift\bp{\Sequence(T)}= \Lift^{(-1)}\bp{ \Sequence(\texttt{Chrel})}$\footnote{%
+%   Note that, mathematically, two different Lift operators appear in this equation as their domain is not the same.
+%   Nevertheless, we use the same notation as, in Coq, they are implemented with the same \texttt{List} function using
+%   type polymorphism.}
+% proved in Coq in Lemma \texttt{Lift\_lemma}
+% {\small \inputsnippets{seq1/Lift_lemma}}
 
 \subsubsection{Edge paths in a (directed simple) graph (permitting loops)}
 
@@ -344,8 +346,8 @@ loops are not excluded (since we do not impose $\Delta \cap \EDGE=\emptyset$).
 Hence, what we call a graph would be called a directed simple graph permitting
 loops in graph theory. 
 
-To define blocked and active \undirectedEdgePaths\ relative to the
-graph~\( \npOrientedGraph \), we need to fix additional vocabulary and
+To define blocked and active \undirectedEdgePaths\ -- an essential notion in causal inference --
+relative to the graph~\( \npOrientedGraph \), we need to fix additional vocabulary and
 notation.
 In the graph~$(\VERTEX,\EDGE)$, 
 the \emph{undirected edges} are the elements of $\EDGE \cap \Converse{\EDGE}$
@@ -368,6 +370,7 @@ all edges are directed edges,
 or, equivalently, if 
 \( \EDGE \cap \Converse{\EDGE}=\emptyset \), that is, 
 when no two edges have the same endpoints.
+\medskip
 
 \coqstart A graph $(\VERTEX,\EDGE)$ is given in Coq by a type \texttt{(T: Type)}
 and a relation on \texttt{T} which is a set in the product type \texttt{set
@@ -384,7 +387,8 @@ We also define an \undirectedEdgePath\ in $(\VERTEX,\EDGE)$ (in our sense)
 as what corresponds to chain path in~\citep{Lauritzen-et-al-1990}.
 
 \paragraph{$\bullet$ Definition of \emph{\EdgePath}.}
-The set of \emph{\EdgePath} of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$ is defined by
+The set of \emph{\EdgePath s} of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$ is defined by
+\begin{subequations}
 \begin{align}
   \PATH_n \np{\OrientedGraph} %    \PATH^n\np{\graph}
   &=
@@ -399,12 +403,16 @@ The set of finite (edge) paths of length greater than $n\ge1$ relative to the gr
   \label{def:epaths_gt1}
   \eqfinp
 \end{equation}
-
-\coqstart Using the tools introduced in Section~\ref{sec:sequences} and Equations~\eqref{def:epaths_gt1_}-\eqref{def:epaths_gt1} we obtain 
+\label{def:epaths_defs}
+\end{subequations}
+  
+\coqstart Using the tools introduced in \S\ref{sec:sequences} and Equations~\eqref{def:epaths_defs} we obtain 
 the following formalization of $\PATH_{> n}$
 {\small \inputsnippetsE{seq1/EPath_gt-n.tex}{,}}
-\noindent where \texttt{E} is the edge relation $\EDGE$ and where \texttt{Chrel} we defined in Section~\ref{sec:sequences}. \coqend
+\noindent where \texttt{E} is the edge relation $\EDGE$ and where \texttt{Chrel}
+we defined in Section~\ref{sec:sequences}. \coqend
 
+\medskip
 We denote by $\cardinal{\path}$ the length of a path $\path \in
 \PATH\np{\OrientedGraph}$ (computed in Coq by the mapping \texttt{size}).
 An \emph{\EdgeSubPath} of the \EdgePath~$\path$ is an \EdgePath\ obtained by a
@@ -417,10 +425,10 @@ subsequence of consecutive indices.
 in Coq) and head (obtained with function \texttt{last} in Coq) are called
 \emph{endpoints} of the \EdgePath. 
 
- We denote by \( \Projection^n: \PATH^n \np{\OrientedGraph}
+ We denote by \( \Projection^n: \PATH_n \np{\OrientedGraph}
 \to\VERTEX\times\VERTEX \) the \emph{projection
   on the tail and head endpoints} of an \EdgePath\ of length~$n$.
-It is defined, for \( \path\in\PATH^n\np{\OrientedGraph}\), by 
+It is defined, for \( \path\in\PATH_n\np{\OrientedGraph}\), by 
 \(\Projection^n\np{\path}=
 \Projection^n\np{(\tail{\vertex_i},\head{\vertex_i})_{i\in\ic{1,n}}} 
 = \np{\tail{\vertex_1},\head{\vertex_{n}}}\).
@@ -449,11 +457,12 @@ the projection mapping on the tail and head endpoints defined by
 \coqstart The endpoints are obtained in Coq by the mapping \texttt{Pe} for a sequence of vertices and by the mapping 
 \texttt{Epe} for a sequence of edges
 {\small \inputsnippets{seq1/Pe-n.tex,seq1/Epe-n.tex}}\coqend
-\paragraph{$\bullet$ Transitive closure and edge paths.} As a first result linking (edge) paths and relations we can prove that 
-{\small \inputsnippetsE{erel3/TCP-n.tex}{,}
-which asserts that two nodes \texttt{(v1,v2)} are in relation through the transitive closure of a relation 
-\texttt{S}, that is \texttt{(v1,v2) $\in$ S.+} if and only if 
-there exists an edge path with endpoints \texttt{(v1,v2)} in the graph $(T,S)$.
+\paragraph{$\bullet$ Transitive closure and edge paths.} As a first result linking
+(edge) paths and relations we prove that {\small
+  \inputsnippetsE{erel3/TCP-n.tex}{,} which asserts that two nodes
+  \texttt{(v1,v2)} are in relation through the transitive closure of a
+  relation~\texttt{E}, that is \texttt{(v1,v2) $\in$ E.+} if and only if there
+  exists an edge path with endpoints \texttt{(v1,v2)} in the graph~$(\VERTEX,\EDGE)$.
 
 \paragraph{$\bullet$ Deployment in paths.}
 Now, with any binary relation \( \relation \subset \VERTEX{\times}\VERTEX \),
@@ -477,15 +486,15 @@ binary relation~\( \relation \).
 
 \coqstart {\small \inputsnippets{seq1/D_P-n.tex}} 
 It is to be noted that the deployment in paths may be obtained as the image by the Lift mapping of a
-subset of sequences of vertices:
+subset of sequences of vertices as follows
 {\small \inputsnippets{seq1/D_V-n.tex,seq1/DP_DV-n.tex}}
 When an edge path of length greater or equal
-to one is given as a Lifted sequence of elements of $T$
-as for example in \texttt{\PY{n}{Lift}~\PY{o}{(}\PY{n}{x}\PY{o}{::(}\PY{n}{rcons}~\PY{n}{p}~\PY{n}{y}\PY{o}{))}~\PY{o}{=}~\PY{n}{sp}\PY{o}{.}} the endpoints \texttt{(x,y)} and the
-intermediate nodes \texttt{p} of the \EdgePath\ \texttt{sp} are immediately obtained.\coqend
+to one is given as a lifted sequence of elements of~$T$
+(as for example in \texttt{\PY{n}{Lift}~\PY{o}{(}\PY{n}{x}\PY{o}{::(}\PY{n}{rcons}~\PY{n}{p}~\PY{n}{y}\PY{o}{))}~\PY{o}{=}~\PY{n}{st}\PY{o}{.}}), the endpoints \texttt{(x,y)} and the
+intermediate nodes \texttt{p} of the \EdgePath\ \texttt{st} are immediately obtained.\coqend
 \subsubsection{Extended-oriented paths in a (directed simple) graph (permitting loops)}
 
-To define \emph{\undirectedEdgePath}, we consider a finite set ${\Orientation}=\na{-1,+1}$
+To define \emph{\undirectedEdgePath s}, we consider a finite set ${\Orientation}=\na{-1,+1}$
 taking two possible values and implemented in Coq a an inductive type taking two
 values \texttt{N} (for $-1$) and \texttt{P} (for $1$)
 {\small \inputsnippetsE{seq1/O.tex}{,}}
@@ -516,8 +525,8 @@ The set of finite \undirectedEdgePaths%
 \footnote{%
   It is to be noted that an \undirectedEdgePath\ is \emph{not a path in the graph
     $\npOrientedGraph$}, neither in the undirected graph $\npUnorientedGraph$.
-  However, considering a couple $(\path,\orient)\in \UPATH^n\np{\OrientedGraph}$, we obtain that
-  $\path \in \PATH^n\np{\UnorientedGraph}$,
+  However, considering a couple $(\path,\orient)\in \UPATH_n\np{\OrientedGraph}$, we obtain that
+  $\path \in \PATH_n\np{\UnorientedGraph}$,
   that is, $\path$ is an (edge) path in the unoriented graph
   \( \npUnorientedGraph \).
   We thus obtain a natural surjection
@@ -541,8 +550,8 @@ The set of finite \undirectedEdgePaths%
   \end{equation}
   \label{eq:eopaths_defs}
   \end{subequations}
-  \coqstart Using the tools introduced in Section~\ref{sec:sequences} and
-  Equations~\eqref{def:eopaths_defs} we obtain the following formalization of
+  \coqstart Using the tools introduced in \S\ref{sec:sequences} and
+  Equations~\eqref{eq:eopaths_defs} we obtain the following formalization of
   $\UPATH_{> n}$ {\small
     \inputsnippetsE{erel3/U_gt-n.tex,erel3/Oedge-n.tex,erel3/ChrelO-n.tex}{,}}
 \noindent where \texttt{Oede E} is used to formalize the $\EDGEo$ subset and where \texttt{ChrelO} is the chain relation on 
@@ -552,7 +561,7 @@ An \emph{\undirectedEdgeSubPath} of the \undirectedEdgePath~$\UndirectedPath
 \in\UPATH\np{\OrientedGraph}$ is an \undirectedEdgePath\ obtained by a
 subsequence of consecutive indices. 
 
-\paragraph{parler de U construit comme image avec LiftO}
+\paragraph{ZZZZZ parler de U construit comme image avec LiftO}
 \coqstart The coq formalization of \undirectedEdgePaths\ paths of size greater or equal to
 one follows the same path as the one used for (edge) paths except that we use
 the oriented lift operator defined in Equation~\eqref{def:Lifto} implemented as 
@@ -586,36 +595,8 @@ $n \ge 2$ the restriction of $\Lifto$ to the set
 $\Sequence_{n}(\fullset){\times}\Sequence_{n-1}(\Orientation)$ coincide with
 $\Lifto_n$.
 
-
-\noindent $\bullet$ 
-We denote by \( \Projection^n: \PATH^n \np{\OrientedGraph}
-\to\VERTEX\times\VERTEX \) the \emph{projection
-  on the tail and head endpoints} of an \EdgePath\ of length~$n$.
-It is defined, for \( \path\in\PATH^n\np{\OrientedGraph}\), by 
-\(\Projection^n\np{\path}=
-\Projection^n\np{(\tail{\vertex_i},\head{\vertex_i})_{i\in\ic{1,n}}} 
-= \np{\tail{\vertex_1},\head{\vertex_{n}}}\).
-We denote by \( \Projection: \PATH \np{\OrientedGraph} \to \VERTEX\times\VERTEX \) 
-the projection mapping on the tail and head endpoints defined by
-\begin{subequations}
-  \begin{equation}
-    \forall \path\in \PATH\np{\OrientedGraph}
-    \eqsepv
-    \Projection\np{\path} = \Projection^{\cardinal{\path}}\np{\path} \in \VERTEX\times\VERTEX 
-    \eqfinp
-    \label{ZZeq:Projection_PATH}
-  \end{equation}
-  We also distinguish the tail and the head endpoints projection mappings by
-  \begin{equation}
-    \Projection=\np{\Tail{\Projection},\Head{\Projection}}
-    \mtext{ where }
-    \Tail{\Projection}: \PATH \np{\OrientedGraph} \to \VERTEX
-    \mtext{ and }
-    \Head{\Projection}: \PATH \np{\OrientedGraph} \to \VERTEX
-    \eqfinp 
-    \label{ZZeq:Projection_PATH_first_and_last}
-  \end{equation}  
-  We use the notation \( \Projection_{\UPATH}: \UPATH \np{\OrientedGraph} \to\VERTEX\times\VERTEX \) 
+\paragraph{$\bullet$ endpoints} ZZZZZ
+We use the notation \( \Projection_{\UPATH}: \UPATH \np{\OrientedGraph} \to\VERTEX\times\VERTEX \) 
   to denote the projection mappings on the tail and head endpoints of an \undirectedEdgePath. 
   It is defined, for $\np{\path,\orient}\in \UPATH\np{\OrientedGraph}$, by 
   \begin{equation}
@@ -625,16 +606,16 @@ the projection mapping on the tail and head endpoints defined by
     \eqfinp
     \label{ZZeq:Projection}
   \end{equation}
-\end{subequations}
 \medskip
 
 \ifpreprint 
-\noindent $\bullet$ We denote by \( \Internals^n: \PATH^n \np{\OrientedGraph}
-\rightrightarrows\VERTEX \) the set-valued mapping giving the 
-\emph{intermediate vertices} of an \EdgePath\ of length~$n$ ($n\ge 0$).
-It is defined, for %\( \path=\sequence{\tail{\vertex_i},\head{\vertex_i}}{i\in\ic{1,n}}
-\( \path=\sequence{\vertex_i,\vertex_{i+1}}{i\in\ic{1,n}}
-\in\PATH^n\np{\OrientedGraph}\) in~\eqref{eq:PATHOrientedGraph}, by
+  \noindent $\bullet$ We denote by
+  \( \Internals^n: \PATH_n \np{\OrientedGraph} \rightrightarrows\VERTEX \) the set-valued
+  mapping giving the \emph{intermediate vertices} of an \EdgePath\ of length~$n$
+  ($n\ge 0$).  It is defined,
+  for %\( \path=\sequence{\tail{\vertex_i},\head{\vertex_i}}{i\in\ic{1,n}}
+  \( \path=\sequence{\vertex_i,\vertex_{i+1}}{i\in\ic{1,n}}
+  \in\PATH_n\np{\OrientedGraph}\) in~\eqref{eq:PATHOrientedGraph}, by
 \begin{subequations}
   \begin{equation}
     \Internals^n\np{\path}=
@@ -976,14 +957,14 @@ For the purpose of characterizing the conditional directional separation relatio
   \implies
   \bgent {\ConditionalActive} \cgent \).
   For this purpose, we assume that there exists an \undirectedEdgePath\
-  \( \UndirectedPath \in \UPATH^{n}\np{\graph} \)
+  \( \UndirectedPath \in \UPATH_{n}\np{\graph} \)
   joining the two vertices~$\bgent$ and $\cgent$ and such that \( \UndirectedPath
   \) is active.
   We are going to prove that $\bgent \ConditionalActive\cgent$.
   
   If the path length of~\( \UndirectedPath \) is smaller or equal to one, then,
   by definition~\eqref{eq:undirected_(edge)_paths_of_length_n} of
-  $\UPATH^{1}\np{\OrientedGraph}$, we necessarily have that
+  $\UPATH_{1}\np{\OrientedGraph}$, we necessarily have that
   either $\bgent \Precedence\cgent$, or $\bgent \Converse{\Precedence}\cgent$,
   or $\bgent \Delta\cgent$.
   Now, as \( \Precedence \subset \ConditionalAscendent \subset
@@ -1421,10 +1402,10 @@ reconcatenating.
 For this purpose, we need notation. 
 
 % \noindent $\bullet$ 
-We denote by \( \Tail{\ProjectionUndirectedPath}: \UPATH\np{\OrientedGraph} \to \UPATH^{1}\np{\OrientedGraph} \) 
-(resp. \( \Head{\ProjectionUndirectedPath}: \UPATH\np{\OrientedGraph} \to \UPATH^{1}\np{\OrientedGraph} \)
+We denote by \( \Tail{\ProjectionUndirectedPath}: \UPATH\np{\OrientedGraph} \to \UPATH_{1}\np{\OrientedGraph} \) 
+(resp. \( \Head{\ProjectionUndirectedPath}: \UPATH\np{\OrientedGraph} \to \UPATH_{1}\np{\OrientedGraph} \)
 the projection on the tail (resp. head) endpoint of an \undirectedEdgePath,
-defined, for \(\np{\path,\orient}\in\UPATH^n\np{\OrientedGraph}\) and $n\ge 1$, by 
+defined, for \(\np{\path,\orient}\in\UPATH_n\np{\OrientedGraph}\) and $n\ge 1$, by 
 \begin{subequations}
   \label{eq:ProjectionUndirectedPath}
   \begin{align}
@@ -2799,7 +2780,7 @@ of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
 
   Suppose that \( \bgent\Delta_{\TransitiveReflexiveClosureOfSet{\AgentSubsetW}}\cgent \).
   Then \( \bgent=\cgent \), and thus the \undirectedEdgePath\ 
-  \( \UndirectedPath = \bp{\np{\bgent,\cgent}, +1} \in \UPATH^0\np{\OrientedGraph} \) is active as
+  \( \UndirectedPath = \bp{\np{\bgent,\cgent}, +1} \in \UPATH_0\np{\OrientedGraph} \) is active as
   any \undirectedEdgePath\ of length~0 or 1 is active by
   Definition~\ref{de:ActivePaths}
   and by~\eqref{eq:undirectedEdgePaths_of_length0or1}. 
@@ -3425,7 +3406,7 @@ Theorem~\ref{th:ConditionalDirectionalSeparation_IFF_relation}.
   % be fixed. We say that
   % the induction assumption ${\mathbb H}'_n$ is satisfied by $(\bgent,\cgent)$ if
   For any
-  \undirectedEdgePath\ \( \UndirectedPath = \np{\path,\orient} \in \UPATH^{n}\np{\graph} \) of length~$n$
+  \undirectedEdgePath\ \( \UndirectedPath = \np{\path,\orient} \in \UPATH_{n}\np{\graph} \) of length~$n$
   joining two vertices~$\bgent$ and $\cgent$ (that is,
   \( \BoundaryU{\na{\UndirectedPath}}{\graph}=\na{ \np{\bgent,\cgent} } \) as in~\eqref{eq:BoundaryU}), and
   such that \( \UndirectedPath \) is active (that is,
@@ -3456,7 +3437,7 @@ Theorem~\ref{th:ConditionalDirectionalSeparation_IFF_relation}.
   which is active, that is, by definition~\eqref{eq:BoundaryU} of the
   endpoint relation~\( \BoundaryU{\SubsetPath}{\OrientedGraph} \) on~$\VERTEX$, 
   \begin{equation*}
-    \UndirectedPath \in \UPATH^{2}\np{\graph}
+    \UndirectedPath \in \UPATH_{2}\np{\graph}
     \text{ and }
     \BoundaryU{\na{\UndirectedPath}}{\graph}=\na{ \np{\bgent,\cgent} }
     \text{ and }
@@ -3507,7 +3488,7 @@ Theorem~\ref{th:ConditionalDirectionalSeparation_IFF_relation}.
   joining two vertices $\bgent$ and $\cgent$ in the graph~$(\graph)$, and 
   which is active, that is, 
   \begin{equation*}
-    \UndirectedPath \in \UPATH^{n}\np{\graph}
+    \UndirectedPath \in \UPATH_{n}\np{\graph}
     \text{ and }
     \BoundaryU{\na{\UndirectedPath}}{\graph}=\na{ \np{\bgent,\cgent} }
     \text{ and }
@@ -3525,10 +3506,10 @@ Theorem~\ref{th:ConditionalDirectionalSeparation_IFF_relation}.
   \(
   \UndirectedPath_{n{-}1}=\bp{\nseqp{(\tail{\vertex_i},\head{\vertex_i})}{i \in
       \ic{1,n{-}1}},\nseqp{\orient_i}{i \in \ic{1,n{-}1}}}
-  \in \UPATH^{n{-}1}\np{\graph}
+  \in \UPATH_{n{-}1}\np{\graph}
   \)
   is an \undirectedEdgePath\ of length~$n{-}1$,
-  and where $\overline{\UndirectedPath}=\bp{\np{\tail{\vertex_n},\head{\vertex_n}}, \orient_{n}}\in \UPATH^{1}\np{\graph}$
+  and where $\overline{\UndirectedPath}=\bp{\np{\tail{\vertex_n},\head{\vertex_n}}, \orient_{n}}\in \UPATH_{1}\np{\graph}$
   is an \undirectedEdgePath\ of length~$1$.
   We have that \( \tail{\vertex_1}=\bgent \) and \( \head{\vertex_n}=\cgent \).
   It is clear that the \undirectedEdgePath~$\UndirectedPath_{n{-}1}$ is active, 
