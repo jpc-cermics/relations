@@ -43,7 +43,8 @@ SNIPPETS = \
 	snippets/seq1/DP_DV-n.tex \
 	snippets/seq1/Pe-n.tex \
 	snippets/seq1/Epe-n.tex \
-
+	snippets/erel3/U_gt-n.tex \
+	snippets/erel3/ChrelO-n.tex \
 
 all: allstd allplus
 

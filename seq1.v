@@ -881,8 +881,7 @@ Section epts.
   (* end snippet D_P1 *)  
 
   (* begin snippet D_V:: no-out *)  
-  Definition D_V (R E: relation T) := 
-    [set st | size(st) > 1 /\ R (Pe st) /\ st [Suc\in] E ].
+  Definition D_V (R E: relation T):=[set st| size(st)>1 /\R (Pe st) /\st [Suc\in] E].
   (* end snippet D_V *)  
   
   (* begin snippet D_V1:: no-out *)  
@@ -890,8 +889,7 @@ Section epts.
   (* end snippet D_V1 *)  
   
   (* begin snippet DP_DV:: no-out *)  
-  Lemma DP_DV: forall  (R E: relation T),
-      image (D_V R E)  (@Lift T) = (D_P R E).
+  Lemma DP_DV: forall  (R E: relation T), image (D_V R E) (@Lift T) = (D_P R E).
   (* end snippet DP_DV:: no-out *)  
   Proof.
     move => R E.
@@ -1000,7 +998,7 @@ Section seq_pairs_subsets.
   Variables (T: Type).
 
   (* begin snippet Epath_gt:: no-out *)  
-  Definition Epaths_gt (n: nat) (E: relation T)  := 
+  Definition P_gt (n: nat) (E: relation T)  := 
     [set spt | size(spt) > n /\ spt [\in] E /\ spt [Suc\in] (@Chrel T)].
   (* end snippet Epath_gt *)  
   

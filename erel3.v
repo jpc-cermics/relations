@@ -118,9 +118,9 @@ Section LiftO3.
   Proof.
     by move => E x y; elim. 
   Qed.
-  
+  (* begin snippet ChrelO:: no-out *)  
   Definition ChrelO := [set ppa: (T*T*O)*(T*T*O) | (ppa.1.1).2 = (ppa.2.1).1].
-  
+  (* end snippet ChrelO *)  
   Lemma ChrelO_as_Prel: ChrelO = Prel (@Chrel T).
   Proof. by []. Qed.
   
@@ -231,6 +231,11 @@ Section LiftO3.
     move => sto [p [so [H1 [H2 <-]]]].
     by apply Lift_LiftO.
   Qed.
+
+  (* begin snippet U_gt:: no-out *) 
+  Definition U_gt (n: nat) (E: relation T):=
+    [set sto | sto [\in] (Oedge E) /\ size(sto) > n /\ (Lift sto) [\in] ChrelO].
+  (* end snippet U_gt *)
 
   (* begin snippet U_ge_1:: no-out *) 
   Definition U_ge_1 (E: relation T):=
