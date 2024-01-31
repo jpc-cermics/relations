@@ -677,7 +677,7 @@ Section Lift_bijective.
   Qed.
   
   (* begin snippet Lift_inj:: no-out *) 
-  Lemma Lift_inj: forall (st st': seq T), st \in D -> Lift st = Lift st' -> st = st'.
+  Lemma Lift_inj: forall st st', st \in D -> Lift st = Lift st' -> st = st'.
   (* end snippet Lift_inj *) 
   Proof.
     rewrite /D /mkset.
@@ -690,7 +690,7 @@ Section Lift_bijective.
     by rewrite -(H6 x) -(H7 x) H2. 
   Qed.
   
-  Lemma Lift_inj': forall (st st': seq T),
+  Lemma Lift_inj': forall st st',
       st \in D -> st' \in D -> Lift st = Lift st' -> st = st'.
   Proof.
     move => st q /inP H1 /inP H2 H3.
@@ -702,7 +702,7 @@ Section Lift_bijective.
   Qed.
   
   (* begin snippet Lift_surj:: no-out *) 
-  Lemma Lift_surj: forall (spt: seq (T*T)), spt \in I -> exists st, st\in D /\ (Lift st)=spt. 
+  Lemma Lift_surj: forall spt, spt \in I -> exists st, st\in D /\ Lift st=spt. 
   (* end snippet Lift_surj *) 
   Proof.
     move => st H0; move: (H0);rewrite /I /mkset => /inP [H1 H2].
@@ -815,10 +815,14 @@ Section epts.
   (** * endpoints  *)
 
   Variables (T: Type) (t:T).
-  
+
+  (* begin snippet Pe:: no-out *)  
+  Definition Pe (st: seq T) := (head t st, last t st).
+  (* end snippet Pe:: no-out *)  
+
   Definition decomp (st: seq T) := (head t st, last t st, behead (behead (belast t st))).
   Definition comp (tr: T*T*(seq T)) := tr.1.1::(rcons tr.2 tr.1.2).
-
+  
   Lemma Lxx: forall (st:seq T), size(st)> 1 -> comp (decomp st) = st.
   Proof. 
     move => p.
@@ -833,11 +837,14 @@ Section epts.
     by rewrite /comp /decomp /=  belast_rcons last_rcons /=.
   Qed.
     
-  Definition decompE (spt: seq (T*T)) := (decomp (UnLift spt t)).
-  Definition compE (tr: T*T*(seq T)) := Lift (comp tr).
-
+  (* begin snippet Epe:: no-out *)  
+  Definition Epe (spt: seq (T*T)) := (Pe (UnLift spt t)) .
+  (* end snippet Epe *)  
+  Definition Edecomp (spt: seq (T*T)) := (decomp (UnLift spt t)).
+  Definition Ecomp (tr: T*T*(seq T)) := Lift (comp tr).
+  
   Definition D1 (x y :T) := [set st:seq T | (decomp st).1 = (x,y)].
-  Definition I1 (x y :T) := [set spt:seq (T*T) | (decompE spt).1 = (x,y)].
+  Definition I1 (x y :T) := [set spt:seq (T*T) | (Edecomp spt).1 = (x,y)].
   
   Lemma Lift_epts_image: forall (st: seq T) (x y:T),
       st \in ((D1 x y)`&` (@D T))-> (Lift st) \in (I1 x y)`&` (@I T).
@@ -866,7 +873,7 @@ Section epts.
   
   (* begin snippet D_P:: no-out *)  
   Definition D_P (R E: relation T):= 
-    [set spt | size(spt) > 0 /\ R (decompE spt).1 /\ spt [\in] E /\ spt [Suc\in] (@Chrel T)].
+    [set spt|size(spt)>0/\R (Epe spt)/\spt [\in] E/\spt [Suc\in] (@Chrel T)].
   (* end snippet D_P *)  
 
   (* begin snippet D_P1:: no-out *)  
@@ -875,9 +882,9 @@ Section epts.
 
   (* begin snippet D_V:: no-out *)  
   Definition D_V (R E: relation T) := 
-    [set st | size(st) > 1 /\ R (decomp st).1 /\ st [Suc\in] E ].
+    [set st | size(st) > 1 /\ R (Pe st) /\ st [Suc\in] E ].
   (* end snippet D_V *)  
-
+  
   (* begin snippet D_V1:: no-out *)  
   Definition D_V1 (x y:T) (E: relation T) := D_V [set (x,y)] E.
   (* end snippet D_V1 *)  
@@ -892,7 +899,7 @@ Section epts.
     split. 
     - move => [p [H1 [H2 H3]] <-].
       move: (H1) => /Lift_sz2 H1'.
-      rewrite /decompE.
+      rewrite /Epe /Edecomp.
       have -> : (UnLift (Lift p) t) = p by apply UnLift_left. 
       rewrite RPath_equiv.
       by pose proof Lift_Suc p as H5.

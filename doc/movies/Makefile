@@ -38,6 +38,11 @@ SNIPPETS = \
 	snippets/seq1/Lift_inj-n.tex \
 	snippets/seq1/Lift_surj-n.tex \
 	snippets/seq1/Epath_gt-n.tex \
+	snippets/seq1/D_P-n.tex \
+	snippets/seq1/D_V-n.tex \
+	snippets/seq1/DP_DV-n.tex \
+	snippets/seq1/Pe-n.tex \
+	snippets/seq1/Epe-n.tex \
 
 
 all: allstd allplus
@@ -67,9 +72,15 @@ new: snippets/erel3/D_Un.tex
 
 SED= -e 's/{exists}/{\\(\\exists\\)}/g' -e 's/{forall}/{\\(\\forall\\)}/g' -e 's/⊥/\\(\\bot\\))/g' \
 	-e 's/Δ/\\(\\Delta\\))/g' -e 's+{/\\PYZbs{}+{\\(\\,\\wedge\\,\\)+g' \
+	-e 's/\\PY{o}{\\PYZbs{}}\\PY{k+kr}{in}/\\(\\in\\)/g' \
+	-e 's/\\PY{o}{\[\\PYZbs{}}\\PY{k+kr}{in}\\PY{o}{\]}/\\([\\in]\\)/g' \
+
 
 SEDP=-e 's/\\PY{o}{\[\\PYZbs{}}\\PY{k+kr}{in}/\\PY{k+kr}{\\(\\in\\)}/g' \
 	-e 's/\[\\PYZbs{}in\]/\[\\(\\in\\)\]/g' \
+
+
+
 
 allplus: $(SNIPPETS)
 

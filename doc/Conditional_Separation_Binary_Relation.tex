@@ -271,7 +271,7 @@ $\Sequence_{0}(\fullset) \cup\Sequence_{1}(\fullset)$ is the constant mapping gi
 \coqstart The lift operator $\Lift$ is implemented in Coq as a recursive mapping denoted
 \texttt{Lift}: {\small \inputsnippetsE{seq1/Lift.tex}{,} }
 and note that using Coq polymorphism the list operator is parameterized by a type
-and thus can be used also to Lift a sequence of edeges (in $\fullset\times\fullset$) into
+and thus can be used also to Lift a sequence of edges (in $\fullset\times\fullset$) into
 a sequence of pair of edges.
 \coqend
 
@@ -302,7 +302,7 @@ elements of the lifted sequence belong to the product relation $X{\times}X$ as p
 
 \paragraph{$\bullet$ \texttt{Lift} bijection.} The Lift operation when restricted to the subset \texttt{D} is bijective
 onto its image \texttt{I}
-{\small \inputsnippets{seq1/DI.tex,seq1/Lift_inj-n.tex,seq1/Lift_surj-n.tex}}
+{\small \inputsnippets{seq1/DI-n.tex,seq1/Lift_inj-n.tex,seq1/Lift_surj-n.tex}}
 The inverse of \texttt{Lift} is obtained with the recursive mapping \texttt{UnLift}. 
 
 \paragraph{$\bullet$ (\texttt{seq T}) and (\texttt{seq (T*T)}).}
@@ -413,18 +413,9 @@ subsequence of consecutive indices.
 \emph{tail of the \EdgePath}, whereas the last one~$\head{\vertex_n}$ is the
 \emph{head of the \EdgePath}.  Both tail (obtained with function \texttt{head}
 in Coq) and head (obtained with function \texttt{last} in Coq) are called
-\emph{endpoints} of the \EdgePath.  When an edge path of length greater or equal
-to one is given as a Lifted sequence of elements of $T$
-as for example in \texttt{\PY{n}{Lift}~\PY{o}{(}\PY{n}{x}\PY{o}{::(}\PY{n}{rcons}~\PY{n}{p}~\PY{n}{y}\PY{o}{))}~\PY{o}{=}~\PY{n}{sp}\PY{o}{.}} the endpoints \texttt{(x,y)} and the
-intermediate nodes \texttt{p} of the \EdgePath\ \texttt{sp} are immediately obtained.
+\emph{endpoints} of the \EdgePath. 
 
-\paragraph{$\bullet$ Transitive closure and edge paths.} As a first result linking (edge) paths and relations we can prove that 
-{\small \inputsnippetsE{erel3/TCP-n.tex}{,}
-which asserts that two nodes \texttt{(v1,v2)} are in relation through the transitive closure of a relation 
-\texttt{S}, that is \texttt{(v1,v2) $\in$ S.+} if and only if 
-there exists an edge path with endpoints \texttt{(v1,v2)} in the graph $(T,S)$.
-
-\paragraph{$\bullet$ Deployment in paths.} We denote by \( \Projection^n: \PATH^n \np{\OrientedGraph}
+ We denote by \( \Projection^n: \PATH^n \np{\OrientedGraph}
 \to\VERTEX\times\VERTEX \) the \emph{projection
   on the tail and head endpoints} of an \EdgePath\ of length~$n$.
 It is defined, for \( \path\in\PATH^n\np{\OrientedGraph}\), by 
@@ -453,6 +444,16 @@ the projection mapping on the tail and head endpoints defined by
   \end{equation}  
 \end{subequations}
 
+\coqstart The endpoints are obtained in Coq by the mapping \texttt{Pe} for a sequence of vertices and by the mapping 
+\texttt{Epe} for a sequence of edges
+{\small \inputsnippets{seq1/Pe-n.tex,seq1/Epe-n.tex}}\coqend
+\paragraph{$\bullet$ Transitive closure and edge paths.} As a first result linking (edge) paths and relations we can prove that 
+{\small \inputsnippetsE{erel3/TCP-n.tex}{,}
+which asserts that two nodes \texttt{(v1,v2)} are in relation through the transitive closure of a relation 
+\texttt{S}, that is \texttt{(v1,v2) $\in$ S.+} if and only if 
+there exists an edge path with endpoints \texttt{(v1,v2)} in the graph $(T,S)$.
+
+\paragraph{$\bullet$ Deployment in paths.}
 Now, with any binary relation \( \relation \subset \VERTEX{\times}\VERTEX \),
 we associate the subset~\( \DeploymentInPaths{\relation}{\OrientedGraph} \)
 of~\( \PATH\np{\OrientedGraph} \),
@@ -472,8 +473,14 @@ The deployment in paths~\( \DeploymentInPaths{\relation}{\OrientedGraph} \)
 is made of the \EdgePaths\  whose endpoints satisfy the 
 binary relation~\( \relation \).
 
-{\small \inputsnippetsE{seq1/D_P.tex,seq1/D_V.tex,seq1/DP_DV.tex}{,}}
-
+\coqstart {\small \inputsnippets{seq1/D_P-n.tex}} 
+It is to be noted that the deplayment in paths may be obtained as the image by the Lift mapping of a
+subset of sequences of vertices:
+{\small \inputsnippets{seq1/D_V-n.tex,seq1/DP_DV-n.tex}}
+When an edge path of length greater or equal
+to one is given as a Lifted sequence of elements of $T$
+as for example in \texttt{\PY{n}{Lift}~\PY{o}{(}\PY{n}{x}\PY{o}{::(}\PY{n}{rcons}~\PY{n}{p}~\PY{n}{y}\PY{o}{))}~\PY{o}{=}~\PY{n}{sp}\PY{o}{.}} the endpoints \texttt{(x,y)} and the
+intermediate nodes \texttt{p} of the \EdgePath\ \texttt{sp} are immediately obtained.\coqend
 \subsubsection{Extended-oriented paths in a (directed simple) graph (permitting loops)}
 
 \noindent $\bullet$ Definition of \emph{\undirectedEdgePath}. To define
