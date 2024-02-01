@@ -371,7 +371,6 @@ Section Lift_props.
 
 End Lift_props. 
 
-
 Section allset.
   (** * utilities for st [\in] X, X: set T *)
 
@@ -442,7 +441,7 @@ Section allset.
 End allset.
 
 Section allset2.
-  (** * extra utilities for st [\in] R, R: relation T *)
+  (** * extra utilities for spt [\in] R, R: relation T *)
   Variables (T: Type).
   
   Lemma allset_inv: forall (E: relation T) (spt: seq (T*T)), 
@@ -495,8 +494,8 @@ End allset2.
 Notation "[L: x ; st ; y `\in` E ]" := ((Lift (x::(rcons st y))) [\in] E).
 
 Section allset_Lifted.
-  (** * properties of p [L\in] R for p: seq T  *)
-  (** * with specified p endpoints *)
+  (** * properties of st [L\in] R for st: seq T  *)
+  (** * with specified endpoints *)
   
   Variables (T: Type).
   Definition allL (E: relation T) (st: seq T) (x y:T) := [L: x; st ;y `\in` E].
@@ -588,7 +587,7 @@ Section allset_Lifted.
 End allset_Lifted.
 
 Section Suc_as_Lift. 
-  (** * p [L\in] R <-> p [Suc\in] *)
+  (** * st [L\in] R <-> st [Suc\in] R *)
     
   Variables (T: Type).
 
@@ -812,7 +811,7 @@ Section Lift_bijective.
 End Lift_bijective.
 
 Section epts.
-  (** * endpoints  *)
+  (** * endpoints and deployment  *)
 
   Variables (T: Type) (t:T).
 
@@ -861,7 +860,7 @@ Section epts.
       by rewrite H1 H2.
     - by []. 
   Qed.
-
+  
   Lemma UnLift_epts_image: forall (spt: seq (T*T)) (x y:T),
       spt \in ((I1 x y)`&` (@I T))-> (UnLift spt t) \in (D1 x y)`&` (@D T).
   Proof.
@@ -908,6 +907,24 @@ Section epts.
       by exists (UnLift q t);[rewrite -RPath_equiv H6|]. 
   Qed.
   
+  (* it remains to express D_P when R=[set (x,y)] using the image lemma *)
+
+  Definition D_P1_new1 (x y:T) (E: relation T) := 
+    [set spt| exists st, spt = Lift (x::(rcons st y)) /\ spt [\in] E /\ spt [Suc\in] (@Chrel T)].
+
+  Definition D_P1_new2 (x y:T) (E: relation T) := 
+    [set spt| spt=[::(x,y)] /\ E (x,y)] `|` 
+      [set spt | exists st, spt = Lift (x::(rcons st y)) /\ spt [L\in] ((E `*`E ) `&` (@Chrel T))].
+
+  Definition D_V1_new (x y:T) (E: relation T) := 
+    [set st | st =[::x;y] /\ E (x,y)] 
+      `|` [set st:seq T | (Lift (Lift (x::(rcons st y)))) [\in] ((E `*`E ) `&` (@Chrel T))].
+
+  Theorem D_P_as_vpath: forall (x y :T) (E: relation T),
+      image (D_V1_new x y E) (@Lift T) = D_P1 x y E.
+  Proof.
+  Admitted.
+
 End epts.
 
 Section seq_subsets.
