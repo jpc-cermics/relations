@@ -582,7 +582,8 @@ Section allset_Lifted.
       allL E st x y <->  allL E.-1 (rev st) y x.
   Proof.
     move => E st x y. 
-    have H1: (y :: rcons (rev st) x) = rev (x::(rcons st y)) by rewrite rev_cons rev_rcons -rcons_cons.
+    have H1: (y :: rcons (rev st) x) = rev (x::(rcons st y)) 
+      by rewrite rev_cons rev_rcons -rcons_cons.
     by rewrite /allL allset_rev allset_inv H1 Lift_rev.
   Qed.
   
@@ -591,7 +592,8 @@ Section allset_Lifted.
   Proof.
     move => E st x y.
     elim: st x. 
-    by move => x;rewrite /allL /= => /andP [/inP H1 _];apply /andP;split;[apply mem_set;apply Fset_t1|].
+    by move => x;rewrite /allL /= => /andP [/inP H1 _];
+                                   apply /andP;split;[apply mem_set;apply Fset_t1|].
     move => z st Hr x;rewrite allL_c => /andP [/inP H1 /Hr H2].
     move: (H2);rewrite allset_cons => [[H3 H4]].
     by rewrite allset_cons;split;[ apply Fset_t2; exists z |].
@@ -1394,7 +1396,33 @@ Section pair_lift1.
       by apply unpair1_left.
     by rewrite /UnLiftO /LiftO H5 /=;f_equal;apply Lift_inv_sz2.
   Qed.
-
+  
+  Lemma unpair_cc: forall (eo1 eo2: T*T*O) (q: seq (T*T*O)),
+    exists q',exists e1,exists e2, exists so, [:: eo1, eo2 & q] = pair [::e1,e2&q'] so 
+                          /\ eo1.1.1 = e1.1 
+                          /\ (last eo2 q).1.2 = (last e2 q').1.
+  Proof.
+    move => eo1 eo2 q. 
+    have [q1 [so H1]]: exists q1,exists so, [:: eo1, eo2 & q] = pair q1 so 
+        by (exists (unpair [:: eo1, eo2 & q]).1;exists (unpair [:: eo1, eo2 & q]).2);
+                                  rewrite [RHS]unpair_right. 
+    pose proof pair_sz P q1 so as H2.
+    rewrite /pair in H1.
+    rewrite -H1 in H2.
+    have H3: size(q1) >1 by rewrite -H2. 
+    pose proof seq_cc H3 as [q' [e1 [e2 H4]]].
+    exists q';exists e1;exists e2;exists so.
+    split.
+    by rewrite -H4 H1. 
+    rewrite H4 in H1. rewrite [RHS]pair_c in H1. 
+    move: H1 => [H1 H5].
+    split. 
+    by rewrite H1.
+    rewrite [RHS]pair_c in H5.
+    move: H5 => [H5 H6].
+    rewrite H5. 
+  Admitted.
+  
 End pair_lift1.
 
 Section Seq_lifto. 

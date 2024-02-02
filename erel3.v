@@ -445,9 +445,8 @@ Section Active_relation.
       eo1.1.1 = x /\ (last eo2 q).1.2 = y.
   Proof.
     move => [[x1 y1] o1] [[x2 y2] o2] q x y.
-    rewrite /Eope /Epe /Pe. 
   Admitted.
-
+  
   Lemma D_U_a_eq12:  forall (E: relation T) (W: set T) (stto: seq (T*T*O)) (x y:T),
       size stto > 1 /\ (Eope stto) = (x,y) /\ stto [L\in] (ActiveOe W E) 
       <-> exists q, exists eo1, exists eo2, 
