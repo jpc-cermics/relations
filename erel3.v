@@ -278,8 +278,8 @@ Section LiftO3.
   (* end snippet Eope *)  
   
   (* begin snippet D_U:: no-out *)  
-  Definition D_U (R E: relation T) (t: T) := [set stto |size(stto)>0 
-     /\ R (Eope stto)/\stto [\in] (Oedge E) /\stto [Suc\in] ChrelO].
+  Definition D_U (R E: relation T) := [set stto |size(stto)>0 
+     /\ R (Eope stto) /\ stto [\in] (Oedge E) /\ stto [Suc\in] ChrelO].
   (* end snippet D_U *)  
   
   (* begin snippet D_U1:: no-out *) 
@@ -287,7 +287,24 @@ Section LiftO3.
     [set spa | spa [\in] (Oedge E) /\
                  (exists p, exists x,exists y,exists o, (LiftO (x::(rcons p y)) o) = spa /\ R (x,y))].
   (* end snippet D_U1 *)
+  
+  (* Active as a relation on Eo) *)
+  (* begin snippet A_tr:: no-out *)  
+  Definition A_tr (W: set T) (E: relation T) := ChrelO `&` 
+    [set oe : (T*T*O) * (T*T*O)| match (oe.1.2,oe.2.2, oe.1.1.2) with 
+      | (P,P,v) => W.^c v | (N,N,v) => W.^c v | (N,P,v) => W.^c v
+      | (P,N,v) => (Fset E.* W) v end].
+  (* end snippet A_tr *)
 
+  (* begin snippet D_U_a:: no-out *)  
+  Definition D_U_a (R E: relation T) (W: set T):= [set stto |size(stto)>0 
+     /\ R (Eope stto ) /\ stto [\in] (Oedge E) 
+     /\ stto [Suc\in] (ChrelO `&` (A_tr W E))].
+  (* end snippet D_U_a *)  
+
+  Definition A_tr_eo (W: set T) (E: relation T) :=  
+    ((Oedge E) `*` Oedge E) `&` (A_tr W E).
+  
 End LiftO3.
 
 Section PathRel.
@@ -375,18 +392,6 @@ Section Active_relation.
    *)
   
   Variables (T: Type).
-  
-  (* Active as a relation on Eo) *)
-  (* begin snippet A_tr:: no-out *)  
-  Definition A_tr (W: set T) (E: relation T) := (@ChrelO T) `&` 
-    [set oe : (T*T*O) * (T*T*O)| match (oe.1.2,oe.2.2, oe.1.1.2) with 
-      | (P,P,v) => W.^c v | (N,N,v) => W.^c v | (N,P,v) => W.^c v
-      | (P,N,v) => (Fset E.* W) v end].
-  (* end snippet A_tr *)
-
-  Definition A_tr_eo (W: set T) (E: relation T) :=  
-    ((Oedge E) `*` Oedge E) `&` (A_tr W E).
-  
 
   (* begin snippet ActiveOe:: no-out *)  
   Definition ActiveOe (W: set T) (E: relation T) := 

@@ -11,6 +11,7 @@ SNIPPETS = \
 	snippets/seq1/all_notation-n.tex \
 	snippets/seq1/Chrel-n.tex \
 	snippets/erel3/D_U-n.tex \
+	snippets/erel3/D_U_a-n.tex \
 	snippets/seq1/Lift_lemma2-n.tex \
 	snippets/seq1/Lift_lemma-n.tex \
 	snippets/erel3/Oedge-n.tex \
@@ -74,7 +75,7 @@ new: snippets/erel3/D_Un.tex
 SED= -e 's/{exists}/{\\(\\exists\\)}/g' -e 's/{forall}/{\\(\\forall\\)}/g' -e 's/⊥/\\(\\bot\\))/g' \
 	-e 's/Δ/\\(\\Delta\\))/g' -e 's+{/\\PYZbs{}+{\\(\\,\\wedge\\,\\)+g' \
 	-e 's/\\PY{o}{\\PYZbs{}}\\PY{k+kr}{in}/\\(\\in\\)/g' \
-	-e 's/\\PY{o}{\[\\PYZbs{}}\\PY{k+kr}{in}\\PY{o}{\]}/\\([\\in]\\)/g' \
+	-e 's/\\PY{o}{\[\\PYZbs{}}\\PY{k+kr}{in}\\PY{o}{\]}/\\([{\\in}]\\)/g' \
 
 
 SEDP=-e 's/\\PY{o}{\[\\PYZbs{}}\\PY{k+kr}{in}/\\PY{k+kr}{\\(\\in\\)}/g' \

@@ -513,16 +513,15 @@ graph~$\npOrientedGraph$ is defined by
     {\head{\vertex_i}=\tail{\vertex_{i+1}} \text{ for } i\in\ic{1,n{-}1}}
     \eqfinv
     \label{def:eopaths_gt1_}
-\end{align}
-where the subset $\EDGEo \subset \VERTEX\times\VERTEX{\times}\Orientation$ is defined by 
-\begin{align}
-  (\vertex,\vertexbis,o) \in \EDGEo
-  \iff (\vertex, \vertexbis) \in \EDGE^{(o)},
-  \text{ with } \EDGE^{(+1)}= \EDGE \eqsepv \EDGE^{(-1)}= \Converse{\EDGE}
-  \eqfinp
-  \label{def:Eo_relation}
-\end{align}
-
+  \end{align}
+  where the subset $\EDGEo \subset \VERTEX\times\VERTEX{\times}\Orientation$ is defined by 
+  \begin{align}
+    (\vertex,\vertexbis,o) \in \EDGEo
+    \iff (\vertex, \vertexbis) \in \EDGE^{(o)},
+    \text{ with } \EDGE^{(+1)}= \EDGE \eqsepv \EDGE^{(-1)}= \Converse{\EDGE}
+    \eqfinp
+    \label{def:Eo_relation}
+  \end{align}
 The set of finite \undirectedEdgePaths%
 \footnote{%
   It is to be noted that an \undirectedEdgePath\ is \emph{not a path in the graph
@@ -587,8 +586,8 @@ the projection mapping on the tail and head endpoints of an  \undirectedEdgePath
     \label{eq:Projection_UPATH}
   \end{equation}
 \end{subequations}
-
-\coqstart {\small \inputsnippets{erel3/Eope.tex}} \coqend
+\coqstart The Coq definition follows {\small \inputsnippetsE{erel3/Eope.tex}{,}}
+the projection $\pi$ being implement by the mapping \texttt{unpair}. \coqend
 
 \paragraph{$\bullet$ Deployment in paths.} Now, with any binary relation \( \relation \subset \VERTEX\times\VERTEX \),
 we associate the subset~\( \DeploymentInUPaths{\relation}{\OrientedGraph} \)
@@ -746,13 +745,13 @@ and where
   \label{eq:TransitiveReflexiveClosure_AgentSubsetW}
 \end{equation}
 
-\begin{definition}[\( \ActiveUndirectedPaths{\OrientedGraph}\)]
+\begin{definition}[active \undirectedEdgePaths\ \( \ActiveUndirectedPaths{\OrientedGraph}\)]
   \label{de:ActivePaths}
   Let \( \npOrientedGraph \) be a graph, 
   and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.
   % 
   We say that an  \undirectedEdgePath\
-  \(\UndirectedPath \in \UPATH\np{\OrientedGraph} \) in~\eqref{eq:undirectedEdgePaths}
+  \(\UndirectedPath \in \UPATH\np{\OrientedGraph} \) in~\eqref{eq:eopaths_defs}
   relative to the graph~\(\npOrientedGraph\)
   is an \emph{active \undirectedEdgePath} (\wrt\footnote{With respect to} the subset~$\AgentSubsetW$)
   if the successive elements (triplets) of \(\UndirectedPath\) satisfy the binary relation
@@ -764,22 +763,21 @@ and where
   and we denote by \( \BlockedUndirectedPaths{\OrientedGraph} = 
   \bpComplementary{\ActiveUndirectedPaths{\OrientedGraph}}\)   
   the subset of all blocked \undirectedEdgePaths\ (\wrt\ the subset~$\AgentSubsetW$).
+  Finally, we define by $\ActiveDeploymentInUPaths{\relation}{\OrientedGraph}$ 
+  the subset $\DeploymentInUPaths{\relation}{\OrientedGraph}\cap \ActiveUndirectedPaths{\OrientedGraph}$.
 \end{definition} 
 Notice that any \undirectedEdgePath\ of length~1 is active by definition.
 
-
-
-\coqstart The Coq formalization easily follows 
+\coqstart The Coq formalization of the binary relation \(\ActiveTr\) easily follows 
 {\small \inputsnippetsE{erel3/A_tr.tex}{,}}
 noticing that the binary relation $\ActiveTr$ contains the well chained relation that we explicitely 
-write with \texttt{ChrelO} and the forward set defined by Equation~\eqref{eq:TransitiveReflexiveClosure_AgentSubsetW} 
-is defined by \texttt{Fset}. \coqend
+write with \texttt{ChrelO} and noticing that the forward set 
+defined by Equation~\eqref{eq:TransitiveReflexiveClosure_AgentSubsetW} 
+is defined in Coq by \texttt{Fset}. \coqend
+\medskip
 
-\coqstart The Coq formalization easily follows \coqend
-
-
-
-{\small \inputsnippets{erel3/ActiveOe.tex,erel3/Aeop.tex}}
+\coqstart Now, The Coq formalization of $\ActiveDeploymentInUPaths{\relation}{\OrientedGraph}$ is 
+{\small \inputsnippets{erel3/D_U_a-n.tex}} \coqend
 
 We introduce in Definition~\ref{de:vertices-d-separated} a new binary relation
 between vertices: we say that 
@@ -810,6 +808,7 @@ and not between disjoint subsets.
 \end{definition}
 {\small \inputsnippets{paper_csbr_paths/dsepnota-n.tex,erel3/Active-n}}
 
+% {\small \inputsnippets{erel3/ActiveOe.tex,erel3/Aeop.tex}}
 
 
 \section{Characterization  of $d$-separation by means of binary relations}
