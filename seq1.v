@@ -887,7 +887,7 @@ Section epts.
   Definition D_P (R E: relation T):= 
     [set spt|size(spt)>0/\R (Epe spt)/\spt [\in] E/\spt [Suc\in] (@Chrel T)].
   (* end snippet D_P *)  
-
+  
   (* begin snippet D_P1:: no-out *)  
   Definition D_P1 (x y: T) (E: relation T):= D_P [set (x,y)] E.
   (* end snippet D_P1 *)  
@@ -933,7 +933,6 @@ Section epts.
       1 < size st /\ [set (x, y)] (Pe st) <-> exists q, st= x::(rcons q y).
   Proof.
   Admitted.
-      
 
 End epts.
 
@@ -943,6 +942,7 @@ Section seq_subsets.
   Variables (T: Type) (R: relation T) (X: set T).
   
   (* begin snippet Rpath_L1:: no-out *)  
+
   Lemma Rpath_L1: forall (st: seq T), st [\in] X -> st [L\in] (X `*` X). 
   (* end snippet Rpath_L1 *)  
   Proof.
@@ -1052,6 +1052,56 @@ Section seq_pairs_subsets.
 
 End seq_pairs_subsets.
   
+
+Section PathRel.
+  (** * transitive closure and paths
+   * the main result here is that the relation in AxA obtained 
+   * by fun (x y : T) => (exists (p: seq T), AllL E p x y)
+   * is the relation E.+ the transitive closure of E 
+   *)
+
+  Variables (T: Type) (E: relation T).
+  
+  (* relation based on paths: take care that the path p depends on (x,y) *)
+  Definition PathRel_n (E: relation T) (n:nat) :=
+    [set x | (exists (p: seq T), size(p)=n /\ allL E p x.1 x.2)].
+
+  (* composition and existence of paths coincide *)
+  Lemma Itern_iff_PathReln : forall (n:nat), E^(n.+1) =  PathRel_n E n.
+  Proof.
+    elim => [ | n' H].
+    - rewrite /iter /PathRel_n Delta_idem_l /mkset predeqE => [[x y]].
+      split => [ H | ].
+      by (exists [::]); rewrite allL0' /=.
+      by move => [p [/size0nil -> /allL0' H2]].
+    - rewrite -add1n iter_compose H /iter Delta_idem_l /mkset predeqE => [[x y]].
+      split => [[z [/= /inP H1 [p [H2 /= H3]]]] |[p [H1 H2]]];
+                first by (exists (z::p));rewrite -H2 allL_c H3 andbT H1. 
+      elim: p H1 H2 => [ // | z p' _ H1].
+      move: H1;rewrite /size -/size -/addn1 => /succn_inj H1.
+      rewrite allL_c /= => [/andP [/inP H2 H3]].
+      by exists z;split;[ | exists p'].
+  Qed.
+  
+  (* R.+ =  PathRel R *)
+  (* begin snippet TCP:: no-out *)  
+  Lemma TCP: E.+ = [set vp | exists p, (Lift (vp.1::(rcons p vp.2))) [\in] E].
+  (* end snippet TCP *)  
+  Proof.
+    rewrite /mkset predeqE => [[x y]].
+    split => [H1 | [p H1]].
+    - apply clos_t_iterk in H1.
+      move: H1 => [n H1].
+      rewrite  Itern_iff_PathReln /PathRel_n in H1.
+      move: H1 => [p [H1 H2]].
+      by (exists p).
+    - have H2:  PathRel_n E (size p) (x, y) by (exists p).
+      rewrite -Itern_iff_PathReln in H2.
+      by apply iterk_inc_clos_trans in H2.
+  Qed.
+
+End PathRel.
+
 Section basic_pair_unpair.
   (** * pair sequences *)
   Variables (T S: Type).

@@ -30,8 +30,8 @@ Section Types.
 
 End Types.
 
-Section LiftO2.
-  (** * Multiple definitions of extended oriented edge paths *) 
+Section pairp.
+  (** * Utilities when pairing sequences *) 
   
   Variables (T: Type).
 
@@ -47,6 +47,8 @@ Section LiftO2.
     | x::sto => ((x.1.1,x.2.1)::((unpairp sto).1),(x.1.2,x.2.2)::((unpairp sto).2))
     | [::] => ([::],[::])
     end.
+  
+  Definition Prel (R: relation (T)) := [set p : (T*O)*(T*O) | R (p.1.1,p.2.1)].
   
   Lemma unpairp_sz: forall (sto: seq((T*O)*(T*O))),
       size(unpairp sto).1 = size(sto) 
@@ -77,8 +79,6 @@ Section LiftO2.
       by move: H3; rewrite /= => /succn_inj H3.
   Qed.
   
-  Definition Prel (R: relation (T)) := [set p : (T*O)*(T*O) | R (p.1.1,p.2.1)].
-  
   Lemma XX: forall (R: relation T) (st: seq(T*T)) (so: seq (O*O)),
       (pairp st so) [\in] (Prel R) <-> st [\in] R.
   Proof.
@@ -94,12 +94,13 @@ Section LiftO2.
       by split.
   Qed.
 
-End  LiftO2.
+End pairp.
 
-Section LiftO3.
-  (** * Multiple definitions of extended oriented edge paths *) 
-  Variable (T:Type).
+Section Active_relation.
+  (** D_U and active relation *)
 
+  Variable (T:Type) (tv:T).
+  
   Definition O_rev (o:O) := match o with | P => N | N => P end.
   
   (* begin snippet Oedge:: no-out *)  
@@ -107,6 +108,13 @@ Section LiftO3.
     fun (oe: T*T*O) => match oe with | (e,P) => E e | (e,N) => E.-1 e end.
   (* end snippet Oedge *)
 
+  (* begin snippet ChrelO:: no-out *)  
+  Definition ChrelO := [set ppa: (T*T*O)*(T*T*O) | (ppa.1.1).2 = (ppa.2.1).1].
+  (* end snippet ChrelO *)  
+  
+  Definition pair_tt_o:= (@pair_ (T*T) O P).
+  Definition unpair_tt_o:= (@unpair (T*T) O).
+  
   Lemma Oedge_rev: forall (E: relation T) (x y: T),
       Oedge E (x,y,P) = Oedge E (y,x,N).
   Proof.
@@ -118,9 +126,7 @@ Section LiftO3.
   Proof.
     by move => E x y; elim. 
   Qed.
-  (* begin snippet ChrelO:: no-out *)  
-  Definition ChrelO := [set ppa: (T*T*O)*(T*T*O) | (ppa.1.1).2 = (ppa.2.1).1].
-  (* end snippet ChrelO *)  
+
   Lemma ChrelO_as_Prel: ChrelO = Prel (@Chrel T).
   Proof. by []. Qed.
   
@@ -167,9 +173,6 @@ Section LiftO3.
     apply Lift_Lift.
     by [].
   Qed.
-  
-  Definition pair_tt_o:= (@pair_ (T*T) O P).
-  Definition unpair_tt_o:= (@unpair (T*T) O).
   
   Lemma YY: forall (sto: seq(T*T*O)),
       pair_tt_o (unpair_tt_o sto).1 (unpair_tt_o sto).2 = sto.
@@ -271,10 +274,8 @@ Section LiftO3.
       ChrelO ((x,y,o1), (z,t,o2)) <-> y = z.
   Proof. by []. Qed.
   
-  Variables (t:T).
-  
   (* begin snippet Eope:: no-out *)  
-  Definition Eope (stto : seq(T*T*O)) : T*T := (Epe t (@unpair (T*T) O stto).1).
+  Definition Eope (stto : seq(T*T*O)) : T*T := (Epe tv (@unpair (T*T) O stto).1).
   (* end snippet Eope *)  
   
   (* begin snippet D_U:: no-out *)  
@@ -287,8 +288,7 @@ Section LiftO3.
     [set spa | spa [\in] (Oedge E) /\
                  (exists p, exists x,exists y,exists o, (LiftO (x::(rcons p y)) o) = spa /\ R (x,y))].
   (* end snippet D_U1 *)
-  
-  (* Active as a relation on Eo) *)
+
   (* begin snippet A_tr:: no-out *)  
   Definition A_tr (W: set T) (E: relation T) := ChrelO `&` 
     [set oe : (T*T*O) * (T*T*O)| match (oe.1.2,oe.2.2, oe.1.1.2) with 
@@ -302,97 +302,33 @@ Section LiftO3.
      /\ stto [Suc\in] (ChrelO `&` (A_tr W E))].
   (* end snippet D_U_a *)  
 
+  (** * XXXXX we need to whod the following reformulations *)
+  Definition D_U_a1 (R E: relation T) (W: set T):= [set stto |size(stto)>0 
+     /\ R (Eope stto ) /\ stto [\in] (Oedge E) 
+     /\ stto [Suc\in] (A_tr W E)].
+  
+  Definition  D_U_a_sing (E: relation T) (W: set T) (x y:T) := D_U_a [set (x,y)] E W.
+
+  Definition  D_U_a_sing1 (E: relation T) (W: set T) (x y:T) :=
+    [set stto |size(stto)>0 
+               /\ (Eope stto)=(x,y) /\ stto [\in] (Oedge E) 
+               /\ stto [Suc\in] (A_tr W E)].
+
+  Definition  D_U_a_sing2 (E: relation T) (W: set T) (x y:T) :=
+    [set stto | size stto = 1 /\ (Eope stto)= (x,y) /\ stto [\in] (Oedge E) ]
+      `|`
+    [set stto |size(stto) > 1 /\ (Eope stto)=(x,y) 
+               /\ stto [L\in] (((Oedge E) `*`(Oedge E)) `&`  (A_tr W E))].
+
   Definition A_tr_eo (W: set T) (E: relation T) :=  
     ((Oedge E) `*` Oedge E) `&` (A_tr W E).
+
+  Definition  D_U_a_sing3 (E: relation T) (W: set T) (x y:T) :=
+    [set stto | size stto = 1 /\ (Eope stto)= (x,y) /\ stto [\in] (Oedge E) ]
+      `|`
+    [set stto |size(stto) > 1 /\ (Eope stto)=(x,y) 
+               /\ stto [L\in] (A_tr_eo W E)].
   
-End LiftO3.
-
-Section PathRel.
-  (** * transitive closure and paths
-   * the main result here is that the relation in AxA obtained 
-   * by fun (x y : T) => (exists (p: seq T), AllL E p x y)
-   * is the relation E.+ the transitive closure of E 
-   *)
-
-  Variables (T: Type) (E: relation T).
-  
-  (* relation based on paths: take care that the path p depends on (x,y) *)
-  Definition PathRel_n (E: relation T) (n:nat) :=
-    [set x | (exists (p: seq T), size(p)=n /\ allL E p x.1 x.2)].
-
-  (* composition and existence of paths coincide *)
-  Lemma Itern_iff_PathReln : forall (n:nat), E^(n.+1) =  PathRel_n E n.
-  Proof.
-    elim => [ | n' H].
-    - rewrite /iter /PathRel_n Delta_idem_l /mkset predeqE => [[x y]].
-      split => [ H | ].
-      by (exists [::]); rewrite allL0' /=.
-      by move => [p [/size0nil -> /allL0' H2]].
-    - rewrite -add1n iter_compose H /iter Delta_idem_l /mkset predeqE => [[x y]].
-      split => [[z [/= /inP H1 [p [H2 /= H3]]]] |[p [H1 H2]]];
-                first by (exists (z::p));rewrite -H2 allL_c H3 andbT H1. 
-      elim: p H1 H2 => [ // | z p' _ H1].
-      move: H1;rewrite /size -/size -/addn1 => /succn_inj H1.
-      rewrite allL_c /= => [/andP [/inP H2 H3]].
-      by exists z;split;[ | exists p'].
-  Qed.
-  
-  (* R.+ =  PathRel R *)
-  (* begin snippet TCP:: no-out *)  
-  Lemma TCP: E.+ = [set vp | exists p, (Lift (vp.1::(rcons p vp.2))) [\in] E].
-  (* end snippet TCP *)  
-  Proof.
-    rewrite /mkset predeqE => [[x y]].
-    split => [H1 | [p H1]].
-    - apply clos_t_iterk in H1.
-      move: H1 => [n H1].
-      rewrite  Itern_iff_PathReln /PathRel_n in H1.
-      move: H1 => [p [H1 H2]].
-      by (exists p).
-    - have H2:  PathRel_n E (size p) (x, y) by (exists p).
-      rewrite -Itern_iff_PathReln in H2.
-      by apply iterk_inc_clos_trans in H2.
-  Qed.
-
-End PathRel.
-
-Section PathRel_Examples.
-  (* Applications *)
-  
-  Variables (T: Type) (E: relation T) (W: set T).
-
-  Lemma clos_t_to_paths_l : forall (x y: T),
-      (Δ_(W.^c) `;` E).+ (x, y) ->
-      (exists (p: seq T), (x::p) [\in] W.^c /\ allL E p x y
-                     /\ (x::p) [\in] ((Δ_(W.^c) `;` E).+)#_(y)).
-  Proof.
-    move => x y; rewrite {1}TCP; move => [p /= H1]; exists p.
-    move: (H1) => /allL_WS_iff/andP [H2 H2'].
-    apply allL_All in H1;apply allset_cons in H1;move: H1=> [/inP H1 H1'].
-    by rewrite -allset_consb H1 H1' andbT.
-  Qed.
-  
-  Lemma clos_t_to_paths_r : forall (x y: T),
-      (E `;` Δ_(W.^c)).+ (x, y) ->
-      (exists (p: seq T), (rcons p y) [\in] W.^c /\ allL E p x y
-                     /\ (y::(rev p)) [\in] ((Δ_(W.^c) `;` E.-1).+)#_(x)).
-  Proof.
-    move => x y; rewrite {1}TCP; move  => [p H1]; exists p.
-    rewrite allL_rev inverse_compose DeltaE_inverse /= in H1.
-    move: (H1) => /allL_WS_iff/andP /= [/andP [/inP H2 H3] H2'].
-    apply allL_All in H1;apply allset_cons in H1;move: H1=> [/inP /= H1 H1'].
-    by rewrite H1 H1' andbT allL_rev H2' allset_rcons allset_rev H3. 
-  Qed.
-  
-End PathRel_Examples.
-
-Section Active_relation.
-  (** * relation on EO where EO = (AxA)xO
-   * this section is to be merged with previous stuffs 
-   *)
-  
-  Variables (T: Type).
-
   (* begin snippet ActiveOe:: no-out *)  
   Definition ActiveOe (W: set T) (E: relation T) := 
     [set oe : (T*T*O) * (T*T*O) | 
@@ -449,11 +385,8 @@ Section Active_relation.
     by move => W E [x1 y1] [x2 y2] o; case: o. 
   Qed.
 
-End Active_relation.
-
-Section Active_paths. 
   (** * Active paths  *)
-  Variables (T: Type) (W: set T) (E: relation T).
+  Variables (W: set T) (E: relation T).
   (* orientation  *)
   Definition EO := (T * T * O)%type.
   
@@ -470,7 +403,7 @@ Section Active_paths.
         /\ allL (ActiveOe W E) (belast eo2 p) eo1 (last eo2 p)
     end.
   (* end snippet Aeop *)
-  
+
   Definition R_o (o:O):= match o with | P => E | N=> E.-1 end.
 
   Lemma R_o': forall (o:O) (xy: T*T),
@@ -822,8 +755,8 @@ Section Active_paths.
     Qed.
     
   End Active_path_unique. 
-   
-End Active_paths.   
+
+End Active_relation.
 
 Section Active. 
   (** * The Active relation as a relation on AxA *)
@@ -895,6 +828,36 @@ Section Active.
   Qed.
 
 End Active. 
+
+Section PathRel_Examples.
+  (** * Utilities *)
+  
+  Variables (T: Type) (E: relation T) (W: set T).
+
+  Lemma clos_t_to_paths_l : forall (x y: T),
+      (Δ_(W.^c) `;` E).+ (x, y) ->
+      (exists (p: seq T), (x::p) [\in] W.^c /\ allL E p x y
+                     /\ (x::p) [\in] ((Δ_(W.^c) `;` E).+)#_(y)).
+  Proof.
+    move => x y; rewrite {1}TCP; move => [p /= H1]; exists p.
+    move: (H1) => /allL_WS_iff/andP [H2 H2'].
+    apply allL_All in H1;apply allset_cons in H1;move: H1=> [/inP H1 H1'].
+    by rewrite -allset_consb H1 H1' andbT.
+  Qed.
+  
+  Lemma clos_t_to_paths_r : forall (x y: T),
+      (E `;` Δ_(W.^c)).+ (x, y) ->
+      (exists (p: seq T), (rcons p y) [\in] W.^c /\ allL E p x y
+                     /\ (y::(rev p)) [\in] ((Δ_(W.^c) `;` E.-1).+)#_(x)).
+  Proof.
+    move => x y; rewrite {1}TCP; move  => [p H1]; exists p.
+    rewrite allL_rev inverse_compose DeltaE_inverse /= in H1.
+    move: (H1) => /allL_WS_iff/andP /= [/andP [/inP H2 H3] H2'].
+    apply allL_All in H1;apply allset_cons in H1;move: H1=> [/inP /= H1 H1'].
+    by rewrite H1 H1' andbT allL_rev H2' allset_rcons allset_rev H3. 
+  Qed.
+  
+End PathRel_Examples.
 
 
 Section Wip.
