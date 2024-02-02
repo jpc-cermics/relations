@@ -934,6 +934,39 @@ Section epts.
   Proof.
   Admitted.
 
+  Lemma Epe_L1: forall (q: seq (T*T)) (x y:T),
+      q \in (@I T) -> Epe q = (x, y) 
+      -> exists p, p \in (@D T) /\ q= Lift p /\ Pe p =(x,y).
+  Proof.
+    move => q x y H1 H2.
+    pose proof Lift_surj H1 as [st [H3 H4]].
+    exists st.
+    move: H2. rewrite /Epe -H4.
+    have -> :(UnLift (Lift st) t) = st by apply UnLift_left;rewrite inP in H3.
+    by move => H5. 
+  Qed.
+
+  Lemma Epe_L2: forall (p: seq T) (x y:T),
+      p \in (@D T) -> Pe p =(x,y) -> exists q, p = x::(rcons q y).
+  Proof.
+    move => p x y /inP H1 H2.
+    pose proof seq_crc H1 as [q [x' [y' H3]]].
+    move: H2;rewrite /Pe H3 //= => [[H2 //= H4]].
+    have H5: forall q' x'', last x'' (rcons q' y') = y'
+        by elim;[| move => z q' Hr x'';rewrite rcons_cons /=; rewrite Hr].
+    by exists q;rewrite H2 -H4 H5.
+  Qed.
+
+  Lemma Epe_L3: forall (q: seq (T*T)) (x y:T),
+      q \in (@I T) -> Epe q = (x, y) 
+          ->exists p, q= Lift (x::(rcons p y)). 
+  Proof.
+    move => q x y H1 H2.
+    pose proof Epe_L1 H1 H2 as [p [H3 [H4 H5]]].
+    pose proof Epe_L2 H3 H5 as [p' H6].
+    by exists p'; rewrite H4 H6.
+  Qed.
+  
 End epts.
 
 Section seq_subsets.

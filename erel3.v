@@ -295,7 +295,12 @@ Section Active_relation.
       | (P,P,v) => W.^c v | (N,N,v) => W.^c v | (N,P,v) => W.^c v
       | (P,N,v) => (Fset E.* W) v end].
   (* end snippet A_tr *)
-
+  
+  Lemma A_tr_P1: forall(W: set T) (E: relation T), A_tr W E = ChrelO `&` (A_tr W E).
+  Proof.
+    by move => W E;rewrite /A_tr setIA setIid.
+  Qed.
+  
   (* begin snippet D_U_a:: no-out *)  
   Definition D_U_a (R E: relation T) (W: set T):= [set stto |size(stto)>0 
      /\ R (Eope stto ) /\ stto [\in] (Oedge E) 
@@ -306,28 +311,104 @@ Section Active_relation.
   Definition D_U_a1 (R E: relation T) (W: set T):= [set stto |size(stto)>0 
      /\ R (Eope stto ) /\ stto [\in] (Oedge E) 
      /\ stto [Suc\in] (A_tr W E)].
+
+  Lemma D_U_a_eq1: forall (R E: relation T) (W: set T), D_U_a R E W = D_U_a1 R E W.
+  Proof. 
+    by move => R E W;rewrite /D_U_a /D_U_a1 -A_tr_P1.
+  Qed.
+
+  Lemma D_U_a_eq2: forall (R E: relation T) (W: set T), D_U_a R E W = D_U_a1 R E W.
+  Proof. 
+    by move => R E W;rewrite /D_U_a /D_U_a1 -A_tr_P1.
+  Qed.
   
-  Definition  D_U_a_sing (E: relation T) (W: set T) (x y:T) := D_U_a [set (x,y)] E W.
+  Lemma D_U_a_eq3 : forall ( E: relation T) (W: set T),
+    [set stto | size(stto) > 0 /\ stto [\in] (Oedge E) /\ stto [L\in] (A_tr W E)]
+    = [set stto | size(stto) = 1 /\ (stto [\in] (Oedge E)) ] 
+        `|` [set stto | size(stto) > 1 /\ stto [L\in] (((Oedge E) `*` (Oedge E))`&`(A_tr W E) )]. 
+  Proof. 
+    move => E W.
+    apply Rpath_iff1.
+  Qed.
 
-  Definition  D_U_a_sing1 (E: relation T) (W: set T) (x y:T) :=
-    [set stto |size(stto)>0 
-               /\ (Eope stto)=(x,y) /\ stto [\in] (Oedge E) 
-               /\ stto [Suc\in] (A_tr W E)].
+  Lemma D_U_a_eq4 : forall (R E: relation T) (W: set T),
+      [set stto | size(stto) > 0 /\ R (Eope stto ) /\ stto [\in] (Oedge E) /\ stto [L\in] (A_tr W E)]
+      = [set stto | R (Eope stto )] `&` 
+          [set stto | size(stto) > 0 /\ stto [\in] (Oedge E) /\ stto [L\in] (A_tr W E)].
+  Proof. 
+    move => R E W.
+    rewrite /setI /mkset predeqE => stto.
+    by rewrite andA [0 < size stto /\ R (Eope stto)]andC -andA.
+  Qed.
 
-  Definition  D_U_a_sing2 (E: relation T) (W: set T) (x y:T) :=
-    [set stto | size stto = 1 /\ (Eope stto)= (x,y) /\ stto [\in] (Oedge E) ]
-      `|`
-    [set stto |size(stto) > 1 /\ (Eope stto)=(x,y) 
-               /\ stto [L\in] (((Oedge E) `*`(Oedge E)) `&`  (A_tr W E))].
+  Lemma D_U_a_eq5 : forall (R E: relation T) (W: set T),
+      [set stto | size(stto) > 0 /\ R (Eope stto ) /\ stto [\in] (Oedge E) /\ stto [L\in] (A_tr W E)]
+      = [set stto | R (Eope stto )] `&` 
+          (
+            [set stto | size(stto) = 1 /\ (stto [\in] (Oedge E)) ] 
+              `|` [set stto | size(stto) > 1 /\ stto [L\in] (((Oedge E) `*` (Oedge E))`&`(A_tr W E) )] 
+          ).
+  Proof. 
+    move => R E W.
+    by rewrite D_U_a_eq4 D_U_a_eq3.
+  Qed.
 
+  Lemma D_U_a_eq6 : forall (R E: relation T) (W: set T),
+      [set stto | size(stto) > 0 /\ R (Eope stto ) /\ stto [\in] (Oedge E) /\ stto [L\in] (A_tr W E)]
+      = ( [set stto | R (Eope stto )] `&`  [set stto | size(stto) = 1 /\ (stto [\in] (Oedge E)) ] )
+          `|`
+          ([set stto | R (Eope stto )] `&`  [set stto | size(stto) > 1 /\ stto [L\in] (((Oedge E) `*` (Oedge E))`&`(A_tr W E) )] 
+          ).
+  Proof. 
+    move => R E W.
+    by rewrite D_U_a_eq4 D_U_a_eq3 setIUr.
+  Qed.
+  
+  Lemma D_U_a_eq7 : forall (R E: relation T),
+       [set stto | R (Eope stto )] `&`  [set stto | size(stto) = 1 /\ (stto [\in] (Oedge E)) ] 
+       = [set stto | size(stto) = 1 /\ R (Eope stto ) /\ (stto [\in] (Oedge E)) ].
+  Proof.
+    move => R E.
+    rewrite /setI /mkset predeqE => stto.
+    by rewrite andA [ R (Eope stto) /\ size stto = 1]andC -andA.
+  Qed.
+
+  Lemma D_U_a_eq8 : forall (R E: relation T) (W: set T),
+      [set stto | R (Eope stto )] `&` 
+        [set stto | size(stto) > 1 /\ stto [L\in] (((Oedge E) `*` (Oedge E))`&`(A_tr W E) )]
+      = [set stto | size(stto) > 1 /\ R (Eope stto ) /\  stto [L\in] (((Oedge E) `*` (Oedge E))`&`(A_tr W E) )].
+  Proof. 
+    move => R E W.
+    rewrite /setI /mkset predeqE => stto.
+    by rewrite andA [ R (Eope stto) /\ size stto > 1]andC -andA.
+  Qed.
+
+  Lemma D_U_a_eq9 : forall (R E: relation T) (W: set T),
+      [set stto | size(stto) > 0 /\ R (Eope stto ) /\ stto [\in] (Oedge E) /\ stto [L\in] (A_tr W E)]
+      =
+        [set stto | size(stto) = 1 /\ R (Eope stto ) /\ (stto [\in] (Oedge E)) ]
+          `|` 
+          [set stto | size(stto) > 1 /\ R (Eope stto ) /\  stto [L\in] (((Oedge E) `*` (Oedge E))`&`(A_tr W E) )].
+  Proof. 
+    move => R E W.
+    rewrite D_U_a_eq4 D_U_a_eq3 setIUr. 
+    rewrite D_U_a_eq7.
+    by rewrite D_U_a_eq8.
+  Qed.
+  
   Definition A_tr_eo (W: set T) (E: relation T) :=  
     ((Oedge E) `*` Oedge E) `&` (A_tr W E).
 
-  Definition  D_U_a_sing3 (E: relation T) (W: set T) (x y:T) :=
-    [set stto | size stto = 1 /\ (Eope stto)= (x,y) /\ stto [\in] (Oedge E) ]
-      `|`
-    [set stto |size(stto) > 1 /\ (Eope stto)=(x,y) 
-               /\ stto [L\in] (A_tr_eo W E)].
+  Lemma D_U_a_eq10 : forall (R E: relation T) (W: set T),
+      [set stto | size(stto) > 0 /\ R (Eope stto ) /\ stto [\in] (Oedge E) /\ stto [L\in] (A_tr W E)]
+      =
+        [set stto | size(stto) = 1 /\ R (Eope stto ) /\ (stto [\in] (Oedge E)) ]
+          `|` 
+          [set stto | size(stto) > 1 /\ R (Eope stto ) /\  stto [L\in] (A_tr_eo W E)].
+  Proof. 
+    move => R E W.
+    by rewrite D_U_a_eq9 /A_tr_eo. 
+  Qed.
   
   (* begin snippet ActiveOe:: no-out *)  
   Definition ActiveOe (W: set T) (E: relation T) := 
@@ -345,8 +426,48 @@ Section Active_relation.
       A_tr_eo W E = ActiveOe W E.
   Proof.
     move => W E.
-    rewrite /A_tr_eo /A_tr /ActiveOe /setI /mkset predeqE => [[eo1 eo2]].
+    rewrite /A_tr_eo /A_tr /ActiveOe /setI /setM /mkset predeqE => [[eo1 eo2]].
+    by split => [[[H1 H2] [H3 H4]] | [H1 [H2 [H3 H4]]]]. 
+  Qed.
+  
+  Lemma D_U_a_eq11 : forall (R E: relation T) (W: set T),
+      [set stto | size(stto) > 0 /\ R (Eope stto ) /\ stto [\in] (Oedge E) /\ stto [L\in] (A_tr W E)]
+      =
+        [set stto | size(stto) = 1 /\ R (Eope stto ) /\ (stto [\in] (Oedge E)) ]
+          `|` 
+          [set stto | size(stto) > 1 /\ R (Eope stto ) /\ stto [L\in] (ActiveOe W E)].
+  Proof. 
+    by move => R E W;rewrite D_U_a_eq10 Active_iff.
+  Qed.
+
+  Lemma Eope_L1: forall (eo1 eo2: T*T*O) (q: seq (T*T*O)) (x y:T),
+      Eope [:: eo1, eo2 & q] = (x, y) <-> 
+      eo1.1.1 = x /\ (last eo2 q).1.2 = y.
+  Proof.
+    move => [[x1 y1] o1] [[x2 y2] o2] q x y.
+    rewrite /Eope /Epe /Pe. 
   Admitted.
+
+  Lemma D_U_a_eq12:  forall (E: relation T) (W: set T) (stto: seq (T*T*O)) (x y:T),
+      size stto > 1 /\ (Eope stto) = (x,y) /\ stto [L\in] (ActiveOe W E) 
+      <-> exists q, exists eo1, exists eo2, 
+        stto = eo1 :: [:: eo2 & q] /\ eo1.1.1 = x /\ (last eo2 q).1.2 = y 
+        /\ allL (ActiveOe W E) (belast eo2 q) eo1 (last eo2 q).
+  Proof.
+    move =>E W p x y. 
+    split => [ [H1 [H2 H3]] | [q [eo1 [eo2 [-> [H2 [H3 H4]]]]]]].
+    - pose proof seq_cc H1 as [q [eo1 [eo2 ->]]].
+      exists q;exists eo1; exists eo2.
+      move: H2; rewrite Eope_L1 => [[H2 H4]].
+      have H5: eo1::(rcons (belast eo2 q) (last eo2 q)) = [:: eo1, eo2 & q]
+        by rewrite -lastI.
+      by rewrite /allL H5. 
+    - rewrite Eope_L1.
+      have H5: eo1::(rcons (belast eo2 q) (last eo2 q)) = [:: eo1, eo2 & q]
+        by rewrite -lastI.
+      move: H4; rewrite  /allL H5=> H4.
+      by [].
+  Qed.
   
   Lemma ActiveOe_Oedge: forall (W: set T) (E: relation T) (eo : (T*T*O) * (T*T*O)),
       (ActiveOe W E) eo -> Oedge E eo.1 /\ Oedge E eo.2.
