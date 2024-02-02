@@ -834,7 +834,16 @@ Section epts.
 
   Definition decomp (st: seq T) := (head t st, last t st, behead (behead (belast t st))).
   Definition comp (tr: T*T*(seq T)) := tr.1.1::(rcons tr.2 tr.1.2).
+
+  (* begin snippet Epe:: no-out *)  
+  Definition Epe (spt: seq (T*T)) := (Pe (UnLift spt t)) .
+  (* end snippet Epe *)  
+  Definition Edecomp (spt: seq (T*T)) := (decomp (UnLift spt t)).
+  Definition Ecomp (tr: T*T*(seq T)) := Lift (comp tr).
   
+  Definition D1 (x y :T) := [set st:seq T | (decomp st).1 = (x,y)].
+  Definition I1 (x y :T) := [set spt:seq (T*T) | (Edecomp spt).1 = (x,y)].
+
   Lemma Lxx: forall (st:seq T), size(st)> 1 -> comp (decomp st) = st.
   Proof. 
     move => p.
@@ -848,15 +857,6 @@ Section epts.
     move => [[x p] y].
     by rewrite /comp /decomp /=  belast_rcons last_rcons /=.
   Qed.
-    
-  (* begin snippet Epe:: no-out *)  
-  Definition Epe (spt: seq (T*T)) := (Pe (UnLift spt t)) .
-  (* end snippet Epe *)  
-  Definition Edecomp (spt: seq (T*T)) := (decomp (UnLift spt t)).
-  Definition Ecomp (tr: T*T*(seq T)) := Lift (comp tr).
-  
-  Definition D1 (x y :T) := [set st:seq T | (decomp st).1 = (x,y)].
-  Definition I1 (x y :T) := [set spt:seq (T*T) | (Edecomp spt).1 = (x,y)].
   
   Lemma Lift_epts_image: forall (st: seq T) (x y:T),
       st \in ((D1 x y)`&` (@D T))-> (Lift st) \in (I1 x y)`&` (@I T).
@@ -934,38 +934,99 @@ Section epts.
   Proof.
   Admitted.
 
-  Lemma Epe_L1: forall (q: seq (T*T)) (x y:T),
-      q \in (@I T) -> Epe q = (x, y) 
-      -> exists p, p \in (@D T) /\ q= Lift p /\ Pe p =(x,y).
-  Proof.
-    move => q x y H1 H2.
-    pose proof Lift_surj H1 as [st [H3 H4]].
-    exists st.
-    move: H2. rewrite /Epe -H4.
-    have -> :(UnLift (Lift st) t) = st by apply UnLift_left;rewrite inP in H3.
-    by move => H5. 
-  Qed.
+  Section XXXX.
+    
+    (** * fixed endpoints *) 
+    Lemma Epe_L1: forall (q: seq (T*T)) (x y:T),
+        q \in (@I T) -> Epe q = (x, y) 
+            -> exists p, p \in (@D T) /\ q= Lift p /\ Pe p =(x,y).
+    Proof.
+      move => q x y H1 H2.
+      pose proof Lift_surj H1 as [st [H3 H4]].
+      exists st.
+      move: H2. rewrite /Epe -H4.
+      have -> :(UnLift (Lift st) t) = st by apply UnLift_left;rewrite inP in H3.
+      by move => H5. 
+    Qed.
+    
+    Lemma Epe_L2: forall (p: seq T) (x y:T),
+        p \in (@D T) -> Pe p =(x,y) -> exists q, p = x::(rcons q y).
+    Proof.
+      move => p x y /inP H1 H2.
+      pose proof seq_crc H1 as [q [x' [y' H3]]].
+      move: H2;rewrite /Pe H3 //= => [[H2 //= H4]].
+      have H5: forall q' x'', last x'' (rcons q' y') = y'
+          by elim;[| move => z q' Hr x'';rewrite rcons_cons /=; rewrite Hr].
+      by exists q;rewrite H2 -H4 H5.
+    Qed.
+    
+    Lemma Epe_L3: forall (q: seq (T*T)) (x y:T),
+        q \in (@I T) -> Epe q = (x, y) ->exists p, q= Lift (x::(rcons p y)). 
+    Proof.
+      move => q x y H1 H2.
+      pose proof Epe_L1 H1 H2 as [p [H3 [H4 H5]]].
+      pose proof Epe_L2 H3 H5 as [p' H6].
+      by exists p'; rewrite H4 H6.
+    Qed.
+    
+    Lemma Epe_L4: forall (q: seq (T*T)) (x y:T),
+        q \in (@I T) -> Epe q = (x, y) -> size(q) > 1
+            -> (exists q', exists eo1, exists eo2, q= eo1 :: [:: eo2 & q']) 
+              /\ (exists p, q= Lift (x::(rcons p y))).
+    Proof.
+      move => q x y H1 H2 H3.
+      pose proof Epe_L3 H1 H2 as [p H4].
+      pose proof seq_cc H3 as [q' [eo1 [eo2 H5]]].
+      by split;[exists q';exists eo1;exists eo2 | exists p].
+    Qed.
 
-  Lemma Epe_L2: forall (p: seq T) (x y:T),
-      p \in (@D T) -> Pe p =(x,y) -> exists q, p = x::(rcons q y).
-  Proof.
-    move => p x y /inP H1 H2.
-    pose proof seq_crc H1 as [q [x' [y' H3]]].
-    move: H2;rewrite /Pe H3 //= => [[H2 //= H4]].
-    have H5: forall q' x'', last x'' (rcons q' y') = y'
-        by elim;[| move => z q' Hr x'';rewrite rcons_cons /=; rewrite Hr].
-    by exists q;rewrite H2 -H4 H5.
-  Qed.
+    Lemma Epe_L5: forall (q: seq (T*T)) (x y:T),
+        q \in (@I T) -> Epe q = (x, y) -> size(q) > 1
+            -> (exists q', exists eo1, exists eo2, exists p, 
+                  q= eo1 :: [:: eo2 & q'] /\
+                  eo1 :: [:: eo2 & q'] = Lift (x::(rcons p y))).
+    Proof.
+      move => q x y H1 H2 H3.
+      pose proof  Epe_L4 H1 H2 H3 as [[q' [eo1 [eo2 H4]]] [p H5]].
+      by exists q';exists eo1;exists eo2;exists p; rewrite -H4 -H5.
+    Qed.
+    
+    Lemma Epe_L6: forall (q: seq (T*T)) (p: seq T) (eo1:T*T) (eo2:T*T) (x y:T),
+        eo1 :: [:: eo2 & q] = Lift (x::(rcons p y)) -> eo1.1 = x.
+    Proof.
+      move => q p eo1 eo2 x y H1.
+      have H2: head (x, last y (rcons p y)) ([:: eo1, eo2 & q])
+               = (head (x, last y (rcons p y)) (Lift (x :: rcons p y)))
+        by rewrite H1.
+      rewrite Lift_head /= in H2.
+      by rewrite H2.
+    Qed.
 
-  Lemma Epe_L3: forall (q: seq (T*T)) (x y:T),
-      q \in (@I T) -> Epe q = (x, y) 
-          ->exists p, q= Lift (x::(rcons p y)). 
-  Proof.
-    move => q x y H1 H2.
-    pose proof Epe_L1 H1 H2 as [p [H3 [H4 H5]]].
-    pose proof Epe_L2 H3 H5 as [p' H6].
-    by exists p'; rewrite H4 H6.
-  Qed.
+    Lemma Epe_L7: forall (q: seq (T*T)) (p: seq T) (eo1:T*T) (eo2:T*T) (x y:T),
+        eo1 :: [:: eo2 & q] = Lift (x::(rcons p y)) -> (last eo2 q).2 = y.
+    Proof.
+      move => q p eo1 eo2 x y H1.
+      have H2: last (x,  head y (x::p)) ([:: eo1, eo2 & q])
+               = last (x, head y (x::p)) (Lift (rcons (x::p) y))
+        by rewrite H1 rcons_cons.
+      rewrite Lift_last /= in H2.
+      by rewrite H2.
+    Qed.
+    
+    Lemma Epe_L8: forall (q: seq (T*T)) (x y:T),
+       q \in (@I T) -> Epe q = (x, y) -> size(q) > 1
+            -> (exists q', exists eo1, exists eo2,
+                  q= eo1 :: [:: eo2 & q'] /\ eo1.1 = x /\ (last eo2 q').2 = y).
+    Proof.
+      move => q x y H1 H2 H3.
+      pose proof Epe_L5 H1 H2 H3 as [q' [eo1 [eo2 [p [H4 H5]]]]].
+      exists q'; exists eo1;exists eo2.
+      pose proof Epe_L6 H5 as H6.
+      pose proof Epe_L7 H5 as H7.
+      by [].
+    Qed.
+    
+  End XXXX.
   
 End epts.
 
