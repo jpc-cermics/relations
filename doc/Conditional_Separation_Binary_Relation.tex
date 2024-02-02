@@ -24,7 +24,7 @@
 \usepackage{euscript}
 \usepackage{stmaryrd} % used by \ic 
 \usepackage{color}
-
+\usepackage{cases}
 \usepackage[colors]{optsys}
 % we can pass options to optsys \PassOptionsToPackage{colors}{optsys}
 % and let causal load optsys
@@ -302,10 +302,11 @@ As a second example, if the elements of a sequence belong to a set $X$, then the
 elements of the lifted sequence belong to the product relation $X{\times}X$ as proved in the following lemma
 {\small \inputsnippets{seq1/Rpath_L1-n.tex}}
 
-\paragraph{$\bullet$ \texttt{Lift} bijection.} The lift operation, when restricted to the subset \texttt{D} defined below,
+\paragraph{$\bullet$ \texttt{Lift} bijection.}
+\coqstart The lift operation, when restricted to the subset \texttt{D} defined below,
 is bijective onto its image \texttt{I}
 {\small \inputsnippets{seq1/DI-n.tex,seq1/Lift_inj-n.tex,seq1/Lift_surj-n.tex}}
-The inverse of \texttt{Lift} is obtained with the recursive mapping \texttt{UnLift} (not detailed here). 
+The inverse of \texttt{Lift} is obtained with the recursive mapping \texttt{UnLift} (not detailed here). \coqend
 
 % \paragraph{$\bullet$ (\texttt{seq T}) and (\texttt{seq (T*T)}).}
 % XXXX INUTILE ? four equivalent ways -- two are
@@ -457,6 +458,7 @@ the projection mapping on the tail and head endpoints defined by
 \coqstart The endpoints are obtained in Coq by the mapping \texttt{Pe} for a sequence of vertices and by the mapping 
 \texttt{Epe} for a sequence of edges
 {\small \inputsnippets{seq1/Pe-n.tex,seq1/Epe-n.tex}}\coqend
+
 \paragraph{$\bullet$ Transitive closure and edge paths.} As a first result linking
 (edge) paths and relations we prove that {\small
   \inputsnippetsE{erel3/TCP-n.tex}{,} which asserts that two nodes
@@ -502,7 +504,7 @@ values \texttt{N} (for $-1$) and \texttt{P} (for $1$)
 The set of \emph{\undirectedEdgePath} of length~$n$ ($n\ge 1$) relative to the
 graph~$\npOrientedGraph$ is defined by 
 \begin{subequations}
-\begin{align}
+  \begin{align}
   \UPATH_n \np{\OrientedGraph} %    \PATH^n\np{\graph}
   &=
     \Bset{ \bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}, o_i} }{i\in\ic{1,n}} 
@@ -561,8 +563,55 @@ An \emph{\undirectedEdgeSubPath} of the \undirectedEdgePath~$\UndirectedPath
 \in\UPATH\np{\OrientedGraph}$ is an \undirectedEdgePath\ obtained by a
 subsequence of consecutive indices. 
 
-\paragraph{ZZZZZ parler de U construit comme image avec LiftO}
-\coqstart The coq formalization of \undirectedEdgePaths\ paths of size greater or equal to
+\paragraph{$\bullet$ Definition of endpoints.} We start by considering the mapping \(
+\pi : \Sequence(\VERTEX{\times}\VERTEX{\times}\Orientation) \to 
+  \Sequence(\VERTEX\times\VERTEX)\times \Sequence(\Orientation) \) defined for all 
+  $\UndirectedPath \in \Sequence(\VERTEX{\times}\VERTEX{\times}\Orientation)$ by
+\begin{equation}
+  \UndirectedPath \mapsto 
+  \bp{ \nseqa{ \pi_{\VERTEX\times\VERTEX}(\UndirectedPath_i)}{i \in\ic{1,\cardinal{\UndirectedPath}}}
+    ,  \nseqa{ \pi_{\Orientation} (\UndirectedPath_i)}{i \in\ic{1,\cardinal{\UndirectedPath}}}}
+  \eqfinv
+\end{equation}
+where $\pi_{\VERTEX\times\VERTEX}$ (resp. $\pi_{\Orientation}$) is the projection on the set $\VERTEX\times\VERTEX$ 
+(resp. $\Orientation$). Now, the endpoints of an \undirectedEdgePath\
+\( \UndirectedPath \) are defined as the endpoints of the \EdgePath\  $\pi(\UndirectedPath)_1$.
+We denote by  \( \Projection_{\UPATH}: \UPATH \np{\OrientedGraph} \to\VERTEX\times\VERTEX \) 
+the projection mapping on the tail and head endpoints of an  \undirectedEdgePath\ defined by
+\begin{subequations}
+  \begin{equation}
+    \forall \path\in \UPATH\np{\OrientedGraph}
+    \eqsepv
+    \Projection_{\UPATH}\np{\path} = \Projection \bp{ \pi(\path)_1} \in \VERTEX\times\VERTEX 
+    \eqfinp
+    \label{eq:Projection_UPATH}
+  \end{equation}
+\end{subequations}
+
+\coqstart {\small \inputsnippets{erel3/Eope.tex}} \coqend
+
+\paragraph{$\bullet$ Deployment in paths.} Now, with any binary relation \( \relation \subset \VERTEX\times\VERTEX \),
+we associate the subset~\( \DeploymentInUPaths{\relation}{\OrientedGraph} \)
+of~\( \UPATH\np{\OrientedGraph} \) in~\eqref{eq:eopaths_defs}
+that we call the \emph{deployment in \undirectedEdgePaths}, 
+defined by 
+\begin{equation}
+  \forall \relation \subset \VERTEX\times\VERTEX 
+  \eqsepv 
+  \DeploymentInUPaths{\relation}{\OrientedGraph}
+  = \Projection_{\UPATH}^{-1}(\relation) \subset \UPATH\np{\OrientedGraph} 
+  \eqfinv
+  \label{eq:DeploymentInUPaths}
+\end{equation}
+where the projection~\( \Projection_{\UPATH} \) has been defined
+in~\eqref{eq:Projection_UPATH}
+The deployment \(\DeploymentInUPaths{\relation}{\OrientedGraph} \)
+is made of the \undirectedEdgePaths\ whose endpoints satisfy the 
+binary relation~\( \relation \).
+{\small \inputsnippets{erel3/D_U-n.tex}}
+
+\paragraph{XXXXX  parler de $D_U$ construit comme image avec LiftO}
+The coq formalization of \undirectedEdgePaths\ paths of size greater or equal to
 one follows the same path as the one used for (edge) paths except that we use
 the oriented lift operator defined in Equation~\eqref{def:Lifto} implemented as 
 in Coq as follows
@@ -595,18 +644,6 @@ $n \ge 2$ the restriction of $\Lifto$ to the set
 $\Sequence_{n}(\fullset){\times}\Sequence_{n-1}(\Orientation)$ coincide with
 $\Lifto_n$.
 
-\paragraph{$\bullet$ endpoints} ZZZZZ
-We use the notation \( \Projection_{\UPATH}: \UPATH \np{\OrientedGraph} \to\VERTEX\times\VERTEX \) 
-  to denote the projection mappings on the tail and head endpoints of an \undirectedEdgePath. 
-  It is defined, for $\np{\path,\orient}\in \UPATH\np{\OrientedGraph}$, by 
-  \begin{equation}
-    \Projection_{\UPATH}\bp{\np{\path,\orient}} =  \Projection\np{\path} 
-    \eqsepv
-    \forall \np{\path,\orient}\in \UPATH\np{\OrientedGraph}
-    \eqfinp
-    \label{ZZeq:Projection}
-  \end{equation}
-\medskip
 
 \ifpreprint 
   \noindent $\bullet$ We denote by
@@ -658,105 +695,69 @@ We use the notation \( \Projection_{\UPATH}: \UPATH \np{\OrientedGraph} \to\VERT
 \medskip
 \fi 
 
-\noindent \(\bullet\)
-To define blocked \undirectedEdgePaths, 
-the following notions prove useful. 
-With any binary relation \( \relation \subset \VERTEX\times\VERTEX \),
-we associate the subset~\( \DeploymentInUPaths{\relation}{\OrientedGraph} \)
-of~\( \UPATH\np{\OrientedGraph} \) in~\eqref{eq:undirectedEdgePaths},
-that we call the \emph{deployment in \undirectedEdgePaths}, 
-defined by 
-\begin{equation}
-  \forall \relation \subset \VERTEX\times\VERTEX 
-  \eqsepv 
-  \DeploymentInUPaths{\relation}{\OrientedGraph}
-  = \Projection_{\UPATH}^{-1}(\relation) \subset \UPATH\np{\OrientedGraph} 
-  \eqfinv
-  \label{eq:DeploymentInUPaths}
-\end{equation}
-where the projection~\( \Projection_{\UPATH} \) has been defined
-in~\eqref{eq:Projection}.
-The deployment \(\DeploymentInUPaths{\relation}{\OrientedGraph} \)
-is made of the \undirectedEdgePaths\ whose endpoints satisfy the 
-binary relation~\( \relation \).
-%
-We also associate with~\( \relation \)
-the subset~\( \DeploymentInPaths{\relation}{\OrientedGraph} \)
-of~\( \PATH\np{\OrientedGraph} \),
-that we call the \emph{deployment in paths},
-defined by 
-\begin{equation}
-  \forall \relation \subset \VERTEX\times\VERTEX 
-  \eqsepv 
-  \DeploymentInPaths{\relation}{\OrientedGraph}
-  = \Projection^{-1}(\relation) \subset \PATH\np{\OrientedGraph} 
-  \eqfinv
-  \label{eq:DeploymentInPaths}
-\end{equation}
-where the projection~\( \Projection \) has been defined
-in~\eqref{eq:Projection_PATH}.
-The deployment in paths~\( \DeploymentInPaths{\relation}{\OrientedGraph} \)
-is made of the \EdgePaths\  whose endpoints satisfy the 
-binary relation~\( \relation \).
 
 
 \subsection{Definitions of active \undirectedEdgePaths, of  conditional
   directional separation and of conditional active binary relation}
 \label{Definition_of_the_conditional_directional_separation_binary_relation}
 
-% \subsubsection{Definition of active \undirectedEdgePaths\ in a graph}
-
 We define active \undirectedEdgePaths\ relative to the graph~$\npOrientedGraph$
 in Definition~\ref{de:ActivePaths}.
 Then, we  obtain the definition of blocked \undirectedEdgePaths\ relative to the
 graph~$\npOrientedGraph$, as defined by~\citep{PEARL1986357}, by switching to the
 complementary set.
-% We define blocked \undirectedEdgePaths\ relative to the graph~$\npOrientedGraph$ as follows.
 
-\begin{definition}
-  % \label{de:BlockedUndirectedPaths}
+We start by introducing a binary relation, $\ActiveTr$ (active triplet), on the set $\VERTEX{\times}\VERTEX{\times}\Orientation$,
+which is parameterized by the set of edges $\EDGE$ of a graph \( \npOrientedGraph \) and by a subset $\AgentSubsetW\subset\VERTEX$.
+Let \( \npOrientedGraph \) be a graph, 
+and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.
+The active triplet binary relation $\ActiveTr$ is defined as followed
+\begin{subnumcases}%
+  {
+    \np{\tail{\vertex_1},\head{\vertex_{1}},\orient_1}
+    \,\ActiveTr\,
+    \np{\tail{\vertex_2},\head{\vertex_{2}},\orient_2}
+    \iff
+    \label{pipo}
+  }  
+  \orient_i = +1\eqsepv \orient_{i+1}= +1 \text{ and }
+  \head{\vertex_i} = \tail{\vertex_{i+1}} \in \Complementary{\AgentSubsetW}\eqsepv
+  \label{it:ActivePaths_case1}
+  \\
+  \orient_i = -1\eqsepv \orient_{i+1}= -1 \text{ and }
+  \head{\vertex_i} = \tail{\vertex_{i+1}} \in \Complementary{\AgentSubsetW}\eqsepv
+  \label{it:ActivePaths_case2}
+  \\
+  \orient_i = -1\eqsepv \orient_{i+1}= +1 \text{ and }
+  \head{\vertex_i} = \tail{\vertex_{i+1}} \in \Complementary{\AgentSubsetW}\eqsepv
+  \label{it:ActivePaths_case3}
+  \\
+  \orient_i = +1\eqsepv \orient_{i+1}= -1 \text{ and }
+  \head{\vertex_i} = \tail{\vertex_{i+1}} \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW}\eqsepv
+  \label{it:ActivePaths_case4}
+\end{subnumcases}
+where \( \TransitiveReflexiveClosure{\EDGE}= \TransitiveClosure{\EDGE} \cup \Delta \)
+is the reflexive and transitive closure of the relation~$\EDGE$,
+and where
+\begin{equation}
+  \TransitiveReflexiveClosureOfSet{\AgentSubsetW}=
+  \TransitiveReflexiveClosure{\EDGE}\AgentSubsetW 
+  \eqfinp
+  \label{eq:TransitiveReflexiveClosure_AgentSubsetW}
+\end{equation}
+
+\begin{definition}[\( \ActiveUndirectedPaths{\OrientedGraph}\)]
   \label{de:ActivePaths}
   Let \( \npOrientedGraph \) be a graph, 
   and $\AgentSubsetW\subset\VERTEX$ be a subset of vertices.
   % 
   We say that an  \undirectedEdgePath\
-  \(\UndirectedPath=\np{\path,\orient} \in
-  \UPATH\np{\OrientedGraph} \) in~\eqref{eq:undirectedEdgePaths}
+  \(\UndirectedPath \in \UPATH\np{\OrientedGraph} \) in~\eqref{eq:undirectedEdgePaths}
   relative to the graph~\(\npOrientedGraph\)
   is an \emph{active \undirectedEdgePath} (\wrt\footnote{With respect to} the subset~$\AgentSubsetW$)
-  if %it is an \undirectedEdgePath\ and that,
-  either its length is~0 or~1,
-  or (when its length is at least~$2$)
-  \(\UndirectedPath=\np{\path,\orient}=\bp{\nseqp{(\tail{\vertex_i},\head{\vertex_i})}{i \in
-      \ic{1,\cardinal{\path}}},\nseqp{\orient_i}{i \in \ic{1,\cardinal{\path}}}}\)
-  is such that, for all $i\in \ic{1,\cardinal{\path}-1}$, the consecutive extended-oriented subpaths
-  \(\bp{\np{\tail{\vertex_i},\head{\vertex_i}}, \orient_i}\)  and
-  \(\bp{\np{\tail{\vertex_{i+1}},\head{\vertex_{i+1}}}, \orient_{i+1}}\)
-  satisfy one of the four following cases
-  \begin{enumerate}
-  \item
-    $\orient_i = +1$, $\orient_{i+1}= +1$ and $\head{\vertex_i} = \tail{\vertex_{i+1}} \in \Complementary{\AgentSubsetW}$,
-    \label{it:ActivePaths_case1}
-  \item
-    $\orient_i = -1$, $\orient_{i+1}= -1$ and $\head{\vertex_i} = \tail{\vertex_{i+1}} \in \Complementary{\AgentSubsetW}$,
-    \label{it:ActivePaths_case2}
-  \item
-    $\orient_i = -1$, $\orient_{i+1}= +1$ and $\head{\vertex_i} = \tail{\vertex_{i+1}} \in \Complementary{\AgentSubsetW}$,
-    \label{it:ActivePaths_case3}
-  \item
-    $\orient_i = +1$, $\orient_{i+1}= -1$ and $\head{\vertex_i} = \tail{\vertex_{i+1}} \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW}$,
-    \label{it:ActivePaths_case4}
-  \end{enumerate}
-  where \( \TransitiveReflexiveClosure{\EDGE}= \TransitiveClosure{\EDGE} \cup \Delta \)
-  is the reflexive and transitive closure of the relation~$\EDGE$,
-  and where
+  if the successive elements (triplets) of \(\UndirectedPath\) satisfy the binary relation
+  \(\ActiveTr\) defined in Equation~\eqref{pipo}.
   
-  \begin{equation}
-    \TransitiveReflexiveClosureOfSet{\AgentSubsetW}=
-    \TransitiveReflexiveClosure{\EDGE}\AgentSubsetW 
-    \eqfinp
-    \label{eq:TransitiveReflexiveClosure_AgentSubsetW}
-  \end{equation}
   We denote by \( \ActiveUndirectedPaths{\OrientedGraph} \subset \UPATH\np{\OrientedGraph}\)
   the subset of all active \undirectedEdgePaths\ (\wrt\ the subset~$\AgentSubsetW$). 
   We say that an \undirectedEdgePath\ is \emph{blocked} if it is not active
@@ -764,7 +765,19 @@ complementary set.
   \bpComplementary{\ActiveUndirectedPaths{\OrientedGraph}}\)   
   the subset of all blocked \undirectedEdgePaths\ (\wrt\ the subset~$\AgentSubsetW$).
 \end{definition} 
-Notice that any \undirectedEdgePath\ of length~0 or 1 is active by definition.
+Notice that any \undirectedEdgePath\ of length~1 is active by definition.
+
+
+
+\coqstart The Coq formalization easily follows 
+{\small \inputsnippetsE{erel3/A_tr.tex}{,}}
+noticing that the binary relation $\ActiveTr$ contains the well chained relation that we explicitely 
+write with \texttt{ChrelO} and the forward set defined by Equation~\eqref{eq:TransitiveReflexiveClosure_AgentSubsetW} 
+is defined by \texttt{Fset}. \coqend
+
+\coqstart The Coq formalization easily follows \coqend
+
+
 
 {\small \inputsnippets{erel3/ActiveOe.tex,erel3/Aeop.tex}}
 

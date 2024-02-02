@@ -118,7 +118,7 @@ Section Seq_utilities.
     pose proof seq_c H4 as [q [x H5]].
     by exists q,x,y;rewrite H3 H5.
   Qed.
-
+  
   Lemma seq_cc: forall (s: seq T), 
       1 < size s -> exists (s':seq T) (x y:T), s = [::x,y &s'].
   Proof.
@@ -128,6 +128,19 @@ Section Seq_utilities.
     have H4: 0 < size r by rewrite H3 ltnS in H1.
     pose proof seq_c H4 as [q [x H5]].
     by exists q,y,x;rewrite H3 H5.
+  Qed.
+
+  Lemma seq_cc': forall (s: seq T), 
+      1 < size s <-> exists (s':seq T) (x y:T), s = [::x,y &s'].
+  Proof.
+    move => s.
+    - split => [H1 | ].
+      have H2: 0 < size s by apply leq_ltn_trans with 1.  
+      pose proof seq_c H2 as [r [y H3]].
+      have H4: 0 < size r by rewrite H3 ltnS in H1.
+      pose proof seq_c H4 as [q [x H5]].
+      by exists q,y,x;rewrite H3 H5.
+    - by move => [s' [x [y -> /=]]].
   Qed.
   
   Lemma seq_1: forall (s: seq T), 
@@ -916,14 +929,11 @@ Section epts.
     [set spt| spt=[::(x,y)] /\ E (x,y)] `|` 
       [set spt | exists st, spt = Lift (x::(rcons st y)) /\ spt [L\in] ((E `*`E ) `&` (@Chrel T))].
 
-  Definition D_V1_new (x y:T) (E: relation T) := 
-    [set st | st =[::x;y] /\ E (x,y)] 
-      `|` [set st:seq T | (Lift (Lift (x::(rcons st y)))) [\in] ((E `*`E ) `&` (@Chrel T))].
-
-  Theorem D_P_as_vpath: forall (x y :T) (E: relation T),
-      image (D_V1_new x y E) (@Lift T) = D_P1 x y E.
+  Lemma D_V1_step1: forall (x y:T) (st:seq T),
+      1 < size st /\ [set (x, y)] (Pe st) <-> exists q, st= x::(rcons q y).
   Proof.
   Admitted.
+      
 
 End epts.
 

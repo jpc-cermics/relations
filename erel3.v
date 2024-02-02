@@ -234,7 +234,7 @@ Section LiftO3.
 
   (* begin snippet U_gt:: no-out *) 
   Definition U_gt (n: nat) (E: relation T):=
-    [set sto | sto [\in] (Oedge E) /\ size(sto) > n /\ (Lift sto) [\in] ChrelO].
+    [set sto | size(sto) > n /\ sto [\in] (Oedge E) /\ (Lift sto) [\in] ChrelO].
   (* end snippet U_gt *)
 
   (* begin snippet U_ge_1:: no-out *) 
@@ -270,12 +270,23 @@ Section LiftO3.
   Lemma ChrelO_eq: forall (x y z t: T) (o1 o2:O),
       ChrelO ((x,y,o1), (z,t,o2)) <-> y = z.
   Proof. by []. Qed.
-
-  (* begin snippet D_U:: no-out *) 
-  Definition D_U (R E: relation T):=
+  
+  Variables (t:T).
+  
+  (* begin snippet Eope:: no-out *)  
+  Definition Eope (stto : seq(T*T*O)) : T*T := (Epe t (@unpair (T*T) O stto).1).
+  (* end snippet Eope *)  
+  
+  (* begin snippet D_U:: no-out *)  
+  Definition D_U (R E: relation T) (t: T) := [set stto |size(stto)>0 
+     /\ R (Eope stto)/\stto [\in] (Oedge E) /\stto [Suc\in] ChrelO].
+  (* end snippet D_U *)  
+  
+  (* begin snippet D_U1:: no-out *) 
+  Definition D_U' (R E: relation T):=
     [set spa | spa [\in] (Oedge E) /\
                  (exists p, exists x,exists y,exists o, (LiftO (x::(rcons p y)) o) = spa /\ R (x,y))].
-  (* end snippet D_U *)
+  (* end snippet D_U1 *)
 
 End LiftO3.
 
@@ -366,17 +377,18 @@ Section Active_relation.
   Variables (T: Type).
   
   (* Active as a relation on Eo) *)
-  (* begin snippet ActiveOe:: no-out *)  
-
-  Definition Active_  (W: set T) (E: relation T) := 
-    [set oe : (T*T*O) * (T*T*O)|
-      match (oe.1.2,oe.2.2, oe.1.1.2) with 
+  (* begin snippet A_tr:: no-out *)  
+  Definition A_tr (W: set T) (E: relation T) := (@ChrelO T) `&` 
+    [set oe : (T*T*O) * (T*T*O)| match (oe.1.2,oe.2.2, oe.1.1.2) with 
       | (P,P,v) => W.^c v | (N,N,v) => W.^c v | (N,P,v) => W.^c v
       | (P,N,v) => (Fset E.* W) v end].
+  (* end snippet A_tr *)
 
-  Definition Active' (W: set T) (E: relation T) :=  
-    ((Oedge E) `*` Oedge E) `&` (@ChrelO T) `&`  (Active_ W E).
+  Definition A_tr_eo (W: set T) (E: relation T) :=  
+    ((Oedge E) `*` Oedge E) `&` (A_tr W E).
   
+
+  (* begin snippet ActiveOe:: no-out *)  
   Definition ActiveOe (W: set T) (E: relation T) := 
     [set oe : (T*T*O) * (T*T*O) | 
       Oedge E oe.1 /\ Oedge E oe.2 /\ (ChrelO oe)
@@ -387,21 +399,20 @@ Section Active_relation.
         | (P,N,v) => (Fset E.* W) v
         end].
   (* end snippet ActiveOe *)  
-
+  
   Lemma Active_iff: forall (W: set T) (E: relation T), 
-      Active' W E = ActiveOe W E.
+      A_tr_eo W E = ActiveOe W E.
   Proof.
     move => W E.
-    rewrite /Active' /Active_ /ActiveOe /setI /mkset predeqE => [[eo1 eo2]].
-    by split => [[[[H1 H1'] H2] H3] // | [H1 [H2 [H3 H4]]]].
-  Qed.
+    rewrite /A_tr_eo /A_tr /ActiveOe /setI /mkset predeqE => [[eo1 eo2]].
+  Admitted.
   
   Lemma ActiveOe_Oedge: forall (W: set T) (E: relation T) (eo : (T*T*O) * (T*T*O)),
       (ActiveOe W E) eo -> Oedge E eo.1 /\ Oedge E eo.2.
   Proof.
     by move => W E eo [H1 [H2 _]].
   Qed.
-
+  
   Lemma ActiveOe_Compose: forall (W: set T) (E: relation T) (eo : (T*T*O) * (T*T*O)),
       eo \in (ActiveOe W E) -> ChrelO eo. 
   Proof.
