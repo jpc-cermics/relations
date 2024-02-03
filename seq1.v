@@ -195,7 +195,14 @@ Section Seq_utilities.
     pose proof (seq_cc H1) as [q [x' [y' H2]]].
     by exists q;exists x';exists y';rewrite H2.
   Qed.
-  
+
+  Lemma last_rev: forall (st: seq T) (t:T),
+      last t (rev st) = head t st.
+  Proof.
+    elim => [// | t1 st1 Hr t].
+    by rewrite rev_cons last_rcons /= .
+  Qed.
+
 End Seq_utilities.
 
 Section Lift_props. 
@@ -1292,7 +1299,7 @@ Section basic_pair_unpair.
   Proof.
     by move => s;elim => [// | [t1 s1] sts Hrt];rewrite /= -[in RHS]Hrt. 
   Qed.
-
+  
   Definition Spairs := [set sts:  seq (T*S) | True].
   Definition Pseq := [set st : (seq T)*(seq S) | size st.1 = size st.2].
   Definition IPseq (s:S) := [set sts |exists st, exists ss,
@@ -1316,6 +1323,55 @@ Section basic_pair_unpair.
          split;[apply unpair_sz|apply unpair_right].
   Qed.
 
+  (* endpoints of pairs *) 
+  
+  Lemma pair_h: forall (st: seq T) (ss: seq S) (t: T) (s: S),
+      size (ss) = size (st)-> 
+      head (t,s) (pair_ s st ss) = (head t st, head s ss).
+  Proof. 
+    elim => [ss t s /= /size0nil -> //= | t1 st Hr ss t s H1 ]. 
+    rewrite pair_c_ //.
+  Qed.
+
+  Lemma pair_rc: forall (st: seq T) (ss: seq S) (t: T) (s sv: S),
+      size ss = size st
+      -> rcons (pair_ sv st ss) (t, s) =
+          pair_ sv (rcons st t) (rcons ss s).
+  Proof.
+    elim => [ss t s sv /size0nil -> // | t1 st' Hr ss t s sv H1 ]. 
+    have H2: size ss > 0 by rewrite H1 /=.
+    pose proof seq_c H2 as [ss' [s' H3]].
+    rewrite pair_c_ H3 3!rcons_cons /= Hr.
+    by [].
+    by rewrite H3 /= in H1; apply succn_inj in H1.
+  Qed.
+  
+  Lemma pair_rev: forall (st: seq T) (ss: seq S) (s: S),
+      size (ss) = size (st)-> 
+      rev (pair_ s st ss) = pair_ s (rev st) (rev ss). 
+  Proof. 
+    elim => [ss s // | t1 st' Hr ss s H1 ]. 
+    have H2: size ss > 0 by rewrite H1 /=.
+    pose proof seq_c H2 as [ss' [s' H3]].
+    have H4: size ss' = size st' by rewrite H3 /= in H1; apply succn_inj in H1.
+    rewrite H3 pair_c_ 3!rev_cons /= Hr.
+    apply pair_rc.
+    by rewrite 2!size_rev.
+    by [].
+  Qed.
+
+  Lemma pair_l: forall (st: seq T) (ss: seq S) (t: T) (s sv: S),
+      size (ss) = size (st)-> 
+      last (t,sv) (pair_ s st ss) = (last t st, last sv ss).
+  Proof. 
+    elim => [ss t s sv /= /size0nil -> //= | t1 st Hr ss t s sv H1 ]. 
+    have H2: size ss > 0 by rewrite H1 /=.
+    pose proof seq_c H2 as [ss' [s' H3]].
+    rewrite pair_c_ H3 /=  Hr.
+    by [].
+    by rewrite H3 /= in H1; apply succn_inj in H1.
+  Qed.
+
 End basic_pair_unpair.
 
 Section pair_unpair.
@@ -1331,13 +1387,19 @@ Section pair_unpair.
   (* end snippet O *)
 
   (* begin snippet pair:: no-out *)  
-  Definition pair (spt: seq (T)) (so: seq O):= @pair_ (T) (O) P spt so.
+  Definition pair (st: seq (T)) (so: seq O):= @pair_ (T) (O) P st so.
   (* end snippet pair *)  
   
-  Lemma pair_c: forall (spt: seq T) (so: seq O) (pa: T),
-      pair (pa::spt) so = (pa,head P so )::(pair spt (behead so)).
+  Lemma pair_ch: forall (st: seq T) (so: seq O) (t: T),
+      pair (t::st) so = (t,head P so )::(pair st (behead so)).
   Proof. by apply pair_c_. Qed.
 
+  Lemma pair_h: forall (sto: seq (T*O)) (st: seq T) (so: seq O) (t:T) (to: T*O),
+    sto = pair (t::st) so -> (head to sto).1 = t.
+  Proof.
+    by move => sto st so t to;rewrite pair_ch => -> /=. 
+  Qed.
+  
   Lemma pair_cc: forall (st: seq T) (so: seq O) (t: T) (o: O),
       pair (t::st) (o::so) = (t,o)::(pair st so).
   Proof. by apply pair_cc_. Qed.
