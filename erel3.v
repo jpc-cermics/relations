@@ -262,7 +262,7 @@ Section Active_relation.
     - move => [H1 [p [so [H2 [H3 H4]]]]].
       split. by [].
       split. 
-      by rewrite -H4 /LiftO pair_sz Lift_sz2.
+      by rewrite -H4 /LiftO pair_sz1 Lift_sz2.
       rewrite -H4. apply Lift_LiftO.
       split. by apply ltn_trans with 1.
       by []. 
@@ -275,7 +275,26 @@ Section Active_relation.
   (* begin snippet Eope:: no-out *)  
   Definition Eope (stto : seq(T*T*O)) : T*T := (Epe tv (@unpair (T*T) O stto).1).
   (* end snippet Eope *)  
-  
+
+  Lemma Eope_L0':  forall (eo1 eo2: T*T*O) (q: seq (T*T*O)) (x y:T),
+      Eope  [:: eo1, eo2 & q] = (x,y)
+      -> exists (q': seq (T*T)),exists (e1: T*T), exists (e2: T*T), 
+        (Epe tv [:: e1,e2 & q'] = (x,y)) 
+        /\  eo1.1.1 = e1.1 /\ (last eo2 q).1.2 = (last e2 q').2.
+  Proof.
+    move => eo1 eo2 q x y.
+    pose proof unpair_cc eo1 eo2 q as [q' [e1 [e2 [so [H1 [H2 [H3 H4]]]]]]]. 
+    rewrite H1 /Eope /Epe /Pe.
+    have H5: unpair (pair [:: e1, e2 & q'] so) = ([:: e1, e2 & q'],so)
+      by apply unpair_left.
+    have H6: (unpair (pair [:: e1, e2 & q'] so)).1 = [:: e1, e2 & q']
+      by rewrite H5 /=.
+    rewrite H6.
+    move => [H7 H8].
+    exists q';exists e1;exists e2.
+    by rewrite H7 H8.
+  Qed.
+    
   (* begin snippet D_U:: no-out *)  
   Definition D_U (R E: relation T) := [set stto |size(stto)>0 
      /\ R (Eope stto) /\ stto [\in] (Oedge E) /\ stto [Suc\in] ChrelO].
@@ -452,7 +471,7 @@ Section Active_relation.
       -> exists p: seq T, size(p) = size(sto)+1 /\ Lift p = (unpair_tt_o sto).1 
                     /\ Epe tv (Lift p) = (x,y).
   Proof.
-    move => sto x y [H1 H2 H5].
+    move => sto x y H1 H2 H5.
     pose proof Lift_ChrelO1 H1 H2  as [p [H3 H4]].
     by exists p; rewrite /Eope -H4 in H5.
   Qed.
@@ -534,17 +553,13 @@ Section Active_relation.
     move => eo1 eo2 q x y H1 H2 H3. 
     have H4: size ([:: eo1, eo2 & q]) > 2 by rewrite -2!ltn_predRL.
     pose proof Eope_L5 H4 H3 H1 as [q' [e1 [e2 [H5 [H6 [H7 [H8 H9]]]]]]].
-
     have H10: pair [:: e1, e2 & q']  (unpair [:: eo1, eo2 & q]).2 = [:: eo1, eo2 & q]
       by rewrite H5 /pair unpair_right.
     have H11: eo1.1.1 = x 
-      by rewrite pair_c in H10; move: H10 => [HH1 _]; rewrite -HH1 /=.
-    
-    ZZZ 
-      
-    pose proof ltn_predK.
-    ZZZZZ
-Admitted.
+      by rewrite pair_ch in H10; move: H10 => [HH1 _]; rewrite -HH1 /=.
+    have H12:  size (unpair [:: eo1, eo2 & q]).2 = size([:: e1, e2 & q'])
+      by rewrite H5 unpair_sz.
+  Admitted.
   
   Lemma D_U_a_eq12:  forall (E: relation T) (W: set T) (stto: seq (T*T*O)) (x y:T),
       size stto > 1 /\ (Eope stto) = (x,y) /\ stto [L\in] (ActiveOe W E) 
