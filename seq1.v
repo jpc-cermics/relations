@@ -251,6 +251,26 @@ Section Lift_props.
     by rewrite Lift_crc H1 /=.
   Qed.
   
+  Lemma head_Lift: forall (st:seq T) (pt: T*T),
+      size(st) > 1 -> (head pt (Lift st)).1 = head pt.1 st.
+  Proof.
+    elim => [pt // | z st _ pt H3].
+    have H4: size st > 0 by rewrite /size in H3;apply leq_ltn_trans with 0. 
+    clear H3.
+    elim: st z H4 => [z // | u st _ z H2].
+    by rewrite Lift_c /=.
+  Qed.
+  
+  Lemma last_Lift: forall (st:seq T) (pt: T*T),
+      size(st) > 1 -> (last pt (Lift st)).2 = last pt.1 st.
+  Proof.
+    elim/last_ind => [pt // | st z _ pt H3].
+    have H4: size st > 0 by rewrite size_rcons in H3;apply leq_ltn_trans with 0. 
+    clear H3.
+    elim/last_ind: st z H4 => [ z // | st u _ z H2].
+    by rewrite Lift_rcrc 2!last_rcons. 
+  Qed.
+  
   Lemma Lift_cat_rc: forall (st st':seq T) (y z: T),
       Lift ((rcons st y) ++ (rcons st' z)) =
         Lift (rcons st y) ++ Lift (y::rcons st' z).
@@ -835,66 +855,60 @@ Section Lift_bijective.
 End Lift_bijective.
 
 Section epts.
-  (** * endpoints and deployment  *)
+  (** * endpoints  *)
 
-  Variables (T: Type) (t:T).
-
+  Variables (T: Type) (tv:T) (ptv: T*T).
+  
   (* begin snippet Pe:: no-out *)  
-  Definition Pe (st: seq T) := (head t st, last t st).
+  Definition Pe (st: seq T) := (head ptv.1 st, last ptv.1 st).
   (* end snippet Pe:: no-out *)  
-
-  Definition decomp (st: seq T) := (head t st, last t st, behead (behead (belast t st))).
-  Definition comp (tr: T*T*(seq T)) := tr.1.1::(rcons tr.2 tr.1.2).
-
+  
   (* begin snippet Epe:: no-out *)  
-  Definition Epe (spt: seq (T*T)) := (Pe (UnLift spt t)) .
-  
+  Definition Epe (spt: seq (T*T)) := (Pe (UnLift spt ptv.1)) .
   (* end snippet Epe *)  
-  Definition Edecomp (spt: seq (T*T)) := (decomp (UnLift spt t)).
-  Definition Ecomp (tr: T*T*(seq T)) := Lift (comp tr).
   
-  Definition D1 (x y :T) := [set st:seq T | (decomp st).1 = (x,y)].
-  Definition I1 (x y :T) := [set spt:seq (T*T) | (Edecomp spt).1 = (x,y)].
-
-  Lemma Lxx: forall (st:seq T), size(st)> 1 -> comp (decomp st) = st.
-  Proof. 
-    move => p.
-    pose proof seq_cases p as [H1 | [[x H1] | [r [x [y H1]]]]];rewrite H1 //.
-    move => _.
-    by rewrite /decomp /comp /= belast_rcons last_rcons /=.
-  Qed.
-
-  Lemma Lyy: forall (tr: T*T*(seq T)),  decomp (comp tr) = tr.
-  Proof. 
-    move => [[x p] y].
-    by rewrite /comp /decomp /=  belast_rcons last_rcons /=.
-  Qed.
+  (* begin snippet Epe1:: no-out *)  
+  Definition Epe1 (spt: seq (T*T)) := ((head ptv spt).1, (last ptv spt).2).
+  (* end snippet Epe1 *)  
   
-  Lemma Lift_epts_image: forall (st: seq T) (x y:T),
-      st \in ((D1 x y)`&` (@D T))-> (Lift st) \in (I1 x y)`&` (@I T).
+  (* Epe1 (Lift st) = Pe st *)
+  Lemma Epe1_Lift: forall (st:seq T), size(st) > 1 -> Epe1 (Lift st) = Pe st.
   Proof.
-    move => st x y.
-    move => /inP [[H1 H2] /inP H3].
-    pose proof (Lift_image H3) as H4.
-    move: H4 => /inP [H4 H5].
-    rewrite inP /setI.
-    split. 
-    - rewrite /I1 /= .
-      have -> : (UnLift (Lift st) t) = st 
-        by rewrite Lift_sz2 in H4;apply: UnLift_left H4.
-      by rewrite H1 H2.
-    - by []. 
+    move => st H1; rewrite /Epe1 /Pe.
+    have ->: (head ptv (Lift st)).1 = head ptv.1 st by apply head_Lift.
+    have ->: (last ptv (Lift st)).2 = last ptv.1 st by apply last_Lift.
+    by [].
   Qed.
   
-  Lemma UnLift_epts_image: forall (spt: seq (T*T)) (x y:T),
-      spt \in ((I1 x y)`&` (@I T))-> (UnLift spt t) \in (D1 x y)`&` (@D T).
+  Lemma Epe_Lift: forall (st: seq T), size(st) > 1 -> Epe (Lift st) = Pe st.
   Proof.
-    move => p x y.
-    move => /inP [[H1 H2] /inP H3].
-    pose proof (UnLift_image H3) t as H4.
-    by rewrite inP /D1 /setI /mkset /decomp H1 H2 /= ;split;[ | apply inP].
+    move => st H1;rewrite /Epe /Pe. 
+    by have ->: (UnLift (Lift st) ptv.1) = st by apply: UnLift_left H1.
   Qed.
   
+  Lemma Epe_Epe1: forall (spt: seq (T*T)), 
+      size(spt) > 0 -> spt [Suc\in] (@Chrel T) -> Epe spt = Epe1 spt.
+  Proof.
+    move => spt H1 H2.
+    have H4: spt \in (@I T) by apply inP.
+    pose proof Lift_surj H4 as [st [H5 H6]].
+    move: H5 => /inP H5.
+    have H7: Epe (Lift st) = Pe st by apply Epe_Lift.
+    have H8: Epe1 (Lift st) = Pe st by apply Epe1_Lift.
+    by rewrite -H6 H7 H8.
+  Qed.
+  
+  (* Pe (UnLift spt ptv.1) = Epe1 spt. *) 
+  Lemma Pe_UnLift: forall (spt: seq (T*T)), 
+      size(spt) > 0 -> spt [Suc\in] (@Chrel T) -> 
+      Pe (UnLift spt ptv.1) = Epe1 spt.
+  Proof. 
+    by move => spt H1 H2; rewrite -Epe_Epe1 /Epe.
+  Qed.
+  
+  (** * deployment paths *) 
+  (** * It remains to express that we have a Lift Unlift restricted bijection *)
+            
   (* begin snippet D_P:: no-out *)  
   Definition D_P (R E: relation T):= 
     [set spt|size(spt)>0/\R (Epe spt)/\spt [\in] E/\spt [Suc\in] (@Chrel T)].
@@ -921,18 +935,18 @@ Section epts.
     split. 
     - move => [p [H1 [H2 H3]] <-].
       move: (H1) => /Lift_sz2 H1'.
-      rewrite /Epe /Edecomp.
-      have -> : (UnLift (Lift p) t) = p by apply UnLift_left. 
+      rewrite /Epe. 
+      have -> : (UnLift (Lift p) ptv.1) = p by apply UnLift_left. 
       rewrite RPath_equiv.
       by pose proof Lift_Suc p as H5.
     - move => [H1 [H2 [H3 H4]]].
-      have H6 : Lift (UnLift q t) = q  by apply Lift_UnLift;rewrite inP /I. 
-      have H7: 1 < size (UnLift q t) by rewrite -H6 Lift_sz2 in H1.
+      have H6 : Lift (UnLift q ptv.1) = q  by apply Lift_UnLift;rewrite inP /I. 
+      have H7: 1 < size (UnLift q ptv.1) by rewrite -H6 Lift_sz2 in H1.
       rewrite -H6 /=.
-      by exists (UnLift q t);[rewrite -RPath_equiv H6|]. 
+      by exists (UnLift q ptv.1);[rewrite -RPath_equiv H6|]. 
   Qed.
   
-  (* it remains to express D_P when R=[set (x,y)] using the image lemma *)
+  (** * express the D_P set as an image when R=[set (x,y)] *)
 
   Definition D_P1_new1 (x y:T) (E: relation T) := 
     [set spt| exists st, spt = Lift (x::(rcons st y)) /\ spt [\in] E /\ spt [Suc\in] (@Chrel T)].
@@ -945,45 +959,6 @@ Section epts.
       1 < size st /\ [set (x, y)] (Pe st) <-> exists q, st= x::(rcons q y).
   Proof.
   Admitted.
-
-  Section Enpoints_props.
-    (** * Endpoints Lemma using Lift *) 
-    Lemma Epe_L1: forall (spt: seq (T*T)) (x y:T),
-        size(spt) > 0 -> spt [Suc\in] (@Chrel T) -> Epe spt = (x, y) 
-        -> exists st, size(st) > 1 /\ spt = Lift st /\ Pe st =(x,y).
-    Proof.
-      move => spt x y H1 H2 H3.
-      have H4: spt \in (@I T) by apply inP.
-      pose proof Lift_surj H4 as [st [H5 H6]].
-      have H7:(UnLift (Lift st) t) = st by apply UnLift_left;rewrite inP in H5.
-      by exists st; rewrite -Lift_sz2 H6; rewrite /Epe -H6 H7 in H3.
-    Qed.
-    
-    Lemma Epe_L2: forall (st: seq T) (x y:T),
-        size st > 1 -> Pe st =(x,y) -> exists q, st = x::(rcons q y).
-    Proof.
-      move => st x y H1 H2.
-      pose proof seq_crc H1 as [q [x' [y' H3]]].
-      move: H2;rewrite /Pe H3 //= => [[H2 //= H4]].
-      have H5: forall q' x'', last x'' (rcons q' y') = y'
-          by elim;[| move => z q' Hr x'';rewrite rcons_cons /=; rewrite Hr].
-      by exists q;rewrite H2 -H4 H5.
-    Qed.
-
-    Lemma Epe_L4: forall (spt: seq (T*T)) (pt: T*T) (x y:T),
-        size(spt) > 0 -> spt [Suc\in] (@Chrel T) -> Epe spt = (x, y) 
-        -> (head pt spt).1 = x /\ (last pt spt).2 = y.
-    Proof.
-      move => spt pt x y H1 H2 H3.
-      pose proof Epe_L1 H1 H2 H3 as [st' [H5 [H6 H7]]].
-      pose proof Epe_L2 H5 H7 as [st H8].
-      rewrite H6 H8.
-      split. 
-      by pose proof Lift_head st pt x y as H9;rewrite H9.
-      by pose proof Lift_last st pt x y as H9;rewrite H9.
-    Qed.
-
-  End Enpoints_props.
   
 End epts.
 

@@ -99,7 +99,7 @@ End pairp.
 Section Active_relation.
   (** D_U and active relation *)
 
-  Variable (T:Type) (tv:T).
+  Variable (T:Type) (tv:T) (ptv: T*T).
   
   Definition O_rev (o:O) := match o with | P => N | N => P end.
   
@@ -210,7 +210,7 @@ Section Active_relation.
     exists p: seq T,exists so: seq O, 
       size(p) = size(sto)+1 /\ size(p)=size(so) +1 /\ LiftO p so = sto.
   Proof.
-    move => sto [H0 H1].
+    move => sto H0 H1.
     pose proof Lift_ChrelO1 H0 H1 as [p [H2 H3]].
     have H4: size p > 1 by rewrite H2 addn1.
     exists p; exists (unpair_tt_o sto).2.
@@ -273,13 +273,13 @@ Section Active_relation.
   Proof. by []. Qed.
   
   (* begin snippet Eope:: no-out *)  
-  Definition Eope (stto : seq(T*T*O)) : T*T := (Epe tv (@unpair (T*T) O stto).1).
+  Definition Eope (stto : seq(T*T*O)) : T*T := (Epe ptv (@unpair (T*T) O stto).1).
   (* end snippet Eope *)  
 
   Lemma Eope_L0':  forall (eo1 eo2: T*T*O) (q: seq (T*T*O)) (x y:T),
       Eope  [:: eo1, eo2 & q] = (x,y)
       -> exists (q': seq (T*T)),exists (e1: T*T), exists (e2: T*T), 
-        (Epe tv [:: e1,e2 & q'] = (x,y)) 
+        (Epe ptv [:: e1,e2 & q'] = (x,y)) 
         /\  eo1.1.1 = e1.1 /\ (last eo2 q).1.2 = (last e2 q').2.
   Proof.
     move => eo1 eo2 q x y.
@@ -469,7 +469,7 @@ Section Active_relation.
       -> (Lift sto) [\in] ChrelO 
       -> Eope sto = (x, y)
       -> exists p: seq T, size(p) = size(sto)+1 /\ Lift p = (unpair_tt_o sto).1 
-                    /\ Epe tv (Lift p) = (x,y).
+                    /\ Epe ptv (Lift p) = (x,y).
   Proof.
     move => sto x y H1 H2 H5.
     pose proof Lift_ChrelO1 H1 H2  as [p [H3 H4]].
@@ -484,9 +484,9 @@ Section Active_relation.
           size p = size sto + 1 
           /\ Lift p = (unpair sto).1 
           /\ (Lift p) [L\in] (Chrel (T:=T))
-          /\ Epe tv (Lift p) = (x, y). 
+          /\ Epe ptv (Lift p) = (x, y). 
   Proof.
-    move => sto x y [H1 H2 H3].
+    move => sto x y H1 H2 H3.
     have H4: size sto > 0 by  apply ltn_trans with 1.
     pose proof Lift_ChrelO1 H4 H2  as [p [H5 H6]].
     rewrite /Eope in H3.
@@ -504,30 +504,23 @@ Section Active_relation.
     by exists p; rewrite -H5 H6.
   Qed.
 
-  (** * Le > 2 est un peu bizarre *)
   Lemma Eope_L4: forall (sto: seq(T*T*O)) (x y:T),
-      size(sto) > 2 
+      size(sto) > 2
       -> (Lift sto) [\in] ChrelO 
       -> Eope sto = (x, y)
       -> (exists p, 
           (size p = size sto + 1 
            /\ Lift p = (unpair sto).1 
            /\ (Lift p) [L\in] (Chrel (T:=T))
-           /\ Epe tv (Lift p) = (x, y))
+           /\ Epe ptv (Lift p) = (x, y))
           /\ 
             (exists q', exists eo1, exists eo2,
                 Lift p= eo1 :: [:: eo2 & q'] /\ eo1.1 = x /\ (last eo2 q').2 = y)).
   Proof.
     move => sto x y H1 H2 H3.
-    have H1': size sto > 1 by apply ltn_trans with 2.
-    pose proof Eope_L3 H1' H2 H3 as [p [H4 [H5 [H6 H7]]]].
-    exists p. split. by [].
-    have H8: size(Lift p) > 1. by rewrite H5 unpair_sz1; apply ltn_trans with 2.
-    have H9: Lift p \in (@I T)
-        by rewrite inP /I;split;[apply ltn_trans with 1|  rewrite -RPath_equiv].
-    pose proof Epe_L8 H9 H7 H8.
-    by [].
-  Qed.
+    (* pose proof Eope_L3 H1 H2 H3 as [p [H4 [H5 [H6 H7]]]]. 
+    exists p. split. by [].*)
+  Admitted.
 
   Lemma Eope_L5: forall (sto: seq(T*T*O)) (x y:T),
       size(sto) > 2 
@@ -536,7 +529,7 @@ Section Active_relation.
       -> (exists q', exists eo1, exists eo2,
             eo1 :: [:: eo2 & q'] =  (unpair sto).1 
             /\  (eo1 :: [:: eo2 & q']) [L\in] (Chrel (T:=T))
-            /\  Epe tv (eo1 :: [:: eo2 & q']) = (x, y)
+            /\  Epe ptv (eo1 :: [:: eo2 & q']) = (x, y)
             /\  eo1.1 = x /\ (last eo2 q').2 = y).
   Proof.
     move => sto x y H1 H2 H3.
