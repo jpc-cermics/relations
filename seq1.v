@@ -236,17 +236,19 @@ Section Lift_props.
     by move => st x y;rewrite lastI Lift_rcrc.
   Qed.
   
-  Lemma Lift_last: forall (st:seq T) (x y: T),
-      last (x, head y st) (Lift (rcons st y)) = (last x st, y).
+  Lemma Lift_last: forall (st:seq T) (pt: T*T) (x y: T),
+      last pt (Lift (x::(rcons st y))) = (last x st, y).
   Proof.
-    by elim/last_ind => [x y // | st z Hr x y ];rewrite Lift_rcrc !last_rcons.
+    elim/last_ind => [pt x y // | st z _ pt x y ].
+    by rewrite -2!rcons_cons Lift_rcrc 2!last_rcons.
   Qed.
 
-  Lemma Lift_head: forall (st:seq T) (x y: T),
-      head (x, last y st) (Lift (x::st)) = (x,head y st).
+  Lemma Lift_head: forall (st:seq T) (pt: T*T) (x y: T),
+      head pt (Lift (x::(rcons st y))) = (x,head y st).
   Proof.
     have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
-    by elim/last_ind => [x y // | st z Hr x y ];rewrite Lift_crc H1 last_rcons.
+    elim/last_ind => [pt x y // | st z _ pt x y].
+    by rewrite Lift_crc H1 /=.
   Qed.
   
   Lemma Lift_cat_rc: forall (st st':seq T) (y z: T),
@@ -944,12 +946,11 @@ Section epts.
   Proof.
   Admitted.
 
-  Section XXXX.
-    
-    (** * fixed endpoints *) 
+  Section Enpoints_props.
+    (** * Endpoints Lemma using Lift *) 
     Lemma Epe_L1: forall (spt: seq (T*T)) (x y:T),
         size(spt) > 0 -> spt [Suc\in] (@Chrel T) -> Epe spt = (x, y) 
-        -> exists p, size(p) > 1 /\ spt = Lift p /\ Pe p =(x,y).
+        -> exists st, size(st) > 1 /\ spt = Lift st /\ Pe st =(x,y).
     Proof.
       move => spt x y H1 H2 H3.
       have H4: spt \in (@I T) by apply inP.
@@ -968,85 +969,21 @@ Section epts.
           by elim;[| move => z q' Hr x'';rewrite rcons_cons /=; rewrite Hr].
       by exists q;rewrite H2 -H4 H5.
     Qed.
-    
-    Lemma Epe_L3: forall (spt: seq (T*T)) (x y:T),
-        size(spt) > 1 -> spt [Suc\in] (@Chrel T) -> Epe spt = (x, y) 
-        ->exists st, spt= Lift (x::(rcons st y)). 
+
+    Lemma Epe_L4: forall (spt: seq (T*T)) (pt: T*T) (x y:T),
+        size(spt) > 0 -> spt [Suc\in] (@Chrel T) -> Epe spt = (x, y) 
+        -> (head pt spt).1 = x /\ (last pt spt).2 = y.
     Proof.
-      move => spt x y H1 H2 H3.
-      have H4: size spt > 0 by apply leq_ltn_trans with 1.
-      pose proof Epe_L1 H4 H2 H3 as [p [H5 [H6 H7]]].
-      pose proof Epe_L2 H1 H7 as [p' H8].
-      by exists p'; rewrite H4 H6.
-    Qed.
-    
-    Lemma Epe_L4: forall (spt: seq (T*T)) (x y:T),
-        spt \in (@I T) -> Epe spt = (x, y) -> size(spt) > 1
-            -> (exists q', exists eo1, exists eo2, spt= eo1 :: [:: eo2 & q']) 
-              /\ (exists p, spt= Lift (x::(rcons p y))).
-    Proof.
-      move => spt x y H1 H2 H3.
-      pose proof Epe_L3 H1 H2 as [p H4].
-      pose proof seq_cc H3 as [q' [eo1 [eo2 H5]]].
-      by split;[exists q';exists eo1;exists eo2 | exists p].
+      move => spt pt x y H1 H2 H3.
+      pose proof Epe_L1 H1 H2 H3 as [st' [H5 [H6 H7]]].
+      pose proof Epe_L2 H5 H7 as [st H8].
+      rewrite H6 H8.
+      split. 
+      by pose proof Lift_head st pt x y as H9;rewrite H9.
+      by pose proof Lift_last st pt x y as H9;rewrite H9.
     Qed.
 
-    Lemma Epe_L5: forall (spt: seq (T*T)) (x y:T),
-        spt \in (@I T) -> Epe spt = (x, y) -> size(spt) > 1
-            -> (exists q', exists eo1, exists eo2, exists p, 
-                  spt= eo1 :: [:: eo2 & q'] /\
-                  eo1 :: [:: eo2 & q'] = Lift (x::(rcons p y))).
-    Proof.
-      move => spt x y H1 H2 H3.
-      pose proof  Epe_L4 H1 H2 H3 as [[q' [eo1 [eo2 H4]]] [p H5]].
-      by exists q';exists eo1;exists eo2;exists p; rewrite -H4 -H5.
-    Qed.
-    
-    Lemma Epe_L6: forall (spt: seq (T*T)) (p: seq T) (eo1:T*T) (eo2:T*T) (x y:T),
-        eo1 :: [:: eo2 & spt] = Lift (x::(rcons p y)) -> eo1.1 = x.
-    Proof.
-      move => spt p eo1 eo2 x y H1.
-      have H2: head (x, last y (rcons p y)) ([:: eo1, eo2 & spt])
-               = (head (x, last y (rcons p y)) (Lift (x :: rcons p y)))
-        by rewrite H1.
-      rewrite Lift_head /= in H2.
-      by rewrite H2.
-    Qed.
-
-    Lemma Epe_L7: forall (spt: seq (T*T)) (p: seq T) (eo1:T*T) (eo2:T*T) (x y:T),
-        eo1 :: [:: eo2 & spt] = Lift (x::(rcons p y)) -> (last eo2 spt).2 = y.
-    Proof.
-      move => spt p eo1 eo2 x y H1.
-      have H2: last (x,  head y (x::p)) ([:: eo1, eo2 & spt])
-               = last (x, head y (x::p)) (Lift (rcons (x::p) y))
-        by rewrite H1 rcons_cons.
-      rewrite Lift_last /= in H2.
-      by rewrite H2.
-    Qed.
-    
-    Lemma Epe_L8: forall (spt: seq (T*T)) (x y:T),
-       spt \in (@I T) -> Epe spt = (x, y) -> size(spt) > 1
-            -> (exists q', exists eo1, exists eo2,
-                  spt= eo1 :: [:: eo2 & q'] /\ eo1.1 = x /\ (last eo2 q').2 = y).
-    Proof.
-      move => spt x y H1 H2 H3.
-      pose proof Epe_L5 H1 H2 H3 as [q' [eo1 [eo2 [p [H4 H5]]]]].
-      exists q'; exists eo1;exists eo2.
-      pose proof Epe_L6 H5 as H6.
-      pose proof Epe_L7 H5 as H7.
-      by [].
-    Qed.
-
-    Lemma Epe_L9: forall (e1 e2: T*T) (spt: seq (T*T)) (x y:T),
-        ([:: e1, e2 & spt] \in (@I T))
-        -> Epe [:: e1, e2 & spt] = (x,y) 
-        -> e1.1 = x /\ (last e2 spt).2 = y.
-    Proof.
-
-
-
-    
-  End XXXX.
+  End Enpoints_props.
   
 End epts.
 
