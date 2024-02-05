@@ -690,7 +690,7 @@ Section Lift_bijective.
     rewrite /D /I /mkset; move => st /inP H1;rewrite inP Lift_sz2.
     by split;[ | rewrite -RPath_equiv;apply Lift_Lift].
   Qed.
-
+  
   Lemma UnLift_image: forall (spt: seq (T*T)),
       spt \in I -> (forall (z:T), (UnLift spt z) \in D).
   Proof.
@@ -755,7 +755,7 @@ Section Lift_bijective.
     by exists (UnLift st x). 
   Qed.
   
-  (** * extra results ? *)
+  (** * extra results *)
   
   (* begin snippet Lift_Suc:: no-out *)  
   Lemma Lift_Suc: forall (st:seq T), (Lift st) [Suc\in] Chrel. 
@@ -764,58 +764,18 @@ Section Lift_bijective.
     by move => st; rewrite -RPath_equiv; apply Lift_Lift.
   Qed.
   
-  Lemma Lift_Chrel_n_imp: forall (n: nat) (spt : seq (T*T)),
-      size(spt)= n.+2 -> (Lift spt) [\in] Chrel -> exists st: seq T, Lift st = spt.
-  Proof.
-    elim => [// | n Hr].
-    - move => spt H1 H2.
-      rewrite seq_rcrc0 in H1;move: H1 => [[x1 x2] [[y1 y2] H3]].
-      move: H2; rewrite H3 allL0' /Chrel /mkset => /= [->].
-      by (exists [::x1;y1;y2]).
-    - move => spt H1 H2.
-      have H4: size(spt) > 1 by rewrite H1.
-      pose proof seq_cc H4 as [q [[x1 x2] [[y1 y2] H5]]].
-      move: H2; rewrite H5 Lift_c allset_cons => [[H6 H7]].
-      move: H6; rewrite /Chrel /mkset /= => ->.
-      have H8: size [::(y1, y2) & q] = n.+2
-        by rewrite H5 /= -addn1 -[in RHS]addn1 in H1; apply addIn in H1.
-      apply Hr in H7;last by [].
-      move: H7 => [p1 H7].
-      have H10: size(p1) > 1 by rewrite -Lift_sz2 H7.  
-      pose proof seq_cc H10 as [q3 [x3 [y3 H11]]].
-      exists [::x1,x3,y3& q3].
-      rewrite Lift_c -H11 H7. 
-      by have -> : x3 = y1 by move: H7; rewrite H11 Lift_c => [[H7]]. 
-  Qed.
-  
-  Lemma Lift_Chrel_n_iff: forall (n: nat) (spt : seq (T*T)),
-      size(spt)= n.+2 -> ((Lift spt) [\in] Chrel <-> exists st: seq T, Lift st = spt).
-  Proof.
-    move => n spt H1;split;first by apply Lift_Chrel_n_imp with n.
-    by move => [st <-]; apply Lift_Lift.
-  Qed.
-  
-  Lemma Lift_Chrel_gt1: forall (spt : seq (T*T)),
-      size(spt) > 1 -> ((Lift spt) [\in] Chrel <-> exists st: seq T, Lift st = spt).
-  Proof.
-    move => spt H1.
-    have H0: forall (n : nat), 1 < n -> n = n.-2.+2
-        by elim => [// | [// |n _ H2 ]];
-                  pose proof ltn_predK H2;rewrite -H;apply succn_inj.
-    have H2: (size(spt)).-2 >= 0 by [].
-    split => [H3 | [st <-]].
-    by apply Lift_Chrel_n_imp with (size(spt)).-2;[apply H0 |].
-    by apply Lift_Lift.
-  Qed.
-  
   Lemma Lift_Chrel: forall (spt : seq (T*T)),
-      ((Lift spt) [\in] Chrel <-> exists st: seq T, Lift st = spt).
+      (Lift spt) [\in] Chrel <-> exists st: seq T, Lift st = spt.
   Proof.
     elim => [ | [x y] spt _ ];first by split => ?;[(exists [::]) |].
-    elim: spt => [ | [z t] spt _]; first by split => [H2 | [st H2]];[(exists [::x;y])|].
-    by apply Lift_Chrel_gt1.
+    have H1: size ((x, y) :: spt) > 0 by [].
+    split => [H2 |].
+    - have H5: ((x, y) :: spt) \in I by rewrite inP /I /mkset -RPath_equiv.  
+      pose proof Lift_UnLift H5 as H6.
+      by (exists (UnLift ((x, y) :: spt) x));rewrite H6.
+    - by move => [st <-]; apply Lift_Lift.
   Qed.
-
+  
   (* begin snippet Lift_lemma:: no-out *)  
   Lemma Lift_lemma:  image [set st | True] (@Lift T) 
                      = preimage (@Lift (T*T)) [set spt| spt [\in] Chrel].
