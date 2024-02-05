@@ -865,7 +865,56 @@ Section epts.
   Proof. 
     by move => spt H1 H2; rewrite -Epe_Epe1 /Epe.
   Qed.
+
+  (** * Lift UnLift bijection when restricted to 
+      (D /\ R (Pe .)) and (I /\ R (Epe1 .)) *)
+  Lemma Lift_injR: forall (R: relation T) st st',
+      st \in (@D T) -> R (Pe st) 
+           -> st' \in (@D T) -> R (Pe st') 
+                   -> Lift st = Lift st' -> st = st'.
+  Proof.
+    move => R st st' H1 _ H2 _ H3.
+    by apply Lift_inj'.
+  Qed.
   
+  Lemma UnLift_imageR: forall (R: relation T) (spt: seq (T*T)),
+      spt \in (@I T) -> R (Epe1 spt) 
+            -> (UnLift spt ptv.1) \in (@D T) /\ R (Pe (UnLift spt ptv.1)).
+  Proof.
+    move => R spt H1 H2. 
+    split. 
+    by apply UnLift_image.
+    move: H1; rewrite inP => [[H3 H4]].
+    pose proof Pe_UnLift H3 H4 as H5. 
+    by rewrite H5.
+  Qed.
+
+  (** * Lift_injR is obvious from Lift_inj. *)
+  
+  Lemma Lift_imageR: forall (R: relation T) (st: seq T),
+      st \in (@D T) -> R (Pe st) -> (Lift st) \in (@I T) /\ R (Epe1 (Lift st)).
+  Proof.
+    move => R st H1 H2.
+    split. 
+    by apply Lift_image.
+    move: H1; rewrite inP => H1.
+    pose proof Epe1_Lift H1 as H3.
+    by rewrite H3.
+  Qed.
+  
+  Lemma Lift_surjR: forall (R: relation T) spt, 
+      spt \in(@I T) -> R (Epe1 spt) 
+           -> exists st, st\in (@D T) /\ R (Pe st) /\ Lift st=spt. 
+  Proof.
+    move => R spt H0 H0'; move: (H0);rewrite /I /mkset => /inP [H1 H2].
+    pose proof Lift_UnLift H0 ptv.1 as H3.
+    pose proof UnLift_image H0 ptv.1 as H4.
+    pose proof Pe_UnLift H1 H2 as H5. 
+    exists (UnLift spt ptv.1). 
+    by rewrite H5. 
+  Qed.
+  
+
   (** * deployment paths *) 
   (** * It remains to express that we have a Lift Unlift restricted bijection *)
             
