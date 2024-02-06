@@ -865,56 +865,7 @@ Section epts.
   Proof. 
     by move => spt H1 H2; rewrite -Epe_Epe1 /Epe.
   Qed.
-
-  (** * Lift UnLift bijection when restricted to 
-      (D /\ R (Pe .)) and (I /\ R (Epe1 .)) *)
-  Lemma Lift_injR: forall (R: relation T) st st',
-      st \in (@D T) -> R (Pe st) 
-           -> st' \in (@D T) -> R (Pe st') 
-                   -> Lift st = Lift st' -> st = st'.
-  Proof.
-    move => R st st' H1 _ H2 _ H3.
-    by apply Lift_inj'.
-  Qed.
   
-  Lemma UnLift_imageR: forall (R: relation T) (spt: seq (T*T)),
-      spt \in (@I T) -> R (Epe1 spt) 
-            -> (UnLift spt ptv.1) \in (@D T) /\ R (Pe (UnLift spt ptv.1)).
-  Proof.
-    move => R spt H1 H2. 
-    split. 
-    by apply UnLift_image.
-    move: H1; rewrite inP => [[H3 H4]].
-    pose proof Pe_UnLift H3 H4 as H5. 
-    by rewrite H5.
-  Qed.
-
-  (** * Lift_injR is obvious from Lift_inj. *)
-  
-  Lemma Lift_imageR: forall (R: relation T) (st: seq T),
-      st \in (@D T) -> R (Pe st) -> (Lift st) \in (@I T) /\ R (Epe1 (Lift st)).
-  Proof.
-    move => R st H1 H2.
-    split. 
-    by apply Lift_image.
-    move: H1; rewrite inP => H1.
-    pose proof Epe1_Lift H1 as H3.
-    by rewrite H3.
-  Qed.
-  
-  Lemma Lift_surjR: forall (R: relation T) spt, 
-      spt \in(@I T) -> R (Epe1 spt) 
-           -> exists st, st\in (@D T) /\ R (Pe st) /\ Lift st=spt. 
-  Proof.
-    move => R spt H0 H0'; move: (H0);rewrite /I /mkset => /inP [H1 H2].
-    pose proof Lift_UnLift H0 ptv.1 as H3.
-    pose proof UnLift_image H0 ptv.1 as H4.
-    pose proof Pe_UnLift H1 H2 as H5. 
-    exists (UnLift spt ptv.1). 
-    by rewrite H5. 
-  Qed.
-  
-
   (** * deployment paths *) 
   (** * It remains to express that we have a Lift Unlift restricted bijection *)
             
@@ -1136,118 +1087,122 @@ Section PathRel.
 
 End PathRel.
 
-Section basic_pair_unpair.
+Section pair. 
   (** * pair sequences *)
-  Variables (T S: Type).
-  
-  (* we need an extra element as the two sequence may 
-   * differ in size *)
-  Fixpoint pairS (s: S) (st: seq T) (so: seq S):= 
-    match st, so with 
-    | t::st, o::so => (t,o)::(pairS s st so)
-    | t::st, [::] =>  (t,s)::(pairS s st [::])
-    |  _ , _ => @nil (T*S)
+  Variables (T: Type).
+
+  (* orientation  *)
+  (* begin snippet O:: no-out *)
+  Inductive O := | P | N.
+  (* end snippet O *)
+
+ (* begin snippet pair:: no-out *)  
+  Fixpoint pair (stt: seq (T*T)) (so: seq O) := 
+    match stt, so with 
+    | (pt)::stt, o::so => (pt,o)::(pair stt so)
+    | (pt)::stt, [::] =>  (pt,P)::(pair stt [::])
+    | _ , _ => @nil (T*T*O)
     end.
+  (* end snippet pair *)  
   
-  Fixpoint unpair (s: seq (T*S)) := 
+  Fixpoint unpair (s: seq (T*T*O)) := 
     match s with 
     | [::] => ([::],[::])
     | (x,y)::s => (x::(unpair s).1,y::(unpair s).2)
     end.
   
-  Lemma pairS_c: forall (s: S) (st: seq T) (ss: seq S) (t: T),
-      pairS s (t::st) ss = (t,head s ss)::(pairS s st (behead ss)).
+  Lemma pair_c: forall (stt: seq (T*T)) (so: seq O) (pt: T*T),
+      pair (pt::stt) so = (pt,head P so)::(pair stt (behead so)).
   Proof.
-    move => s.
-    elim => [ so pa // | pa1 spt Hr so pa ]; first by elim: so => [// | o so _ //].
+    elim => [ so pa | pa1 spt Hr so pa ]; first by elim: so => [// | o so _ //].
     elim: so => [// | o so _ ].
-    have -> : pairS s [:: pa, pa1 & spt] (o :: so) = (pa,o)::(pairS s [::pa1 & spt] so) by [].
+    have -> : pair [:: pa, pa1 & spt] (o :: so) = (pa,o)::(pair [::pa1 & spt] so) by [].
     by rewrite Hr.
   Qed.
 
-  Lemma pairS_sz1:  forall (s: S) (st: seq T) (ss: seq S),
-      size (pairS s st ss) = size st.
+  Lemma pair_sz1: forall (stt: seq (T*T)) (so: seq O),
+      size (pair stt so) = size stt.
   Proof.
-    by move => s;elim => [// | t st Hr ss];rewrite pairS_c /= Hr.
+    by elim => [// | t st Hr ss];rewrite pair_c /= Hr.
   Qed.
   
-  Lemma pairS_cc: forall (sv: S) (st: seq T) (ss: seq S) (t: T) (s:S),
-      pairS sv (t::st) (s::ss) = (t,s)::(pairS sv st ss).
+  Lemma pair_cc: forall(st: seq (T*T)) (ss: seq O) (t: T*T) (s:O),
+      pair (t::st) (s::ss) = (t,s)::(pair st ss).
   Proof.
-    move => sv st ss t s.
+    move => st ss t s.
     by elim: st => [// | t1 st ];elim: ss=> [// | s1 ss ].
   Qed.
   
-  Lemma pairS_cat: forall (s: S) (p q: seq T) (sop soq: seq S),
+  Lemma pair_cat: forall (p q: seq (T*T)) (sop soq: seq O),
       size sop = size p ->
-      pairS s (p++q) (sop++soq) = (pairS s p sop) ++ (pairS s q soq).
+      pair (p++q) (sop++soq) = (pair p sop) ++ (pair q soq).
   Proof.
-    move => s.
     elim => [ q sop soq /eqP //= /nilP -> //= | ].
     move => a p Hr q sop soq H1.
     elim: sop H1 Hr => [// | so1 sop H1 H2 H3].
-    rewrite cat_cons cat_cons pairS_c //=.
+    rewrite cat_cons cat_cons pair_c //=.
     have H4: size sop = size p by rewrite /size in H2; apply succn_inj.
-    have -> : pairS s (p ++ q) (sop ++ soq) = pairS s p sop ++ pairS s q soq 
+    have -> //: pair (p ++ q) (sop ++ soq) = pair p sop ++ pair q soq 
       by apply H3.
-    by [].
   Qed.
-
-  Lemma unpair_sz: forall (sts: seq (T*S)),
+  
+  Lemma unpair_c: forall (stto: seq (T*T*O)) (tt: T*T) (s: O),
+      (unpair ((tt,s)::stto)) =  (tt::(unpair stto).1, s::(unpair stto).2).
+  Proof.
+    by move => stto tt s /=.
+  Qed.
+  
+  Lemma unpair_sz: forall (sts: seq (T*T*O)),
       size (unpair sts).1 = size (unpair sts).2. 
   Proof.
     by elim => [// | [t1 s1] sts Hrt];rewrite /= -[in RHS]Hrt. 
   Qed.
 
-  Lemma unpair_sz1: forall (sts: seq (T*S)),
+  Lemma unpair_sz1: forall (sts: seq (T*T*O)),
       size (unpair sts).1 = size sts.
   Proof.
     by elim => [// | [t1 s1] sts Hrt];rewrite /= -[in RHS]Hrt. 
   Qed.
   
-  Lemma unpair_left: forall(s: S) (st: seq T) (so: seq S),
-      size(st) = size(so) -> unpair (pairS s st so) = (st,so).
+  Lemma unpair_left: forall (st: seq (T*T)) (so: seq O),
+      size(st) = size(so) -> unpair (pair st so) = (st,so).
   Proof.
-    move => s.
     elim => [ | t st Hrt].
     by elim => [ // | s1 so _ //].
     by elim =>  [ // | s1 so _ /succn_inj/Hrt H1] /=; rewrite H1.
   Qed.
 
-  Lemma unpair1_left: forall(s: S) (st: seq T) (so: seq S),
-      (unpair (pairS s st so)).1 = st.
+  Lemma unpair1_left: forall (st: seq (T*T)) (so: seq O),
+      (unpair (pair st so)).1 = st.
   Proof.
-    move => s.
     elim => [ | t st Hrt].
     by elim => [ // | s1 so _ //].
     elim =>  [ // | s1 so _]. 
-    by rewrite pairS_c /unpair Hrt -/unpair.
-    by rewrite pairS_c /unpair Hrt -/unpair /=.
+    by rewrite pair_c /unpair Hrt -/unpair.
+    by rewrite pair_c /unpair Hrt -/unpair /=.
   Qed.
   
-  Lemma unpair_right: forall(s: S) (sts: seq (T*S)),
-      pairS s (unpair sts).1 (unpair sts).2 = sts.
+  Lemma unpair_right: forall (sts: seq (T*T*O)),
+      pair (unpair sts).1 (unpair sts).2 = sts.
   Proof.
-    by move => s;elim => [// | [t1 s1] sts Hrt];rewrite /= -[in RHS]Hrt. 
+    by elim => [// | [t1 s1] sts Hrt];rewrite /= -[in RHS]Hrt. 
   Qed.
   
-  Definition Spairs := [set sts:  seq (T*S) | True].
-  Definition Pseq := [set st : (seq T)*(seq S) | size st.1 = size st.2].
-  Definition IPseq (s:S) := [set sts |exists st, exists ss,
-                         size(st)= size(ss) /\ pairS s st ss = sts].
+  Definition Spairs := [set sts:  seq (T*T*O) | True].
+  Definition Pseq := [set st : (seq (T*T))*(seq O) | size st.1 = size st.2].
+  Definition IPseq := [set sts |exists st, exists ss,
+                         size(st)= size(ss) /\ pair st ss = sts].
 
-  Lemma P1: forall (s:S), image Pseq (fun st => pairS s st.1 st.2) = IPseq s.
+  Lemma P1: image Pseq (fun st => pair st.1 st.2) = IPseq .
   Proof.
-    move=> s.
     rewrite /image /Pseq /mkset predeqE => sts.
     split => [[[st ss] /= H1] H2 | [st [ss [H1 H2]]]].
     by (exists st;exists ss).
     by exists (st,ss).
   Qed.
 
-  Lemma P2: forall (s:S), Spairs =  IPseq s.
+  Lemma P2: Spairs =  IPseq.
   Proof.
-    move => s.
     rewrite /mkset predeqE => sts.
     split => [ _ | _ ]; last first. by [].
     by exists (unpair sts).1;exists (unpair sts).2;
@@ -1256,89 +1211,87 @@ Section basic_pair_unpair.
 
   (* endpoints of pairs *) 
   
-  Lemma pairS_h: forall (st: seq T) (ss: seq S) (t: T) (s: S),
+  Lemma pair_h: forall (st: seq (T*T)) (ss: seq O) (pt: (T*T)),
       size (ss) = size (st)-> 
-      head (t,s) (pairS s st ss) = (head t st, head s ss).
+      head (pt,P) (pair st ss) = (head pt st, head P ss).
   Proof. 
-    elim => [ss t s /= /size0nil -> //= | t1 st Hr ss t s H1 ]. 
-    rewrite pairS_c //.
+    elim => [ss t /= /size0nil -> //= | t1 st Hr ss t H1 ]. 
+    by rewrite pair_c /=.
   Qed.
 
-  Lemma pairS_rc: forall (st: seq T) (ss: seq S) (t: T) (s sv: S),
+  Lemma pair_rc: forall (st: seq (T*T)) (ss: seq O) (pt: (T*T)) (s: O),
       size ss = size st
-      -> rcons (pairS sv st ss) (t, s) =
-          pairS sv (rcons st t) (rcons ss s).
+      -> rcons (pair st ss) (pt, s) =
+          pair (rcons st pt) (rcons ss s).
   Proof.
-    elim => [ss t s sv /size0nil -> // | t1 st' Hr ss t s sv H1 ]. 
+    elim => [ss t s /size0nil -> // | t1 st' Hr ss t s H1 ]. 
     have H2: size ss > 0 by rewrite H1 /=.
     pose proof seq_c H2 as [ss' [s' H3]].
-    rewrite pairS_c H3 3!rcons_cons /= Hr.
+    rewrite pair_c H3 3!rcons_cons /= Hr.
     by [].
     by rewrite H3 /= in H1; apply succn_inj in H1.
   Qed.
   
-  Lemma pairS_rev: forall (st: seq T) (ss: seq S) (s: S),
+  Lemma pair_rev: forall (st: seq (T*T)) (ss: seq O),
       size (ss) = size (st)-> 
-      rev (pairS s st ss) = pairS s (rev st) (rev ss). 
+      rev (pair st ss) = pair (rev st) (rev ss). 
   Proof. 
-    elim => [ss s // | t1 st' Hr ss s H1 ]. 
+    elim => [ss // | t1 st' Hr ss H1 ]. 
     have H2: size ss > 0 by rewrite H1 /=.
     pose proof seq_c H2 as [ss' [s' H3]].
     have H4: size ss' = size st' by rewrite H3 /= in H1; apply succn_inj in H1.
-    rewrite H3 pairS_c 3!rev_cons /= Hr.
-    apply pairS_rc.
+    rewrite H3 pair_c 3!rev_cons /= Hr.
+    apply pair_rc.
     by rewrite 2!size_rev.
     by [].
   Qed.
 
-  Lemma pairS_l: forall (st: seq T) (ss: seq S) (t: T) (s sv: S),
+  Lemma pair_l: forall (st: seq (T*T)) (ss: seq O) (t: T*T) (s: O),
       size (ss) = size (st)-> 
-      last (t,sv) (pairS s st ss) = (last t st, last sv ss).
+      last (t,s) (pair st ss) = (last t st, last s ss).
   Proof. 
-    elim => [ss t s sv /= /size0nil -> //= | t1 st Hr ss t s sv H1 ]. 
+    elim => [ss t s /= /size0nil -> //= | t1 st Hr ss t s H1 ]. 
     have H2: size ss > 0 by rewrite H1 /=.
     pose proof seq_c H2 as [ss' [s' H3]].
-    rewrite pairS_c H3 /=  Hr.
+    rewrite H3  pair_c 3!last_cons /=  Hr.
     by [].
     by rewrite H3 /= in H1; apply succn_inj in H1.
   Qed.
-
-End basic_pair_unpair.
-
-Section pair.
-  (** * pair (seq: T) (seq:O) with O inductive
-   * using P as default value. 
-   *)
   
-  Variables (T: Type).
-  
-  (* orientation  *)
-  (* begin snippet O:: no-out *)
-  Inductive O := | P | N.
-  (* end snippet O *)
-
-  (* begin snippet pair:: no-out *)  
-  Definition pair (st: seq (T)) (so: seq O):= @pairS (T) (O) P st so.
-  (* end snippet pair *)  
-  
-  Lemma pair_ch: forall (st: seq T) (so: seq O) (t: T),
+  Lemma pair_ch: forall (st: seq (T*T)) (so: seq O) (t: (T*T)),
       pair (t::st) so = (t,head P so )::(pair st (behead so)).
-  Proof. by apply pairS_c. Qed.
+  Proof. by apply pair_c. Qed.
 
-  Lemma pair_h1: forall (sto: seq (T*O)) (st: seq T) (so: seq O) (t:T) (to: T*O),
+  Lemma pair_h1: forall (sto: seq (T*T*O)) (st: seq (T*T)) (so: seq O) (t:T*T) (to: T*T*O),
     sto = pair (t::st) so -> (head to sto).1 = t.
   Proof.
     by move => sto st so t to;rewrite pair_ch => -> /=. 
   Qed.
+
+  Definition Extend (R: relation (T*T)) := [set tto : (T*T*O)*(T*T*O) | R (tto.1.1,tto.2.1)].
   
-  Lemma pair_cc: forall (st: seq T) (so: seq O) (t: T) (o: O),
-      pair (t::st) (o::so) = (t,o)::(pair st so).
-  Proof. by apply pairS_cc. Qed.
-  
-  Lemma pair_cat: forall (p q: seq T) (sop soq: seq O),
-      size sop = size p ->
-      pair (p++q) (sop++soq) = (pair p sop) ++ (pair q soq).
-  Proof. by apply pairS_cat. Qed.
+  Lemma pair_L1: forall (R: relation  (T*T)) (st:seq (T*T)) (so:seq O), 
+      size(st) = size (so) -> (pair st so) [Suc\in] (Extend R) <-> st [Suc\in] R.
+  Proof.
+    move => R st so H1; rewrite -2!RPath_equiv.
+    elim: st so H1 => [so H1 // | tt st Hr so H1].
+    have H2: size so > 0 by rewrite -H1 /=.
+    pose proof seq_c H2 as [so' [o H3]].
+    have H4: size st = size so'. by rewrite H3 /= in H1; apply succn_inj in H1.
+    rewrite H3. clear H3 H2 H1.
+    elim: st so' H4 Hr => [ so' H4 Hr // | tt' st' _ so' H4 Hr].
+    rewrite 2!pair_c 2!Lift_c 2!allset_cons.
+    split. 
+    - move => [H5 H6].
+      split. by [].
+      apply Hr in H4. apply H4.
+      by rewrite pair_c.
+    - move => [H5 H6].
+      split. by [].
+      apply Hr in H4.
+      rewrite pair_c in H4.
+      by rewrite H4.
+  Qed.
 
 End pair.
 
@@ -1347,7 +1300,7 @@ Section pairp.
   (** * (Lift (pair st so)) = pairp (Lift st) (Lift so) *)
   
   Variables (T: Type).
-
+  
   Fixpoint pairp (st: seq(T*T)) (so: seq (O*O)): seq((T*O)*(T*O)):= 
     match st, so with 
     | t::st, o::so => ((t.1,o.1),(t.2,o.2))::(pairp st so)
@@ -1387,37 +1340,6 @@ Section pairp.
     by elim => [// | [[t1 o1] [t2 o2]] sto Hrt];rewrite /= Hrt.
   Qed.
   
-  Lemma Lift_pair: forall (st:seq T) (so:seq O), 
-      size(st) = size (so)
-      -> (Lift (pair st so)) = pairp (Lift st) (Lift so).
-  Proof.
-    elim => [ // | t st Hr]. 
-    - elim => [ // | o so Ho H1].
-      rewrite pair_cc.
-      elim: st Hr Ho H1 => [// | t' st' Hr'].
-      elim: so Hr' => [ // | o' so' Ho' H1'] Hr' H2 H3.
-      rewrite pair_cc Lift_c -pair_cc.
-      rewrite Lift_c Lift_c /pairp -/pairp.
-      f_equal.
-      apply Hr'.
-      by move: H3; rewrite /= => /succn_inj H3.
-  Qed.
-  
-  Lemma Prel_L1: forall (R: relation T) (stt: seq(T*T)) (soo: seq (O*O)),
-      (pairp stt soo) [\in] (Prel R) <-> stt [\in] R.
-  Proof.
-    move => R.
-    elim => [// | [t1 t2] st Hr so].
-    elim: so => [ |  [o1 o2] so Ho ].
-    + rewrite /pairp -/pairp;split. 
-      by rewrite allset_cons /Prel => [[/= H1 /Hr ->]];rewrite andbT mem_set.
-      by rewrite allset_cons => [[H1 /Hr H2]];rewrite allset_cons /=;split.
-    + rewrite /pairp allset_cons -/pairp /=.
-      split => [ [H1 /Hr ->] | /andP [/inP H1 /Hr H2] ]. 
-      by rewrite andbT mem_set.
-      by split.
-  Qed.
-
 End pairp.
 
 Section pair_lift1.
@@ -1425,7 +1347,7 @@ Section pair_lift1.
   Variable (T:Type) (tv:T) (ptv: T*T).
   
   (* begin snippet LiftO:: no-out *)  
-  Definition LiftO (sa: seq T) (so: seq O) := pair (Lift sa) so.
+  Definition LiftO (st: seq T) (so: seq O) := pair (Lift st) so.
   (* end snippet LiftO *)  
   
   Definition O_rev (o:O) := match o with | P => N | N => P end.
@@ -1438,9 +1360,6 @@ Section pair_lift1.
   (* begin snippet ChrelO:: no-out *)  
   Definition ChrelO := [set ppa: (T*T*O)*(T*T*O) | (ppa.1.1).2 = (ppa.2.1).1].
   (* end snippet ChrelO *)  
-  
-  Definition pair_tt_o:= (@pairS (T*T) O P).
-  Definition unpair_tt_o:= (@unpair (T*T) O).
   
   Definition UnLiftO (p: seq (T*T*O)) (x: T) :=
     (UnLift (unpair p).1 x, (unpair p).2).
@@ -1461,7 +1380,12 @@ Section pair_lift1.
 
   Lemma ChrelO_as_Prel: ChrelO = Prel (@Chrel T).
   Proof. by []. Qed.
-  
+
+  Lemma ChrelO_Chrel: forall (tto tto': T*T*O), ChrelO (tto, tto') = Chrel (tto.1, tto'.1).
+  Proof.
+    by move => [tt o] [tt' o'];rewrite /ChrelO /Chrel /mkset /=.
+  Qed.
+    
   Lemma LiftO_c: forall  (p:seq T) (so: seq O) (x y: T) (o:O),
       LiftO [::x,y & p] [::o & so]= [::(x,y,o) & LiftO [::y & p] so].
   Proof.
@@ -1475,6 +1399,8 @@ Section pair_lift1.
     by move => p so x y o;rewrite headI LiftO_c. 
   Qed.
   
+  (** * bijective relation with LiftO and UnLiftO *)
+
   Lemma UnLiftO_left: forall (t: T) (st: seq T) (so: seq O),
       size (st) > 1 /\ size(st) = size(so) + 1 
       -> UnLiftO (LiftO st so) t = (st,so).
@@ -1487,27 +1413,50 @@ Section pair_lift1.
     by rewrite /UnLiftO /LiftO H5 /=;f_equal;apply Lift_inv_sz2.
   Qed.
   
-  Lemma UnLiftO1_left: forall(t: T) (st: seq T) (so: seq O),
-      size (st) > 1 -> (UnLiftO (LiftO st so) t).1 = st.
-  Proof.
-    move => t st so H1.
-    have H3: size(Lift st) = (size st) -1 by apply Lift_sz.
-    have H5: (unpair (pair (Lift st) so)).1 = (Lift st)
-      by apply unpair1_left.
-    by rewrite /UnLiftO /LiftO H5 /=;f_equal;apply Lift_inv_sz2.
-  Qed.
-
   Lemma LiftO_image: forall (st:seq T) (so:seq O), 
       size(st)> 1 -> size(st) = size(so)+1
-      -> (LiftO st so) [Suc\in] ChrelO /\ size (LiftO st so) > 0.
+      -> size (LiftO st so) > 0 /\ (LiftO st so) [Suc\in] ChrelO.
   Proof.
     move => st so H1 H2.
-    have H3: (Lift (LiftO st so)) = pairp (Lift (Lift st)) (Lift so)
-      by rewrite /LiftO;apply Lift_pair;pose proof (Lift_sz H1) as H3;rewrite H3 H2 addn1 subn1. 
-    split.
-    - rewrite ChrelO_as_Prel -RPath_equiv H3.
-      by apply Prel_L1;apply Lift_Lift.
-    - by rewrite /LiftO pairS_sz1;apply Lift_sz2.
+    have H3: size(Lift st) = size so by apply Lift_sz in H1;rewrite H2 addn1 subn1 in H1.
+    split; first by rewrite pair_sz1 H3;rewrite H2 addn1 in H1;apply leq_ltn_trans with 0. 
+    rewrite /LiftO.
+    have -> : (pair (Lift st) so) [Suc\in] (Extend (@Chrel T)) 
+         <-> (Lift st) [Suc\in] (@Chrel T) by  apply pair_L1.
+    by rewrite -RPath_equiv Lift_Lift.
+  Qed.
+  
+  Lemma LiftO_right_0: forall (stto:seq (T*T*O)),
+      size stto > 0 -> stto [Suc\in] ChrelO 
+      -> size (unpair stto).1 > 0 /\ (unpair stto).1 [Suc\in] (@Chrel T).
+  Proof.
+    move => stto; rewrite -2!RPath_equiv;move => H1 H2.
+    split; first by rewrite unpair_sz1.
+    pose proof unpair_right stto as H3.
+    have H4: (Extend (@Chrel T)) = ChrelO by [].
+    have H5: size ((unpair stto).1) = size (unpair stto).2 by apply unpair_sz.
+    pose proof pair_L1 (@Chrel T) H5 as H6.
+    by rewrite RPath_equiv -H6 unpair_right H4 -RPath_equiv.
+  Qed.
+  
+  Lemma LiftO_right: forall (t:T) (stto:seq (T*T*O)),
+      size stto > 0 -> stto [Suc\in] ChrelO 
+      -> LiftO (UnLiftO stto t).1 (UnLiftO stto t).2 = stto. 
+  Proof.
+    move => t stto H1 H2.
+    rewrite /LiftO /UnLiftO /=.
+    pose proof LiftO_right_0 H1 H2 as [H3 H4].
+    have H5: (unpair stto).1 \in (@I T). by rewrite inP;by split.
+    pose proof Lift_UnLift H5 t as H6.
+    by rewrite H6 unpair_right.
+  Qed.
+  
+  Lemma Lift_LiftO: forall (st:seq T) (so:seq O), 
+      size st > 1 -> size(st) = size(so)+1 -> (LiftO st so) [L\in] ChrelO. 
+  Proof.
+    move => st so H1 H2.
+    pose proof LiftO_image H1 H2 as [H3 H4].
+    by rewrite RPath_equiv.
   Qed.
   
   Lemma unpair_cc: forall (eo1 eo2: T*T*O) (q: seq (T*T*O)),
@@ -1522,8 +1471,7 @@ Section pair_lift1.
         by (exists (unpair [:: eo1, eo2 & q]).1;exists (unpair [:: eo1, eo2 & q]).2);
                                   rewrite [RHS]unpair_right;
                                   split;[| rewrite unpair_sz].
-    pose proof pairS_sz1 P q1 so as H2.
-    rewrite /pair in H1.
+    pose proof pair_sz1 q1 so as H2.
     rewrite -H1 in H2.
     have H3: size(q1) >1 by rewrite -H2. 
     pose proof seq_cc H3 as [q' [e1 [e2 H4]]].
@@ -1536,7 +1484,7 @@ Section pair_lift1.
     by rewrite H1.
     rewrite [RHS]pair_ch in H5.
     move: H5 => [H5 H6].
-    rewrite H5 H6 pairS_l /=.
+    rewrite H5 H6 pair_l /=.
     split.
     by [].
     by rewrite H1' H4 /=.
@@ -1545,7 +1493,8 @@ Section pair_lift1.
     rewrite H8 /=.
     by rewrite H8 H4 /= in H1';apply succn_inj in H1'; apply succn_inj in H1'.
   Qed.
-
+  
+  (*
   Lemma Lift_LiftO_gt1: forall (st:seq T) (so:seq O), 
       size(st)> 1 -> size(st) = size(so)+1
       -> (Lift (LiftO st so)) = pairp (Lift (Lift st)) (Lift so).
@@ -1557,7 +1506,6 @@ Section pair_lift1.
     by rewrite H3 H2 addn1 subn1. 
   Qed.
   
-
   Lemma Lift_LiftO_eq1: forall (st:seq T) (so:seq O), 
       size(st)= 1 -> size(st) = size(so)+1
       -> (Lift (LiftO st so)) = pairp (Lift (Lift st)) (Lift so).
@@ -1580,31 +1528,25 @@ Section pair_lift1.
     move => H2 H3;apply Lift_LiftO_eq1. rewrite H1. by []. by []. 
     move => H2 H3;apply Lift_LiftO_gt1. rewrite H1 /= size_rcons. by []. by []. 
   Qed.
-  
-  
-  Lemma YY: forall (sto: seq(T*T*O)),
-      pair_tt_o (unpair_tt_o sto).1 (unpair_tt_o sto).2 = sto.
-  Proof.
-    by move => sto;apply unpair_right.
-  Qed.
+  *)
   
   Lemma Lift_ChrelO: forall (sto: seq(T*T*O)),
-      (Lift sto) [\in] ChrelO -> (Lift (unpair_tt_o sto).1) [\in] (@Chrel T).
+      (Lift sto) [\in] ChrelO -> (Lift (unpair sto).1) [\in] (@Chrel T).
   Proof.
     elim => [ // | tto sto Hr].
     elim: sto tto Hr => [ [t1 t2 o1] _ // | [[t1' t2'] o1'] sto Hr [[t1 t2] o1] H1 H2].
     move: H2;rewrite Lift_c allset_cons=> [[H2 H3]].
-    rewrite /unpair_tt_o /unpair Lift_c allset_cons.
+    rewrite /unpair Lift_c allset_cons.
     by split;[ | apply H1].
   Qed.
   
   Lemma Lift_ChrelO1: forall (sto: seq(T*T*O)),
       size(sto) > 0 -> (Lift sto) [\in] ChrelO 
-      -> exists p: seq T, size(p) = size(sto)+1 /\ Lift p = (unpair_tt_o sto).1 
+      -> exists p: seq T, size(p) = size(sto)+1 /\ Lift p = (unpair sto).1 
                     /\  (Lift p) [Suc\in] (@Chrel T).
   Proof.
     move => sto H0 H1.
-    have H2:  (Lift (unpair_tt_o sto).1) [\in] (@Chrel T) by apply Lift_ChrelO.
+    have H2:  (Lift (unpair sto).1) [\in] (@Chrel T) by apply Lift_ChrelO.
     move: H2;rewrite Lift_Chrel => [[p H3]].
     exists p. 
     split.
@@ -1625,7 +1567,7 @@ Section pair_lift1.
     move => sto H0 H1.
     pose proof Lift_ChrelO1 H0 H1 as [p [H2 [H3 H3']]].
     have H4: size p > 1 by rewrite H2 addn1.
-    exists p; exists (unpair_tt_o sto).2.
+    exists p; exists (unpair sto).2.
     rewrite -unpair_sz. 
     split. by []. split. 
     rewrite -H3.
@@ -1635,29 +1577,8 @@ Section pair_lift1.
     by rewrite H5.
     by [].
     rewrite /LiftO H3. 
-    apply YY.
+    apply unpair_right.
   Qed.
-  
-  Lemma Lift_LiftO: forall (st:seq T) (so:seq O), 
-      size(st)> 0 -> size(st) = size(so)+1
-      -> (Lift (LiftO st so)) [\in] ChrelO. 
-  Proof.
-    move => st so H1 H2.
-    rewrite ChrelO_as_Prel Lift_LiftO_gtO. 
-    apply Prel_L1.
-    apply Lift_Lift.
-    by [].
-    by [].
-  Qed.
-
-  Lemma Lift_ChrelO3: forall (sto: seq(T*T*O)),
-    (exists p: seq T,exists so: seq O,0 < size p /\ size p = size so + 1 /\ LiftO p so = sto)
-    -> (Lift sto) [\in] ChrelO.
-  Proof.
-    move => sto [p [so [H1 [H2 <-]]]].
-    by apply Lift_LiftO.
-  Qed.
-
   
 End pair_lift1.
 
@@ -1782,74 +1703,3 @@ Section Seq_lifto.
   Qed.
   
 End Seq_lifto. 
-
-Section Pair_of_seq.
-  (** * pair of sequences using Record *)
-  Variables (T S: Type).
-  
-  Record Pairs (n m:nat) 
-    := pair_s { pfst: (seq T);
-               psnd: (seq S);
-               cond1: size(pfst) >= n;cond2: size(pfst)=size(psnd) + m}.
-
-  Definition Pairs0 : (Pairs 0 0).
-  Proof.
-    by refine {| pfst:= [::]; psnd:= [::]; cond1:= _;cond2:= _|}.
-  Defined.
-  
-  (* define a cons operator for Pairs: second way with refine *)
-  Definition spair_cons (n m:nat) (ts: T*S) (sp : Pairs n m) : (Pairs n m).
-  Proof.
-    refine {| pfst:= (ts.1::(pfst sp)); psnd:= (ts.2::(psnd sp)); cond1:= _;cond2:= _|}.
-    by apply leqW; apply (cond1 sp).
-    by rewrite /= (cond2 sp) -addn1 -addnA [m+1]addnC addnA addn1. 
-  Defined.
-  
-  Definition Pair (ps: (Pairs 0 0)) (s:S) := pairS s (pfst ps) (psnd ps).
-  
-  Definition Unpair (s: seq (T*S)) : (Pairs 0 0).
-  Proof.
-    refine {| pfst:= (unpair s).1;psnd := (unpair s).2;cond1:= _ ;cond2:= _|}.
-    by [].
-    by rewrite addn0 unpair_sz.
-  Defined. 
-  
-  Lemma unpair_right': forall(s: S) (sts: seq (T*S)),
-      Pair (Unpair sts) s = sts.
-  Proof.
-    move => s;elim => [/= | [t1 s1] sts Hrt]. 
-    by rewrite /Pair /=.
-    by rewrite /Pair /= -[in RHS]Hrt.
-  Qed.
-
-End Pair_of_seq.
-
-Section LiftO. 
-  (** * LiftO with Record *)
-  Variables (T S: Type).
-  
-  Lemma size_l: forall (ps : (@Pairs T S 2 1)), size((Lift (pfst ps)))= size(psnd ps) + 0.
-  Proof.
-    move => ps. 
-    pose proof (cond2 ps) as H1.
-    pose proof (cond1 ps) as H2.
-    pose proof (Lift_sz H2) as H3. 
-    by rewrite H3 H1 addn1 addn0 subn1.
-  Qed.
-  
-  Lemma size_gt1: forall (ps : (@Pairs T S 2 1)), size((Lift (pfst ps))) > 0.
-  Proof.
-    move => ps. 
-    pose proof (cond2 ps) as H1.
-    pose proof (cond1 ps) as H2.
-    pose proof (Lift_sz H2) as H3. 
-    rewrite H3 H1 addn1 subn1 /=.
-    pose proof ltn_predK H2 as H4.
-    rewrite -H4 addn1 in H1. apply succn_inj in H1.
-    by rewrite -H1 ltn_predRL.
-  Qed.
-  
-  Definition LiftT (s: (@Pairs T S 2 1)): (@Pairs (T*T) S 1 0) := 
-    {| pfst:= (Lift (pfst s));psnd:=(psnd s);cond1:= size_gt1 s ; cond2:= size_l s |}.
-
-End LiftO.

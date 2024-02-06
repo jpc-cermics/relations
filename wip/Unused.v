@@ -98,3 +98,76 @@
     by rewrite /comp /decomp /=  belast_rcons last_rcons /=.
   Qed.
 
+
+
+
+Section Pair_of_seq.
+  (** * pair of sequences using Record *)
+  Variables (T S: Type).
+  
+  Record Pairs (n m:nat) 
+    := pair_s { pfst: (seq T);
+               psnd: (seq S);
+               cond1: size(pfst) >= n;cond2: size(pfst)=size(psnd) + m}.
+
+  Definition Pairs0 : (Pairs 0 0).
+  Proof.
+    by refine {| pfst:= [::]; psnd:= [::]; cond1:= _;cond2:= _|}.
+  Defined.
+  
+  (* define a cons operator for Pairs: second way with refine *)
+  Definition spair_cons (n m:nat) (ts: T*S) (sp : Pairs n m) : (Pairs n m).
+  Proof.
+    refine {| pfst:= (ts.1::(pfst sp)); psnd:= (ts.2::(psnd sp)); cond1:= _;cond2:= _|}.
+    by apply leqW; apply (cond1 sp).
+    by rewrite /= (cond2 sp) -addn1 -addnA [m+1]addnC addnA addn1. 
+  Defined.
+  
+  Definition Pair (ps: (Pairs 0 0)) (s:S) := pair_ (pfst ps) (psnd ps).
+  
+  Definition Unpair (s: seq (T*S)) : (Pairs 0 0).
+  Proof.
+    refine {| pfst:= (unpair s).1;psnd := (unpair s).2;cond1:= _ ;cond2:= _|}.
+    by [].
+    by rewrite addn0 unpair_sz.
+  Defined. 
+  
+  Lemma unpair_right': forall(s: S) (sts: seq (T*S)),
+      Pair (Unpair sts) s = sts.
+  Proof.
+    move => s;elim => [/= | [t1 s1] sts Hrt]. 
+    by rewrite /Pair /=.
+    by rewrite /Pair /= -[in RHS]Hrt.
+  Qed.
+
+End Pair_of_seq.
+
+Section LiftO. 
+  (** * LiftO with Record *)
+  Variables (T S: Type).
+  
+  Lemma size_l: forall (ps : (@Pairs T S 2 1)), size((Lift (pfst ps)))= size(psnd ps) + 0.
+  Proof.
+    move => ps. 
+    pose proof (cond2 ps) as H1.
+    pose proof (cond1 ps) as H2.
+    pose proof (Lift_sz H2) as H3. 
+    by rewrite H3 H1 addn1 addn0 subn1.
+  Qed.
+  
+  Lemma size_gt1: forall (ps : (@Pairs T S 2 1)), size((Lift (pfst ps))) > 0.
+  Proof.
+    move => ps. 
+    pose proof (cond2 ps) as H1.
+    pose proof (cond1 ps) as H2.
+    pose proof (Lift_sz H2) as H3. 
+    rewrite H3 H1 addn1 subn1 /=.
+    pose proof ltn_predK H2 as H4.
+    rewrite -H4 addn1 in H1. apply succn_inj in H1.
+    by rewrite -H1 ltn_predRL.
+  Qed.
+  
+  Definition LiftT (s: (@Pairs T S 2 1)): (@Pairs (T*T) S 1 0) := 
+    {| pfst:= (Lift (pfst s));psnd:=(psnd s);cond1:= size_gt1 s ; cond2:= size_l s |}.
+
+End LiftO.

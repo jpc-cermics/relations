@@ -32,18 +32,19 @@ End Types.
 
 
 Section Active_relation.
-  (** D_U and active relation *)
+  (** * D_U and active relation *)
 
+  Variables (T: Type) (ptv: T*T).
 
   (* begin snippet U_gt:: no-out *) 
   Definition U_gt (n: nat) (E: relation T):=
-    [set sto | size(sto) > n /\ sto [\in] (Oedge E) /\ (Lift sto) [\in] ChrelO].
+    [set sto | size(sto) > n /\ sto [\in] (Oedge E) /\ (Lift sto) [\in] (@ChrelO T)].
   (* end snippet U_gt *)
 
   (* begin snippet U_ge_1:: no-out *) 
   Definition U_ge_1 (E: relation T):=
     [set sto | sto [\in] (Oedge E) /\  size(sto) > 0 /\ 
-                 (Lift sto) [\in] ChrelO].
+                 (Lift sto) [\in] (@ChrelO T)].
   (* end snippet U_ge_1 *)
   
   (* begin snippet U_ge_1p:: no-out *) 
@@ -63,10 +64,8 @@ Section Active_relation.
     - move => [H1 [p [so [H2 [H3 H4]]]]].
       split. by [].
       split. 
-      by rewrite -H4 /LiftO pairS_sz1 Lift_sz2.
-      rewrite -H4. apply Lift_LiftO.
-      by apply ltn_trans with 1.
-      by []. 
+      by rewrite -H4 /LiftO pair_sz1 Lift_sz2.
+      by rewrite -H4;apply Lift_LiftO.
   Qed.
 
   Lemma ChrelO_eq: forall (x y z t: T) (o1 o2:O),
@@ -74,9 +73,9 @@ Section Active_relation.
   Proof. by []. Qed.
   
   (* begin snippet Eope:: no-out *)  
-  Definition Eope (stto : seq(T*T*O)) : T*T := (Epe ptv (@unpair (T*T) O stto).1).
+  Definition Eope (stto : seq(T*T*O)) : T*T := (Epe ptv (unpair stto).1).
   (* end snippet Eope *)  
-
+  
   Lemma Eope_L0':  forall (eo1 eo2: T*T*O) (q: seq (T*T*O)) (x y:T),
       Eope  [:: eo1, eo2 & q] = (x,y)
       -> exists (q': seq (T*T)),exists (e1: T*T), exists (e2: T*T), 
@@ -106,7 +105,7 @@ Section Active_relation.
   
   (* begin snippet D_U:: no-out *)  
   Definition D_U (R E: relation T) := [set stto |size(stto)>0 
-     /\ R (Eope stto) /\ stto [\in] (Oedge E) /\ stto [Suc\in] ChrelO].
+     /\ R (Eope stto) /\ stto [\in] (Oedge E) /\ stto [Suc\in] (@ChrelO T)].
   (* end snippet D_U *)  
   
   (* begin snippet D_U1:: no-out *) 
@@ -116,13 +115,13 @@ Section Active_relation.
   (* end snippet D_U1 *)
 
   (* begin snippet A_tr:: no-out *)  
-  Definition A_tr (W: set T) (E: relation T) := ChrelO `&` 
+  Definition A_tr (W: set T) (E: relation T) := (@ChrelO T) `&` 
     [set oe : (T*T*O) * (T*T*O)| match (oe.1.2,oe.2.2, oe.1.1.2) with 
       | (P,P,v) => W.^c v | (N,N,v) => W.^c v | (N,P,v) => W.^c v
       | (P,N,v) => (Fset E.* W) v end].
   (* end snippet A_tr *)
   
-  Lemma A_tr_P1: forall(W: set T) (E: relation T), A_tr W E = ChrelO `&` (A_tr W E).
+  Lemma A_tr_P1: forall(W: set T) (E: relation T), A_tr W E = (@ChrelO T) `&` (A_tr W E).
   Proof.
     by move => W E;rewrite /A_tr setIA setIid.
   Qed.
@@ -130,7 +129,7 @@ Section Active_relation.
   (* begin snippet D_U_a:: no-out *)  
   Definition D_U_a (R E: relation T) (W: set T):= [set stto |size(stto)>0 
      /\ R (Eope stto ) /\ stto [\in] (Oedge E) 
-     /\ stto [Suc\in] (ChrelO `&` (A_tr W E))].
+     /\ stto [Suc\in] ((@ChrelO T) `&` (A_tr W E))].
   (* end snippet D_U_a *)  
 
   (** * XXXXX we need to whod the following reformulations *)
@@ -275,18 +274,19 @@ Section Active_relation.
 
   Lemma Eope_L2: forall (sto: seq(T*T*O)) (x y:T),
       size(sto) > 0 
-      -> (Lift sto) [\in] ChrelO 
+      -> (Lift sto) [\in] (@ChrelO T)
       -> Eope sto = (x, y)
-      -> exists p: seq T, size(p) = size(sto)+1 /\ Lift p = (unpair_tt_o sto).1 
+      -> exists p: seq T, size(p) = size(sto)+1 /\ Lift p = (unpair sto).1 
                     /\ Epe ptv (Lift p) = (x,y).
   Proof.
     move => sto x y H1 H2 H5.
     pose proof Lift_ChrelO1 H1 H2  as [p [H3 H4]].
   Admitted.
 
+  (*
   Lemma Eope_L3: forall (sto: seq(T*T*O)) (x y:T),
       size(sto) > 1 
-      -> (Lift sto) [\in] ChrelO 
+      -> (Lift sto) [\in] (@ChrelO T)
       -> Eope sto = (x, y)
       -> exists p, 
           size p = size sto + 1 
@@ -298,11 +298,11 @@ Section Active_relation.
     have H4: size sto > 0 by  apply ltn_trans with 1.
     pose proof Lift_ChrelO1 H4 H2  as [p [H5 [H6 H6']]].
     rewrite /Eope in H3.
-    have H7: @pairS (T*T) O P ((unpair sto).1) ((unpair sto).2) = sto
+    have H7: pair ((unpair sto).1) ((unpair sto).2) = sto
       by apply unpair_right.
-    have H8: (@pairS (T*T) O P ((unpair sto).1) ((unpair sto).2)) [L\in] ChrelO
+    have H8: (pair ((unpair sto).1) ((unpair sto).2)) [L\in] (@ChrelO T)
       by rewrite unpair_right.
-    have H9: (LiftO p (unpair sto).2) [L\in] ChrelO
+    have H9: (LiftO p (unpair sto).2) [L\in] (@ChrelO T)
       by rewrite  /LiftO H6.
     have H10: size (unpair sto).1 = size (unpair sto).2 by apply unpair_sz.
     pose proof Lift_pair H10 as H11.
@@ -311,7 +311,7 @@ Section Active_relation.
     have H13: (Lift (unpair sto).1) [\in] (@Chrel T) by rewrite Prel_L1 in H12.
     by exists p; rewrite -H5 H6.
   Qed.
-
+  
   Lemma Eope_L4: forall (sto: seq(T*T*O)) (x y:T),
       size(sto) > 2
       -> (Lift sto) [\in] ChrelO 
@@ -361,6 +361,7 @@ Section Active_relation.
     have H12:  size (unpair [:: eo1, eo2 & q]).2 = size([:: e1, e2 & q'])
       by rewrite H5 unpair_sz.
   Admitted.
+  *)
   
   Lemma D_U_a_eq12:  forall (E: relation T) (W: set T) (stto: seq (T*T*O)) (x y:T),
       size stto > 1 /\ (Eope stto) = (x,y) /\ stto [L\in] (ActiveOe W E) 
