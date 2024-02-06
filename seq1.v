@@ -1493,6 +1493,24 @@ Section pair_lift1.
     by apply last_Lift.
   Qed.
   
+  Lemma UnLiftO_head: forall (stto: seq (T*T*O)), 
+      size(stto) > 0 -> stto [Suc\in] ChrelO -> 
+      (Pe ptv (UnLiftO stto ptv.1).1) =  
+        ((head (ptv,P) stto).1.1, (last (ptv,P) stto).1.2).
+  Proof. 
+    move => stto H1 H2. 
+    rewrite /UnLiftO.
+    rewrite Pe_UnLift /Epe1.
+    pose proof unpair_right stto as H3.
+    rewrite -[in RHS]H3.
+    rewrite pair_h. rewrite pair_l.
+    by [].
+    by rewrite unpair_sz.
+    by rewrite unpair_sz.
+    by rewrite unpair_sz1.
+    by pose proof LiftO_right_0 H1 H2 as [H3 H4].
+  Qed.
+  
   (* begin snippet Eope:: no-out *)  
   Definition Eope (stto : seq(T*T*O)) : T*T := (Epe ptv (unpair stto).1).
   (* end snippet Eope *)  
