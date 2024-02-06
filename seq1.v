@@ -1465,6 +1465,34 @@ Section pair_lift1.
   
   (** * Endpoints in Extended oriented paths *)
 
+  Lemma LiftO_head: forall (st:seq T) (so:seq O),
+      size(st) > 1 -> size (so) = size st -1 
+      -> (head (ptv,P) (LiftO st so)).1.1 = head ptv.1 st.
+  Proof.
+    move => st so H1 H2.
+    rewrite /LiftO.
+    have H3: size (Lift st)= size so 
+      by pose proof (Lift_sz H1) as H3;rewrite H3 H2.
+    have H4: head (ptv,P) (pair (Lift st) so) = (head ptv (Lift st), head P so)
+      by apply pair_h.
+    rewrite H4 /=.
+    by apply head_Lift.
+  Qed.
+
+  Lemma LiftO_last: forall (st:seq T) (so:seq O),
+      size(st) > 1 -> size (so) = size st -1 
+      -> (last (ptv,P) (LiftO st so)).1.2 = last ptv.1 st.
+  Proof.
+    move => st so H1 H2.
+    rewrite /LiftO.
+    have H3: size (Lift st)= size so 
+      by pose proof (Lift_sz H1) as H3;rewrite H3 H2.
+    have H4: last (ptv,P) (pair (Lift st) so) = (last ptv (Lift st), last P so)
+      by apply pair_l.
+    rewrite H4 /=.
+    by apply last_Lift.
+  Qed.
+  
   (* begin snippet Eope:: no-out *)  
   Definition Eope (stto : seq(T*T*O)) : T*T := (Epe ptv (unpair stto).1).
   (* end snippet Eope *)  
