@@ -1298,7 +1298,7 @@ End pair.
 Section pairp.
   (** * Utilities when pairing sequences *) 
   (** * (Lift (pair st so)) = pairp (Lift st) (Lift so) *)
-  
+  (* 
   Variables (T: Type).
   
   Fixpoint pairp (st: seq(T*T)) (so: seq (O*O)): seq((T*O)*(T*O)):= 
@@ -1314,7 +1314,6 @@ Section pairp.
     | [::] => ([::],[::])
     end.
   
-  Definition Prel (R: relation (T)) := [set p : (T*O)*(T*O) | R (p.1.1,p.2.1)].
 
   Lemma pairp_sz: forall (st: seq(T*T)) (so: seq (O*O)),
       size(st) = size (so) -> size (pairp st so) = size st.
@@ -1339,7 +1338,8 @@ Section pairp.
   Proof.
     by elim => [// | [[t1 o1] [t2 o2]] sto Hrt];rewrite /= Hrt.
   Qed.
-  
+  *)
+
 End pairp.
 
 Section pair_lift1.
@@ -1378,8 +1378,12 @@ Section pair_lift1.
     by move => E x y; elim. 
   Qed.
 
+  (* 
+  Definition Prel (R: relation (T)) := [set p : (T*O)*(T*O) | R (p.1.1,p.2.1)].
+  
   Lemma ChrelO_as_Prel: ChrelO = Prel (@Chrel T).
   Proof. by []. Qed.
+   *)
 
   Lemma ChrelO_Chrel: forall (tto tto': T*T*O), ChrelO (tto, tto') = Chrel (tto.1, tto'.1).
   Proof.
