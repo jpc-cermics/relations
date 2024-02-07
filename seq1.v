@@ -620,10 +620,10 @@ Section allset_Lifted.
       allL E st x y -> (x::st) [\in] (E.+)#_(y).
   Proof.
     move => E st x y.
-    elim: st x. 
-    by move => x;rewrite /allL /= => /andP [/inP H1 _];
-                                   apply /andP;split;[apply mem_set;apply Fset_t1|].
-    move => z st Hr x;rewrite allL_c => /andP [/inP H1 /Hr H2].
+    elim: st x => [x | z st Hr x].
+    by rewrite /allL /= => /andP [/inP H1 _];
+                          apply /andP;split;[apply mem_set;apply Fset_t1|].
+    rewrite allL_c => /andP [/inP H1 /Hr H2].
     move: (H2);rewrite allset_cons => [[H3 H4]].
     by rewrite allset_cons;split;[ apply Fset_t2; exists z |].
   Qed.
@@ -636,7 +636,7 @@ Section Suc_as_Lift.
   Variables (T: Type).
 
   (* begin snippet RPath_equiv:: no-out *)  
-  Lemma RPath_equiv: forall (R:relation T) (st: seq T),  st [L\in] R <-> st [Suc\in] R.
+  Lemma RPath_equiv: forall (R:relation T) (st: seq T), st [L\in] R <-> st [Suc\in] R.
   (* end snippet RPath_equiv *)  
   Proof.
     move => R st.
@@ -663,10 +663,10 @@ Section Lift_bijective.
   
   (* A relation on (T*T) (Ch for Chain) *)
   (* begin snippet Chrel:: no-out *)  
-  Definition Chrel  := [set sptt: (T*T)*(T*T) | (sptt.1).2 = (sptt.2).1].
+  Definition Chrel {T:Type} :=[set sptt: (T*T)*(T*T)| (sptt.1).2 = (sptt.2).1].
   (* end snippet Chrel *)  
   
-  Lemma Lift_Lift: forall (st:seq T), (Lift (Lift st)) [\in] Chrel. 
+  Lemma Lift_Lift: forall (st:seq T), (Lift st) [L\in] Chrel. 
   Proof.
     move => st. 
     pose proof seq_cases st as [H1 | [[x H1] | [q [x [y H1]]]]].
@@ -679,6 +679,13 @@ Section Lift_bijective.
     by rewrite 3!Lift_c allset_cons -Lift_c;split;[ |apply Hr].
   Qed.
 
+  (* begin snippet Lift_Suc:: no-out *)  
+  Lemma Lift_Suc: forall (st:seq T), (Lift st) [Suc\in] Chrel. 
+  (* end snippet Lift_Suc *)  
+  Proof.
+    by move => st; rewrite -RPath_equiv; apply Lift_Lift.
+  Qed.
+  
   (* begin snippet DI:: no-out *)  
   Definition D := [set st:seq T | size(st) > 1].
   Definition I := [set spt:seq (T*T) | size(spt) > 0 /\ spt [Suc\in] Chrel].
@@ -755,15 +762,7 @@ Section Lift_bijective.
     by exists (UnLift st x). 
   Qed.
   
-  (** * extra results *)
-  
-  (* begin snippet Lift_Suc:: no-out *)  
-  Lemma Lift_Suc: forall (st:seq T), (Lift st) [Suc\in] Chrel. 
-  (* end snippet Lift_Suc *)  
-  Proof.
-    by move => st; rewrite -RPath_equiv; apply Lift_Lift.
-  Qed.
-  
+  (* a surjectivy result on a larger set *)
   Lemma Lift_Chrel: forall (spt : seq (T*T)),
       (Lift spt) [\in] Chrel <-> exists st: seq T, Lift st = spt.
   Proof.
@@ -785,12 +784,13 @@ Section Lift_bijective.
     by split => [[x _ <-] | /Lift_Chrel [p H1]];[ apply Lift_Lift | exists p].
   Qed.
 
+  (** * what follows is certainly useless *)
   (* begin snippet Lift_lemma2:: no-out *)  
   Definition Im (n: nat):= image [set st | size(st)>n] (@Lift T).
   Definition Im1 (n: nat):= [set spt| exists st: seq T, Lift st = spt /\ size(st)>n].
   Definition Pre (n: nat):= 
     preimage (@Lift (T*T)) [set spt| spt [\in] Chrel /\ size(spt)> n].
-  Definition Pre1 (n: nat):= [set spt| (Lift spt) [\in] Chrel /\ size(spt)>n].
+  Definition Pre1 (n: nat):= [set spt| (Lift spt) [\in] (@Chrel T) /\ size(spt)>n].
   (* end snippet Lift_lemma2 *)  
 
   Lemma Lift_lemma2: (Im 2) = (Pre 0).
@@ -816,8 +816,8 @@ End Lift_bijective.
 
 Section epts.
   (** * endpoints  *)
-
-  Variables (T: Type) (tv:T) (ptv: T*T).
+  
+  Variables (T: Type) (ptv: T*T).
   
   (* begin snippet Pe:: no-out *)  
   Definition Pe (st: seq T) := (head ptv.1 st, last ptv.1 st).
@@ -847,7 +847,7 @@ Section epts.
   Qed.
   
   Lemma Epe_Epe1: forall (spt: seq (T*T)), 
-      size(spt) > 0 -> spt [Suc\in] (@Chrel T) -> Epe spt = Epe1 spt.
+      size(spt) > 0 -> spt [Suc\in] Chrel -> Epe spt = Epe1 spt.
   Proof.
     move => spt H1 H2.
     have H4: spt \in (@I T) by apply inP.
@@ -860,18 +860,20 @@ Section epts.
   
   (* Pe (UnLift spt ptv.1) = Epe1 spt. *) 
   Lemma Pe_UnLift: forall (spt: seq (T*T)), 
-      size(spt) > 0 -> spt [Suc\in] (@Chrel T) -> 
+      size(spt) > 0 -> spt [Suc\in] Chrel -> 
       Pe (UnLift spt ptv.1) = Epe1 spt.
   Proof. 
     by move => spt H1 H2; rewrite -Epe_Epe1 /Epe.
   Qed.
+
+  (** * deployment paths 
+   * Lift and UnLift are bijective on deployment path 
+   * D_V <-[Lift]-> D_P 
+   *) 
   
-  (** * deployment paths *) 
-  (** * It remains to express that we have a Lift Unlift restricted bijection *)
-            
   (* begin snippet D_P:: no-out *)  
   Definition D_P (R E: relation T):= 
-    [set spt|size(spt)>0/\R (Epe spt)/\spt [\in] E/\spt [Suc\in] (@Chrel T)].
+    [set spt| spt \in (@I T) /\ R (Epe spt) /\ spt [\in] E ].
   (* end snippet D_P *)  
   
   (* begin snippet D_P1:: no-out *)  
@@ -879,7 +881,8 @@ Section epts.
   (* end snippet D_P1 *)  
 
   (* begin snippet D_V:: no-out *)  
-  Definition D_V (R E: relation T):=[set st| size(st)>1 /\R (Pe st) /\st [Suc\in] E].
+  Definition D_V (R E: relation T):=
+    [set st| st \in (@D T) /\ R (Pe st) /\ st [Suc\in] E].
   (* end snippet D_V *)  
   
   (* begin snippet D_V1:: no-out *)  
@@ -887,38 +890,37 @@ Section epts.
   (* end snippet D_V1 *)  
   
   (* begin snippet DP_DV:: no-out *)  
-  Lemma DP_DV: forall  (R E: relation T), image (D_V R E) (@Lift T) = (D_P R E).
+  Lemma DP_DV: forall (R E: relation T), image (D_V R E) (@Lift T) = (D_P R E).
   (* end snippet DP_DV:: no-out *)  
   Proof.
     move => R E.
     rewrite /D_V /D_P /mkset predeqE => q.
     split. 
-    - move => [p [H1 [H2 H3]] <-].
+    - move => [p [/inP H1 [H2 H3]] <-].
       move: (H1) => /Lift_sz2 H1'.
       rewrite /Epe. 
       have -> : (UnLift (Lift p) ptv.1) = p by apply UnLift_left. 
-      rewrite RPath_equiv.
+      rewrite RPath_equiv inP.
       by pose proof Lift_Suc p as H5.
-    - move => [H1 [H2 [H3 H4]]].
+    - move => [/inP [H1 H2] [H3 H4]].
       have H6 : Lift (UnLift q ptv.1) = q  by apply Lift_UnLift;rewrite inP /I. 
       have H7: 1 < size (UnLift q ptv.1) by rewrite -H6 Lift_sz2 in H1.
       rewrite -H6 /=.
-      by exists (UnLift q ptv.1);[rewrite -RPath_equiv H6|]. 
+      by exists (UnLift q ptv.1);[rewrite -RPath_equiv H6 inP|].
   Qed.
   
-  (** * express the D_P set as an image when R=[set (x,y)] *)
-
-  Definition D_P1_new1 (x y:T) (E: relation T) := 
-    [set spt| exists st, spt = Lift (x::(rcons st y)) /\ spt [\in] E /\ spt [Suc\in] (@Chrel T)].
-
-  Definition D_P1_new2 (x y:T) (E: relation T) := 
-    [set spt| spt=[::(x,y)] /\ E (x,y)] `|` 
-      [set spt | exists st, spt = Lift (x::(rcons st y)) /\ spt [L\in] ((E `*`E ) `&` (@Chrel T))].
-
-  Lemma D_V1_step1: forall (x y:T) (st:seq T),
-      1 < size st /\ [set (x, y)] (Pe st) <-> exists q, st= x::(rcons q y).
+  Lemma DV_DP: forall (R E: relation T) (spt: seq (T*T)), 
+      spt \in (D_P R E) -> exists st, st \in (D_V R E) /\ Lift st = spt.
   Proof.
-  Admitted.
+    move => R E spt /inP [H1 [H3 H4]].
+    move: (H1) => /inP [H1' H2].
+    pose proof Pe_UnLift H1' H2 as H5.
+    pose proof Epe_Epe1 H1' H2 as H6.
+    pose proof UnLift_image H1 ptv.1 as H7.
+    pose proof Lift_UnLift H1 ptv.1 as H8.
+    exists (UnLift spt ptv.1).
+    by rewrite inP /D_V /mkset H5 -H6 -RPath_equiv H8.
+  Qed.
   
 End epts.
 
@@ -1012,23 +1014,23 @@ Section seq_pairs_subsets.
 
   (* begin snippet Epath_gt:: no-out *)  
   Definition P_gt (n: nat) (E: relation T)  := 
-    [set spt | size(spt) > n /\ spt [\in] E /\ spt [Suc\in] (@Chrel T)].
+    [set spt | size(spt) > n /\ spt [\in] E /\ spt [Suc\in] Chrel].
   (* end snippet Epath_gt *)  
   
   Definition REpaths (E: relation T) (R: relation (T*T)) := 
-    [set spt:seq (T*T) | spt [\in] E /\ spt [L\in] (@Chrel T) /\ spt [L\in] R].
+    [set spt:seq (T*T) | spt [\in] E /\ spt [L\in] Chrel /\ spt [L\in] R].
   
   Lemma REpath_iff1: forall (E: relation T) (R: relation (T*T)),
-      [set spt:seq (T*T) | spt [\in] E /\ spt [L\in] ((@Chrel T) `&` R)]
+      [set spt:seq (T*T) | spt [\in] E /\ spt [L\in] (Chrel `&` R)]
     = [set spt | spt = [::]] 
         `|` [set spt | size(spt) = 1 /\ (spt [\in] E) ] 
-        `|` [set spt | size(spt) > 1 /\ spt [L\in] ((E `*` E)`&` ((@Chrel T) `&` R))]. 
+        `|` [set spt | size(spt) > 1 /\ spt [L\in] ((E `*` E)`&` (Chrel `&` R))]. 
   Proof.
     by move => E R;rewrite -[RHS]Rpath_iff.
   Qed.
 
   Lemma REpath_iff2: forall (E: relation T) (R: relation (T*T)),
-      [set p:seq (T*T) | p [\in] E /\ p [L\in] ((@Chrel T) `&` R)]
+      [set p:seq (T*T) | p [\in] E /\ p [L\in] (Chrel  `&` R)]
       = [set p | p [\in] E /\ p [L\in] (@Chrel T) /\ p [L\in] R].
   Proof.
     move => E R. rewrite /mkset predeqE => p.
@@ -1096,7 +1098,7 @@ Section pair.
   Inductive O := | P | N.
   (* end snippet O *)
 
- (* begin snippet pair:: no-out *)  
+  (* begin snippet pair:: no-out *)  
   Fixpoint pair (stt: seq (T*T)) (so: seq O) := 
     match stt, so with 
     | (pt)::stt, o::so => (pt,o)::(pair stt so)
@@ -1425,21 +1427,21 @@ Section pair_lift1.
     have H3: size(Lift st) = size so by apply Lift_sz in H1;rewrite H2 addn1 subn1 in H1.
     split; first by rewrite pair_sz1 H3;rewrite H2 addn1 in H1;apply leq_ltn_trans with 0. 
     rewrite /LiftO.
-    have -> : (pair (Lift st) so) [Suc\in] (Extend (@Chrel T)) 
-         <-> (Lift st) [Suc\in] (@Chrel T) by  apply pair_L1.
+    have -> : (pair (Lift st) so) [Suc\in] (Extend Chrel) 
+         <-> (Lift st) [Suc\in] Chrel by  apply pair_L1.
     by rewrite -RPath_equiv Lift_Lift.
   Qed.
   
   Lemma LiftO_right_0: forall (stto:seq (T*T*O)),
       size stto > 0 -> stto [Suc\in] ChrelO 
-      -> size (unpair stto).1 > 0 /\ (unpair stto).1 [Suc\in] (@Chrel T).
+      -> size (unpair stto).1 > 0 /\ (unpair stto).1 [Suc\in] Chrel.
   Proof.
     move => stto; rewrite -2!RPath_equiv;move => H1 H2.
     split; first by rewrite unpair_sz1.
     pose proof unpair_right stto as H3.
-    have H4: (Extend (@Chrel T)) = ChrelO by [].
+    have H4: (Extend Chrel) = ChrelO by [].
     have H5: size ((unpair stto).1) = size (unpair stto).2 by apply unpair_sz.
-    pose proof pair_L1 (@Chrel T) H5 as H6.
+    pose proof pair_L1 Chrel H5 as H6.
     by rewrite RPath_equiv -H6 unpair_right H4 -RPath_equiv.
   Qed.
   
