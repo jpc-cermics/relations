@@ -1831,24 +1831,19 @@ Section pair_lift1.
   Definition D_U' (R E: relation T):=
     [set st : (seq T)*(seq O) | 
       st.1 \in (@D T) /\ size(st.2) = size(st.1) -1 /\ 
-               R (@Pe T ptv st.1) /\ st.1 [Suc\in] E].
+               R (@Pe T ptv st.1) /\ (LiftOp st) [\in] (Oedge E)].
   (* end snippet D_Up *)  
   
   (* begin snippet D_V1:: no-out *)  
   Definition D_U'_s (x y:T) (E: relation T) := D_U' [set (x,y)] E.
   (* end snippet D_V1 *)  
-
-  Lemma Oedge_L1: forall (st: seq T), (so:seq O),
-    size st = size(so) +1 -> st [Suc\in] E -> (pair (Lift st) so) [\in] (Oedge E).
-  Proof.
-    C'est pair_L1 ou pair_L2 qui fait le job 
-                  
+  
   (* begin snippet DU_DU':: no-out *) 
   Lemma DU_DU': forall (R E: relation T), image (D_U' R E) LiftOp = (D_U R E).
   (* end snippet DU_DU':: no-out *)  
   Proof.
     move => R E.
-    rewrite /D_U /D_U' /mkset predeqE => q.
+    rewrite /D_U /D_U' /mkset predeqE => stto.
     split. 
     - move => [[st so] [/inP H1 [H2 [H3 H3']]] <-].
       move: (H1) => /Lift_sz2 H1'.
@@ -1860,40 +1855,34 @@ Section pair_lift1.
       have H8: size st = size so +1. by [].
       pose proof LiftO_image H4 H8 as [H9 H10].
       pose proof UnLiftO_head H7 H10 as H11.
-      rewrite -H11 H6. 
-      split.
-      by [].
-      split.
-      by [].
-      split.
-      ZZZ
-
-      by [].
-      
-      rewrite /=.
-      ZZZ
-
-      by [].
-      rewrite RPath_equiv inP.
-      by pose proof Lift_Suc p as H5.
-    - move => [/inP [H1 H2] [H3 H4]].
-      have H6 : Lift (UnLift q ptv.1) = q  by apply Lift_UnLift;rewrite inP /I. 
-      have H7: 1 < size (UnLift q ptv.1) by rewrite -H6 Lift_sz2 in H1.
-      rewrite -H6 /=.
-      by exists (UnLift q ptv.1);[rewrite -RPath_equiv H6 inP|].
+      by rewrite -H11 H6.
+    - move => [H1 [H2 [H3 H4]]].
+      pose proof LiftO_right ptv.1 H1 H4 as H5.
+      have H6: LiftOp (UnLiftO stto ptv.1) = stto by [].
+      rewrite -H6 /=. 
+      exists (UnLiftO stto ptv.1); last by [].
+      pose proof  UnLiftO_head H1 H4 as H7.
+      by rewrite H6 H7 inP /UnLiftO /= /D /mkset UnLift_sz -unpair_sz unpair_sz1 addn1 subn1.
   Qed.
   
-  Lemma DV_DP: forall (R E: relation T) (spt: seq (T*T)), 
-      spt \in (D_P R E) -> exists st, st \in (D_V R E) /\ Lift st = spt.
+  Lemma DU'_DU: forall (R E: relation T) (stto: seq (T*T*O)), 
+      stto \in (D_U R E) -> exists st, st \in (D_U' R E) /\ (pair (Lift st.1) st.2) = stto.
   Proof.
-    move => R E spt /inP [H1 [H3 H4]].
-    move: (H1) => /inP [H1' H2].
-    pose proof Pe_UnLift H1' H2 as H5.
-    pose proof Epe_Epe1 H1' H2 as H6.
-    pose proof UnLift_image H1 ptv.1 as H7.
-    pose proof Lift_UnLift H1 ptv.1 as H8.
-    exists (UnLift spt ptv.1).
-    by rewrite inP /D_V /mkset H5 -H6 -RPath_equiv H8.
+    move => R E spt /inP [H1 [H3 [H4 H5]]].
+    exists (UnLiftO spt ptv.1).
+    pose proof LiftO_right ptv.1 H1 H5 as H6.
+    pose proof UnLiftO_head H1 H5 as H7.
+    pose proof LiftO_right ptv.1 H1 H5 as H8.
+    have H9: LiftOp (UnLiftO spt ptv.1) = spt by rewrite /LiftOp.
+    rewrite inP /D_U' /mkset.
+    split;last by rewrite -[RHS]H6.
+    split.
+    by rewrite /UnLiftO inP /D /mkset UnLift_sz unpair_sz1 addn1.
+    split.
+    by rewrite /UnLiftO UnLift_sz /= unpair_sz addn1 subn1.
+    split.
+    by rewrite H7.
+    by rewrite H9.
   Qed.
   
 End pair_lift1.
