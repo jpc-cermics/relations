@@ -35,47 +35,6 @@ Section Active_relation.
   (** * D_U and active relation *)
 
   Variables (T: Type) (ptv: T*T).
-
-  (* begin snippet U_gt:: no-out *) 
-  Definition U_gt (n: nat) (E: relation T):=
-    [set sto | size(sto) > n /\ sto [\in] (Oedge E) /\ (Lift sto) [\in] (@ChrelO T)].
-  (* end snippet U_gt *)
-
-  (* begin snippet U_ge_1:: no-out *) 
-  Definition U_ge_1 (E: relation T):=
-    [set sto | sto [\in] (Oedge E) /\  size(sto) > 0 /\ 
-                 (Lift sto) [\in] (@ChrelO T)].
-  (* end snippet U_ge_1 *)
-  
-  (* begin snippet U_ge_1p:: no-out *) 
-  Definition U_ge_1' (E: relation T):=
-    [set sto | sto [\in] (Oedge E) /\
-                 (exists p, exists so, size p > 1 /\ size p = size so + 1 /\ (LiftO p so) =sto)].
-  (* end snippet U_ge_1p *)
-  
-  Lemma U_equiv: forall (E: relation T), U_ge_1 E = U_ge_1' E.
-  Proof.
-    move => E;rewrite /U_ge_1 /U_ge_1' /setI /mkset predeqE => spa.
-    split. 
-    - move => [H1 [H2 H2']].
-      split; first by []. 
-      pose proof (Lift_ChrelO2 H2 H2') as [p [so [H3 [H4 H5]]]].
-      by (exists p);(exists so);split;[rewrite H3 addn1|].
-    - move => [H1 [p [so [H2 [H3 H4]]]]].
-      split. by [].
-      split. 
-      by rewrite -H4 /LiftO pair_sz1 Lift_sz2.
-      by rewrite -H4;apply Lift_LiftO.
-  Qed.
-
-  Lemma ChrelO_eq: forall (x y z t: T) (o1 o2:O),
-      ChrelO ((x,y,o1), (z,t,o2)) <-> y = z.
-  Proof. by []. Qed.
-    
-  (* begin snippet D_U:: no-out *)  
-  Definition D_U (R E: relation T) := [set stto : seq (T*T*O) |size(stto)>0 
-     /\ R (Eope ptv stto) /\ stto [\in] (Oedge E) /\ stto [Suc\in] (@ChrelO T)].
-  (* end snippet D_U *)  
   
   (* begin snippet D_U1:: no-out *) 
   Definition D_U' (R E: relation T):=

@@ -884,7 +884,7 @@ Section epts.
   (* end snippet D_P *)  
   
   (* begin snippet D_P1:: no-out *)  
-  Definition D_P1 (x y: T) (E: relation T):= D_P [set (x,y)] E.
+  Definition D_P_s (x y: T) (E: relation T):= D_P [set (x,y)] E.
   (* end snippet D_P1 *)  
 
   (* begin snippet D_V:: no-out *)  
@@ -1377,6 +1377,8 @@ Section pair_lift1.
   Definition LiftO (st: seq T) (so: seq O) := pair (Lift st) so.
   (* end snippet LiftO *)  
   
+  Definition LiftOp (stso: (seq T)*(seq O)) := pair (Lift stso.1) stso.2.
+
   Definition O_rev (o:O) := match o with | P => N | N => P end.
   
   (* begin snippet Oedge:: no-out *)  
@@ -1409,7 +1411,11 @@ Section pair_lift1.
   Proof.
     by move => [tt o] [tt' o'];rewrite /ChrelO /Chrel /mkset /=.
   Qed.
-    
+
+  Lemma ChrelO_eq: forall (x y z t: T) (o1 o2:O),
+      ChrelO ((x,y,o1), (z,t,o2)) <-> y = z.
+  Proof. by []. Qed.
+  
   Lemma LiftO_c: forall  (p:seq T) (so: seq O) (x y: T) (o:O),
       LiftO [::x,y & p] [::o & so]= [::(x,y,o) & LiftO [::y & p] so].
   Proof.
@@ -1426,10 +1432,10 @@ Section pair_lift1.
   (** * bijective relation with LiftO and UnLiftO *)
 
   Lemma UnLiftO_left: forall (t: T) (st: seq T) (so: seq O),
-      size (st) > 1 /\ size(st) = size(so) + 1 
+      size (st) > 1 -> size(st) = size(so) + 1 
       -> UnLiftO (LiftO st so) t = (st,so).
   Proof.
-    move => t st so [H1 H2].
+    move => t st so H1 H2.
     have H3: size(Lift st) = (size st) -1 by apply Lift_sz.
     have H4: size(Lift st) = size(so) by rewrite H3 H2 addn1 subn1. 
     have H5: (unpair (pair (Lift st) so)) = ((Lift st), so)
@@ -1483,10 +1489,68 @@ Section pair_lift1.
     by rewrite RPath_equiv.
   Qed.
   
+  (** * Y_gt and p: seq (T*T*O), p [\in] E and p [L\in] R] *)
+  
+  (* begin snippet U_gt:: no-out *) 
+  Definition U_gt (n: nat) (E: relation T):=
+    [set sto | size(sto) > n /\ sto [\in] (Oedge E) /\ (Lift sto) [\in] ChrelO].
+  (* end snippet U_gt *)
+    
+  Definition REopaths (E: set (T*T*O)) (R: relation (T*T*O)) := 
+    [set spt:seq (T*T*O) | spt [\in] E /\ spt [L\in] ChrelO /\ spt [L\in] R].
+  
+  Lemma REopath_iff1: forall (E:set (T*T*O)) (R: relation (T*T*O)),
+      [set spt:seq (T*T*O) | spt [\in] E /\ spt [L\in] (ChrelO `&` R)]
+    = [set spt | spt = [::]] 
+        `|` [set spt | size(spt) = 1 /\ (spt [\in] E) ] 
+        `|` [set spt | size(spt) > 1 /\ spt [L\in] ((E `*` E)`&` (ChrelO `&` R))]. 
+  Proof.
+    by move => E R;rewrite -[RHS]Rpath_iff.
+  Qed.
+
+  Lemma REopath_iff2: forall (E: set (T*T*O)) (R: relation (T*T*O)),
+      [set p:seq (T*T*O) | p [\in] E /\ p [L\in] (ChrelO  `&` R)]
+      = [set p | p [\in] E /\ p [L\in] ChrelO /\ p [L\in] R].
+  Proof.
+    move => E R. rewrite /mkset predeqE => p.
+    split => [ [H1 /allset_I/andP [H2 H3]]// | [H1 [H2 H3]] ].
+    by rewrite allset_I H1 H2 H3.
+  Qed.
+  
+  (* begin snippet U_ge_1:: no-out *) 
+  Definition U_ge_1 (E: relation T):=
+    [set sto | sto [\in] (Oedge E) /\  size(sto) > 0 /\ 
+                 (Lift sto) [\in] ChrelO].
+  (* end snippet U_ge_1 *)
+  (** * doit arriver plus tard car Lift_ChrelO2 est plus bas 
+  
+  (* begin snippet U_ge_1p:: no-out *) 
+  Definition U_ge_1' (E: relation T):=
+    [set sto | sto [\in] (Oedge E) /\
+                 (exists p, exists so, size p > 1 /\ size p = size so + 1 /\ (LiftO p so) =sto)].
+  (* end snippet U_ge_1p *)
+  
+  Lemma U_equiv: forall (E: relation T), U_ge_1 E = U_ge_1' E.
+  Proof.
+    move => E;rewrite /U_ge_1 /U_ge_1' /setI /mkset predeqE => spa.
+    split. 
+    - move => [H1 [H2 H2']].
+      split; first by []. 
+      pose proof (Lift_ChrelO2 H2 H2') as [p [so [H3 [H4 H5]]]].
+      by (exists p);(exists so);split;[rewrite H3 addn1|].
+    - move => [H1 [p [so [H2 [H3 H4]]]]].
+      split. by [].
+      split. 
+      by rewrite -H4 /LiftO pair_sz1 Lift_sz2.
+      by rewrite -H4;apply Lift_LiftO.
+  Qed.
+  *)
+  
   (** * Endpoints in Extended oriented paths *)
   
   (* begin snippet Eope:: no-out *)  
-  Definition Eope (stto : seq(T*T*O)) : T*T :=((head (ptv,P) stto).1.1, (last (ptv,P) stto).1.2).
+  Definition Eope (stto : seq(T*T*O)) : T*T :=
+    ((head (ptv,P) stto).1.1, (last (ptv,P) stto).1.2).
   (* end snippet Eope *)  
   
   Lemma LiftO_head: forall (st:seq T) (so:seq O),
@@ -1747,6 +1811,89 @@ Section pair_lift1.
     by [].
     rewrite /LiftO H3. 
     apply unpair_right.
+  Qed.
+
+  (** * deployment paths 
+   * Lift and UnLift are bijective on deployment path 
+   * D_V <-[Lift]-> D_P 
+   *) 
+  
+  (* begin snippet D_U:: no-out *)  
+  Definition D_U (R E: relation T) := [set stto : seq (T*T*O) |size(stto)>0 
+     /\ R (Eope stto) /\ stto [\in] (Oedge E) /\ stto [Suc\in] ChrelO].
+  (* end snippet D_U *)  
+  
+  (* begin snippet D_U1:: no-out *)  
+  Definition D_U_s (x y: T) (E: relation T):= D_U [set (x,y)] E.
+  (* end snippet D_U1 *)  
+  
+  (* begin snippet D_Up:: no-out *)  
+  Definition D_U' (R E: relation T):=
+    [set st : (seq T)*(seq O) | 
+      st.1 \in (@D T) /\ size(st.2) = size(st.1) -1 /\ 
+               R (@Pe T ptv st.1) /\ st.1 [Suc\in] E].
+  (* end snippet D_Up *)  
+  
+  (* begin snippet D_V1:: no-out *)  
+  Definition D_U'_s (x y:T) (E: relation T) := D_U' [set (x,y)] E.
+  (* end snippet D_V1 *)  
+
+  Lemma Oedge_L1: forall (st: seq T), (so:seq O),
+    size st = size(so) +1 -> st [Suc\in] E -> (pair (Lift st) so) [\in] (Oedge E).
+  Proof.
+    C'est pair_L1 ou pair_L2 qui fait le job 
+                  
+  (* begin snippet DU_DU':: no-out *) 
+  Lemma DU_DU': forall (R E: relation T), image (D_U' R E) LiftOp = (D_U R E).
+  (* end snippet DU_DU':: no-out *)  
+  Proof.
+    move => R E.
+    rewrite /D_U /D_U' /mkset predeqE => q.
+    split. 
+    - move => [[st so] [/inP H1 [H2 [H3 H3']]] <-].
+      move: (H1) => /Lift_sz2 H1'.
+      have H4: size st > 1 by rewrite -Lift_sz2.
+      have H5: size so +1 = size st by rewrite H2 addn1 subn1;apply: (ltn_predK H4).
+      have H6: (UnLiftO (LiftO st so) ptv.1) = (st,so)
+        by rewrite  /LiftOp;apply UnLiftO_left.
+      have H7: size (pair (Lift st) so) > 0 by rewrite pair_sz1.
+      have H8: size st = size so +1. by [].
+      pose proof LiftO_image H4 H8 as [H9 H10].
+      pose proof UnLiftO_head H7 H10 as H11.
+      rewrite -H11 H6. 
+      split.
+      by [].
+      split.
+      by [].
+      split.
+      ZZZ
+
+      by [].
+      
+      rewrite /=.
+      ZZZ
+
+      by [].
+      rewrite RPath_equiv inP.
+      by pose proof Lift_Suc p as H5.
+    - move => [/inP [H1 H2] [H3 H4]].
+      have H6 : Lift (UnLift q ptv.1) = q  by apply Lift_UnLift;rewrite inP /I. 
+      have H7: 1 < size (UnLift q ptv.1) by rewrite -H6 Lift_sz2 in H1.
+      rewrite -H6 /=.
+      by exists (UnLift q ptv.1);[rewrite -RPath_equiv H6 inP|].
+  Qed.
+  
+  Lemma DV_DP: forall (R E: relation T) (spt: seq (T*T)), 
+      spt \in (D_P R E) -> exists st, st \in (D_V R E) /\ Lift st = spt.
+  Proof.
+    move => R E spt /inP [H1 [H3 H4]].
+    move: (H1) => /inP [H1' H2].
+    pose proof Pe_UnLift H1' H2 as H5.
+    pose proof Epe_Epe1 H1' H2 as H6.
+    pose proof UnLift_image H1 ptv.1 as H7.
+    pose proof Lift_UnLift H1 ptv.1 as H8.
+    exists (UnLift spt ptv.1).
+    by rewrite inP /D_V /mkset H5 -H6 -RPath_equiv H8.
   Qed.
   
 End pair_lift1.
