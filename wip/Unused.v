@@ -1,3 +1,50 @@
+Section pairp.
+  (** * Utilities when pairing sequences *) 
+  (** * (Lift (pair st so)) = pairp (Lift st) (Lift so) *)
+  (* 
+  Variables (T: Type).
+  
+  Fixpoint pairp (st: seq(T*T)) (so: seq (O*O)): seq((T*O)*(T*O)):= 
+    match st, so with 
+    | t::st, o::so => ((t.1,o.1),(t.2,o.2))::(pairp st so)
+    | t::st, [::] =>  ((t.1,P),(t.2,P))::(pairp st [::])
+    |  _ , _ => [::]
+    end.
+
+  Fixpoint unpairp (sto: seq((T*O)*(T*O))) : seq(T*T)*seq(O*O):=
+    match sto with 
+    | x::sto => ((x.1.1,x.2.1)::((unpairp sto).1),(x.1.2,x.2.2)::((unpairp sto).2))
+    | [::] => ([::],[::])
+    end.
+  
+
+  Lemma pairp_sz: forall (st: seq(T*T)) (so: seq (O*O)),
+      size(st) = size (so) -> size (pairp st so) = size st.
+  Proof.
+    elim => [so //= | tt st Hr so H1].
+    have H2: size(so) > 0 by rewrite -H1 //.
+    pose proof seq_c H2 as [so' [oo H3]].
+    rewrite H3 /pairp -/pairp /size -2!/size Hr.
+    by [].
+    by rewrite H3 /= in H1; apply succn_inj.
+  Qed.
+
+  Lemma unpairp_sz: forall (sto: seq((T*O)*(T*O))),
+      size(unpairp sto).1 = size(sto) 
+      /\ size(unpairp sto).2 = size(sto).
+  Proof.
+    by elim => [// | x sto [H1 H2]];rewrite /unpairp /= H1 H2.
+  Qed.
+  
+  Lemma unpairp_right: forall (sto: seq((T*O)*(T*O))),
+      pairp (unpairp sto).1 (unpairp sto).2 = sto.
+  Proof.
+    by elim => [// | [[t1 o1] [t2 o2]] sto Hrt];rewrite /= Hrt.
+  Qed.
+  *)
+
+End pairp.
+
   Lemma Epe_L1: forall (spt: seq (T*T)) (x y:T),
       size(spt) > 0 -> spt [Suc\in] (@Chrel T) -> Epe spt = (x, y) 
       -> exists st, size(st) > 1 /\ spt = Lift st /\ Pe st =(x,y).
