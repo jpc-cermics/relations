@@ -1670,7 +1670,8 @@ Section pair_lift1.
       rewrite -H6 /=. 
       exists (UnLiftO stto ptv.1); last by [].
       pose proof  Pe_UnLiftO H1 H4 as H7.
-      by rewrite H6 H7 inP /UnLiftO /= /D /mkset UnLift_sz -unpair_sz unpair_sz1 addn1 subn1.
+      by rewrite H6 H7 inP /UnLiftO /= /D /mkset UnLift_sz 
+         -unpair_sz unpair_sz1 addn1 subn1.
   Qed.
   
   Lemma DU'_DU: forall (R E: relation T) (stto: seq (T*T*O)), 
@@ -1747,7 +1748,8 @@ Section pair_lift1.
   Qed.
   
   Lemma ActiveOe_o: forall (W: set T) (E: relation T) (x y z: T) (o:O),
-      (ActiveOe W E) ((x,y,o),(y,z,o)) <-> (Oedge E (x,y,o)) /\ (Oedge E (y,z,o)) /\ W.^c y.
+      (ActiveOe W E) ((x,y,o),(y,z,o)) 
+      <-> (Oedge E (x,y,o)) /\ (Oedge E (y,z,o)) /\ W.^c y.
   Proof.
     move => W E x y z o;rewrite /ActiveOe /mkset /ChrelO /=.
     case: o.
@@ -1755,7 +1757,7 @@ Section pair_lift1.
     by split => [[? [? [_ ?]]] // | [? [? ?]]].
   Qed.
   
-  Lemma ActiveOeT: forall (W: set T) (E: relation T) (x u v z t: T) (o1 o2 o3 o4:O),
+  Lemma ActiveOeT: forall (W: set T) (E: relation T) (x u v z t: T) (o1 o2 o3 o4: O),
       (Fset E.* W) x 
       /\ ActiveOe W E ((u,x,o1), (x,v,o2)) /\ ActiveOe W E ((z,x,o3), (x,t,o4))
       -> ActiveOe W E ((u,x,o1), (x,t,o4)).
@@ -1769,6 +1771,14 @@ Section pair_lift1.
       (ActiveOe W E).-1 ((e1,o), (e2,o)) <-> ActiveOe W E.-1 ((e2,O_rev o), (e1,O_rev o)).
   Proof.
     by move => W E [x1 y1] [x2 y2] o; case: o. 
+  Qed.
+  
+  Lemma ActiveOe_eq: forall  (W: set T) (E: relation T),
+      (((Oedge E)`*`(Oedge E))`&`(A_tr W E)) = (ActiveOe W E).
+  Proof.
+    move => W E.
+    rewrite /A_tr /ActiveOe /setI /setM /mkset predeqE /= => [[tto1 tto2]].
+    by split => [[[H1 H2] [H3 H4]] | [H1 [H2 [H3 H4]]]].
   Qed.
   
   (* begin snippet D_U_a:: no-out *)  
@@ -1816,7 +1826,7 @@ Section pair_lift1.
     move => R E W.
     by rewrite D_U_a_eq4 D_U_a_eq3.
   Qed.
-
+  
   Lemma D_U_a_eq6 : forall (R E: relation T) (W: set T),
       [set stto | size(stto) > 0 /\ R (Eope stto ) /\ stto [\in] (Oedge E) /\ stto [L\in] (A_tr W E)]
       = ( [set stto | R (Eope stto )] `&`  [set stto | size(stto) = 1 /\ (stto [\in] (Oedge E)) ] )
@@ -1881,6 +1891,7 @@ Section pair_lift1.
   Proof. 
     by move => R E W;rewrite D_U_a_eq10 Active_iff.
   Qed.
+
 
 End pair_lift1.
 

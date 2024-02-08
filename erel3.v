@@ -30,12 +30,10 @@ Section Types.
 
 End Types.
 
-
 Section Active_relation.
   (** * D_U and active relation *)
 
   Variables (T: Type) (ptv: T*T).
-
 
   (** * Active paths  *)
   Variables (W: set T) (E: relation T).
