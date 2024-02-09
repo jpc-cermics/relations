@@ -461,7 +461,7 @@ the projection mapping on the tail and head endpoints defined by
 
 \paragraph{$\bullet$ Transitive closure and edge paths.} As a first result linking
 (edge) paths and relations we prove that {\small
-  \inputsnippetsE{erel3/TCP-n.tex}{,} which asserts that two nodes
+  \inputsnippetsE{seq1/TCP-n.tex}{,} which asserts that two nodes
   \texttt{(v1,v2)} are in relation through the transitive closure of a
   relation~\texttt{E}, that is \texttt{(v1,v2) $\in$ E.+} if and only if there
   exists an edge path with endpoints \texttt{(v1,v2)} in the graph~$(\VERTEX,\EDGE)$.
@@ -554,7 +554,7 @@ The set of finite \undirectedEdgePaths%
   \coqstart Using the tools introduced in \S\ref{sec:sequences} and
   Equations~\eqref{eq:eopaths_defs} we obtain the following formalization of
   $\UPATH_{> n}$ {\small
-    \inputsnippetsE{erel3/U_gt-n.tex,erel3/Oedge-n.tex,erel3/ChrelO-n.tex}{,}}
+    \inputsnippetsE{seq1/U_gt-n.tex,seq1/Oedge-n.tex,seq1/ChrelO-n.tex}{,}}
 \noindent where \texttt{Oede E} is used to formalize the $\EDGEo$ subset and where \texttt{ChrelO} is the chain relation on 
 $\VERTEX\times\VERTEX{\times}\Orientation$. \coqend
 
@@ -586,7 +586,7 @@ the projection mapping on the tail and head endpoints of an  \undirectedEdgePath
     \label{eq:Projection_UPATH}
   \end{equation}
 \end{subequations}
-\coqstart The Coq definition follows {\small \inputsnippetsE{erel3/Eope.tex}{,}}
+\coqstart The Coq definition follows {\small \inputsnippetsE{seq1/Eope.tex}{,}}
 the projection $\pi$ being implement by the mapping \texttt{unpair}. \coqend
 
 \paragraph{$\bullet$ Deployment in paths.} Now, with any binary relation \( \relation \subset \VERTEX\times\VERTEX \),
@@ -607,7 +607,7 @@ in~\eqref{eq:Projection_UPATH}
 The deployment \(\DeploymentInUPaths{\relation}{\OrientedGraph} \)
 is made of the \undirectedEdgePaths\ whose endpoints satisfy the 
 binary relation~\( \relation \).
-{\small \inputsnippets{erel3/D_U-n.tex}}
+{\small \inputsnippets{seq1/D_U-n.tex}}
 
 \paragraph{XXXXX  parler de $D_U$ construit comme image avec LiftO}
 The coq formalization of \undirectedEdgePaths\ paths of size greater or equal to
@@ -769,7 +769,7 @@ and where
 Notice that any \undirectedEdgePath\ of length~1 is active by definition.
 
 \coqstart The Coq formalization of the binary relation \(\ActiveTr\) easily follows 
-{\small \inputsnippetsE{erel3/A_tr.tex}{,}}
+{\small \inputsnippetsE{seq1/A_tr.tex}{,}}
 noticing that the binary relation $\ActiveTr$ contains the well chained relation that we explicitely 
 write with \texttt{ChrelO} and noticing that the forward set 
 defined by Equation~\eqref{eq:TransitiveReflexiveClosure_AgentSubsetW} 
@@ -777,7 +777,7 @@ is defined in Coq by \texttt{Fset}. \coqend
 \medskip
 
 \coqstart Now, The Coq formalization of $\ActiveDeploymentInUPaths{\relation}{\OrientedGraph}$ is 
-{\small \inputsnippets{erel3/D_U_a-n.tex}} \coqend
+{\small \inputsnippets{seq1/D_U_a-n.tex}} \coqend
 
 We introduce in Definition~\ref{de:vertices-d-separated} a new binary relation
 between vertices: we say that 

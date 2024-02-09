@@ -5,19 +5,17 @@ assets_root := $(snippets_root)/assets
 include config.mk
 
 SNIPPETS = \
-	snippets/erel3/ActiveOe-n.tex \
+	snippets/seq1/ActiveOe-n.tex \
 	snippets/erel3/Active-n.tex \
 	snippets/erel3/Aeop-n.tex \
 	snippets/seq1/all_notation-n.tex \
 	snippets/seq1/Chrel-n.tex \
-	snippets/erel3/D_U-n.tex \
-	snippets/erel3/D_U_a-n.tex \
-	snippets/seq1/Lift_lemma2-n.tex \
+	snippets/seq1/D_U-n.tex \
+	snippets/seq1/D_U_a-n.tex \
 	snippets/seq1/Lift_lemma-n.tex \
-	snippets/erel3/Oedge-n.tex \
-	snippets/erel3/TCP-n.tex \
-	snippets/erel3/U_ge_1p-n.tex \
-	snippets/erel3/U_ge_1-n.tex \
+	snippets/seq1/Oedge-n.tex \
+	snippets/seq1/TCP-n.tex \
+	snippets/seq1/U_ge_1-n.tex \
 	snippets/paper_csbr/L7_csbr-n.tex \
 	snippets/paper_csbr_paths/dsepnota-n.tex \
 	snippets/rel/S1-n.tex \
@@ -44,8 +42,8 @@ SNIPPETS = \
 	snippets/seq1/DP_DV-n.tex \
 	snippets/seq1/Pe-n.tex \
 	snippets/seq1/Epe-n.tex \
-	snippets/erel3/U_gt-n.tex \
-	snippets/erel3/ChrelO-n.tex \
+	snippets/seq1/U_gt-n.tex \
+	snippets/seq1/ChrelO-n.tex \
 
 all: allstd allplus
 
