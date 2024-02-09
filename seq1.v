@@ -1746,6 +1746,13 @@ Section pair_lift1.
   Proof.
     by move => W E eo /inP [_ [_ [H3 _]]].
   Qed.
+
+  Lemma ActiveOe_ChrelO: forall (W: set T) (E: relation T),
+      (ActiveOe W E) `<=` ChrelO.
+  Proof.
+    move => W E;rewrite /subset => s /inP H1.
+    by apply ActiveOe_Compose with W E.
+  Qed.
   
   Lemma ActiveOe_o: forall (W: set T) (E: relation T) (x y z: T) (o:O),
       (ActiveOe W E) ((x,y,o),(y,z,o)) 
@@ -1780,22 +1787,104 @@ Section pair_lift1.
     rewrite /A_tr /ActiveOe /setI /setM /mkset predeqE /= => [[tto1 tto2]].
     by split => [[[H1 H2] [H3 H4]] | [H1 [H2 [H3 H4]]]].
   Qed.
-  
+
+  (** * The final set we wish to study *)
+
   (* begin snippet D_U_a:: no-out *)  
-  Definition D_U_a (R E: relation T) (W: set T):= [set stto |size(stto)>0 
-     /\ R (Eope stto ) /\ stto [\in] (Oedge E) 
-     /\ stto [Suc\in] (ChrelO `&` (A_tr W E))].
+  Definition D_U_a (E: relation T) (W: set T) (x y:T):=
+    [set stto |size(stto)>0 /\ (Eope stto)=(x,y) /\ stto [\in] (Oedge E) 
+     /\ stto [Suc\in] ChrelO /\ stto [Suc\in] (A_tr W E)].
   (* end snippet D_U_a *)  
+  
+  (* Active is now almost expressed as a transitive closure 
+   * on an lifted space (A * A) * O as it uses AllL *)
+  (* begin snippet Aeop:: no-out *)  
+  Definition Active_path
+    (W: set T) (E: relation T) (p: seq (T*T*O)) (x y: T) :=
+    match p with 
+    | [::] => x = y 
+    | [::eo1] => eo1.1.1 = x /\  eo1.1.2 = y /\  Oedge E eo1 
+    | eo1 :: [:: eo2 & p]
+      => eo1.1.1 = x /\ (last eo2 p).1.2 = y 
+        /\ allL (ActiveOe W E) (belast eo2 p) eo1 (last eo2 p)
+    end.
+  (* end snippet Aeop *)
+
+  Theorem Active_check1: forall (E: relation T) (W: set T) (x y:T) stto,
+      ((x=y /\ stto = [::]) \/  stto \in (D_U_a E W x y))
+      -> Active_path W E stto x y.
+  Proof.
+    move => E W x y stto.
+    pose proof seq_cases1 stto as [H1 | [[[[t t'] o] H1] | [stto' [eo1 [eo2 H1]]]]].
+    - rewrite H1. move => [[-> _] // |].
+      by rewrite inP /D_U_a /mkset /= => [[H2 _]].
+    - rewrite H1. move => [[-> H2] // |].
+      by rewrite inP /D_U_a /mkset /Eope /= andbT inP /Oedge => [[_ [[H3 H3'] [H4 _]]]].
+    - rewrite H1. move => [[-> H2] // |].
+      rewrite inP /D_U_a /mkset.  
+      rewrite /Active_path.
+      have H2: (head (ptv,P) [:: eo1, eo2 & stto']).1.1 = eo1.1.1. by [].
+      have H3: (last (ptv,P) [:: eo1, eo2 & stto']).1.2 = (last eo2 stto').1.2
+        by rewrite 2!last_cons.
+      have H4: eo1::(rcons (belast eo2 stto') (last eo2 stto')) = stto
+        by rewrite -lastI.
+      rewrite -H2 -H3 /allL H4 -H1. 
+      move => [H5 [[H6 H6'] [H7 [H8 H9]]]].
+      split.
+      by [].
+      split.
+      by [].
+      rewrite -ActiveOe_eq.
+      apply (@Rpath_L3 (T*T*O)). 
+      by rewrite RPath_equiv.
+  Qed.
+
+  Theorem Active_check2: forall (E: relation T) (W: set T) (x y:T) stto,
+      Active_path W E stto x y
+      -> ((x=y /\ stto = [::]) \/  stto \in (D_U_a E W x y)).
+  Proof.
+    move => E W x y stto.
+    pose proof seq_cases1 stto as [H1 | [[[[t t'] o] H1] | [stto' [eo1 [eo2 H1]]]]].
+    - rewrite H1 /Active_path. by left. 
+    - rewrite H1 /Active_path. move => [/= -> [-> H4]]. right.
+      by rewrite inP /D_U_a /mkset /Eope allset_cons -2!RPath_equiv. 
+    - rewrite H1 /Active_path. move => [H2 [H3 H4]]. right.
+      have H5: (head (ptv,P) [:: eo1, eo2 & stto']).1.1 = eo1.1.1. by [].
+      have H6: (last (ptv,P) [:: eo1, eo2 & stto']).1.2 = (last eo2 stto').1.2
+        by rewrite 2!last_cons.
+      have H7: eo1::(rcons (belast eo2 stto') (last eo2 stto')) = stto
+        by rewrite -lastI.
+      have H8: stto [L\in]  (ActiveOe W E). by rewrite -H7.
+      move: H2 H3 H8.
+      rewrite -H5 -H6 -H1.
+      move => H2 H3 H8.
+      rewrite inP /D_U_a /mkset.
+      split. 
+      by rewrite H1 /=.
+      split.
+      by rewrite /Eope H2 H3. 
+      split.
+      move: H8;rewrite -ActiveOe_eq allset_I => /andP [H8 H9].
+      apply (@Rpath_L2 (T*T*O)).
+      split.
+      by rewrite H1 /=. 
+      by []. 
+      split.
+      rewrite -RPath_equiv.
+      pose proof ActiveOe_ChrelO. 
+      apply allset_subset with (ActiveOe W E).
+      by apply ActiveOe_ChrelO.
+      by []. 
+      rewrite -RPath_equiv.
+      apply allset_subset with (ActiveOe W E).
+      by rewrite -ActiveOe_eq.
+      by [].
+  Qed.
   
   Definition D_U_a1 (R E: relation T) (W: set T):= [set stto |size(stto)>0 
      /\ R (Eope stto ) /\ stto [\in] (Oedge E) 
      /\ stto [Suc\in] (A_tr W E)].
 
-  Lemma D_U_a_eq1: forall (R E: relation T) (W: set T), D_U_a R E W = D_U_a1 R E W.
-  Proof. 
-    by move => R E W;rewrite /D_U_a /D_U_a1 -A_tr_P1.
-  Qed.
-  
   Lemma D_U_a_eq3 : forall ( E: relation T) (W: set T),
     [set stto | size(stto) > 0 /\ stto [\in] (Oedge E) /\ stto [L\in] (A_tr W E)]
     = [set stto | size(stto) = 1 /\ (stto [\in] (Oedge E)) ] 
