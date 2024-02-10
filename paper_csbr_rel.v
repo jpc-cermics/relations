@@ -178,10 +178,15 @@ Section Csbr.
       (Emw.* `;` Ew.* ) = ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw)
       /\ Cw `;` (Emw .* ) `;` (Ew .* ) = Cw `;` ('Δ `|` Bmw `;` Δ_(W.^c) `|` Kw)
       /\ (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw 
-      /\ (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c).
+      /\ (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c)
+      /\ Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
     Proof.
-      split;[apply L7_E23a 
-            |split;[apply L7_E23b| split;[apply L7_E23c | apply L7_E23d]]].
+      pose proof L7_E23a.
+      pose proof L7_E23b.
+      pose proof L7_E23c.
+      pose proof L7_E23d.
+      pose proof L7_E23e.
+      by [].
     Qed.
     
   End Csbr_Lemma7. 

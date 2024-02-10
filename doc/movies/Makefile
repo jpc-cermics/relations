@@ -12,6 +12,7 @@ SNIPPETS = \
 	snippets/seq1/Chrel-n.tex \
 	snippets/seq1/D_U-n.tex \
 	snippets/seq1/D_U_a-n.tex \
+	snippets/seq1/D_U_a1-n.tex \
 	snippets/seq1/Lift_lemma-n.tex \
 	snippets/seq1/Oedge-n.tex \
 	snippets/seq1/TCP-n.tex \
@@ -44,6 +45,10 @@ SNIPPETS = \
 	snippets/seq1/Epe-n.tex \
 	snippets/seq1/U_gt-n.tex \
 	snippets/seq1/ChrelO-n.tex \
+	snippets/seq1/Epe_Lift-n.tex \
+	snippets/seq1/Pe_UnLift-n.tex \
+	snippets/seq1/Eope_LiftO-n.tex \
+	snippets/seq1/Pe_UnLiftO-n.tex \
 
 all: allstd allplus
 
@@ -75,6 +80,9 @@ SED= -e 's/{exists}/{\\(\\exists\\)}/g' -e 's/{forall}/{\\(\\forall\\)}/g' -e 's
 	-e 's/\\PY{o}{\\PYZbs{}}\\PY{k+kr}{in}/\\(\\in\\)/g' \
 	-e 's/\\PY{o}{\[\\PYZbs{}}\\PY{k+kr}{in}\\PY{o}{\]}/\\([{\\in}]\\)/g' \
 	-e 's/\[\\PYZbs{}in\]/\\([{\\in}]\\)/g' \
+	-e 's/`;`/;/g' \
+	-e 's/`|`/\\(\\cup\\)/g' \
+	-e 's/`&`/\\(\\cap\\)/g' \
 
 SEDP=-e 's/\\PY{o}{\[\\PYZbs{}}\\PY{k+kr}{in}/\\PY{k+kr}{\\(\\in\\)}/g' \
 	-e 's/\[\\PYZbs{}in\]/\[\\(\\in\\)\]/g' \

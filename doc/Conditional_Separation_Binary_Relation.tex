@@ -223,8 +223,8 @@ relation.
 Binary relations are implemented as sets on a product space using the classical sets implemented in
 \texttt{classical\_sets.v} from the Coq mathcomp library~\cite{MathComp:2022}
 using ssreflect tactics~\cite{Gonthier-Mahboubi-Tassi:2016} 
-\inputsnippetsE{ssrel/relation.tex}{.}
-As described in more details below, we have developed a library for relations taking into account all the
+\inputsnippetsE{ssrel/relation.tex}{.\footnote{At the end of a Coq statement, ended by a dot belonging to the Gallina syntax, we add a dot or a comma which serve as text punctuation.}}
+\noindent As described in more details below, we have developed a library for relations taking into account all the
 definitions recalled at the beginning of this section.\coqend
 
 % ,ssrel/clos_refl_trans.tex,ssrel/clos_rt.tex}
@@ -387,7 +387,7 @@ as the classical notion of path in a graph~\citep{Diestel}.
 We also define an \undirectedEdgePath\ in $(\VERTEX,\EDGE)$ (in our sense)
 as what corresponds to chain path in~\citep{Lauritzen-et-al-1990}.
 
-\paragraph{$\bullet$ Definition of \emph{\EdgePath}.}
+\paragraph{$\bullet$ Definition of \EdgePath.}
 The set of \emph{\EdgePath s} of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$ is defined by
 \begin{subequations}
 \begin{align}
@@ -457,9 +457,9 @@ the projection mapping on the tail and head endpoints defined by
 
 \coqstart The endpoints are obtained in Coq by the mapping \texttt{Pe} for a sequence of vertices and by the mapping 
 \texttt{Epe} for a sequence of edges
-{\small \inputsnippets{seq1/Pe-n.tex,seq1/Epe-n.tex}}\coqend
-
-\jpc{parler des comportements vis a vis de Lift}
+{\small \inputsnippets{seq1/Pe-n.tex,seq1/Epe-n.tex}}
+\noindent We prove in the next two lemmas that \texttt{Pe} and \texttt{Epe} behave properly with respect to the \texttt{Lift} bijection between \texttt{D} and \texttt{I}. 
+{\small \inputsnippets{seq1/Epe_Lift-n.tex,seq1/Pe_UnLift-n.tex}}\coqend
 
 \paragraph{$\bullet$ Transitive closure and edge paths.} As a first result linking
 (edge) paths and relations we prove that {\small
@@ -503,6 +503,8 @@ taking two possible values and implemented in Coq a an inductive type taking two
 values \texttt{N} (for $-1$) and \texttt{P} (for $1$)
 {\small \inputsnippetsE{seq1/O.tex}{,}}
 \noindent which will serve as an orientation specification of an edge. 
+
+\paragraph{$\bullet$ Definition of \undirectedEdgePaths.}
 The set of \emph{\undirectedEdgePath} of length~$n$ ($n\ge 1$) relative to the
 graph~$\npOrientedGraph$ is defined by 
 \begin{subequations}
@@ -589,9 +591,12 @@ the projection mapping on the tail and head endpoints of an  \undirectedEdgePath
   \end{equation}
 \end{subequations}
 \coqstart The Coq definition follows {\small \inputsnippetsE{seq1/Eope.tex}{,}}
-the projection $\pi$ being implement by the mapping \texttt{unpair}. \coqend
+\noindent the projection $\pi$~in Equation~\eqref{eq:Projection_UPATH} 
+being implement by the mapping \texttt{unpair}. 
 
-\paragraph{$\bullet$ Deployment in paths.} Now, with any binary relation \( \relation \subset \VERTEX\times\VERTEX \),
+\coqend
+
+\paragraph{$\bullet$ Deployment in \undirectedEdgePaths.} Now, with any binary relation \( \relation \subset \VERTEX\times\VERTEX \),
 we associate the subset~\( \DeploymentInUPaths{\relation}{\OrientedGraph} \)
 of~\( \UPATH\np{\OrientedGraph} \) in~\eqref{eq:eopaths_defs}
 that we call the \emph{deployment in \undirectedEdgePaths}, 
@@ -605,46 +610,25 @@ defined by
   \label{eq:DeploymentInUPaths}
 \end{equation}
 where the projection~\( \Projection_{\UPATH} \) has been defined
-in~\eqref{eq:Projection_UPATH}
+in~\eqref{eq:Projection_UPATH}. 
+
 The deployment \(\DeploymentInUPaths{\relation}{\OrientedGraph} \)
 is made of the \undirectedEdgePaths\ whose endpoints satisfy the 
 binary relation~\( \relation \).
-{\small \inputsnippets{seq1/D_U-n.tex}}
 
-\paragraph{XXXXX  parler de $D_U$ construit comme image avec LiftO}
-The coq formalization of \undirectedEdgePaths\ paths of size greater or equal to
-one follows the same path as the one used for (edge) paths except that we use
-the oriented lift operator defined in Equation~\eqref{def:Lifto} implemented as 
-in Coq as follows
+\coqstart It is formalized in Coq as follows
+{\small \inputsnippets{seq1/D_U-n.tex}} 
+\noindent Moreover, As for \EdgePath, it is to be noted that the \undirectedEdgePaths\
+may be obtained as the image by the Lift mapping of a
+subset of sequences of vertices as follows
+are also obtained as the image of a 
+set by an extended-oriented lift mapping named \texttt{LiftO} 
 {\small \inputsnippets{seq1/pair.tex,seq1/LiftO.tex}}
 
-ZZZ  Now, for $n\ge 2$, we consider an oriented lift operator
-\begin{equation}
-  \Lifto_n: \Sequence_{n}(\fullset)\times\Sequence_{n-1}(\Orientation) \to
-  \Sequence_{n{-}1}(\fullset{\times}\fullset{\times}\Orientation)
-  \eqsepv
-\end{equation}
-transforming a sequence of elements of $\fullset$ of length $n$ and a sequence of orientations of length $n{-}1$ into a
-sequence of oriented triples in $\fullset{\times}\fullset{\times}\Orientation$ of length
-$n{-}1$ as follows
-\begin{align}
-  \forall \vertex\in \Sequence_n(\fullset)
-  \eqsepv
-  \forall o\in \Sequence_{n-1}(\Orientation)
-  \eqsepv
-  \Lifto_n(v,o) = \bp{\np{\vertex_1, \vertex_2,o_1},\dots,
-  \np{\vertex_{n-1},\vertex_n,o_{n-1}}}
-  \eqfinp
-  \label{def:Lifto}
-\end{align}
-Proceeding as in the previous paragraph, using the sequence of mapping
-$\nseqa{\Lifto_n}{n\ge 2}$ we define a lift operator
-$$\Lifto: \sqcup_{n\ge 2} \Sequence_{n}(\fullset){\times}\Sequence_{n-1}(\Orientation)
-\to \Sequence_{\ge 1}(\fullset{\times}\fullset{\times}\Orientation)$$ such that for all
-$n \ge 2$ the restriction of $\Lifto$ to the set
-$\Sequence_{n}(\fullset){\times}\Sequence_{n-1}(\Orientation)$ coincide with
-$\Lifto_n$.
-
+Finally, we prove that \texttt{LiftO} is bijective on restricted domain and image with inverse \texttt{UnLiftO} 
+and that the bijection properly commutes with \texttt{Eope}
+{\small \inputsnippets{seq1/Eope_LiftO-n.tex,seq1/PE_UnLiftO-n.tex}}
+\coqend
 
 \ifpreprint 
   \noindent $\bullet$ We denote by
@@ -757,8 +741,8 @@ and where
   relative to the graph~\(\npOrientedGraph\)
   is an \emph{active \undirectedEdgePath} (\wrt\footnote{With respect to} the subset~$\AgentSubsetW$)
   if the successive elements (triplets) of \(\UndirectedPath\) satisfy the binary relation
-  \(\ActiveTr\) defined in Equation~\eqref{pipo}.
-  
+  \(\ActiveTr\) defined in Equation~\eqref{pipo} -- notice that any \undirectedEdgePath\ of length~1 is active by definition --.
+
   We denote by \( \ActiveUndirectedPaths{\OrientedGraph} \subset \UPATH\np{\OrientedGraph}\)
   the subset of all active \undirectedEdgePaths\ (\wrt\ the subset~$\AgentSubsetW$). 
   We say that an \undirectedEdgePath\ is \emph{blocked} if it is not active
@@ -768,7 +752,6 @@ and where
   Finally, we define by $\ActiveDeploymentInUPaths{\relation}{\OrientedGraph}$ 
   the subset $\DeploymentInUPaths{\relation}{\OrientedGraph}\cap \ActiveUndirectedPaths{\OrientedGraph}$.
 \end{definition} 
-Notice that any \undirectedEdgePath\ of length~1 is active by definition.
 
 \coqstart The Coq formalization of the binary relation \(\ActiveTr\) easily follows 
 {\small \inputsnippetsE{seq1/A_tr.tex}{,}}
@@ -778,8 +761,10 @@ defined by Equation~\eqref{eq:TransitiveReflexiveClosure_AgentSubsetW}
 is defined in Coq by \texttt{Fset}. \coqend
 \medskip
 
-\coqstart Now, The Coq formalization of $\ActiveDeploymentInUPaths{\relation}{\OrientedGraph}$ is 
-{\small \inputsnippets{seq1/D_U_a-n.tex}} \coqend
+\coqstart Now, The Coq formalization of $\ActiveDeploymentInUPaths{\relation}{\OrientedGraph}$ is obtained as an intersection of two sets 
+{\small \inputsnippets{seq1/D_U_a-n.tex}} 
+\noindent When the relation $\relation=\na{x,y}$ It boils down to the following equivalent definition
+{\small \inputsnippets{seq1/D_U_a1-n.tex}} \coqend
 
 We introduce in Definition~\ref{de:vertices-d-separated} a new binary relation
 between vertices: we say that 
@@ -1553,8 +1538,13 @@ give for each lemma its Coq name. \coqend
   \end{subequations}
 \end{lemma}
 
-\coqstart We give here, as an example, the Lemma~\ref{le:L7} as written in Coq to 
-{\small \inputsnippets{paper_csbr/L7_csbr-n.tex}} \coqend.
+\coqstart We give here, as an example, the Lemma~\ref{le:L7} as written in Coq
+to illustrate the fact that the formalization and the original mathematical
+statement are graphically very similar. The binary relations operator as the
+union, the intersection and the composition are displayed below in the Coq
+statement as \(\cup\), \(\cap\), \(;\) -- which is the display obtained in emacs Coq
+proof general -- but are entered as \texttt{`|`}, \texttt{`\&`}, \texttt{`;`}
+{\small \inputsnippets{paper_csbr/L7_csbr-n.tex}} \coqend
 
 \begin{proof}\quad
 
