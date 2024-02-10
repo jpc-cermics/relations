@@ -272,9 +272,9 @@ Section Csbr.
   Section Csbr_Lemma9.
     (** `;` Lemma 9 of Csbr *)
     Lemma L9_E31: forall (R: relation A) (Y: set A),
-        (Δ_(Y.^c) `;` R).*#Y = R.*#Y.
+          (Δ_(Y.^c) `;` R).*#Y = R.*#Y. 
     Proof.
-      by apply Fset_rt.
+      by move => R Y;rewrite Fset_rt.
     Qed.
     
     Lemma L9_E33: forall (R:relation A) (X: set A), Δ_(R # X) `<=` (R `;` Δ_(X) `;` R.-1).
@@ -285,15 +285,15 @@ Section Csbr.
       by exists z;split;[exists z |].
     Qed.
 
-    Lemma E32f : ((Ew .* ) `;` Δ_(W_s) `;` (Emw .* )) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* )).
+    Lemma L9_E34f : ((Ew .* ) `;` Δ_(W_s) `;` (Emw .* )) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* )).
     Proof.
-      have E32a: (Fset (Δ_(W.^c) `;` E).* W) = Fset E.* W by apply: L9_E31.
-      have E32b: Δ_(Fset Ew.*  W) = Δ_(Fset E.* W) by rewrite /Ew E32a.
-      have E32c : Δ_(W_s) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* )) 
-        by rewrite /W_s -E32b Emw_1; apply: L9_E33.
+      have L9_E34a: (Fset (Δ_(W.^c) `;` E).* W) = Fset E.* W by apply: L9_E31.
+      have L9_E34b: Δ_(Fset Ew.*  W) = Δ_(Fset E.* W) by rewrite /Ew L9_E34a.
+      have L9_E34c : Δ_(W_s) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* )) 
+        by rewrite /W_s -L9_E34b Emw_1; apply: L9_E33.
       have H1:  (Δ_(W_s) `;` (Emw .* )) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* ) `;` (Emw .* ))
-        by apply: composer_inc E32c.
-      have E32e :  (Δ_(W_s) `;` (Emw .* )) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* ))
+        by apply: composer_inc L9_E34c.
+      have L9_E34e :  (Δ_(W_s) `;` (Emw .* )) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* ))
         by rewrite composeA  compose_rt_rt in H1.
       
       rewrite composeA -{2}[Ew.*]compose_rt_rt.
@@ -303,17 +303,17 @@ Section Csbr.
       by rewrite -[(Ew .* `;` _ )]composeA.
     Qed.
 
-    Lemma E32h : (Ew .* `;` Δ_( W) `;` Emw .* ) `<=` (Ew .* `;` Δ_( W_s) `;` Emw .* ).
+    Lemma L9_E34h : (Ew .* `;` Δ_( W) `;` Emw .* ) `<=` (Ew .* `;` Δ_( W_s) `;` Emw .* ).
     Proof.
-      have E32g : Δ_( W) `<=` Δ_( W_s)
+      have L9_E34g : Δ_( W) `<=` Δ_( W_s)
         by move => [x y] [H1 H2]; rewrite /W_s /Fset /DeltaE /mkset /=;
                   split;[exists x; split;[ apply: rt_refl |] | ].
-      by apply: composer_inc; apply: compose_inc; apply: E32g.
+      by apply: composer_inc; apply: compose_inc; apply: L9_E34g.
     Qed.
 
-    Lemma E32: ((Ew .* ) `;` Δ_(W) `;` (Emw .* )) = ((Ew .* ) `;` Δ_(W_s) `;` (Emw .* )).
+    Lemma L9_E34: ((Ew .* ) `;` Δ_(W) `;` (Emw .* )) = ((Ew .* ) `;` Δ_(W_s) `;` (Emw .* )).
     Proof.
-      by rewrite eqEsubset; split;[apply: E32h | apply: E32f].
+      by rewrite eqEsubset; split;[apply: L9_E34h | apply: L9_E34f].
     Qed.
 
     Section Key_Lemma_W_s.
@@ -378,10 +378,10 @@ Section Csbr.
       have L9_1: (Ew.* `;` ((Δ_(W) `;` Kw `;` Δ_(W)).+ ) `;` Emw.* )
                  = (Ew.* `;` ((Δ_(W_s) `;` Kw `;` Δ_(W_s)).+ ) `;` Emw.* )
         by rewrite /Cw /DKD /Cw_s Kw_starts_ends -![(Δ_(W) `;` _)]composeA
-             -![(Δ_(W_s) `;` _)]composeA; apply Test7; rewrite E32.
+             -![(Δ_(W_s) `;` _)]composeA; apply Test7; rewrite L9_E34.
       have L9_2: (Ew.* `;` Cw `;` Emw.* = Ew.* `;` Cw_s `;` Emw.* )
         by rewrite /Cw /DKD /Cw_s composeDl composeDr
-             [in RHS]composeDl [in RHS]composeDr E32 L9_1.
+             [in RHS]composeDl [in RHS]composeDr L9_E34 L9_1.
       rewrite /Aw /Aw_s /Dw BmKw_starts BwKw_ends.
       rewrite [(Bw `|` Kw) `;` Ew.* `;` _]composeA.
       rewrite -[(Ew.* `;` _)]composeA.

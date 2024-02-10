@@ -68,7 +68,7 @@ End utilities.
 
 Section Bw_implies_active_path.
   
-  (** * Lemma 10 (33a) *)
+  (** * Lemma 10 (35a) *)
   Lemma Bwpath: forall (x y:A),
       Bw (x,y) -> (exists (p: seq A),
                    Active_path W E (Lifto (x::(rcons p y)) P) x y
@@ -112,7 +112,7 @@ End Bw_implies_active_path.
 
 Section Bmw_implies_active_path.
 
-  (** * Lemma 10 (33b) *)
+  (** * Lemma 10 (35b) *)
   Lemma Bmwpath: forall (x y:A),
       Bmw (x, y) -> (exists (p: seq A), Active_path W E (Lifto (x::(rcons p y)) N) x y
                                /\ p [\in] (Ew.+)#_(x)).
@@ -161,7 +161,7 @@ End Bmw_implies_active_path.
 
 Section Kw_implies_active_path.
 
-  (** * Lemma 10 (33c) *)  
+  (** * Lemma 10 (35c) *)  
   Lemma Kwpath: forall (x y:A),
       Kw (x, y) -> (exists (p q: seq A),exists t,
                       Active_path W E 
@@ -227,7 +227,7 @@ Section Cw_s_implies_active_path.
     by exists (rcons p (y',y,P)), x'.
   Qed.
   
-  (* Lemma 10 (33d) *)  
+  (** * Lemma 10 (35d) *)  
   Lemma Kwcomp: forall (x y:A),
       let R:= (Δ_(W_s) `;` Kw `;` Δ_(W_s)) `;` (Δ_(W_s) `;` Kw `;` Δ_(W_s))
       in R (x, y)
