@@ -1,5 +1,6 @@
 % START
 \documentclass{jfrarticle}
+%\documentclass{article}
 \def\citep#1{\cite{#1}}
 
 \newif\ifpreprint
@@ -30,7 +31,7 @@
 % and let causal load optsys
 \usepackage{causal}
 \usepackage{snippets}
-\usepackage{thmbox}
+\usepackage{framed}
 
 % margin bars 
 \usepackage{tikz}
@@ -54,6 +55,21 @@
 \newcommand{\Liftp}{\PY{n}{Lift}~\PY{n}{p}}
 \newcommand{\pSucR}{\PY{n}{p}~\PY{o}{$[\text{Suc}{\in}]$}~\PY{n}{R}}
 \newcommand{\Liftpin}{\PY{n}{p}~\PY{o}{$[\text{L}{\in}]$}~\PY{n}{R}}
+
+\newlength{\leftbarwidth}
+\setlength{\leftbarwidth}{1pt}
+\newlength{\leftbarsep}
+\setlength{\leftbarsep}{5pt}
+
+\newcommand*{\leftbarcolorcmd}{\color{leftbarcolor}}% as a command to be more flexible
+\colorlet{leftbarcolor}{red}
+
+\renewenvironment{leftbar}{%
+    \def\FrameCommand{{\leftbarcolorcmd{\vrule width \leftbarwidth\relax\hspace {\leftbarsep}}}}%
+    \MakeFramed {\advance \hsize -\width \FrameRestore }%
+}{%
+    \endMakeFramed
+}
 
 % START
 % macros to remove in submissions
@@ -84,7 +100,6 @@
   We show how the d-separation can be extended beyond acyclic graphs
   and can be expressed and characterized as a binary relation between vertices. 
 \end{abstract}
-
 
 % START
 \begin{document}
@@ -627,7 +642,9 @@ subset of sequences of vertices as follows
 are also obtained as the image of a 
 set by an extended-oriented lift mapping named \texttt{LiftO} 
 {\small \inputsnippets{seq1/pair.tex,seq1/LiftO.tex}}
+\end{leftbar}
 
+\begin{leftbar}
 Finally, we prove that \texttt{LiftO} is bijective on restricted domain and image with inverse \texttt{UnLiftO} 
 and that the bijection properly commutes with \texttt{Eope}
 {\small \inputsnippets{seq1/Eope_LiftO-n.tex,seq1/PE_UnLiftO-n.tex}}
@@ -755,19 +772,20 @@ and where
   Finally, we define by $\ActiveDeploymentInUPaths{\relation}{\OrientedGraph}$ 
   as the subset $\DeploymentInUPaths{\relation}{\OrientedGraph}\cap \ActiveUndirectedPaths{\OrientedGraph}$.
 \end{definition} 
-
-\begin{leftbar} The Coq formalization of the binary relation \(\ActiveTr\) easily follows 
+\begin{leftbar}
+The Coq formalization of the binary relation \(\ActiveTr\) easily follows 
 {\small \inputsnippetsE{seq1/A_tr.tex}{,}}
 noticing that the binary relation $\ActiveTr$ contains the well chained relation that we explicitely 
 write with \texttt{ChrelO} and noticing that the forward set 
 defined by Equation~\eqref{eq:TransitiveReflexiveClosure_AgentSubsetW} 
-is defined in Coq by \texttt{Fset}. \end{leftbar}
-\medskip
+is defined in Coq by \texttt{Fset}.
+\end{leftbar}
 
 \begin{leftbar} Now, The Coq formalization of $\ActiveDeploymentInUPaths{\relation}{\OrientedGraph}$ is obtained as an intersection of two sets 
 {\small \inputsnippets{seq1/D_U_a-n.tex}} 
 \noindent When the relation $\relation=\na{x,y}$ It boils down to the following equivalent definition
-{\small \inputsnippets{seq1/D_U_a1-n.tex}} \end{leftbar}
+{\small \inputsnippets{seq1/D_U_a1-n.tex}}
+\end{leftbar}
 
 We introduce in Definition~\ref{de:vertices-d-separated} a new binary relation
 between vertices: we say that 
