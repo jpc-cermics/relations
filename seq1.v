@@ -36,7 +36,7 @@ Section Lift_def.
   Variables (T: Type).
   
   (* begin snippet Lift:: no-out *)  
-  Fixpoint Lift (st: seq T): seq (T * T) := 
+  Fixpoint Lift (st: seq T): seq (T*T) := 
     match st with 
     | x :: [:: y & st] as st1 => (x,y)::(Lift st1)
     | _ => Nil (T*T)

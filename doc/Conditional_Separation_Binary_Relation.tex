@@ -115,7 +115,8 @@ do-calculus.  Here we show how the d-separation can be extended beyond DAGs and
 can be expressed and characterized as a binary relation between vertices.  We
 think this work will allow for new proof strategies in the developpement of the
 theory of causal inference.  In particular, the main result is an intermediate
-step that we reuse in the two other above mentionned papers.  Last, we think the
+step that we reuse in the two other above mentionned papers. \jpc{reprendre}
+Last, we think the
 developpement of a theory based on binary relations makes it amenable to
 computer aided proof~\citep{pous2013}. %
 
@@ -248,8 +249,7 @@ $\sqcup_{k\ge n} \Sequence_k(\Set)$. The largest set $\Sequence_{\ge 0}(\Set)$ w
 \coqstart The sets $\Sequence_{\ge n}(\fullset)$ and $\Sequence_{n}(\fullset)$ are
 formalized in Coq in the mathcomp library as sequences of elements of type
 \texttt{T} and the restriction to elements in a subset \texttt{(\PY{n+nv}{D}:
-  set T)} is obtained using the function \texttt{all} (in mathcomp mathcomp
-library\texttt{seq.v}).  As an example, the set $\Sequence_{n}(D)$ is
+  set T)} is obtained using the function \texttt{all} (in mathcomp library~\texttt{seq.v}).  As an example, the set $\Sequence_{n}(D)$ is
 implemented as follows {\small \inputsnippets{seq1/all_notation-n.tex,seq1/Sn-n.tex}}\coqend
 
 \paragraph{$\bullet$ (\protect\Liftp) and (\protect\Liftpin).} Then, we define a lift operator
@@ -274,7 +274,7 @@ $\Sequence_{0}(\fullset) \cup\Sequence_{1}(\fullset)$ is the constant mapping gi
 denoted \texttt{Lift}: {\small \inputsnippetsE{seq1/Lift.tex}{.} } We note that,
 thanks to Coq polymorphism, the lift mapping is parameterized by a type and thus
 can be used to lift a sequence of vertices into a sequences of edges but also to
-lift sequence of edges (in $\fullset\times\fullset$) into a sequence of pair of
+lift sequence of edges (in $\fullset{\times}\fullset$) into a sequence of pair of
 edges.  \coqend
 
 The notation $\protect\Liftpin$ is used to denote the
@@ -306,7 +306,7 @@ elements of the lifted sequence belong to the product relation $X{\times}X$ as p
 \coqstart The lift operation, when restricted to the subset \texttt{D} defined below,
 is bijective onto its image \texttt{I}
 {\small \inputsnippets{seq1/DI-n.tex,seq1/Lift_inj-n.tex,seq1/Lift_surj-n.tex}}
-The inverse of \texttt{Lift} is obtained with the recursive mapping \texttt{UnLift} (not detailed here). \coqend
+Moreover, the inverse of \texttt{Lift} is explicitely obtained by a recursive mapping \texttt{UnLift} (not detailed here). \coqend
 
 % \paragraph{$\bullet$ (\texttt{seq T}) and (\texttt{seq (T*T)}).}
 % XXXX INUTILE ? four equivalent ways -- two are
@@ -458,6 +458,8 @@ the projection mapping on the tail and head endpoints defined by
 \coqstart The endpoints are obtained in Coq by the mapping \texttt{Pe} for a sequence of vertices and by the mapping 
 \texttt{Epe} for a sequence of edges
 {\small \inputsnippets{seq1/Pe-n.tex,seq1/Epe-n.tex}}\coqend
+
+\jpc{parler des comportements vis a vis de Lift}
 
 \paragraph{$\bullet$ Transitive closure and edge paths.} As a first result linking
 (edge) paths and relations we prove that {\small

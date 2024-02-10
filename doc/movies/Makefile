@@ -74,7 +74,7 @@ SED= -e 's/{exists}/{\\(\\exists\\)}/g' -e 's/{forall}/{\\(\\forall\\)}/g' -e 's
 	-e 's/Δ/\\(\\Delta\\))/g' -e 's+{/\\PYZbs{}+{\\(\\,\\wedge\\,\\)+g' \
 	-e 's/\\PY{o}{\\PYZbs{}}\\PY{k+kr}{in}/\\(\\in\\)/g' \
 	-e 's/\\PY{o}{\[\\PYZbs{}}\\PY{k+kr}{in}\\PY{o}{\]}/\\([{\\in}]\\)/g' \
-
+	-e 's/\[\\PYZbs{}in\]/\\([{\\in}]\\)/g' \
 
 SEDP=-e 's/\\PY{o}{\[\\PYZbs{}}\\PY{k+kr}{in}/\\PY{k+kr}{\\(\\in\\)}/g' \
 	-e 's/\[\\PYZbs{}in\]/\[\\(\\in\\)\]/g' \
