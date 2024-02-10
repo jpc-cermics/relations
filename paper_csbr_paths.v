@@ -438,12 +438,12 @@ Section Active_path_implies_Aw_s.
   
   Lemma Last2: (Aw_sp `;` Δ_(W_s) `;` E.-1 `<=` Aw_sm).
   Proof.
-    by apply E27c.
+    by apply L8_E29c.
   Qed.
   
   Lemma Last3: (Aw_sm `;` Δ_(W.^c) `;` E `<=` Aw_sp).
   Proof.
-    by apply E27b.
+    by apply L8_E29b.
   Qed.
   
   Lemma Last4: (Aw_sm `;` Δ_(W.^c) `;` E.-1 `<=` Aw_sm).
@@ -552,7 +552,7 @@ Section Active_path_implies_Aw_s.
   Proof.
     move => x y [p H1].
     elim: p H1 => [ H1 | [[x1 y1] o1] p _ ];
-                 (* p = [::]*)first by rewrite L9 E27a;left;left;rewrite Delta_Id.
+                 (* p = [::]*)first by rewrite L9 L8_E29a;left;left;rewrite Delta_Id.
     elim: p => [[H1 [H2 H3]] | [[x2 y2] o2]  p _ H1].
     (* p = [::(x',y',o)] *)
     rewrite /= in H1 H2;rewrite -H1 -H2;clear H1 H2.
@@ -561,7 +561,7 @@ Section Active_path_implies_Aw_s.
     pose q:= [:: (x1, y1, o1), (x2, y2, o2) & p].
     rewrite -/q in H1.
     have H2: size q = (size p).+2 by rewrite /q.
-    rewrite L9 E27a.
+    rewrite L9 L8_E29a.
     pose proof L13 H2 H1 as [q' [o' [y' [_ [[H4 _] | [H4 _]]]]]].
     by left;right.
     by right.

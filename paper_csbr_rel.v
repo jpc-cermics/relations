@@ -49,22 +49,22 @@ Section Csbr.
 
   Section Csbr_Lemma7. 
     (** * Lemma 7 of Csbr *)
-    Lemma L7_E23a : (Emw.* `;` Ew.* ) =
+    Lemma L7_E25a : (Emw.* `;` Ew.* ) =
                       ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw).
     Proof.
-      have L7_E23a1 : Ew.+ = Δ_(W.^c) `;` Bw                            
+      have L7_E25a1 : Ew.+ = Δ_(W.^c) `;` Bw                            
         by rewrite /Bw -composeA -/Ew r_clos_rt_clos_t.
-      have L7_E23a2 : Emw.+ = Bmw `;` Δ_(W.^c)
-        by rewrite -inverse_clos_t L7_E23a1 inverse_compose -/Bmw DeltaE_inverse.
+      have L7_E25a2 : Emw.+ = Bmw `;` Δ_(W.^c)
+        by rewrite -inverse_clos_t L7_E25a1 inverse_compose -/Bmw DeltaE_inverse.
       by rewrite L1 !composeDr !composeDl !Delta_idem_r !Delta_idem_l -unionA -E9e;
-      rewrite -L7_E23a2 -L7_E23a1.
+      rewrite -L7_E25a2 -L7_E25a1.
     Qed.
 
-    Lemma L7_E23b : Cw `;` (Emw.* ) `;` (Ew .* ) = Cw `;` ('Δ `|` (Bmw `;` Δ_(W.^c)) `|` Kw).
+    Lemma L7_E25b : Cw `;` (Emw.* ) `;` (Ew .* ) = Cw `;` ('Δ `|` (Bmw `;` Δ_(W.^c)) `|` Kw).
     Proof.
       have H1: ( Δ_(W) `;` (Δ_(W.^c) `;` Bw)) = 'Δc
         by rewrite -composeA DeltaW_Wc DeltaC_compose_absorbl.
-      rewrite composeA L7_E23a {1}Cw_ends composeA !composeDl H1.
+      rewrite composeA L7_E25a {1}Cw_ends composeA !composeDl H1.
       rewrite DeltaC_compose_absorbr.
       rewrite !Delta_idem_r -Cw_ends.
       rewrite -composeA -Cw_ends.
@@ -74,7 +74,7 @@ Section Csbr.
 
     (* Equation (E23c) *)
 
-    Lemma L7_E23c1 : (Cw `;` (Emw.* ) `;` (Ew.* )) `;` Cw  = Cw `;` ((Δ_(W) `|` Kw `;` Δ_(W)) `;` Cw).
+    Lemma L7_E25c1 : (Cw `;` (Emw.* ) `;` (Ew.* )) `;` Cw  = Cw `;` ((Δ_(W) `|` Kw `;` Δ_(W)) `;` Cw).
     Proof.
       have H1: Δ_(W.^c) `;` Cw = 'Δc
         by rewrite Cw_starts -composeA DeltaWc_W DeltaC_compose_absorbl.
@@ -82,50 +82,50 @@ Section Csbr.
         by rewrite composeA H1 DeltaC_compose_absorbr.
       have H3:  Δ_(W) `;` Cw `|` Kw `;` ( Δ_(W) `;` Cw) = ( Δ_(W) `|` Kw `;`  Δ_(W)) `;` Cw
         by rewrite -[(Kw) `;` (_ `;` _)]composeA -composeDr.
-      by rewrite L7_E23b composeA composeDr composeDr H2 DeltaC_union_idemr Delta_idem_l
+      by rewrite L7_E25b composeA composeDr composeDr H2 DeltaC_union_idemr Delta_idem_l
            {2 3}Cw_starts H3.
     Qed.
 
-    Lemma L7_E23c2 : forall (R: relation A), 
+    Lemma L7_E25c2 : forall (R: relation A), 
         R = R `;`  Δ_(W) -> (R.+ `;`  Δ_(W) = R.+).
     Proof.
       by move => R H1;rewrite {2}H1 [RHS]Delta_clos_trans_ends -H1. 
     Qed.
 
-    Lemma L7_E23c3 : forall (R: relation A), 
+    Lemma L7_E25c3 : forall (R: relation A), 
         R =  Δ_(W) `;` R ->  Δ_(W) `;` R.+ = R.+.
     Proof.
       by move => R H1;rewrite {2}H1 [RHS]Delta_clos_trans_starts -H1. 
     Qed.
     
-    Lemma L7_E23c4 : forall (R: relation A), 
+    Lemma L7_E25c4 : forall (R: relation A), 
         R = R `;`  Δ_(W) -> R =  Δ_(W) `;` R -> ( Δ_(W) `|` R.+) `;` ( Δ_(W) `|` R) = ( Δ_(W) `|` R.+).
     Proof. 
       move => R H1 H2.
       rewrite composeDr !composeDl DeltaE_compose_same -H2.
-      rewrite L7_E23c2 //. 
+      rewrite L7_E25c2 //. 
       rewrite unionA -[in (R `|` _)]unionA [in (R `|` _)]unionC.
       rewrite [in (R .+ `|` R `|` R .+ `;` R)]unionA.
       rewrite clos_t_decomp_rt_r. 
       by rewrite union_RR.
     Qed.
 
-    Lemma L7_E23c5 : forall (R: relation A), 
+    Lemma L7_E25c5 : forall (R: relation A), 
         R = R `;`  Δ_(W) -> R =  Δ_(W) `;` R -> ( Δ_(W) `|` R.+) `;` ( Δ_(W) `|` R.+) = ( Δ_(W) `|` R.+).
     Proof.
       move => R H1 H2.
       rewrite composeDr !composeDl DeltaE_compose_same.
-      rewrite L7_E23c2 // L7_E23c3 //.
+      rewrite L7_E25c2 // L7_E25c3 //.
       by rewrite clos_t_decomp_2 unionA union_RR.
     Qed.
 
-    Lemma L7_E23c : (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw. 
+    Lemma L7_E25c : (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw. 
     Proof.
       have H1: DKD `;`  Δ_(W) = DKD
         by rewrite /DKD composeA DeltaE_compose_same.
       have H2:  Δ_(W) `;` DKD = DKD
         by rewrite /DKD -composeA -composeA DeltaE_compose_same.
-      rewrite L7_E23c1.
+      rewrite L7_E25c1.
       rewrite {1}Cw_ends.
       rewrite composeA. 
       rewrite -{1}[in ( Δ_(W) `;` (( Δ_(W) `|` Kw `;`  Δ_(W)) `;` Cw))]composeA. 
@@ -135,14 +135,14 @@ Section Csbr.
       rewrite /Cw -/DKD. 
       rewrite [in (DKD .+ `|`  Δ_(W))]unionC.
       rewrite -composeA. 
-      by rewrite L7_E23c4; first by rewrite L7_E23c5. 
+      by rewrite L7_E25c4; first by rewrite L7_E25c5. 
     Qed.
   
     (* Equation (E23d) *)
   
-    Lemma L7_E23d : (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c).
+    Lemma L7_E25d : (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c).
     Proof.
-      rewrite L7_E23b. 
+      rewrite L7_E25b. 
       rewrite Cw_ends.
       rewrite composeA [in( 'Δ `|` Bmw `;` Δ_(W.^c) `|` Kw) `;` Δ_(W.^c)]composeDr.
       rewrite [in ('Δ `|` Bmw `;` Δ_(W.^c)) `;` Δ_(W.^c)]composeDr.
@@ -156,7 +156,7 @@ Section Csbr.
     Qed.
 
     (* Equation (E23e) *)
-    Lemma L7_E23e : Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
+    Lemma L7_E25e : Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
     Proof.
       have H0 : forall (R: relation A), 
           (Δ_(W.^c) `;` R `;` Cw).-1 = Cw `;` R.-1 `;` Δ_(W.^c)
@@ -170,7 +170,7 @@ Section Csbr.
         by rewrite inverse_union Kw_inverse.
       have H4 : (Δ_(W.^c) `;` ((Emw .* ) `;` (Ew .* )) `;` Cw).-1
                 =  (Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw).-1
-        by rewrite [LHS]H0 [RHS]H0 H2 H3 -[RHS]L7_E23d -composeA. 
+        by rewrite [LHS]H0 [RHS]H0 H2 H3 -[RHS]L7_E25d -composeA. 
       by apply inverse_eq in H4.
     Qed.
 
@@ -181,11 +181,11 @@ Section Csbr.
       /\ (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c)
       /\ Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
     Proof.
-      pose proof L7_E23a.
-      pose proof L7_E23b.
-      pose proof L7_E23c.
-      pose proof L7_E23d.
-      pose proof L7_E23e.
+      pose proof L7_E25a.
+      pose proof L7_E25b.
+      pose proof L7_E25c.
+      pose proof L7_E25d.
+      pose proof L7_E25e.
       by [].
     Qed.
     
@@ -194,7 +194,7 @@ Section Csbr.
   Section Csbr_Lemma8.
     (** `;` Lemma 8 of Csbr *)
 
-    Lemma E27a :  Aw_s = 'Δ `|` Aw_sp `|`  Aw_sm.
+    Lemma L8_E29a :  Aw_s = 'Δ `|` Aw_sp `|`  Aw_sm.
     Proof.
       rewrite /Aw_s [Bmw `|` Kw]unionC  composeDl.
       rewrite unionA unionA [Bmw `|` (_)]unionC unionA.
@@ -206,7 +206,7 @@ Section Csbr.
       by rewrite -/Aw_sm unionA.
     Qed.
     
-    Lemma E27b :  (Aw_sm `;` Δ_(W.^c) `;` E) `<=`  Aw_sp.
+    Lemma L8_E29b :  (Aw_sm `;` Δ_(W.^c) `;` E) `<=`  Aw_sp.
     Proof.
       rewrite /Aw_sm.
       have H: Bmw = 'Δ `;` Bmw by rewrite Delta_idem_l.
@@ -221,7 +221,7 @@ Section Csbr.
       by apply: union_containsr.
     Qed.
     
-    Lemma E27c :  (Aw_sp `;` Δ_(W_s) `;` Em) `<=`  Aw_sm.
+    Lemma L8_E29c :  (Aw_sp `;` Δ_(W_s) `;` Em) `<=`  Aw_sm.
     Proof.
       have E27c1: E.-1 `<=` Bmw
         by rewrite E9d -{1}[E.-1]Delta_idem_l;apply: composer_inc;
@@ -264,20 +264,20 @@ Section Csbr.
       /\  ((Aw_sm `;` Δ_(W.^c) `;` E) `<=`  Aw_sp)
       /\  ((Aw_sp `;` Δ_(W_s) `;` Em) `<=`  Aw_sm).
     Proof.
-      by split;[apply E27a | split;[apply E27b | apply E27c]].
+      by split;[apply L8_E29a | split;[apply L8_E29b | apply L8_E29c]].
     Qed.
 
   End Csbr_Lemma8.
 
   Section Csbr_Lemma9.
     (** `;` Lemma 9 of Csbr *)
-    Lemma E29: forall (R: relation A) (Y: set A),
+    Lemma L9_E31: forall (R: relation A) (Y: set A),
         (Δ_(Y.^c) `;` R).*#Y = R.*#Y.
     Proof.
       by apply Fset_rt.
     Qed.
     
-    Lemma E31: forall (R:relation A) (X: set A), Δ_(R # X) `<=` (R `;` Δ_(X) `;` R.-1).
+    Lemma L9_E33: forall (R:relation A) (X: set A), Δ_(R # X) `<=` (R `;` Δ_(X) `;` R.-1).
     Proof.
       rewrite /DeltaE /Fset /mkset.
       move => R X [x y]. 
@@ -287,10 +287,10 @@ Section Csbr.
 
     Lemma E32f : ((Ew .* ) `;` Δ_(W_s) `;` (Emw .* )) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* )).
     Proof.
-      have E32a: (Fset (Δ_(W.^c) `;` E).* W) = Fset E.* W by apply: E29.
+      have E32a: (Fset (Δ_(W.^c) `;` E).* W) = Fset E.* W by apply: L9_E31.
       have E32b: Δ_(Fset Ew.*  W) = Δ_(Fset E.* W) by rewrite /Ew E32a.
       have E32c : Δ_(W_s) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* )) 
-        by rewrite /W_s -E32b Emw_1; apply: E31.
+        by rewrite /W_s -E32b Emw_1; apply: L9_E33.
       have H1:  (Δ_(W_s) `;` (Emw .* )) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* ) `;` (Emw .* ))
         by apply: composer_inc E32c.
       have E32e :  (Δ_(W_s) `;` (Emw .* )) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* ))

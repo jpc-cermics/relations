@@ -1485,7 +1485,7 @@ for the definitions of basic binary relations.
 \coqstart As already explained the Coq proofs closely follow the mathematical proofs given here and we will 
 give for each lemma its Coq name. \coqend
 
-\begin{lemma}[\texttt{L7}]
+\begin{lemma}[\PY{k+kn}{Lemma}~~\PY{n+nf}{L7}]
   \label{le:L7}
   We have that
   \begin{subequations}
@@ -1548,8 +1548,8 @@ proof general -- but are entered as \texttt{`|`}, \texttt{`\&`}, \texttt{`;`}
 
 \begin{proof}\quad
 
-  \noindent $\bullet$
-  We prove Equation~\eqref{eq:AA} (\texttt{ZZZ}) as follows:
+  \noindent $\bullet$ (\PY{k+kn}{Lemma}~~\PY{n+nf}{L7\PYZus{}E25a}\PY{o})
+  We prove Equation~\eqref{eq:AA} as follows:
   \begin{align*}
     \ConverseConditionalAncestor \ConditionalAncestor
     &= \bp{\Delta \cup  \TransitiveClosureConverseParentalPrecedence}
@@ -1588,8 +1588,7 @@ proof general -- but are entered as \texttt{`|`}, \texttt{`\&`}, \texttt{`;`}
       \tag{by definition of $\ConditionalAscendent$ in~\ref{eq:converse_conditional_parental_relation}}
   \end{align*}
   
-
-  \noindent $\bullet$
+  \noindent $\bullet$ (\PY{k+kn}{Lemma}~~\PY{n+nf}{L7\PYZus{}E25b}\PY{o})
   We prove Equation~\eqref{eq:CEmEsubset} as follows:
   \begin{align*}
     \Cousinhood \ConverseConditionalAncestor \ConditionalAncestor
@@ -1635,7 +1634,7 @@ proof general -- but are entered as \texttt{`|`}, \texttt{`\&`}, \texttt{`;`}
       \eqfinp
   \end{align*}
 
-  \noindent $\bullet$
+  \noindent $\bullet$ (\PY{k+kn}{Lemma}~~\PY{n+nf}{L7\PYZus{}E25c}\PY{o})
   We prove Equation~\eqref{eq:gammaAAgamma} as follows:
   \begin{align*}
     \Cousinhood \ConverseConditionalAncestor \ConditionalAncestor \Cousinhood
@@ -1721,7 +1720,7 @@ proof general -- but are entered as \texttt{`|`}, \texttt{`\&`}, \texttt{`;`}
       \tag{by definition~\eqref{eq:Cousinhood} of $\Cousinhood$}
   \end{align*}
   
-  \noindent $\bullet$
+  \noindent $\bullet$  (\PY{k+kn}{Lemma}~~\PY{n+nf}{L7\PYZus{}E25d}\PY{o})
   We prove Equation~\eqref{eq:gammaAADelta} as follows:
   \begin{align*}
     \Cousinhood \ConverseConditionalAncestor \ConditionalAncestor
@@ -1782,7 +1781,7 @@ proof general -- but are entered as \texttt{`|`}, \texttt{`\&`}, \texttt{`;`}
       \eqfinp
       \tag{as \( \Cousinhood=\Cousinhood\Delta_{\AgentSubsetW}\)}
   \end{align*}
-  \noindent $\bullet$
+  \noindent $\bullet$  (\PY{k+kn}{Lemma}~~\PY{n+nf}{L7\PYZus{}E25e}\PY{o})
   Equation~\eqref{eq:DeltaAAgamma} is obtained from Equation~\eqref{eq:gammaAADelta}
   by switching to converse relation.
   \medskip
@@ -1833,10 +1832,7 @@ in~\eqref{eq:conditional_active_relationStar} is
 the relation~\( \ConditionalActive \) in~\eqref{eq:conditional_active_relation} with
 \( \Cousinhood \) replaced by~\( \CousinhoodStar \).
 
-
-
-
-\begin{lemma}
+\begin{lemma}[\PY{k+kn}{Lemma}~~\PY{n+nf}{L8}]
   The two following relations
   \begin{subequations}
     \begin{align}
@@ -1898,7 +1894,7 @@ the relation~\( \ConditionalActive \) in~\eqref{eq:conditional_active_relation} 
 \begin{proof}
   \quad
 
-  \noindent $\bullet$
+  \noindent $\bullet$  (\PY{k+kn}{Lemma}~~\PY{n+nf}{L8\PYZus{}E29a}\PY{o})
   We prove~\eqref{eq:ConditionalActivePlus_cup_Minus} as follows:
   \begin{align*}
 \ConditionalActiveStar
@@ -1924,7 +1920,7 @@ the relation~\( \ConditionalActive \) in~\eqref{eq:conditional_active_relation} 
 \eqfinp               
   \end{align*}
 
-  \noindent $\bullet$  
+  \noindent $\bullet$   (\PY{k+kn}{Lemma}~~\PY{n+nf}{L8\PYZus{}E29b}\PY{o})
   We prove~\eqref{eq:ConditionalActivePlus_supset} as follows:     
   \begin{align*}
     \ConditionalActiveMinus\Delta_{\Complementary{\AgentSubsetW}} {\Precedence}
@@ -1974,7 +1970,7 @@ the relation~\( \ConditionalActive \) in~\eqref{eq:conditional_active_relation} 
       % \label{eq:subsetC+}
   \end{align*}
 
-  \noindent $\bullet$  
+  \noindent $\bullet$  (\PY{k+kn}{Lemma}~~\PY{n+nf}{L8\PYZus{}E29c}\PY{o})
   We prove~\eqref{eq:ConditionalActiveMinus_supset} as follows:
   % \jpc{developed as asked by mdl}
   \begin{align*}
@@ -2112,7 +2108,7 @@ the relation~\( \ConditionalActive \) in~\eqref{eq:conditional_active_relation} 
 
 % \subsubsubsection{$\ConditionalActive =\ConditionalActive_{*}$}
 
-\begin{lemma}
+\begin{lemma}[\PY{k+kn}{Lemma}~~\PY{n+nf}{L9}]
   \label{le:cond-act-equals-cond-act-star}
   We have that
   \begin{equation}
@@ -2126,7 +2122,7 @@ the relation~\( \ConditionalActive \) in~\eqref{eq:conditional_active_relation} 
   The proofs is in three steps.
   \medskip
 
-  \noindent $\bullet$
+  \noindent $\bullet$  (\PY{k+kn}{Lemma}~~\PY{n+nf}{L9\PYZus{}E31}\PY{o})
   We prove that
   \begin{align}
     \forall \relation \subset \AGENT\times\AGENT \eqsepv
@@ -2227,7 +2223,7 @@ the relation~\( \ConditionalActive \) in~\eqref{eq:conditional_active_relation} 
   which is~\eqref{eq:R-kleene-G-equals}.
   \medskip
   
-  \noindent $\bullet$
+  \noindent $\bullet$  (\PY{k+kn}{Lemma}~~\PY{n+nf}{L9\PYZus{}E33}\PY{o})
   The following inclusion is easy to prove:
   \begin{align}
     \forall \relation \subset \AGENT\times\AGENT \eqsepv

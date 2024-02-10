@@ -1151,7 +1151,7 @@ Section Clos_refl_trans_facts1.
 End Clos_refl_trans_facts1.
 
 Section Clos_Fset.
-
+  
   Lemma E30 : forall (T:Type) (R: relation T) (X Y: set T),
       'Δ#X `|` R#Y = 'Δ#X `|` (Δ_(X.^c) `;` R)#Y.
   Proof.
