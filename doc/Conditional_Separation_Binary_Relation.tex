@@ -750,7 +750,7 @@ and where
   \bpComplementary{\ActiveUndirectedPaths{\OrientedGraph}}\)   
   the subset of all blocked \undirectedEdgePaths\ (\wrt\ the subset~$\AgentSubsetW$).
   Finally, we define by $\ActiveDeploymentInUPaths{\relation}{\OrientedGraph}$ 
-  the subset $\DeploymentInUPaths{\relation}{\OrientedGraph}\cap \ActiveUndirectedPaths{\OrientedGraph}$.
+  as the subset $\DeploymentInUPaths{\relation}{\OrientedGraph}\cap \ActiveUndirectedPaths{\OrientedGraph}$.
 \end{definition} 
 
 \coqstart The Coq formalization of the binary relation \(\ActiveTr\) easily follows 
@@ -769,8 +769,8 @@ is defined in Coq by \texttt{Fset}. \coqend
 We introduce in Definition~\ref{de:vertices-d-separated} a new binary relation
 between vertices: we say that 
 two vertices are (conditionally) directionally separated if and only if
-all the \undirectedEdgePaths, having them as endpoints, are blocked.
-This definition mimics Pearl's d-separation, but with two differences:
+the two vertices are different and all the \undirectedEdgePaths, having them as endpoints, are blocked
+(equivalently they are different and there does not exist an active \undirectedEdgePaths having them as endpoints). This definition mimics Pearl's d-separation, but with two differences:
 the graph is not supposed to be acyclic, and the separation is between vertices
 and not between disjoint subsets. 
 
@@ -783,9 +783,10 @@ and not between disjoint subsets.
   We denote
   \begin{equation}
     \bgent \ConditionalDirectionalSeparation \cgent \mid \AgentSubsetW
-    \iff 
-    \bcDeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph} \subset
-    \BlockedUndirectedPaths{\graph}
+    \iff
+    (\bgent \not= \cgent) \wedge 
+    \ActiveDeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph}
+    = \emptyset
     \qquad \bp{ \forall \bgent,\cgent \in \AGENT }
     \eqfinv
     \label{eq:vertices-d-separated}
