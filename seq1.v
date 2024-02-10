@@ -1826,7 +1826,19 @@ Section pair_lift1.
       
       by rewrite /Eope H2 H3. 
   Qed.
-  
+
+  (* begin snippet  Active_eq:: no-out *)  
+  Theorem Active_eq: forall (E: relation T) (W: set T) (x y:T) stto,
+      ((x=y /\ stto = [::]) \/  stto \in (D_U_a1 E W x y))
+      <-> Active_path W E stto x y.
+  (* end snippet  Active_eq *)  
+  Proof.
+    move => E W x y stto.
+    split. 
+    apply Active_check1.
+    apply Active_check2.
+  Qed.
+    
 End pair_lift1.
 
 Section Seq_lifto. 

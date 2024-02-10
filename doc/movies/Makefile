@@ -7,6 +7,7 @@ include config.mk
 SNIPPETS = \
 	snippets/seq1/ActiveOe-n.tex \
 	snippets/erel3/Active-n.tex \
+	snippets/erel3/D_separated-n.tex \
 	snippets/erel3/Aeop-n.tex \
 	snippets/seq1/all_notation-n.tex \
 	snippets/seq1/Chrel-n.tex \
@@ -49,7 +50,10 @@ SNIPPETS = \
 	snippets/seq1/Pe_UnLift-n.tex \
 	snippets/seq1/Eope_LiftO-n.tex \
 	snippets/seq1/Pe_UnLiftO-n.tex \
-
+	snippets/seq1/ActiveOe-n.tex \
+	snippets/seq1/Aeop-n.tex \
+	snippets/seq1/Active_eq-n.tex \
+	
 all: allstd allplus
 
 targets.mk: gen_targets.py
@@ -83,6 +87,8 @@ SED= -e 's/{exists}/{\\(\\exists\\)}/g' -e 's/{forall}/{\\(\\forall\\)}/g' -e 's
 	-e 's/`;`/;/g' \
 	-e 's/`|`/\\(\\cup\\)/g' \
 	-e 's/`&`/\\(\\cap\\)/g' \
+	-e 's+{\\PYZbs{}/+{\\(\\,\\vee\\,\\)+g' \
+	-e 's+{\\PYZlt{}\\PYZhy{}\\PYZgt{}}+{\\(\\leftrightarrow\\)}+g'
 
 SEDP=-e 's/\\PY{o}{\[\\PYZbs{}}\\PY{k+kr}{in}/\\PY{k+kr}{\\(\\in\\)}/g' \
 	-e 's/\[\\PYZbs{}in\]/\[\\(\\in\\)\]/g' \
