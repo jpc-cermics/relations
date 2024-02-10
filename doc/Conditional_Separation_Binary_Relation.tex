@@ -1,5 +1,5 @@
 % START
-\documentclass[12pt]{article}
+\documentclass{jfrarticle}
 \def\citep#1{\cite{#1}}
 
 \newif\ifpreprint
@@ -10,7 +10,7 @@
 % ready for submission.
 %\preprintfalse
 
-\usepackage{fullpage}
+%\usepackage{fullpage}
 
 % START
 % macros
@@ -30,6 +30,7 @@
 % and let causal load optsys
 \usepackage{causal}
 \usepackage{snippets}
+\usepackage{thmbox}
 
 % margin bars 
 \usepackage{tikz}
@@ -70,20 +71,12 @@
 \title{Conditional Separation as a Binary Relation}% Between Vertices}
 
 % START
-\author{%
-  Jean-Philippe Chancelier$^\dagger$,
-  Michel De Lara\footnote{CERMICS, Ecole des Ponts, Marne-la-Vall\'ee, France},
-  Benjamin Heymann\footnote{Criteo AI Lab, Paris, France}
-}
 
-\date{\today}
+\author{Jean-Philippe Chancelier et al.}
+{Jean-Philippe Chancelier\\CERMICS, Ecole des Ponts, Marne-la-Vall\'ee, France\\
+  Michel De Lara\\CERMICS, Ecole des Ponts, Marne-la-Vall\'ee, France \and
+  Benjamin Heymann\\Criteo AI Lab, Paris, France}
 
-% START
-\begin{document}
-
-\maketitle
-
-% START
 \begin{abstract}
   Pearl's d-separation is a foundational notion to study conditional
   independence between random variables on directed acyclic graphs.
@@ -91,6 +84,16 @@
   We show how the d-separation can be extended beyond acyclic graphs
   and can be expressed and characterized as a binary relation between vertices. 
 \end{abstract}
+
+
+% START
+\begin{document}
+
+\setcounter{page}{1}
+\firstfoot{Journal of Formalized Reasoning  Vol.??, No.??, ??, Pages \pages.}
+\runningfoot{Journal of Formalized Reasoning Vol.??, No.??, ??}
+
+\maketitle
 
 % START
 % \pagebreak 
@@ -219,13 +222,13 @@ An \emph{equivalence relation} is a reflexive, symmetric and transitive binary
 relation.
 \bigskip
 
-\coqstart
+\begin{leftbar}
 Binary relations are implemented as sets on a product space using the classical sets implemented in
 \texttt{classical\_sets.v} from the Coq mathcomp library~\cite{MathComp:2022}
 using ssreflect tactics~\cite{Gonthier-Mahboubi-Tassi:2016} 
 \inputsnippetsE{ssrel/relation.tex}{.\footnote{At the end of a Coq statement, ended by a dot belonging to the Gallina syntax, we add a dot or a comma which serve as text punctuation.}}
 \noindent As described in more details below, we have developed a library for relations taking into account all the
-definitions recalled at the beginning of this section.\coqend
+definitions recalled at the beginning of this section.\end{leftbar}
 
 % ,ssrel/clos_refl_trans.tex,ssrel/clos_rt.tex}
 \subsection{Sequences sets and relations}
@@ -246,11 +249,11 @@ to $n$ of elements of the set $\Set$, that is, the disjoint union
 $\sqcup_{k\ge n} \Sequence_k(\Set)$. The largest set $\Sequence_{\ge 0}(\Set)$ will be denoted by $\Sequence(\Set)$.
 \medskip
 
-\coqstart The sets $\Sequence_{\ge n}(\fullset)$ and $\Sequence_{n}(\fullset)$ are
+\begin{leftbar} The sets $\Sequence_{\ge n}(\fullset)$ and $\Sequence_{n}(\fullset)$ are
 formalized in Coq in the mathcomp library as sequences of elements of type
 \texttt{T} and the restriction to elements in a subset \texttt{(\PY{n+nv}{D}:
   set T)} is obtained using the function \texttt{all} (in mathcomp library~\texttt{seq.v}).  As an example, the set $\Sequence_{n}(D)$ is
-implemented as follows {\small \inputsnippets{seq1/all_notation-n.tex,seq1/Sn-n.tex}}\coqend
+implemented as follows {\small \inputsnippets{seq1/all_notation-n.tex,seq1/Sn-n.tex}}\end{leftbar}
 
 \paragraph{$\bullet$ (\protect\Liftp) and (\protect\Liftpin).} Then, we define a lift operator
 \mdl{motivation} 
@@ -270,12 +273,12 @@ into a sequence of oriented pairs in $\fullset{\times}\fullset$ of length $n{-}1
 and ii) the restriction of the operator $\Lift$ on
 $\Sequence_{0}(\fullset) \cup\Sequence_{1}(\fullset)$ is the constant mapping giving the empty list on $\fullset{\times}\fullset$.
 
-\coqstart The lift operator $\Lift$ is implemented in Coq as a recursive mapping
+\begin{leftbar} The lift operator $\Lift$ is implemented in Coq as a recursive mapping
 denoted \texttt{Lift}: {\small \inputsnippetsE{seq1/Lift.tex}{.} } We note that,
 thanks to Coq polymorphism, the lift mapping is parameterized by a type and thus
 can be used to lift a sequence of vertices into a sequences of edges but also to
 lift sequence of edges (in $\fullset{\times}\fullset$) into a sequence of pair of
-edges.  \coqend
+edges.  \end{leftbar}
 
 The notation $\protect\Liftpin$ is used to denote the
 expression {\PY{n}{(Lift p)}~\PY{o}{$[{\in}]$}~\PY{n}{R}}.
@@ -284,12 +287,12 @@ expression {\PY{n}{(Lift p)}~\PY{o}{$[{\in}]$}~\PY{n}{R}}.
 sequence whose elements are in $\fullset$ belong to a given subset $R$ of
 $\fullset{\times}\fullset$, that is, satisfy a relation $R$ on $\fullset$.
 
-\coqstart This is easily implemented
+\begin{leftbar} This is easily implemented
 with the help of an inductive predicate (\texttt{RPath} in \texttt{seq1.v})
 {\small \inputsnippetsE{seq1/RPath.tex}{,}}
 \noindent that we do not detail here as we prove that it can be equivalently implemented with the Lift mapping
 (which enables more computational proofs) as we have
-{\small \inputsnippets{seq1/RPath_equiv-n.tex}}\coqend
+{\small \inputsnippets{seq1/RPath_equiv-n.tex}}\end{leftbar}
 
 As a first example, consider the (chain) 
 relation $C_{\textsc{H}}$ -- denoted by \texttt{Chrel} in Coq -- on the product set
@@ -303,10 +306,10 @@ elements of the lifted sequence belong to the product relation $X{\times}X$ as p
 {\small \inputsnippets{seq1/Rpath_L1-n.tex}}
 
 \paragraph{$\bullet$ \texttt{Lift} bijection.}
-\coqstart The lift operation, when restricted to the subset \texttt{D} defined below,
+\begin{leftbar} The lift operation, when restricted to the subset \texttt{D} defined below,
 is bijective onto its image \texttt{I}
 {\small \inputsnippets{seq1/DI-n.tex,seq1/Lift_inj-n.tex,seq1/Lift_surj-n.tex}}
-Moreover, the inverse of \texttt{Lift} is explicitely obtained by a recursive mapping \texttt{UnLift} (not detailed here). \coqend
+Moreover, the inverse of \texttt{Lift} is explicitely obtained by a recursive mapping \texttt{UnLift} (not detailed here). \end{leftbar}
 
 % \paragraph{$\bullet$ (\texttt{seq T}) and (\texttt{seq (T*T)}).}
 % XXXX INUTILE ? four equivalent ways -- two are
@@ -373,12 +376,12 @@ or, equivalently, if
 when no two edges have the same endpoints.
 \medskip
 
-\coqstart A graph $(\VERTEX,\EDGE)$ is given in Coq by a type \texttt{(T: Type)}
+\begin{leftbar} A graph $(\VERTEX,\EDGE)$ is given in Coq by a type \texttt{(T: Type)}
 and a relation on \texttt{T} which is a set in the product type \texttt{set
   T*T}, that is $(\EDGE:\texttt{set T*T})$ -- which is equivalent to the
 declaration $(\EDGE:\texttt{relation T})$. Thus, the (classical) set definition
 of mathcomp analysis \texttt{classical\_sets.v} is used to formalize a
-graph. \coqend \medskip
+graph. \end{leftbar} \medskip
 
 In graph theory, one finds the notions of path, chain and walk. 
 To avoid ambiguities,
@@ -407,11 +410,11 @@ The set of finite (edge) paths of length greater than $n\ge1$ relative to the gr
 \label{def:epaths_defs}
 \end{subequations}
   
-\coqstart Using the tools introduced in \S\ref{sec:sequences} and Equations~\eqref{def:epaths_defs} we obtain 
+\begin{leftbar} Using the tools introduced in \S\ref{sec:sequences} and Equations~\eqref{def:epaths_defs} we obtain 
 the following formalization of $\PATH_{> n}$
 {\small \inputsnippetsE{seq1/EPath_gt-n.tex}{,}}
 \noindent where \texttt{E} is the edge relation $\EDGE$ and where \texttt{Chrel}
-we defined in Section~\ref{sec:sequences}. \coqend
+we defined in Section~\ref{sec:sequences}. \end{leftbar}
 
 \medskip
 We denote by $\cardinal{\path}$ the length of a path $\path \in
@@ -455,11 +458,11 @@ the projection mapping on the tail and head endpoints defined by
   \end{equation}  
 \end{subequations}
 
-\coqstart The endpoints are obtained in Coq by the mapping \texttt{Pe} for a sequence of vertices and by the mapping 
+\begin{leftbar} The endpoints are obtained in Coq by the mapping \texttt{Pe} for a sequence of vertices and by the mapping 
 \texttt{Epe} for a sequence of edges
 {\small \inputsnippets{seq1/Pe-n.tex,seq1/Epe-n.tex}}
 \noindent We prove in the next two lemmas that \texttt{Pe} and \texttt{Epe} behave properly with respect to the \texttt{Lift} bijection between \texttt{D} and \texttt{I}. 
-{\small \inputsnippets{seq1/Epe_Lift-n.tex,seq1/Pe_UnLift-n.tex}}\coqend
+{\small \inputsnippets{seq1/Epe_Lift-n.tex,seq1/Pe_UnLift-n.tex}}\end{leftbar}
 
 \paragraph{$\bullet$ Transitive closure and edge paths.} As a first result linking
 (edge) paths and relations we prove that {\small
@@ -488,14 +491,14 @@ The deployment in paths~\( \DeploymentInPaths{\relation}{\OrientedGraph} \)
 is made of the \EdgePaths\  whose endpoints satisfy the 
 binary relation~\( \relation \).
 
-\coqstart {\small \inputsnippets{seq1/D_P-n.tex}} 
+\begin{leftbar} {\small \inputsnippets{seq1/D_P-n.tex}} 
 It is to be noted that the deployment in paths may be obtained as the image by the Lift mapping of a
 subset of sequences of vertices as follows
 {\small \inputsnippets{seq1/D_V-n.tex,seq1/DP_DV-n.tex}}
 When an edge path of length greater or equal
 to one is given as a lifted sequence of elements of~$T$
 (as for example in \texttt{\PY{n}{Lift}~\PY{o}{(}\PY{n}{x}\PY{o}{::(}\PY{n}{rcons}~\PY{n}{p}~\PY{n}{y}\PY{o}{))}~\PY{o}{=}~\PY{n}{st}\PY{o}{.}}), the endpoints \texttt{(x,y)} and the
-intermediate nodes \texttt{p} of the \EdgePath\ \texttt{st} are immediately obtained.\coqend
+intermediate nodes \texttt{p} of the \EdgePath\ \texttt{st} are immediately obtained.\end{leftbar}
 \subsubsection{Extended-oriented paths in a (directed simple) graph (permitting loops)}
 
 To define \emph{\undirectedEdgePath s}, we consider a finite set ${\Orientation}=\na{-1,+1}$
@@ -555,12 +558,12 @@ The set of finite \undirectedEdgePaths%
   \end{equation}
   \label{eq:eopaths_defs}
   \end{subequations}
-  \coqstart Using the tools introduced in \S\ref{sec:sequences} and
+  \begin{leftbar} Using the tools introduced in \S\ref{sec:sequences} and
   Equations~\eqref{eq:eopaths_defs} we obtain the following formalization of
   $\UPATH_{> n}$ {\small
     \inputsnippetsE{seq1/U_gt-n.tex,seq1/Oedge-n.tex,seq1/ChrelO-n.tex}{,}}
 \noindent where \texttt{Oede E} is used to formalize the $\EDGEo$ subset and where \texttt{ChrelO} is the chain relation on 
-$\VERTEX\times\VERTEX{\times}\Orientation$. \coqend
+$\VERTEX\times\VERTEX{\times}\Orientation$. \end{leftbar}
 
 An \emph{\undirectedEdgeSubPath} of the \undirectedEdgePath~$\UndirectedPath
 \in\UPATH\np{\OrientedGraph}$ is an \undirectedEdgePath\ obtained by a
@@ -590,11 +593,11 @@ the projection mapping on the tail and head endpoints of an  \undirectedEdgePath
     \label{eq:Projection_UPATH}
   \end{equation}
 \end{subequations}
-\coqstart The Coq definition follows {\small \inputsnippetsE{seq1/Eope.tex}{,}}
+\begin{leftbar} The Coq definition follows {\small \inputsnippetsE{seq1/Eope.tex}{,}}
 \noindent the projection $\pi$~in Equation~\eqref{eq:Projection_UPATH} 
 being implement by the mapping \texttt{unpair}. 
 
-\coqend
+\end{leftbar}
 
 \paragraph{$\bullet$ Deployment in \undirectedEdgePaths.} Now, with any binary relation \( \relation \subset \VERTEX\times\VERTEX \),
 we associate the subset~\( \DeploymentInUPaths{\relation}{\OrientedGraph} \)
@@ -616,7 +619,7 @@ The deployment \(\DeploymentInUPaths{\relation}{\OrientedGraph} \)
 is made of the \undirectedEdgePaths\ whose endpoints satisfy the 
 binary relation~\( \relation \).
 
-\coqstart It is formalized in Coq as follows
+\begin{leftbar} It is formalized in Coq as follows
 {\small \inputsnippets{seq1/D_U-n.tex}} 
 \noindent Moreover, As for \EdgePath, it is to be noted that the \undirectedEdgePaths\
 may be obtained as the image by the Lift mapping of a
@@ -628,7 +631,7 @@ set by an extended-oriented lift mapping named \texttt{LiftO}
 Finally, we prove that \texttt{LiftO} is bijective on restricted domain and image with inverse \texttt{UnLiftO} 
 and that the bijection properly commutes with \texttt{Eope}
 {\small \inputsnippets{seq1/Eope_LiftO-n.tex,seq1/PE_UnLiftO-n.tex}}
-\coqend
+\end{leftbar}
 
 \ifpreprint 
   \noindent $\bullet$ We denote by
@@ -753,18 +756,18 @@ and where
   as the subset $\DeploymentInUPaths{\relation}{\OrientedGraph}\cap \ActiveUndirectedPaths{\OrientedGraph}$.
 \end{definition} 
 
-\coqstart The Coq formalization of the binary relation \(\ActiveTr\) easily follows 
+\begin{leftbar} The Coq formalization of the binary relation \(\ActiveTr\) easily follows 
 {\small \inputsnippetsE{seq1/A_tr.tex}{,}}
 noticing that the binary relation $\ActiveTr$ contains the well chained relation that we explicitely 
 write with \texttt{ChrelO} and noticing that the forward set 
 defined by Equation~\eqref{eq:TransitiveReflexiveClosure_AgentSubsetW} 
-is defined in Coq by \texttt{Fset}. \coqend
+is defined in Coq by \texttt{Fset}. \end{leftbar}
 \medskip
 
-\coqstart Now, The Coq formalization of $\ActiveDeploymentInUPaths{\relation}{\OrientedGraph}$ is obtained as an intersection of two sets 
+\begin{leftbar} Now, The Coq formalization of $\ActiveDeploymentInUPaths{\relation}{\OrientedGraph}$ is obtained as an intersection of two sets 
 {\small \inputsnippets{seq1/D_U_a-n.tex}} 
 \noindent When the relation $\relation=\na{x,y}$ It boils down to the following equivalent definition
-{\small \inputsnippets{seq1/D_U_a1-n.tex}} \coqend
+{\small \inputsnippets{seq1/D_U_a1-n.tex}} \end{leftbar}
 
 We introduce in Definition~\ref{de:vertices-d-separated} a new binary relation
 between vertices: we say that 
@@ -1468,22 +1471,22 @@ Definition~\ref{de:all_the_relations}.
 In~\S\ref{appendix_Definitions_binary_relations},
 we define new binary relations and we establish properties.
 
-\coqstart The Coq proofs follows the mathematical proofs with the help of a developed library encoding most of usefull 
+\begin{leftbar} The Coq proofs follows the mathematical proofs with the help of a developed library encoding most of usefull 
 binary relations and needed operators. As relations are coded as sets the library we have developed is based on the 
 mathcomp implementation of sets \texttt{classical\_sets.v} and contains a ssreflect reimplementation of transitive (reflexive) 
 closures of relation that are found in the Coq standard library.
 Moreover, as proofs use intensively associative and commutative properties of union and intersection of relations 
 we use the \texttt{AAC\_tactics} to ease equality proofs between long expressions with relations containing unions intersections 
 composition and diagonal relations. For this to be possible, some specific propeties of relations with respect to \texttt{AAC} 
-are to be listed and proved in Coq. This is done in \texttt{aacset.v}.\coqend
+are to be listed and proved in Coq. This is done in \texttt{aacset.v}.\end{leftbar}
 
 \subsubsection{Lemmas on the binary relations of Definition~\ref{de:all_the_relations}}
 \label{appendix_Lemmas_binary_relations}
 
 We refer the reader to Definition~\ref{de:all_the_relations}
 for the definitions of basic binary relations. 
-\coqstart As already explained the Coq proofs closely follow the mathematical proofs given here and we will 
-give for each lemma its Coq name. \coqend
+\begin{leftbar} As already explained the Coq proofs closely follow the mathematical proofs given here and we will 
+give for each lemma its Coq name. \end{leftbar}
 
 \begin{lemma}[\PY{k+kn}{Lemma}~~\PY{n+nf}{L7}]
   \label{le:L7}
@@ -1538,13 +1541,13 @@ give for each lemma its Coq name. \coqend
   \end{subequations}
 \end{lemma}
 
-\coqstart We give here, as an example, the Lemma~\ref{le:L7} as written in Coq
+\begin{leftbar} We give here, as an example, the Lemma~\ref{le:L7} as written in Coq
 to illustrate the fact that the formalization and the original mathematical
 statement are graphically very similar. The binary relations operator as the
 union, the intersection and the composition are displayed below in the Coq
 statement as \(\cup\), \(\cap\), \(;\) -- which is the display obtained in emacs Coq
 proof general -- but are entered as \texttt{`|`}, \texttt{`\&`}, \texttt{`;`}
-{\small \inputsnippets{paper_csbr/L7_csbr-n.tex}} \coqend
+{\small \inputsnippets{paper_csbr/L7_csbr-n.tex}} \end{leftbar}
 
 \begin{proof}\quad
 
