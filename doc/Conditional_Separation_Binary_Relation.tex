@@ -84,7 +84,7 @@
 \newcommand{\Benjamin}[1]{\nb{Benjamin}{green}{#1}}
 
 % START
-\title{Conditional Separation as a Binary Relation}% Between Vertices}
+\title{Conditional Separation as a Binary Relation\\ A Coq assisted proof}% Between Vertices}
 
 % START
 
@@ -98,7 +98,8 @@
   independence between random variables on directed acyclic graphs.
   Pearl defined the d-separation of two subsets conditionally on a third one.
   We show how the d-separation can be extended beyond acyclic graphs
-  and can be expressed and characterized as a binary relation between vertices. 
+  and can be expressed and characterized as a binary relation between vertices.
+  Both the mathematical proof and a Coq version of the proof are described. 
 \end{abstract}
 
 % START
@@ -112,8 +113,8 @@
 
 % START
 % \pagebreak 
-\setcounter{tocdepth}{2}
-\pagebreak\tableofcontents \pagebreak 
+%\setcounter{tocdepth}{2}
+%\pagebreak\tableofcontents \pagebreak 
 
 % START
 \section{Introduction}
@@ -126,17 +127,24 @@ builds on graphical models~\citep{cowell2006probabilistic} to introduce the
 so-called do-calculus and the notion of d-separation on a directed acyclic graph
 (DAG).
 
-This paper was written in parallel to two other papers
+The mathematical side of this paper~\cite{Chancelier-De-Lara-Heymann-2021}, was
+written in parallel to two other papers
 \citep{De-Lara-Chancelier-Heymann-2021,Heymann-De-Lara-Chancelier-2021}, all of
-which aim at providing another perspective on conditional independence and
-do-calculus.  Here we show how the d-separation can be extended beyond DAGs and
+which aimed at providing another perspective on conditional independence and
+do-calculus. The first paper~\cite{Chancelier-De-Lara-Heymann-2021} was a prerequisite for
+\citep{De-Lara-Chancelier-Heymann-2021} and both~\cite{Chancelier-De-Lara-Heymann-2021,De-Lara-Chancelier-Heymann-2021}
+were a prerequisite for~\citep{Heymann-De-Lara-Chancelier-2021}.
+In order to facilitate the reading of~\cite{Chancelier-De-Lara-Heymann-2021,De-Lara-Chancelier-Heymann-2021} which were
+quite long and technical we have implemented Coq proofs for them.
+The aim of this paper is to provide a version of the mathematical results of the preprint~\cite{Chancelier-De-Lara-Heymann-2021}
+complemented with the description of the Coq formalization used for the proofs.
+The aim of this paper is thus twofold as it gives the proof of a yet unpublished result together with its Coq assisted proof.
+
+The mathematical result we show here is how the d-separation can be extended beyond DAGs and
 can be expressed and characterized as a binary relation between vertices.  We
 think this work will allow for new proof strategies in the developpement of the
-theory of causal inference.  In particular, the main result is an intermediate
-step that we reuse in the two other above mentionned papers. \jpc{reprendre}
-Last, we think the
-developpement of a theory based on binary relations makes it amenable to
-computer aided proof~\citep{pous2013}. %
+theory of causal inference. In particular, as already writen, the main result is an intermediate
+step that we reuse in the two other above mentionned papers.
 
 In Sect.~\ref{Conditional_active_relation_induced_by_endpoints_of_non-blocking_paths},
 we present our extended definition of d-separation and then characterize it as
@@ -321,10 +329,14 @@ elements of the lifted sequence belong to the product relation $X{\times}X$ as p
 {\small \inputsnippets{seq1/Rpath_L1-n.tex}}
 
 \paragraph{$\bullet$ \texttt{Lift} bijection.}
-\begin{leftbar} The lift operation, when restricted to the subset \texttt{D} defined below,
-is bijective onto its image \texttt{I}
-{\small \inputsnippets{seq1/DI-n.tex,seq1/Lift_inj-n.tex,seq1/Lift_surj-n.tex}}
-Moreover, the inverse of \texttt{Lift} is explicitely obtained by a recursive mapping \texttt{UnLift} (not detailed here). \end{leftbar}
+%
+  The lift operation, when restricted to the subset \texttt{D} defined below,
+  is bijective onto its image \texttt{I}
+  \begin{leftbar}
+    {\small \inputsnippets{seq1/DI-n.tex,seq1/Lift_inj-n.tex,seq1/Lift_surj-n.tex}}
+  \end{leftbar}
+  \noindent Moreover, the inverse of \texttt{Lift} is explicitely obtained by a recursive mapping \texttt{UnLift} (not detailed here).
+%\end{leftbar}
 
 % \paragraph{$\bullet$ (\texttt{seq T}) and (\texttt{seq (T*T)}).}
 % XXXX INUTILE ? four equivalent ways -- two are
