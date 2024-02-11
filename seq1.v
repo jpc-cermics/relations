@@ -546,53 +546,56 @@ Section allset_Lifted.
   (** * properties of st [L\in] R for st: seq T  *)
   (** * with specified endpoints *)
   
-  Variables (T: Type).
-  Definition allL (E: relation T) (st: seq T) (x y:T) := [L: x; st ;y `\in` E].
-  
-  Lemma allL0 : forall (E: relation T) (x y : T),
+  Variables (T: Type) (E: relation T).
+
+  (* begin snippet allL:: no-out *)  
+  Definition allL (R: relation T) st x y := (x::(rcons st y)) [L\in] R.
+  (* end snippet allL *)    
+
+  Lemma allL0 : forall (x y : T),
       allL E [::] x y = ((x,y) \in E).
   Proof.
-    by move => E x y;rewrite /allL Lift_c /andP /= andbT. 
+    by move => x y;rewrite /allL Lift_c /andP /= andbT. 
   Qed.
 
-  Lemma allL0' : forall (E: relation T) (x y : T),
+  Lemma allL0' : forall (x y : T),
       allL E [::] x y <-> E (x,y).
   Proof.
-    by move => E x y;rewrite allL0;split=> [/set_mem H1 // | /inP H1]. 
+    by move => x y;rewrite allL0;split=> [/set_mem H1 // | /inP H1]. 
   Qed.
   
-  Lemma allL_c: forall (E: relation T) (st: seq T) (x y z: T),
+  Lemma allL_c: forall (st: seq T) (x y z: T),
       allL E (z::st) x y <-> ((x, z) \in E) && allL E st z y.
   Proof.
-    by move => E st x y z;split;[rewrite /allL rcons_cons Lift_c allset_cons |].
+    by move => st x y z;split;[rewrite /allL rcons_cons Lift_c allset_cons |].
   Qed.
 
-  Lemma allL_rc: forall (E: relation T) (st: seq T) (x y z: T),
+  Lemma allL_rc: forall (st: seq T) (x y z: T),
       allL E (rcons st z) x y <-> ((z,y) \in E) && allL E st x z.
   Proof.
-    move => E st x y z;split.
+    move => st x y z;split.
     by rewrite /allL -rcons_cons Lift_rcc allset_rcons last_rcons;move => [-> /inP ->].
     by move => /andP [/inP ? ?];rewrite /allL -rcons_cons Lift_rcc allset_rcons last_rcons. 
   Qed.
   
-  Lemma allL_cat: forall (E: relation T) (st st': seq T) (x y z: T),
+  Lemma allL_cat: forall (st st': seq T) (x y z: T),
       allL E ((rcons st y) ++ st') x z <-> allL E st x y && allL E st' y z.
   Proof.
-    move => E st st' x y z.
+    move => st st' x y z.
     rewrite /allL cat_rcons rcons_cat rcons_cons -cat_rcons Lift_cat_crc allset_cat.
     by split => [ [? ?] | /andP [? ?]];[apply/andP |].
   Qed.
   
-  Lemma allL_subset: forall (E R: relation T) (st: seq T) (x y: T),
-      (E `<=` R) -> allL E st x y -> allL R st x y.
+  Lemma allL_subset: forall (S R: relation T) (st: seq T) (x y: T),
+      (S `<=` R) -> allL S st x y -> allL R st x y.
   Proof.
-    by move => E R st x y H1 H2;apply allset_subset with E.
+    by move => S R st x y H1 H2;apply allset_subset with S.
   Qed.
   
-  Lemma allL_WS_iff: forall (E: relation T) (W:set T) (st: seq T) (x y: T),
+  Lemma allL_WS_iff: forall (W:set T) (st: seq T) (x y: T),
       allL (Δ_(W.^c) `;` E) st x y <-> (x::st) [\in] W.^c && allL E st x y.
   Proof.
-    move => E W st x y.
+    move => W st x y.
     have H1: (L_(W.^c) `&` E) `<=` E by apply intersectionSr.
     have H2: (L_(W.^c) `&` E) `<=` L_(W.^c) by apply intersectionSl.
     pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) L_(W.^c)) as H3.
@@ -601,10 +604,10 @@ Section allset_Lifted.
     by split => /andP [/allset_Lr H5 H6];[apply /andP | apply /andP].
   Qed.
   
-  Lemma allL_SW_iff: forall (E: relation T) (W:set T) (st: seq T) (x y: T),
+  Lemma allL_SW_iff: forall (W:set T) (st: seq T) (x y: T),
       allL (E `;` Δ_(W.^c)) st x y <-> (rcons st y) [\in] W.^c && allL E st x y.
   Proof.
-    move => E W st x y.
+    move => W st x y.
     have H1: (E `&` L_(W.^c)) `<=` E by apply intersectionSl.
     have H2: (E `&` L_(W.^c)) `<=` L_(W.^c) by apply intersectionSr.
     pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) L_(W.^c)) as H3.
@@ -614,19 +617,19 @@ Section allset_Lifted.
     by apply /andP; split;[| rewrite allset_Rr].
   Qed.
   
-  Lemma allL_rev: forall (E: relation T) (st: seq T) (x y: T),
+  Lemma allL_rev: forall (st: seq T) (x y: T),
       allL E st x y <->  allL E.-1 (rev st) y x.
   Proof.
-    move => E st x y. 
+    move => st x y. 
     have H1: (y :: rcons (rev st) x) = rev (x::(rcons st y)) 
       by rewrite rev_cons rev_rcons -rcons_cons.
     by rewrite /allL allset_rev allset_inv H1 Lift_rev.
   Qed.
   
-  Lemma allL_All: forall (E: relation T) (st: seq T) (x y: T),
+  Lemma allL_All: forall (st: seq T) (x y: T),
       allL E st x y -> (x::st) [\in] (E.+)#_(y).
   Proof.
-    move => E st x y.
+    move => st x y.
     elim: st x => [x | z st Hr x].
     by rewrite /allL /= => /andP [/inP H1 _];
                           apply /andP;split;[apply mem_set;apply Fset_t1|].
@@ -637,16 +640,18 @@ Section allset_Lifted.
   
 End allset_Lifted.
 
+
+
 Section Suc_as_Lift. 
   (** * st [L\in] R <-> st [Suc\in] R *)
     
-  Variables (T: Type).
+  Variables (T: Type) (R:relation T).
 
   (* begin snippet RPath_equiv:: no-out *)  
-  Lemma RPath_equiv: forall (R:relation T) (st: seq T), st [L\in] R <-> st [Suc\in] R.
+  Lemma RPath_equiv: forall (st: seq T), st [L\in] R <-> st [Suc\in] R.
   (* end snippet RPath_equiv *)  
   Proof.
-    move => R st.
+    move => st.
     (* we use seq_cases to explore the three cases *)
     pose proof seq_cases st as [H1 | [[x H1] | [q [x [y H1]]]]];rewrite H1.
     by split => H;[apply pp_void | ].
@@ -670,7 +675,7 @@ Section Lift_bijective.
   
   (* A relation on (T*T) (Ch for Chain) *)
   (* begin snippet Chrel:: no-out *)  
-  Definition Chrel {T:Type} :=[set sptt: (T*T)*(T*T)| (sptt.1).2 = (sptt.2).1].
+  Definition Chrel {T:Type} :=[set s: (T*T)*(T*T)| (s.1).2 = (s.2).1].
   (* end snippet Chrel *)  
   
   Lemma Lift_Lift: forall (st:seq T), (Lift st) [L\in] Chrel. 
@@ -821,12 +826,6 @@ Section Endpoints_and_Deployment.
     by [].
   Qed.
   
-  Lemma EpeZ_Lift: forall (st: seq T), size(st) > 1 -> Epe1 (Lift st) = Pe st.
-  Proof.
-    move => st H1;rewrite /Epe1 /Pe. 
-    by have ->: (UnLift (Lift st) ptv.1) = st by apply: UnLift_left H1.
-  Qed.
-  
   Lemma Epe_Epe1: forall (spt: seq (T*T)), 
       size(spt) > 0 -> spt [Suc\in] Chrel -> Epe1 spt = Epe spt.
   Proof.
@@ -834,7 +833,9 @@ Section Endpoints_and_Deployment.
     have H4: spt \in (@I T) by apply inP.
     pose proof Lift_surj H4 as [st [H5 H6]].
     move: H5 => /inP H5.
-    have H7: Epe1 (Lift st) = Pe st by apply EpeZ_Lift.
+    have H7: Epe1 (Lift st) = Pe st 
+      by rewrite /Epe1 /Pe;
+      have -> :(UnLift (Lift st) ptv.1) = st by apply: UnLift_left H5.
     have H8: Epe (Lift st) = Pe st by apply Epe_Lift.
     by rewrite -H6 H7 H8.
   Qed.
@@ -855,7 +856,7 @@ Section Endpoints_and_Deployment.
   
   (* begin snippet D_P:: no-out *)  
   Definition D_P (R E: relation T):= 
-    [set spt| spt \in (@I T) /\ R (Epe1 spt) /\ spt [\in] E ].
+    [set spt| spt \in (@I T) /\ R (Epe spt) /\ spt [\in] E ].
   (* end snippet D_P *)  
   
   (* begin snippet D_P_s:: no-out *)  
@@ -870,13 +871,24 @@ Section Endpoints_and_Deployment.
   (* begin snippet D_V_s:: no-out *)  
   Definition D_V_s (x y:T) (E: relation T) := D_V [set (x,y)] E.
   (* end snippet D_V_s *)  
+
+  (** * Lift D_V = D_P *)
+  Definition D_P1 (R E: relation T):= 
+    [set spt| spt \in (@I T) /\ R (Epe1 spt) /\ spt [\in] E ].
+
+  Lemma D_P_D_P1: forall (R E: relation T), D_P R E = D_P1 R E.
+    move => R E;rewrite /D_P /D_P1 /mkset predeqE => spt.
+    split => [[/inP [H1 H1'] [H2 H3]] | [/inP [H1 H1'] [H2 H3]]].
+    by pose proof Epe_Epe1 H1 H1' as ->;rewrite inP.
+    by pose proof Epe_Epe1 H1 H1' as <-;rewrite inP.
+  Qed.
   
   (* begin snippet DP_DV:: no-out *)  
   Lemma DP_DV: forall (R E: relation T), image (D_V R E) (@Lift T) = (D_P R E).
   (* end snippet DP_DV:: no-out *)  
   Proof.
     move => R E.
-    rewrite /D_V /D_P /mkset predeqE => q.
+    rewrite D_P_D_P1 /D_V /D_P1 /mkset predeqE => q.
     split. 
     - move => [p [/inP H1 [H2 H3]] <-].
       move: (H1) => /Lift_sz2 H1'.
@@ -894,7 +906,8 @@ Section Endpoints_and_Deployment.
   Lemma DV_DP: forall (R E: relation T) (spt: seq (T*T)), 
       spt \in (D_P R E) -> exists st, st \in (D_V R E) /\ Lift st = spt.
   Proof.
-    move => R E spt /inP [H1 [H3 H4]].
+    move => R E spt.
+    rewrite D_P_D_P1 inP => [[H1 [H3 H4]]].
     move: (H1) => /inP [H1' H2].
     pose proof Pe_UnLift H1' H2 as H5.
     pose proof Epe_Epe1 H1' H2 as H6.

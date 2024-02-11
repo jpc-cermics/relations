@@ -34,22 +34,8 @@
 \usepackage{framed}
 
 % margin bars 
-\usepackage{tikz}
-\usetikzlibrary{tikzmark}
 
-\newcounter{coqbar}
-\newcommand{\coqbarcolor}{red}
-\newcommand{\coqstart}[1][red]{%
-    \renewcommand{\coqbarcolor}{#1}%
-    \stepcounter{coqbar}%
-    \tikzmarknode{chbar-\thecoqbar-start}{\strut}%
-}
-\newcommand{\coqend}{%
-  \tikzmarknode{chbar-\thecoqbar-end}{\strut}%
-  \begin{tikzpicture}[remember picture, overlay]
-    \draw[very thick, \coqbarcolor] ([xshift={\oddsidemargin+1in-10pt}]current page.west |- chbar-\thecoqbar-start.north) -- ([xshift={\oddsidemargin+1in-10pt}]current page.west |- chbar-\thecoqbar-end.south);
-  \end{tikzpicture}%
-}
+\newcommand{\myparagraph}[1]{{\medskip\noindent\bf #1}}
 
 \newcommand{\pinX}{\PY{n}{p}~\PY{n}{$[\in]$}~\PY{n}{X}}
 \newcommand{\Liftp}{\PY{n}{Lift}~\PY{n}{p}}
@@ -263,7 +249,7 @@ To formalize graph paths, we use sequences (as defined in mathcomp
 \texttt{classical\_sets}). To describe the formalization, we start by introducing some
 notations.
 
-\paragraph{$\bullet$ \protect\pinX.} We consider a set $\fullset$, and for any set ${\Set} \subset \fullset$ and $n\in \NN$,
+\myparagraph{$\bullet$ \protect\pinX.} We consider a set $\fullset$, and for any set ${\Set} \subset \fullset$ and $n\in \NN$,
 we denote by
 $\Sequence_n(\Set)$ the set of sequences of length $n$ of elements of the
 set~$\Set$, $\Sequence_n(\Set)= \SetProd{\Set}{n}$ ($\Sequence_0(\Set)$ being the singleton set with the empty sequence) and by
@@ -278,8 +264,7 @@ formalized in Coq in the mathcomp library as sequences of elements of type
   set T)} is obtained using the function \texttt{all} (in mathcomp library~\texttt{seq.v}).  As an example, the set $\Sequence_{n}(D)$ is
 implemented as follows {\small \inputsnippets{seq1/all_notation-n.tex,seq1/Sn-n.tex}}\end{leftbar}
 
-\paragraph{$\bullet$ (\protect\Liftp) and (\protect\Liftpin).} Then, we define a lift operator
-\mdl{motivation} 
+\myparagraph{$\bullet$ (\protect\Liftp) and (\protect\Liftpin).} Then, we define a lift operator
 \[ \Lift: \Sequence(\fullset) \to \Sequence(\fullset{\times}\fullset)
   \eqfinv\] such that, i) for all $n \ge 2$, the restriction of the operator
 $\Lift$ to the set $\Sequence_{n}(\fullset)$ coincides with the
@@ -306,7 +291,7 @@ edges.  \end{leftbar}
 The notation $\protect\Liftpin$ is used to denote the
 expression {\PY{n}{(Lift p)}~\PY{o}{$[{\in}]$}~\PY{n}{R}}.
 
-\paragraph{$\bullet$ \protect\pSucR.} We must be able to check that successive elements of a
+\myparagraph{$\bullet$ \protect\pSucR.} We must be able to check that successive elements of a
 sequence whose elements are in $\fullset$ belong to a given subset $R$ of
 $\fullset{\times}\fullset$, that is, satisfy a relation $R$ on $\fullset$.
 
@@ -328,7 +313,7 @@ As a second example, if the elements of a sequence belong to a set $X$, then the
 elements of the lifted sequence belong to the product relation $X{\times}X$ as proved in the following lemma
 {\small \inputsnippets{seq1/Rpath_L1-n.tex}}
 
-\paragraph{$\bullet$ \texttt{Lift} bijection.}
+\myparagraph{$\bullet$ \texttt{Lift} bijection.}
 %
   The lift operation, when restricted to the subset \texttt{D} defined below,
   is bijective onto its image \texttt{I}
@@ -338,7 +323,7 @@ elements of the lifted sequence belong to the product relation $X{\times}X$ as p
   \noindent Moreover, the inverse of \texttt{Lift} is explicitely obtained by a recursive mapping \texttt{UnLift} (not detailed here).
 %\end{leftbar}
 
-% \paragraph{$\bullet$ (\texttt{seq T}) and (\texttt{seq (T*T)}).}
+% \myparagraph{$\bullet$ (\texttt{seq T}) and (\texttt{seq (T*T)}).}
 % XXXX INUTILE ? four equivalent ways -- two are
 % expressed as image of set and two as preimage of set -- of representing sequences
 % of pairs of elements of $T$ such that successive pairs satisfy the
@@ -417,7 +402,7 @@ as the classical notion of path in a graph~\citep{Diestel}.
 We also define an \undirectedEdgePath\ in $(\VERTEX,\EDGE)$ (in our sense)
 as what corresponds to chain path in~\citep{Lauritzen-et-al-1990}.
 
-\paragraph{$\bullet$ Definition of \EdgePath.}
+\myparagraph{$\bullet$ Definition of \EdgePath.}
 The set of \emph{\EdgePath s} of length~$n$ ($n\ge 1$) relative to the graph~$\npOrientedGraph$ is defined by
 \begin{subequations}
 \begin{align}
@@ -449,7 +434,7 @@ We denote by $\cardinal{\path}$ the length of a path $\path \in
 An \emph{\EdgeSubPath} of the \EdgePath~$\path$ is an \EdgePath\ obtained by a
 subsequence of consecutive indices.
 
-\paragraph{$\bullet$ Definition of endpoints.} The first element~$\tail{\vertex_1}$ of an \EdgePath\
+\myparagraph{$\bullet$ Definition of endpoints.} The first element~$\tail{\vertex_1}$ of an \EdgePath\
 \( \path=\bseqa{ \np{\tail{\vertex_i},\head{\vertex_i}} }{i\in\ic{1,n}} \) is the
 \emph{tail of the \EdgePath}, whereas the last one~$\head{\vertex_n}$ is the
 \emph{head of the \EdgePath}.  Both tail (obtained with function \texttt{head}
@@ -491,14 +476,14 @@ the projection mapping on the tail and head endpoints defined by
 \noindent We prove in the next two lemmas that \texttt{Pe} and \texttt{Epe} behave properly with respect to the \texttt{Lift} bijection between \texttt{D} and \texttt{I}. 
 {\small \inputsnippets{seq1/Epe_Lift-n.tex,seq1/Pe_UnLift-n.tex}}\end{leftbar}
 
-\paragraph{$\bullet$ Transitive closure and edge paths.} As a first result linking
+\myparagraph{$\bullet$ Transitive closure and edge paths.} As a first result linking
 (edge) paths and relations we prove that {\small
   \inputsnippetsE{seq1/TCP-n.tex}{,} which asserts that two nodes
   \texttt{(v1,v2)} are in relation through the transitive closure of a
   relation~\texttt{E}, that is \texttt{(v1,v2) $\in$ E.+} if and only if there
   exists an edge path with endpoints \texttt{(v1,v2)} in the graph~$(\VERTEX,\EDGE)$.
 
-\paragraph{$\bullet$ Deployment in paths.}
+\myparagraph{$\bullet$ Deployment in paths.}
 Now, with any binary relation \( \relation \subset \VERTEX{\times}\VERTEX \),
 we associate the subset~\( \DeploymentInPaths{\relation}{\OrientedGraph} \)
 of~\( \PATH\np{\OrientedGraph} \),
@@ -534,7 +519,7 @@ values \texttt{N} (for $-1$) and \texttt{P} (for $1$)
 {\small \inputsnippetsE{seq1/O.tex}{,}}
 \noindent which will serve as an orientation specification of an edge. 
 
-\paragraph{$\bullet$ Definition of \undirectedEdgePaths.}
+\myparagraph{$\bullet$ Definition of \undirectedEdgePaths.}
 The set of \emph{\undirectedEdgePath} of length~$n$ ($n\ge 1$) relative to the
 graph~$\npOrientedGraph$ is defined by 
 \begin{subequations}
@@ -596,7 +581,7 @@ An \emph{\undirectedEdgeSubPath} of the \undirectedEdgePath~$\UndirectedPath
 \in\UPATH\np{\OrientedGraph}$ is an \undirectedEdgePath\ obtained by a
 subsequence of consecutive indices. 
 
-\paragraph{$\bullet$ Definition of endpoints.} We start by considering the mapping \(
+\myparagraph{$\bullet$ Definition of endpoints.} We start by considering the mapping \(
 \pi : \Sequence(\VERTEX{\times}\VERTEX{\times}\Orientation) \to 
   \Sequence(\VERTEX\times\VERTEX)\times \Sequence(\Orientation) \) defined for all 
   $\UndirectedPath \in \Sequence(\VERTEX{\times}\VERTEX{\times}\Orientation)$ by
@@ -626,7 +611,7 @@ being implement by the mapping \texttt{unpair}.
 
 \end{leftbar}
 
-\paragraph{$\bullet$ Deployment in \undirectedEdgePaths.} Now, with any binary relation \( \relation \subset \VERTEX\times\VERTEX \),
+\myparagraph{$\bullet$ Deployment in \undirectedEdgePaths.} Now, with any binary relation \( \relation \subset \VERTEX\times\VERTEX \),
 we associate the subset~\( \DeploymentInUPaths{\relation}{\OrientedGraph} \)
 of~\( \UPATH\np{\OrientedGraph} \) in~\eqref{eq:eopaths_defs}
 that we call the \emph{deployment in \undirectedEdgePaths}, 
@@ -781,8 +766,6 @@ and where
   and we denote by \( \BlockedUndirectedPaths{\OrientedGraph} = 
   \bpComplementary{\ActiveUndirectedPaths{\OrientedGraph}}\)   
   the subset of all blocked \undirectedEdgePaths\ (\wrt\ the subset~$\AgentSubsetW$).
-  Finally, we define by $\ActiveDeploymentInUPaths{\relation}{\OrientedGraph}$ 
-  as the subset $\DeploymentInUPaths{\relation}{\OrientedGraph}\cap \ActiveUndirectedPaths{\OrientedGraph}$.
 \end{definition} 
 \begin{leftbar}
 The Coq formalization of the binary relation \(\ActiveTr\) easily follows 
@@ -818,8 +801,8 @@ and not between disjoint subsets.
     \bgent \ConditionalDirectionalSeparation \cgent \mid \AgentSubsetW
     \iff
     (\bgent \not= \cgent) \wedge 
-    \ActiveDeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph}
-    = \emptyset ZZZZZZZZZZZZZZZ
+    \bp{\ActiveDeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph}
+      \subset \BlockedUndirectedPaths{\OrientedGraph}}
     \qquad \bp{ \forall \bgent,\cgent \in \AGENT }
     \eqfinv
     \label{eq:vertices-d-separated}
@@ -827,11 +810,17 @@ and not between disjoint subsets.
   and we say that the vertices~$\bgent$ and $\cgent$ are 
   (conditionally) \emph{directionally separated}  (\wrt\ the subset~$\AgentSubsetW$).
 \end{definition}
+\begin{leftbar}
+The Coq implementation of d-separation is given now
 {\small \inputsnippets{paper_csbr_paths/dsepnota-n.tex,erel3/D_separated-n}}
-
-{\small \inputsnippets{seq1/Aeop-n.tex,seq1/ActiveOe-n.tex}}
-{\small \inputsnippets{seq1/Active_eq-n.tex}}
-
+{\small \inputsnippets{seq1/Aeop-n.tex,seq1/ActiveOe-n.tex,seq1/allL-n.tex}}
+\end{leftbar}
+\begin{leftbar}
+  The retain formulation is indeed equivalent to Definition~\ref{de:vertices-d-separated},
+  as proved in Lemma \texttt{Active\_eq} given now
+  {\small \inputsnippets{seq1/Active_eq-n.tex}}
+\end{leftbar}
+  
 \section{Characterization  of $d$-separation by means of binary relations}
 \label{Characterization__of_the_conditional_directional_separation_binary_relation}
 
@@ -962,11 +951,11 @@ For the purpose of characterizing the conditional directional separation relatio
   \neg \bp{\bgent \ConditionalDirectionalSeparation \cgent \mid \AgentSubsetW}
   \) or, equivalently (see~\eqref{eq:vertices-d-separated} in
   Definition~\ref{de:vertices-d-separated}), that 
-  \(  \bgent {\ConditionalActive} \cgent \implies
+  \[  \bgent {\ConditionalActive} \cgent \implies
   \DeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph} 
   \cap \ActiveUndirectedPaths{\graph} 
-  \neq\emptyset \).
-  % 
+  \neq\emptyset \eqfinp\]
+% 
   We simply give a sketch of proof here, as details are to be found in the Appendix~\ref{Proof_of_Theorem}. 
   % 
   As the binary relation~\(  \ConditionalActive \) is given by the union of five

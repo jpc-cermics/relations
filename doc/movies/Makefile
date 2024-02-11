@@ -53,7 +53,8 @@ SNIPPETS = \
 	snippets/seq1/ActiveOe-n.tex \
 	snippets/seq1/Aeop-n.tex \
 	snippets/seq1/Active_eq-n.tex \
-	
+	snippets/seq1/allL-n.tex \
+
 all: allstd allplus
 
 targets.mk: gen_targets.py
@@ -88,13 +89,8 @@ SED= -e 's/{exists}/{\\(\\exists\\)}/g' -e 's/{forall}/{\\(\\forall\\)}/g' -e 's
 	-e 's/`|`/\\(\\cup\\)/g' \
 	-e 's/`&`/\\(\\cap\\)/g' \
 	-e 's+{\\PYZbs{}/+{\\(\\,\\vee\\,\\)+g' \
-	-e 's+{\\PYZlt{}\\PYZhy{}\\PYZgt{}}+{\\(\\leftrightarrow\\)}+g'
-
-SEDP=-e 's/\\PY{o}{\[\\PYZbs{}}\\PY{k+kr}{in}/\\PY{k+kr}{\\(\\in\\)}/g' \
-	-e 's/\[\\PYZbs{}in\]/\[\\(\\in\\)\]/g' \
-
-
-
+	-e 's+{\\PYZlt{}\\PYZhy{}\\PYZgt{}}+{\\(\\leftrightarrow\\)}+g' \
+	-e 's+{\\PYZhy{}\\PYZgt{}}+{\\(\\rightarrow\\)}+g' 
 
 allplus: $(SNIPPETS)
 
