@@ -40,6 +40,20 @@ Section Paper.
     apply Th4.
   Qed.
 
+  Lemma L5_csbr: forall (o1 o2:O) (x y t:A), 
+      Active_path W E [::(x,t,o1);(t,y,o2)] x y
+      -> ( ((let R:= E.-1 `;` Δ_(W.^c) `;` E in R (x, y))
+           \/ (let R:= E `;` Δ_(W.^c) `;` E in R (x, y)))
+          /\ o2 = P) 
+        \/ 
+          ( ((let R:= E `;` Δ_(W_s) `;` E.-1 in R (x, y))
+             \/ (let R:= E.-1 `;` Δ_(W.^c) `;` E.-1 in R (x, y)))
+            /\ o2 = N).
+  Proof.
+    move => o1 o2 x y t.
+    apply L5.
+  Qed.
+  
   (* begin snippet L7_csbr:: no-out *)    
   Lemma  L7_csbr:
     (Emw.* `;` Ew.* ) = ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw)

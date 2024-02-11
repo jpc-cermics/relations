@@ -380,7 +380,7 @@ Section Active_path_implies_Aw_s.
   
   (** * From active paths to Active relation *)
   
-  Lemma Active_path_l2: forall (o1 o2:O) (x y t:A), 
+  Lemma L5: forall (o1 o2:O) (x y t:A), 
       Active_path W E [::(x,t,o1);(t,y,o2)] x y
       -> ( ((let R:= E.-1 `;` Δ_(W.^c) `;` E in R (x, y))
             \/ (let R:= E `;` Δ_(W.^c) `;` E in R (x, y)))
@@ -406,7 +406,7 @@ Section Active_path_implies_Aw_s.
       -> ( Aw_sp (x, y) /\ o2 = P) \/ ( Aw_sm (x, y) /\ o2 = N).
   Proof.
     move => o1 o2 x y t H1.
-    pose proof Active_path_l2 H1 as [[H2 H3 ] |[H2 H3]].
+    pose proof L5 H1 as [[H2 H3 ] |[H2 H3]].
     by left;move: H2 => [H2 | H2];[split;[apply I1|] |split;[apply I3|]].
     by right;move: H2 => [H2 | H2];[split;[apply I6|] |split;[apply I8|]].
   Qed.
