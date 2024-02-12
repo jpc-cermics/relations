@@ -166,7 +166,7 @@ We employ the vocabulary and concepts both of binary relations and of graph theo
 We take inspiration from~\citep{PEARL1986357} to define the notion of blocked paths
 on a graph, not necessarily finite nor acyclic.
 % 
-We use the notation \( \ic{r,s}=\na{r,r+1,\ldots,s-1,s} \) for two integers $r \leq s$.
+We use the notation $\ic{r,s}=$ $\{$ $r$, $r+1$, $\ldots$, $s-1$, $s\}$ for two integers $r \leq s$.
 
 \subsubsection{Background on binary relations}
 
@@ -234,10 +234,15 @@ relation.
 \begin{leftbar}
 Binary relations are implemented as sets on a product space using the classical sets implemented in
 \texttt{classical\_sets.v} from the Coq mathcomp library~\cite{MathComp:2022}
-using ssreflect tactics~\cite{Gonthier-Mahboubi-Tassi:2016} 
+using ssreflect tactics~\cite{Gonthier-Mahboubi-Tassi:2016}
+\end{leftbar}
 \inputsnippetsE{ssrel/relation.tex}{.\footnote{At the end of a Coq statement, ended by a dot belonging to the Gallina syntax, we add a dot or a comma which serve as text punctuation.}}
+
+\begin{leftbar}
 \noindent As described in more details below, we have developed a library for relations taking into account all the
-definitions recalled at the beginning of this section.\end{leftbar}
+definitions recalled at the beginning of this section.
+\end{leftbar}
+
 
 % ,ssrel/clos_refl_trans.tex,ssrel/clos_rt.tex}
 \subsection{Sequences sets and relations}
