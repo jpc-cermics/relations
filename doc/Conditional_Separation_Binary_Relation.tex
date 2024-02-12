@@ -2366,6 +2366,10 @@ and in~\eqref{eq:conditional_active_relationStar}.
 For any integer \( n\geq 1\), we denote by \( \1_{n}=\np{+1,\ldots,+1} \)
 (resp. \( -\1_{n}=\np{-1,\ldots,-1} \)) the vector of length~$n$ made of~$+1$ (resp. of~$-1$).
 %
+Given and \EdgePath\ $\path \in \PATH\np{\OrientedGraph}$ and $o\in \Orientation^{\cardinal{\path}}$ we denote by
+$\UndirectedPath=\Pair{\path,o}$ the \undirectedEdgePath\,
+$\UndirectedPath \in \UPATH\np{\OrientedGraph}$, defined by
+$\UndirectedPath_i = (\path_i, o_i)$ for all $i\in \ic{1, \cardinal{\path}}$.
 We recall that the deployment~\( \DeploymentInUPaths{\relation}{\OrientedGraph}
 \) in \undirectedEdgePaths\ of a binary relation~$\relation$ has been defined
 in~\eqref{eq:DeploymentInUPaths}%
@@ -2494,91 +2498,72 @@ of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
   \begin{subequations}
     \begin{align}
       \bgent \ConditionalAscendent\cgent 
-      \implies & 
-                 \mtext{there exists } \UndirectedPath \in \UPATH\np{\OrientedGraph}
-                 \mtext{ such that }
-                 \nonumber \\
-               & 
-                 \bp{\path, \1_{\cardinal{\path}} } 
-                 \in 
-                 \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph} 
-                 \cap \ActiveUndirectedPaths{\OrientedGraph} %\neq\emptyset
-                 % \nonumber 
-                 % \\
-                 % & 
-                 % \text{and }
-                 % \Internals_{\UPATH}\np{\UndirectedPath} \subset \TransitiveClosureParentalPrecedence \cgent
-                     \eqfinv
-                     \label{eq:BlockedUndirectedPaths_elementary_Delta_ComplementaryAgentSubsetW_EDGE} 
+      \implies
+      & 
+        \mtext{there exists } \UndirectedPath \in \UPATH\np{\OrientedGraph}
+        \mtext{ such that } \UndirectedPath = \Pair{\path, \1_{\cardinal{\path}} } \mtext{ and }
+        \nonumber \\
+      & 
+        \UndirectedPath    \in 
+        \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph} 
+        \cap \ActiveUndirectedPaths{\OrientedGraph} 
+        \eqfinv
+        \label{eq:BlockedUndirectedPaths_elementary_Delta_ComplementaryAgentSubsetW_EDGE} 
       \\
       \bgent \ConverseConditionalAscendent\cgent 
       \implies
-               & 
-                 \mtext{there exists }\UndirectedPath \in \UPATH\np{\OrientedGraph}
-                 \mtext{ such that }
-                 \nonumber \\
-               & 
-                 \bp{\path, -\1_{\cardinal{\path}} } 
-                 \in 
-                 \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph} 
-                 \cap \ActiveUndirectedPaths{\OrientedGraph}
-                 % \nonumber \\                                      % PREPRINTONLY
-                 % &                                                   % PREPRINTONLY
-                 % \text{and }                                       % PREPRINTONLY
-                 % \Internals_{\UPATH}\np{\UndirectedPath} \subset    % PREPRINTONLY
-                 % \TransitiveClosureParentalPrecedence \bgent       % PREPRINTONLY
-                     \eqfinv
-                     \label{eq:BlockedUndirectedPaths_elementary_Converse_EDGE_Delta_ComplementaryAgentSubsetW} 
+      & 
+        \mtext{there exists }\UndirectedPath \in \UPATH\np{\OrientedGraph}
+        \mtext{ such that } \UndirectedPath = \Pair{\path, - \1_{\cardinal{\path}} } \mtext{ and }
+        \nonumber \\
+      & 
+        \UndirectedPath 
+        \in 
+        \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph} 
+        \cap \ActiveUndirectedPaths{\OrientedGraph}
+        \eqfinv
+        \label{eq:BlockedUndirectedPaths_elementary_Converse_EDGE_Delta_ComplementaryAgentSubsetW} 
       \\
       \bgent\ConditionalCommonCause\cgent
       \implies
-               & 
-                 \mtext{there exists }\UndirectedPath=\np{\path,\orient} \in
-                 \UPATH\np{\OrientedGraph},
-                 \mtext{with } \cardinal{\UndirectedPath} \geq 2
-                 \nonumber \\
-               & \mtext{and } \orient=\np{-1,\ldots,+1} 
-                 \in \na{-1}\times\na{-1,+1}^{\cardinal{\UndirectedPath}-2}\times\na{+1},
-                 \mtext{ such that}
-                 \nonumber \\
-               & 
-                 \UndirectedPath=\np{\path,\orient}=\bp{\path, \np{-1,\ldots,+1} } 
-                 \in 
-                 \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph}
-                 \cap \ActiveUndirectedPaths{\OrientedGraph} %\neq\emptyset
-                 % \nonumber \\  % PREPRINTONLY
-                 % & % PREPRINTONLY
-                 % \text{and }% PREPRINTONLY
-                 % \Internals_{\UPATH}\np{\UndirectedPath} \subset% PREPRINTONLY
-                 % \TransitiveClosureParentalPrecedence \na{\bgent,\cgent}% PREPRINTONLY
-                     \eqfinv
-                     \label{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_Converse_EDGE_Delta_ComplementaryAgentSubsetW} 
+      & 
+        \mtext{there exists }\UndirectedPath=\Pair{\path,\orient} \in
+        \UPATH\np{\OrientedGraph},
+        \mtext{with } \cardinal{\UndirectedPath} \geq 2
+        \nonumber \\
+      & \mtext{and } \orient=\np{-1,\ldots,+1} 
+        \in \na{-1}\times\na{-1,+1}^{\cardinal{\UndirectedPath}-2}\times\na{+1},
+        \mtext{ such that}
+        \nonumber \\
+      & 
+        \UndirectedPath=\Pair{\path,\orient}=\Pair{\path, \np{-1,\ldots,+1} } 
+        \in 
+        \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph}
+        \cap \ActiveUndirectedPaths{\OrientedGraph} %\neq\emptyset
+        \eqfinv
+        \label{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_Converse_EDGE_Delta_ComplementaryAgentSubsetW} 
       \\
       \bgent\CousinhoodStar\cgent
       \implies
-               & 
-                 \bgent \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW}, \,
-                 \cgent \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \mtext{ and }
-                 \nonumber \\
-               & 
-                 \mtext{there exists }\UndirectedPath=\np{\path,\orient} \in \UPATH\np{\OrientedGraph},
-                 \mtext{with } \cardinal{\UndirectedPath} \geq 2                
-                 \nonumber \\
-               & \mtext{and } \orient=\np{-1,\ldots,+1} 
-                 \in \na{-1}\times\na{-1,+1}^{\cardinal{\UndirectedPath}-2}\times\na{+1},
-                 \mtext{ such that}
-                 \nonumber \\
-               & 
-                 \UndirectedPath=\np{\path,\orient}=\bp{\path, \np{-1,\ldots,+1} } 
-                 \in 
-                 \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph}
-                 \cap \ActiveUndirectedPaths{\OrientedGraph} % \neq\emptyset
-                 % \nonumber \\ % PREPRINTONLY
-                 % & % PREPRINTONLY
-                 % \text{and } \Internals_{\UPATH}\np{\UndirectedPath} \subset% PREPRINTONLY
-                 % \TransitiveReflexiveClosureParentalPrecedence \AgentSubsetW% PREPRINTONLY
-                     \eqfinp
-                     \label{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_TransitiveClosure}
+      & 
+        \bgent \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW}, \,
+        \cgent \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \mtext{ and }
+        \nonumber \\
+      & 
+        \mtext{there exists }\UndirectedPath=\np{\path,\orient} \in \UPATH\np{\OrientedGraph},
+        \mtext{with } \cardinal{\UndirectedPath} \geq 2                
+        \nonumber \\
+      & \mtext{and } \orient=\np{-1,\ldots,+1} 
+        \in \na{-1}\times\na{-1,+1}^{\cardinal{\UndirectedPath}-2}\times\na{+1},
+        \mtext{ such that}
+        \nonumber \\
+      & 
+        \UndirectedPath=\Pair{\path,\orient}=\Pair{\path, \np{-1,\ldots,+1} } 
+        \in 
+        \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph}
+        \cap \ActiveUndirectedPaths{\OrientedGraph} % \neq\emptyset
+        \eqfinp
+        \label{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_TransitiveClosure}
     \end{align}
     \ifpreprint 
     Moreover, in Implication~\eqref{eq:BlockedUndirectedPaths_elementary_TransitiveClosure_TransitiveClosure},
@@ -2634,7 +2619,7 @@ of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
   \( \vertex_{i} \EDGE \vertex_{i+1} \),
   for $i\in\ic{1,n}$.
   The following 
-  \( \UndirectedPath= \bp{\sequence{ \np{\vertex_i,\vertex_{i+1}}
+  \( \UndirectedPath= \bPair{\sequence{ \np{\vertex_i,\vertex_{i+1}}
     }{i\in\ic{0,n}}, \1_{n+1} } \)
   is an \undirectedEdgePath\ that 
   belongs to
@@ -2642,8 +2627,8 @@ of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
   as \( \Projection\np{\UndirectedPath}=\np{\bgent,\cgent} \),
   and also to~\( \ActiveUndirectedPaths{\OrientedGraph} \).
   Indeed, all the \undirectedEdgeSubPaths \\
-  \( \Bp{ \bp{ \np{\vertex_{i-1},\vertex_{i}},
-      \np{\vertex_{i},\vertex_{i+1}} }, \np{+1,+1} } \)
+  \( \bp{ \np{\vertex_{i-1},\vertex_{i},+1},
+      \np{\vertex_{i},\vertex_{i+1}},+1} \)
   for $i\in\ic{1,n}$, satisfy Item~\ref{it:ActivePaths_case1} in
   Definition~\ref{de:ActivePaths} 
   because \( \vertex_{i} \in \Complementary{\AgentSubsetW} \).
@@ -2693,11 +2678,11 @@ of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
   and
   \( \dgent  \ConditionalAscendent \cgent \).
   Thus, by~\eqref{eq:BlockedUndirectedPaths_elementary_Converse_EDGE_Delta_ComplementaryAgentSubsetW},
-  there exists \( \UndirectedPathbis =\bp{\pathbis, -\1_{\cardinal{\pathbis}} } 
+  there exists \( \UndirectedPathbis =\Pair{\pathbis, -\1_{\cardinal{\pathbis}} } 
   \in \DeploymentInUPaths{\np{\bgent,\dgent}}{\OrientedGraph} 
   \cap \ActiveUndirectedPaths{\OrientedGraph}\) and
   by~\eqref{eq:BlockedUndirectedPaths_elementary_Delta_ComplementaryAgentSubsetW_EDGE},
-  there exists \( \UndirectedPathter =\bp{\pathter,  \1_{\cardinal{\pathter}} }
+  there exists \( \UndirectedPathter =\Pair{\pathter,  \1_{\cardinal{\pathter}} }
   \in \DeploymentInUPaths{\np{\dgent,\cgent}}{\OrientedGraph} 
   \cap \ActiveUndirectedPaths{\OrientedGraph} \).
   % 
@@ -2717,8 +2702,8 @@ of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
   Lemma~\ref{lem:ActiveUndirectedPaths_subpaths_junctions_when_reconcatenating},
   it only remains to show that 
   \[
-    \Bp{ \bp{ \np{\vertexbis,\dgent},  \np{\dgent, \vertexter } },
-      \np{-1,+1} } =
+    \bp{ \np{\vertexbis,\dgent,-1}, \np{\dgent, \vertexter,+1}}
+    =
     {\Head{\ProjectionUndirectedPath}\np{\UndirectedPathbis}
       \ltimes
       \Tail{\ProjectionUndirectedPath}\np{\UndirectedPathter}}
@@ -2728,28 +2713,15 @@ of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
   where 
   % the triplet \( \np{\vertexbis,\dgent, \vertexter } \), where 
   \( \np{\vertexbis,\dgent} \) is the first edge of the \undirectedEdgePath\ 
-  \( \UndirectedPathbis = \bp{\pathbis, -\1_{\cardinal{\pathbis}} } \) and 
+  \( \UndirectedPathbis = \bPair{\pathbis, -\1_{\cardinal{\pathbis}} } \) and 
   \( \np{\dgent, \vertexter } \) is the last edge of the \undirectedEdgePath\ 
-  \( \UndirectedPathter =\bp{\pathter,  \1_{\cardinal{\pathter}} } \).
-  % By assumption on \( \UndirectedPathbis \) and \( \UndirectedPathter\),
-  % the \undirectedEdgePath\ 
-  % \( \UndirectedPath = \UndirectedPathbis \ltimes \UndirectedPathter\) contains the couple
-  % \( \Bp{ \bp{ \np{\vertexbis,\dgent},  \np{\dgent, \vertexter } },
-  % \np{-1,+1} } \), where \( \dgent \in \Complementary{\AgentSubsetW} \).
+  \( \UndirectedPathter =\bPair{\pathter,  \1_{\cardinal{\pathter}} } \).
   Now, the above subpath satisfies Item~\ref{it:ActivePaths_case3} in
   Definition~\ref{de:ActivePaths} 
   because \( \vertex_{i} \in \Complementary{\AgentSubsetW} \).
-  % 
-  % Now, the above subpath pattern corresponds to
-  % none of the four cases in
-  % Definition~\ref{de:ActivePaths},
-  % because \( \dgent \in \Complementary{\AgentSubsetW} \)
-  % for the first three cases,
-  % and because of the orientation \( \np{-1,+1} \)
-  % for the last fourth case.
   We deduce that \( \UndirectedPath = \UndirectedPathbis \ltimes
   \UndirectedPathter
-  = \Bp{ \np{\pathbis,\pathter}, 
+  = \bPair{ \np{\pathbis,\pathter}, 
     \bp{ -\1_{\cardinal{\pathbis}}, \1_{\cardinal{\pathter}} } } \in 
   \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph}
   \cap \ActiveUndirectedPaths{\OrientedGraph} \).
@@ -2823,8 +2795,7 @@ of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
   with \( \cardinal{\UndirectedPath} \geq 2 \),
   and \( \orient %\np{-1,\ldots,+1}
   \in\na{-1}\times\na{-1,+1}^{\cardinal{\UndirectedPath}-2}\times\na{+1} \)
-  such that \( \bp{\path, \orient %\np{-1,\ldots,+1}
-  } \in \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph}
+  such that \( \Pair{\path, \orient } \in \DeploymentInUPaths{\np{\bgent,\cgent}}{\OrientedGraph}
   \cap \ActiveUndirectedPaths{\OrientedGraph} \)
   \ifpreprint
   and that
@@ -2859,7 +2830,7 @@ of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
   of \undirectedEdgePaths\ such that
   \( \cardinal{\UndirectedPath_i} \geq 2 \) for $i\in\ic{0,n}$,
   and that 
-  \( \UndirectedPath_i = \np{\path_i, \orient_i }
+  \( \UndirectedPath_i = \Pair{\path_i, \orient_i }
   \in \DeploymentInUPaths{\np{\dgent_i,\dgent_{i+1}}}{\OrientedGraph}
   \cap \ActiveUndirectedPaths{\OrientedGraph} \)
   for $i\in\ic{0,n}$, where \( \orient_i \) is of the form~\( \np{-1,\ldots,+1}
@@ -2876,7 +2847,7 @@ of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
   by iterated (associative) concatenation as
   in~\eqref{eq:concatenation_UndirectedPath}, which is such that
   \( \cardinal{\UndirectedPath} \geq 2 \) and that
-  \[ \UndirectedPath = \bp{\path_0 \ltimes \cdots \ltimes \path_n,
+  \[ \UndirectedPath = \Pair{\path_0 \ltimes \cdots \ltimes \path_n,
       \np{ \orient_0, \ldots, \orient_n} }
     % \bp{\np{-1,\ldots,+1 }, \ldots, \np{-1,\ldots,+1 } } }
     \mtext{ where }
@@ -2894,8 +2865,7 @@ of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
   Lemma~\ref{lem:ActiveUndirectedPaths_subpaths_junctions_when_reconcatenating},
   it only remains to show that, for $i\in\ic{0,n-1}$, 
   \begin{align}
-    \Bp{ \bp{ \np{\tail{\vertex_{i}},\dgent_{i+1}},  \np{\dgent_{i+1}, \head{\vertex_{i+1}} } },
-    \np{+1,-1} }
+    \bp{ \np{\tail{\vertex_{i}},\dgent_{i+1},+1},  \np{\dgent_{i+1}, \head{\vertex_{i+1}},-1}},
     &= 
       {\Head{\ProjectionUndirectedPath}\np{\UndirectedPath_{i}}
       \ltimes
@@ -2905,9 +2875,9 @@ of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
   \end{align}
   where 
   \( \np{\tail{\vertex}_{i},\dgent_{i+1}} \) is the last edge of the \undirectedEdgePath\ 
-  \( \UndirectedPath_i = \np{\path_i, \orient_i } \) and 
+  \( \UndirectedPath_i = \Pair{\path_i, \orient_i } \) and 
   \( \np{\dgent_{i+1}, \head{\vertex}_{i+1}} \) is the first edge of the \undirectedEdgePath\ 
-  \( \UndirectedPath_{i+1} =\np{\path_{i+1}, \orient_{i+1} } \).
+  \( \UndirectedPath_{i+1} =\Pair{\path_{i+1}, \orient_{i+1} } \).
   As \( \dgent_{i+1} \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW} \), for $i\in\ic{0,n-1}$,
   and because of the orientation \( \np{-1,+1} \),
   all the above subpaths satisfy Item~\ref{it:ActivePaths_case4} in
@@ -3063,7 +3033,7 @@ of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
   The first case is \( \bgent \Delta \cgent \), that is, \(\bgent = \cgent\).
   As any \undirectedEdgePath\ of length~0 or~1 is active by definition
   (see the comment following Definition~\ref{de:ActivePaths}),
-  we conclude that \( \bp{\np{\bgent,\cgent},+1} \in \DeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph} 
+  we conclude that \(\np{\bgent,\cgent,+1} \in \DeploymentInUPaths{\na{\np{\bgent,\cgent}}}{\graph} 
   \cap \ActiveUndirectedPaths{\graph} \)%
   \ifpreprint
   and, as 
@@ -3182,8 +3152,8 @@ of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
     applied to \( \bgent \ConditionalCommonCause \dgent_1\) --- 
     that there exists
     \[
-      \UndirectedPath_{1}= \np{\path_{1}, \orient_{1} }
-      =\bp{\path_{1}, \np{\ldots,+1} } \in 
+      \UndirectedPath_{1}= \Pair{\path_{1}, \orient_{1} }
+      =\Pair{\path_{1}, \np{\ldots,+1} } \in 
       \DeploymentInUPaths{\np{\bgent,\dgent_1}}{\graph} 
       \cap \ActiveUndirectedPaths{\graph}
       \ifpreprint  \eqfinv \else \eqfinp \fi
@@ -3252,8 +3222,7 @@ of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
   Lemma~\ref{lem:ActiveUndirectedPaths_subpaths_junctions_when_reconcatenating},
   it only remains to show that
   \begin{align}
-    \Bp{ \bp{ \np{\tail{\vertex_{1}},\dgent_{1}},  \np{\dgent_{1}, \head{\vertex_{1,2}} } },
-    \np{+1,-1} }
+    \bp{\np{\tail{\vertex_{1}},\dgent_{1},+1},  \np{\dgent_{1}, \head{\vertex_{1,2}},-1 }}
     &= 
       {\Head{\ProjectionUndirectedPath}\np{\UndirectedPath_{1}}
       \ltimes
@@ -3267,8 +3236,7 @@ of an \undirectedEdgePath\ in~\eqref{eq:Internals_UPATH}
       \( \np{\dgent_{1}, \head{\vertex_{1,2}} } \) is the first edge of the \undirectedEdgePath\ 
       \( \UndirectedPath_{1,2} \), and that }
     % 
-      \Bp{ \bp{  \np{\tail{\vertex_{1,2}},\dgent_{2} }, \np{\dgent_{2}, \head{\vertex_{2}} }  },
-      \np{+1,-1} }
+      \bp{  \np{\tail{\vertex_{1,2}},\dgent_{2},+1 }, \np{\dgent_{2}, \head{\vertex_{2}},-1 } }
     &= 
       {\Head{\ProjectionUndirectedPath}\np{\UndirectedPath_{1,2}}
       \ltimes
@@ -3523,19 +3491,18 @@ Theorem~\ref{th:ConditionalDirectionalSeparation_IFF_relation}.
   \end{equation*}
   We decompose the \undirectedEdgePath~$\UndirectedPath$ as
   \[
-    \UndirectedPath=\np{\path,\orient}=\bp{\nseqp{(\tail{\vertex_i},\head{\vertex_i})}{i \in
-        \ic{1,n}},\nseqp{\orient_i}{i \in \ic{1,n}}}
+    \UndirectedPath=\nseqp{(\tail{\vertex_i},\head{\vertex_i},\orient_i)}{i\in \ic{1,n}}
     = \UndirectedPath_{n{-}1} \ltimes \overline{\UndirectedPath}
     \eqfinv
   \]
   where
   \(
-  \UndirectedPath_{n{-}1}=\bp{\nseqp{(\tail{\vertex_i},\head{\vertex_i})}{i \in
-      \ic{1,n{-}1}},\nseqp{\orient_i}{i \in \ic{1,n{-}1}}}
+  \UndirectedPath_{n{-}1}=\nseqp{(\tail{\vertex_i},\head{\vertex_i},\orient_i)}{i \in
+      \ic{1,n{-}1}}
   \in \UPATH_{n{-}1}\np{\graph}
   \)
   is an \undirectedEdgePath\ of length~$n{-}1$,
-  and where $\overline{\UndirectedPath}=\bp{\np{\tail{\vertex_n},\head{\vertex_n}}, \orient_{n}}\in \UPATH_{1}\np{\graph}$
+  and where $\overline{\UndirectedPath}=\np{\tail{\vertex_n},\head{\vertex_n}, \orient_{n}}\in \UPATH_{1}\np{\graph}$
   is an \undirectedEdgePath\ of length~$1$.
   We have that \( \tail{\vertex_1}=\bgent \) and \( \head{\vertex_n}=\cgent \).
   It is clear that the \undirectedEdgePath~$\UndirectedPath_{n{-}1}$ is active, 
@@ -3560,20 +3527,21 @@ Theorem~\ref{th:ConditionalDirectionalSeparation_IFF_relation}.
   $\bgent \ConditionalActivePlus \head{\vertex_{n-1}}$ and that
   the last orientation of~$\UndirectedPath_{n-1}$ is $\orient_{n-1}=+1$,
   that is, $\UndirectedPath_{n-1}$ ends with \(
-  \bp{\np{\tail{\vertex_{n-1}},\head{\vertex_{n-1}}}, +1} \). 
+  \np{\tail{\vertex_{n-1}},\head{\vertex_{n-1}}, +1} \). 
   There are two possibilities for the
-  \undirectedEdgePath~$\overline{\UndirectedPath}=\bp{\np{\tail{\vertex_n},\head{\vertex_n}}, \orient_{n}}$.
+  \undirectedEdgePath~$\overline{\UndirectedPath}=
+  \np{\tail{\vertex_n},\head{\vertex_n}, \orient_{n}}$.
   
   \begin{itemize}
     
   \item
-    Suppose that $\overline{\UndirectedPath}=\bp{\np{\tail{\vertex_n},\head{\vertex_n}}, +1
-    }= \bp{\np{\tail{\vertex_{n}},\cgent}, +1}$, that
+    Suppose that $\overline{\UndirectedPath}=\np{\tail{\vertex_n},\head{\vertex_n}, +1}
+    = \np{\tail{\vertex_{n}},\cgent, +1}$, that
     is, \( \np{\tail{\vertex_{n}},\cgent} \in \Precedence \) by~\eqref{eq:undirected_(edge)_paths_of_length_n}.
     % 
     As the path $\UndirectedPath$ is active by assumption, the pattern
-    \( \Bp{ \bp{\np{\tail{\vertex_{n-1}},\head{\vertex_{n-1}}}, +1},
-      \bp{\np{\tail{\vertex_n},\head{\vertex_n}}, +1} } \) must satisfy Item~\ref{it:ActivePaths_case1} in
+    \( \bp{ \np{\tail{\vertex_{n-1}},\head{\vertex_{n-1}} +1},
+      \np{\tail{\vertex_n},\head{\vertex_n} +1} } \) must satisfy Item~\ref{it:ActivePaths_case1} in
     Definition~\ref{de:ActivePaths}. We deduce that 
     $\head{\vertex_{n-1}}=\tail{\vertex_{n}} \in \Complementary{\AgentSubsetW}$. 
     Now, we wrap up the results obtained so far.
@@ -3606,14 +3574,14 @@ Theorem~\ref{th:ConditionalDirectionalSeparation_IFF_relation}.
     % 
   \item
     Suppose that $\overline{\UndirectedPath}=
-    \bp{\np{\tail{\vertex_n},\head{\vertex_n}}, -1}=
-    \bp{\np{\tail{\vertex_{n}},\cgent}, -1}$, that
+    \np{\tail{\vertex_n},\head{\vertex_n}, -1}=
+    \np{\tail{\vertex_{n}},\cgent, -1}$, that
     is, \( \np{\tail{\vertex_{n}},\cgent} \in \Converse{\Precedence} \)
     by~\eqref{eq:undirected_(edge)_paths_of_length_n}.
     % 
     As the path $\UndirectedPath$ is active, the pattern
-    \( \Bp{ \bp{\np{\tail{\vertex_{n-1}},\head{\vertex_{n-1}}}, +1},
-      \bp{\np{\tail{\vertex_n},\head{\vertex_n}}, -1} } \) must satisfy Item~\ref{it:ActivePaths_case4} in
+    \( \bp{\np{\tail{\vertex_{n-1}},\head{\vertex_{n-1}}, +1},
+      \np{\tail{\vertex_n},\head{\vertex_n}, -1} } \) must satisfy Item~\ref{it:ActivePaths_case4} in
     Definition~\ref{de:ActivePaths}. We deduce that 
     $\head{\vertex_{n-1}}=\tail{\vertex_{n}} \in \TransitiveReflexiveClosureOfSet{\AgentSubsetW}$.
     Now, we wrap up the results obtained so far.
@@ -3647,17 +3615,17 @@ Theorem~\ref{th:ConditionalDirectionalSeparation_IFF_relation}.
   $\orient_{n-1}=-1$, that
   is, \( \np{\tail{\vertex_{n}},\cgent} \in \Converse{\Precedence} \). 
   There are two possibilities for the 
-  \undirectedEdgePath~$\overline{\UndirectedPath}=\bp{\np{\tail{\vertex_n},\head{\vertex_n}},
-    \orient_{n}}$.
+  \undirectedEdgePath~$\overline{\UndirectedPath}=
+  \np{\tail{\vertex_n},\head{\vertex_n},\orient_{n}}$.
   
   \begin{itemize}
   \item
     Suppose that $\overline{\UndirectedPath}=
-    \bp{\np{\tail{\vertex_n},\head{\vertex_n}}, +1}= \bp{\np{\tail{\vertex_{n}},\cgent}, +1}$, that
+    \np{\tail{\vertex_n},\head{\vertex_n}, +1}= \np{\tail{\vertex_{n}},\cgent, +1}$, that
     is, \( \np{\tail{\vertex_{n}},\cgent} \in \Precedence \) by~\eqref{eq:undirected_(edge)_paths_of_length_n}.
     As the path $\UndirectedPath$ is active, the pattern
-    \( \Bp{ \bp{\np{\tail{\vertex_{n-1}},\head{\vertex_{n-1}}}, -1},
-      \bp{\np{\tail{\vertex_n},\head{\vertex_n}}, +1} } \) must satisfy Item~\ref{it:ActivePaths_case3} in
+    \( \bp{\np{\tail{\vertex_{n-1}},\head{\vertex_{n-1}}, -1},
+      \np{\tail{\vertex_n},\head{\vertex_n}, +1} } \) must satisfy Item~\ref{it:ActivePaths_case3} in
     Definition~\ref{de:ActivePaths}. We deduce that 
     $\head{\vertex_{n-1}}=\tail{\vertex_{n}} \in \Complementary{\AgentSubsetW}$. 
     Now, we wrap up the results obtained so far.
@@ -3683,13 +3651,14 @@ Theorem~\ref{th:ConditionalDirectionalSeparation_IFF_relation}.
     % 
   \item
     Suppose that $\overline{\UndirectedPath}=
-    \bp{\np{\tail{\vertex_n},\head{\vertex_n}}, -1}= \bp{\np{\tail{\vertex_{n}},\cgent}, -1}$, that
+    \np{\tail{\vertex_n},\head{\vertex_n}, -1}= \np{\tail{\vertex_{n}},\cgent, -1}$, that
     is, \( \np{\tail{\vertex_{n}},\cgent} \in \Converse{\Precedence} \)
     by~\eqref{eq:undirected_(edge)_paths_of_length_n}.
     % 
     As the path $\UndirectedPath$ is active, the pattern
-    \( \Bp{ \bp{\np{\tail{\vertex_{n-1}},\head{\vertex_{n-1}}}, -1},
-      \bp{\np{\tail{\vertex_n},\head{\vertex_n}}, -1} } \) must satisfy Item~\ref{it:ActivePaths_case2} in
+    \( \bp{ \np{\tail{\vertex_{n-1}},\head{\vertex_{n-1}}, -1},
+      \np{\tail{\vertex_n},\head{\vertex_n}, -1} } \)
+    must satisfy Item~\ref{it:ActivePaths_case2} in
     Definition~\ref{de:ActivePaths}. We deduce that 
     $\head{\vertex_{n-1}}=\tail{\vertex_{n}} \in \Complementary{\AgentSubsetW}$. 
     Now, we wrap up the results obtained so far.
