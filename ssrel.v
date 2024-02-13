@@ -123,13 +123,13 @@ Section Reflexive_Transitive_Closure.
   Variables (T: Type) (R: relation T).
   
   (** Definition by direct reflexive-transitive closure *)
-  (* begin snippet clos_refl_trans:: no-out *)  
+  (* begin snippet closrefltrans:: no-out *)  
   Inductive clos_refl_trans (x:T) : T -> Prop :=
   | rt_step (y:T) : R (x,y) -> clos_refl_trans x y
   | rt_refl : clos_refl_trans x x
   | rt_trans (y z:T) :
     clos_refl_trans x y -> clos_refl_trans y z -> clos_refl_trans x z.
-  (* end snippet clos_refl_trans *)
+  (* end snippet closrefltrans *)
 
   (** Alternative definition by transitive extension on the left *)
   Inductive clos_refl_trans_1n (x: T) : T -> Prop :=
@@ -143,9 +143,9 @@ Section Reflexive_Transitive_Closure.
   | rtn1_trans (y z:T) :
     R (y,z) -> clos_refl_trans_n1 x y -> clos_refl_trans_n1 x z.
 
-  (* begin snippet clos_rt:: no-out *)  
+  (* begin snippet closrt:: no-out *)  
   Definition clos_rt := [set x: T *T | clos_refl_trans x.1 x.2].
-  (* end snippet clos_rt *)  
+  (* end snippet closrt *)  
 
   Definition clos_rt_1n := [set x: T *T | clos_refl_trans_1n x.1 x.2].
   Definition clos_rt_n1 := [set x: T *T | clos_refl_trans_n1 x.1 x.2].

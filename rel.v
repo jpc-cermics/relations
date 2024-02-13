@@ -48,7 +48,7 @@ Section Sets_facts.
     by move => X; rewrite set0P;split;move => [z /inP H1]; exists z. 
   Qed.
 
-  (* begin snippet S1:: no-out *)  
+  (* begin snippet Sone:: no-out *)  
   Lemma empty_notexists: forall (X: set T), X = set0 <-> ~ (exists z, z \in X).
   Proof.
     move => X.
@@ -57,11 +57,11 @@ Section Sets_facts.
     - move => H1; rewrite predeqE => x.
       by split => [/inP H2 | H2];[have H3: exists (z:T), z \in X by (exists x) |].
   Qed.
-  (* end snippet S1 *) 
+  (* end snippet Sone *) 
 
-  (* begin snippet S2 *)  
+  (* begin snippet Stwo *)  
   Lemma empty_iff: forall (X: set T), ~ (X != set0) <-> X = set0.
-  (* end snippet S2 *)  
+  (* end snippet Stwo *)  
   Proof.
     by move => X;rewrite -notempty_exists empty_notexists.
   Qed.
@@ -149,9 +149,9 @@ Section Inverse.
   
   Variables (T: Type) (R S: relation T).
   
-  (* begin snippet S3 *)  
+  (* begin snippet Sthree *)  
   Definition inverse (T: Type) (R: relation T): relation T := [set x | R (x.2,x.1)].
-  (* end snippet S3 *)  
+  (* end snippet Sthree *)  
 
   Local Notation "R .-1" := (@inverse _ R) : classical_set_scope.
   

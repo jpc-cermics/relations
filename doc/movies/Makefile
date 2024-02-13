@@ -7,55 +7,55 @@ include config.mk
 SNIPPETS = \
 	snippets/seq1/ActiveOe-n.tex \
 	snippets/erel3/Active-n.tex \
-	snippets/erel3/D_separated-n.tex \
+	snippets/erel3/Dseparated-n.tex \
 	snippets/erel3/Aeop-n.tex \
-	snippets/seq1/all_notation-n.tex \
+	snippets/seq1/allnotation-n.tex \
 	snippets/seq1/Chrel-n.tex \
-	snippets/seq1/D_U-n.tex \
-	snippets/seq1/D_U_a-n.tex \
-	snippets/seq1/D_U_a1-n.tex \
-	snippets/seq1/Lift_lemma-n.tex \
+	snippets/seq1/DU-n.tex \
+	snippets/seq1/DUa-n.tex \
+	snippets/seq1/DUaone-n.tex \
+	snippets/seq1/Liftlemma-n.tex \
 	snippets/seq1/Oedge-n.tex \
 	snippets/seq1/TCP-n.tex \
-	snippets/seq1/U_ge_1-n.tex \
-	snippets/paper_csbr/L7_csbr-n.tex \
+	snippets/seq1/Ugeone-n.tex \
+	snippets/paper_csbr/Lsevencsbr-n.tex \
 	snippets/paper_csbr_paths/dsepnota-n.tex \
-	snippets/rel/S1-n.tex \
-	snippets/rel/S2-n.tex \
-	snippets/rel/S3-n.tex \
-	snippets/seq1/all_notation-n.tex \
+	snippets/rel/Sone-n.tex \
+	snippets/rel/Stwo-n.tex \
+	snippets/rel/Sthree-n.tex \
 	snippets/seq1/LiftO-n.tex \
 	snippets/seq1/Sn-n.tex \
 	snippets/seq1/Lift-n.tex \
-	snippets/seq1/O-n.tex \
+	snippets/seq1/OO-n.tex \
 	snippets/seq1/pair-n.tex \
-	snippets/ssrel/clos_refl_trans-n.tex \
-	snippets/ssrel/clos_rt-n.tex \
+	snippets/ssrel/closrefltrans-n.tex \
+	snippets/ssrel/closrt-n.tex \
 	snippets/ssrel/relation-n.tex \
-	snippets/seq1/RPath_equiv-n.tex \
-	snippets/seq1/Lift_Suc-n.tex \
-	snippets/seq1/Rpath_L1-n.tex \
+	snippets/seq1/RPathequiv-n.tex \
+	snippets/seq1/RPath-n.tex \
+	snippets/seq1/LiftSuc-n.tex \
+	snippets/seq1/RpathLone-n.tex \
 	snippets/seq1/DI-n.tex \
-	snippets/seq1/Lift_inj-n.tex \
-	snippets/seq1/Lift_surj-n.tex \
-	snippets/seq1/Epath_gt-n.tex \
-	snippets/seq1/D_P-n.tex \
-	snippets/seq1/D_V-n.tex \
-	snippets/seq1/DP_DV-n.tex \
+	snippets/seq1/Liftinj-n.tex \
+	snippets/seq1/Liftsurj-n.tex \
+	snippets/seq1/Epathgt-n.tex \
+	snippets/seq1/DP-n.tex \
+	snippets/seq1/DV-n.tex \
+	snippets/seq1/DPDV-n.tex \
 	snippets/seq1/Pe-n.tex \
 	snippets/seq1/Epe-n.tex \
-	snippets/seq1/U_gt-n.tex \
+	snippets/seq1/Ugt-n.tex \
 	snippets/seq1/ChrelO-n.tex \
-	snippets/seq1/Epe_Lift-n.tex \
-	snippets/seq1/Pe_UnLift-n.tex \
-	snippets/seq1/Eope_LiftO-n.tex \
-	snippets/seq1/Pe_UnLiftO-n.tex \
-	snippets/seq1/ActiveOe-n.tex \
-	snippets/seq1/Aeop-n.tex \
-	snippets/seq1/Active_eq-n.tex \
+	snippets/seq1/EpeLift-n.tex \
+	snippets/seq1/PeUnLift-n.tex \
+	snippets/seq1/EopeLiftO-n.tex \
+	snippets/seq1/Eope-n.tex \
+	snippets/seq1/PeUnLiftO-n.tex \
+	snippets/seq1/Activeeq-n.tex \
 	snippets/seq1/allL-n.tex \
+	snippets/seq1/Atr-n.tex \
 
-all: allstd allplus
+all: allstd allplus ../snippets.tex
 
 targets.mk: gen_targets.py
 	@$(PYTHON) gen_targets.py "$(coq_root)" "$(snippets_root)" > "$@"
@@ -96,7 +96,15 @@ allplus: $(SNIPPETS)
 
 snippets/%-n.tex: snippets/%.tex
 	@echo -n create $@
-	@sed $(SED)  $< > $@
+	@echo -n '\\newcommand{\\Snippet' > $@
+	@echo -n `basename $*` >> $@
+	@echo '}{' >> $@
+	@sed $(SED)  $< >> $@
+	@echo '}' >> $@
 	@echo done
+
+../snippets.tex : $(SNIPPETS)
+	@cat $(SNIPPETS) > ../snippets.tex
+	@echo ../snippets.tex updated
 
 

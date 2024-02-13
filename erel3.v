@@ -413,10 +413,10 @@ Section Active.
 
   Variables (T: Type). 
 
-  (* begin snippet D_separated:: no-out *)  
+  (* begin snippet Dseparated:: no-out *)  
   Definition D_separated (W: set T) (E: relation T) (x y: T) := 
     ~(exists (p: seq (T*T*O)), Active_path W E p x y).
-  (* end snippet D_separated *)  
+  (* end snippet Dseparated *)  
 
   (* begin snippet Active:: no-out *)  
   Definition Active (W: set T) (E: relation T) (x y: T) :=
