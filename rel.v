@@ -1086,6 +1086,12 @@ Section Clos_refl_trans_facts.
     by exists z'; split; [ | apply t_trans with y].
   Qed.
   
+  Lemma clos_tI:  (R.+ `;` R.+) `<=` R.+.
+  Proof.
+    have H2: (R.+ `|` R.+`;`R.+ `<=` R.+) by rewrite  clos_t_decomp_2.
+    by move: H2;rewrite subUset => [[_ ?]].
+  Qed.
+  
   Lemma clos_t_decomp_rt_r: R `|` (R.+ `;` R) = R.+.
   Proof.
     rewrite predeqE => [[x' y']]. split;rewrite /clos_t /setU /compose /mkset /=.
