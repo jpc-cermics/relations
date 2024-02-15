@@ -9,7 +9,7 @@ all: movies_ $(PDF)
 movies_:
 	@+${MAKE} -C movies all
 
-allsnippets.pdf: movies allsnippets.tex 
+allsnippets.pdf: movies allsnippets.tex snippets.tex
 	pdflatex allsnippets
 
 %.pdf : %.tex

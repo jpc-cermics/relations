@@ -83,7 +83,7 @@ new: snippets/erel3/D_Un.tex
 SED= \
 	-e 's/{exists}/{\\(\\exists\\)}/g' \
 	-e 's/{forall}/{\\(\\forall\\)}/g' \
-	-e 's/⊥/\\(\\bot\\))/g' \
+	-e 's/⊥/\\(\\bot\\)/g' \
 	-e 's/Δ/\\(\\Delta\\)/g' \
 	-e 's+{/\\PYZbs{}+{\\(\\,\\wedge\\,\\)+g' \
 	-e 's/\\PY{o}{\\PYZbs{}}\\PY{k+kr}{in}/\\(\\in\\)/g' \
@@ -97,6 +97,8 @@ SED= \
 	-e 's+{\\PYZhy{}\\PYZgt{}}+{\\(\\rightarrow\\)}+g' \
 	-e 's+{`\\PYZam{}`}+{\\(\\cap\\)}+g' \
 	-e 's+~\\PY{o}{;}~+\\PY{o}{;}+g' \
+	-e 's+Suc\\PYZbs{}in+Suc{\\(\\in\\)}+g' \
+	-e 's/ \\PY{k+kn}{Notation}/ ~~\\PY{k+kn}{Notation}/g' \
 
 allplus: $(SNIPPETS)
 

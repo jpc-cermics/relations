@@ -38,7 +38,7 @@ Section Active_relation.
   (** * Active paths  *)
   Variables (W: set T) (E: relation T).
   (* orientation  *)
-  Definition EO := (T * T * O)%type.
+  Definition EO := (T*T*O)%type.
   
   (* Active is now almost expressed as a transitive closure 
    * on an lifted space (A * A) * O as it uses AllL *)

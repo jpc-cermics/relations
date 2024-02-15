@@ -75,9 +75,9 @@ Section Transitive_Closure.
     | tn1_trans (y z:T) : R (y,z) -> clos_trans_n1 x y -> clos_trans_n1 x z.
 
   (* transitive closure as set *)
-  Definition clos_t := [set x: T * T | clos_trans x.1 x.2].
-  Definition clos_t_1n := [set x: T * T | clos_trans_1n x.1 x.2].
-  Definition clos_t_n1 := [set x: T * T | clos_trans_n1 x.1 x.2].
+  Definition clos_t := [set x: T*T | clos_trans x.1 x.2].
+  Definition clos_t_1n := [set x: T*T | clos_trans_1n x.1 x.2].
+  Definition clos_t_n1 := [set x: T*T | clos_trans_n1 x.1 x.2].
   
   Lemma clos_t_t1n_iff : clos_t =  clos_t_1n.
   Proof.
@@ -113,7 +113,7 @@ Section Reflexive_Closure.
     | r_step (y:T) : R (x,y) -> clos_refl x y
     | r_refl : clos_refl x x.
 
-  Definition clos_r := [set x: T * T | clos_refl x.1 x.2].
+  Definition clos_r := [set x: T*T | clos_refl x.1 x.2].
   
 End Reflexive_Closure.
 
@@ -144,11 +144,11 @@ Section Reflexive_Transitive_Closure.
     R (y,z) -> clos_refl_trans_n1 x y -> clos_refl_trans_n1 x z.
 
   (* begin snippet closrt:: no-out *)  
-  Definition clos_rt := [set x: T *T | clos_refl_trans x.1 x.2].
+  Definition clos_rt := [set x: T*T| clos_refl_trans x.1 x.2].
   (* end snippet closrt *)  
 
-  Definition clos_rt_1n := [set x: T *T | clos_refl_trans_1n x.1 x.2].
-  Definition clos_rt_n1 := [set x: T *T | clos_refl_trans_n1 x.1 x.2].
+  Definition clos_rt_1n := [set x: T*T | clos_refl_trans_1n x.1 x.2].
+  Definition clos_rt_n1 := [set x: T*T | clos_refl_trans_n1 x.1 x.2].
   
   Lemma clos_rt_rt1n_iff : clos_rt = clos_rt_1n.
   Proof.
@@ -244,9 +244,9 @@ Section Reflexive_Symmetric_Transitive_Closure.
     | rstn1_trans (y z:T) : R (y,z) \/ R (z,y) ->
          clos_refl_sym_trans_n1 x y -> clos_refl_sym_trans_n1 x z.
   
-  Definition clos_rst := [set x: T *T | clos_refl_sym_trans x.1 x.2].
-  Definition clos_rst_1n := [set x: T *T | clos_refl_sym_trans_1n x.1 x.2].
-  Definition clos_rst_n1 := [set x: T *T | clos_refl_sym_trans_n1 x.1 x.2].
+  Definition clos_rst := [set x: T*T | clos_refl_sym_trans x.1 x.2].
+  Definition clos_rst_1n := [set x: T*T | clos_refl_sym_trans_1n x.1 x.2].
+  Definition clos_rst_n1 := [set x: T*T | clos_refl_sym_trans_n1 x.1 x.2].
   
   Lemma clos_rst_rstn1_iff : clos_rst = clos_rst_n1. 
   Proof.

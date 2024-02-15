@@ -72,14 +72,12 @@ Section Suc_def.
     RPath R st ->
     st = [::] \/ (exists (t': T), exists (st': seq T), st = [::t' & st'] /\ R (t,t'))
     -> RPath R ([:: t & st]).
-  
-  (* begin snippet RPath:: no-out *)  
-  Notation "s [Suc\in] R" := (RPath R s).
-  (* end snippet RPath *)  
       
 End Suc_def. 
 
-Notation "s [Suc\in] R" := (RPath R s) (at level 4, no associativity). 
+(* begin snippet RPath:: no-out *)  
+Notation "s [Suc\in] R" := (RPath R s).
+(* end snippet RPath *)  
 
 Section Seq_utilities.
   (** * some utilities for sequences *)
@@ -307,13 +305,13 @@ Section Lift_props.
     | [::(t1,t2) & spt1 ] => [::t1 & UnLift spt1 t2]
     end.
   
-  Lemma UnLift_c: forall (spt: seq (T * T)) (x y z: T),
+  Lemma UnLift_c: forall (spt: seq (T*T)) (x y z: T),
       UnLift ((x, y) :: spt) z = [::x & UnLift spt y].
   Proof.
     by [].
   Qed.
 
-  Lemma UnLift_sz: forall (spt: seq (T * T)) (z: T),
+  Lemma UnLift_sz: forall (spt: seq (T*T)) (z: T),
       size (UnLift spt z) = size (spt) +1.
   Proof.
     elim => [z // | [t t'] spt Hr z].
@@ -1742,7 +1740,7 @@ Section pair_lift1.
       by move => [H0 [[H1 [H2 [H3 H4]]] [H5 [H6 [H7 H8]]]]].
   Qed.
   
-  Lemma ActiveOe_rev: forall (W:set T) (E: relation T) (e1 e2: (T * T)) (o:O),
+  Lemma ActiveOe_rev: forall (W:set T) (E: relation T) (e1 e2: T*T) (o:O),
       (ActiveOe W E).-1 ((e1,o), (e2,o)) <-> ActiveOe W E.-1 ((e2,O_rev o), (e1,O_rev o)).
   Proof.
     by move => W E [x1 y1] [x2 y2] o; case: o. 
@@ -1857,7 +1855,7 @@ Section Seq_lifto.
   (** * Lifto that is LiftO with constant orientatio along the  *)
   Variables (T: Type).
   
-  Fixpoint pair_o (spt: seq (T * T)) (o: O):= 
+  Fixpoint pair_o (spt: seq (T*T)) (o: O):= 
     match spt with
     | [::] => @nil (T*T*O)
     | pa::spt => (pa,o)::(pair_o spt o)
@@ -1865,31 +1863,31 @@ Section Seq_lifto.
 
   Definition Lifto (sa: seq T) (o: O) := pair_o (Lift sa) o.
   
-  Lemma pair_o_c: forall (spt: seq (T * T)) (o: O) (aa:T * T),
+  Lemma pair_o_c: forall (spt: seq (T*T)) (o: O) (aa:T*T),
         pair_o (aa::spt) o = (aa,o)::(pair_o spt o).
   Proof.
     by [].
   Qed.
 
-  Lemma pair_o_rc: forall (spt: seq (T * T)) (o: O) (aa:T * T),
+  Lemma pair_o_rc: forall (spt: seq (T*T)) (o: O) (aa:T*T),
         pair_o (rcons spt aa) o = rcons (pair_o spt o) (aa, o).
   Proof.
     by elim => [// | aa1 p Hr] o aa; rewrite rcons_cons //= Hr.
   Qed.
 
-  Lemma pair_o_last: forall (spt: seq (T * T)) (o: O) (aa:T * T),
+  Lemma pair_o_last: forall (spt: seq (T*T)) (o: O) (aa:T*T),
      last (aa,o) (pair_o spt o) = ((last aa spt), o).
   Proof.
     by elim => [// | aa1 p Hr] o aa //=.
   Qed.
 
-  Lemma pair_o_head: forall (spt: seq (T * T)) (o: O) (aa:T * T),
+  Lemma pair_o_head: forall (spt: seq (T*T)) (o: O) (aa:T*T),
      head (aa,o) (pair_o spt o) = ((head aa spt), o).
   Proof.
     by elim => [// | aa1 p Hr] o aa //=.
   Qed.
 
-  Lemma pair_o_iff: forall (spt: seq (T * T)) (o: O),
+  Lemma pair_o_iff: forall (spt: seq (T*T)) (o: O),
       pair_o spt o = pair spt (nseq (size spt) o).
   Proof.
     by elim => [ // | pa spt Hr o ];rewrite pair_ch pair_o_c Hr.
