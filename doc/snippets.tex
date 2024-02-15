@@ -94,7 +94,7 @@
   \begin{sentence}
     \begin{input}
       ~~\PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}U\PYZus{}a}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}\PY{n}{T}\PY{o}{):=}\nl
-      ~~~~\PY{o}{(}\PY{n}{D\PYZus{}U}~\PY{n}{R}~\PY{n}{E}\PY{o}{)}~\PY{o}{`\PYZam{}`}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{stto}~\PY{o}{|}~\PY{n}{stto}~\PY{o}{[}\PY{n}{Suc}\(\in\)\PY{o}{]}~\PY{o}{(}\PY{n}{A\PYZus{}tr}~\PY{n}{W}~\PY{n}{E}\PY{o}{)].}
+      ~~~~\PY{o}{(}\PY{n}{D\PYZus{}U}~\PY{n}{R}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\cap\)}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{stto}~\PY{o}{|}~\PY{n}{stto}~\PY{o}{[}\PY{n}{Suc}\(\in\)\PY{o}{]}~\PY{o}{(}\PY{n}{A\PYZus{}tr}~\PY{n}{W}~\PY{n}{E}\PY{o}{)].}
     \end{input}
   \end{sentence}
 \end{alectryon}}
@@ -161,11 +161,11 @@
   \begin{sentence}
     \begin{input}
       ~~\PY{k+kn}{Lemma}~~\PY{n+nf}{L7\PYZus{}csbr}\PY{o}{:}\nl
-      ~~~~\PY{o}{(}\PY{n}{Emw}\PY{o}{.*}~\PY{o}{;}~\PY{n}{Ew}\PY{o}{.*}~\PY{o}{)}~\PY{o}{=}~\PY{o}{(\PYZsq{}}\PY{n}{\(\Delta\))}~\PY{o}{\(\cup\)}~\PY{o}{(}\PY{n}{\(\Delta\))\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}~\PY{o}{;}~\PY{n}{Bw}\PY{o}{)}~\PY{o}{\(\cup\)}~\PY{o}{(}\PY{n}{Bmw}~\PY{o}{;}~\PY{n}{\(\Delta\))\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{))}~\PY{o}{\(\cup\)}~\PY{n}{Kw}\PY{o}{)}\nl
-      ~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{Cw}~\PY{o}{;}~\PY{o}{(}\PY{n}{Emw}~\PY{o}{.*}~\PY{o}{)}~\PY{o}{;}~\PY{o}{(}\PY{n}{Ew}~\PY{o}{.*}~\PY{o}{)}~\PY{o}{=}~\PY{n}{Cw}~\PY{o}{;}~\PY{o}{(\PYZsq{}}\PY{n}{\(\Delta\))}~\PY{o}{\(\cup\)}~\PY{n}{Bmw}~\PY{o}{;}~\PY{n}{\(\Delta\))\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}~\PY{o}{\(\cup\)}~\PY{n}{Kw}\PY{o}{)}\nl
-      ~~~~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Cw}~\PY{o}{;}~\PY{o}{(}\PY{n}{Emw}~\PY{o}{.*}~\PY{o}{)}~\PY{o}{;}~\PY{o}{(}\PY{n}{Ew}~\PY{o}{.*}~\PY{o}{))}~\PY{o}{;}~\PY{n}{Cw}~~\PY{o}{=}~\PY{n}{Cw}~\nl
-      ~~~~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Cw}~\PY{o}{;}~\PY{o}{(}\PY{n}{Emw}~\PY{o}{.*}~\PY{o}{)}~\PY{o}{;}~\PY{o}{(}\PY{n}{Ew}~\PY{o}{.*}~\PY{o}{))}~\PY{o}{;}~\PY{n}{\(\Delta\))\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}~~\PY{o}{=}~\PY{n}{Cw}~\PY{o}{;}~\PY{o}{(}\PY{n}{Bmw}~\PY{o}{\(\cup\)}~\PY{n}{Kw}\PY{o}{)}~~\PY{o}{;}~\PY{n}{\(\Delta\))\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}\nl
-      ~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{\(\Delta\))\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}~\PY{o}{;}~\PY{o}{(}\PY{n}{Emw}\PY{o}{.*}~\PY{o}{;}~\PY{n}{Ew}\PY{o}{.*}~\PY{o}{)}~\PY{o}{;}~\PY{n}{Cw}~\PY{o}{=}~\PY{n}{\(\Delta\))\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}~\PY{o}{;}~\PY{o}{(}\PY{n}{Bw}~\PY{o}{\(\cup\)}~\PY{n}{Kw}\PY{o}{)}~\PY{o}{;}~\PY{n}{Cw}\PY{o}{.}\nl
+      ~~~~\PY{o}{(}\PY{n}{Emw}\PY{o}{.*}\PY{o}{;}\PY{n}{Ew}\PY{o}{.*}~\PY{o}{)}~\PY{o}{=}~\PY{o}{(\PYZsq{}}\PY{n}{\(\Delta\)}~\PY{o}{\(\cup\)}~\PY{o}{(}\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}\PY{o}{;}\PY{n}{Bw}\PY{o}{)}~\PY{o}{\(\cup\)}~\PY{o}{(}\PY{n}{Bmw}\PY{o}{;}\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{))}~\PY{o}{\(\cup\)}~\PY{n}{Kw}\PY{o}{)}\nl
+      ~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{Cw}\PY{o}{;}\PY{o}{(}\PY{n}{Emw}~\PY{o}{.*}~\PY{o}{)}\PY{o}{;}\PY{o}{(}\PY{n}{Ew}~\PY{o}{.*}~\PY{o}{)}~\PY{o}{=}~\PY{n}{Cw}\PY{o}{;}\PY{o}{(\PYZsq{}}\PY{n}{\(\Delta\)}~\PY{o}{\(\cup\)}~\PY{n}{Bmw}\PY{o}{;}\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}~\PY{o}{\(\cup\)}~\PY{n}{Kw}\PY{o}{)}\nl
+      ~~~~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Cw}\PY{o}{;}\PY{o}{(}\PY{n}{Emw}~\PY{o}{.*}~\PY{o}{)}\PY{o}{;}\PY{o}{(}\PY{n}{Ew}~\PY{o}{.*}~\PY{o}{))}\PY{o}{;}\PY{n}{Cw}~~\PY{o}{=}~\PY{n}{Cw}~\nl
+      ~~~~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Cw}\PY{o}{;}\PY{o}{(}\PY{n}{Emw}~\PY{o}{.*}~\PY{o}{)}\PY{o}{;}\PY{o}{(}\PY{n}{Ew}~\PY{o}{.*}~\PY{o}{))}\PY{o}{;}\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}~~\PY{o}{=}~\PY{n}{Cw}\PY{o}{;}\PY{o}{(}\PY{n}{Bmw}~\PY{o}{\(\cup\)}~\PY{n}{Kw}\PY{o}{)}~\PY{o}{;}\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}\nl
+      ~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}\PY{o}{;}\PY{o}{(}\PY{n}{Emw}\PY{o}{.*}\PY{o}{;}\PY{n}{Ew}\PY{o}{.*}~\PY{o}{)}\PY{o}{;}\PY{n}{Cw}~\PY{o}{=}~\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}\PY{o}{;}\PY{o}{(}\PY{n}{Bw}~\PY{o}{\(\cup\)}~\PY{n}{Kw}\PY{o}{)}\PY{o}{;}\PY{n}{Cw}\PY{o}{.}\nl
     \end{input}
   \end{sentence}
   \sep
@@ -633,7 +633,7 @@
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{A\PYZus{}tr}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\PY{n}{ChrelO}~\PY{o}{`\PYZam{}`}~\nl
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{A\PYZus{}tr}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\PY{n}{ChrelO}~\PY{o}{\(\cap\)}~\nl
       ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{oe}~\PY{o}{:}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)}~\PY{o}{*}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)|}~\PY{k+kr}{match}~\PY{o}{(}\PY{n}{oe}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{,}\PY{n}{oe}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{,}~\PY{n}{oe}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{)}~\PY{k+kr}{with}~\nl
       ~~~~~~\PY{o}{|}~\PY{o}{(}\PY{n}{P}\PY{o}{,}\PY{n}{P}\PY{o}{,}\PY{n}{v}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}~\PY{n}{v}~\PY{o}{|}~\PY{o}{(}\PY{n}{N}\PY{o}{,}\PY{n}{N}\PY{o}{,}\PY{n}{v}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}~\PY{n}{v}~\PY{o}{|}~\PY{o}{(}\PY{n}{N}\PY{o}{,}\PY{n}{P}\PY{o}{,}\PY{n}{v}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}~\PY{n}{v}\nl
       ~~~~~~\PY{o}{|}~\PY{o}{(}\PY{n}{P}\PY{o}{,}\PY{n}{N}\PY{o}{,}\PY{n}{v}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{o}{(}\PY{n}{Fset}~\PY{n}{E}\PY{o}{.*}~\PY{n}{W}\PY{o}{)}~\PY{n}{v}~\PY{k+kr}{end}\PY{o}{].}

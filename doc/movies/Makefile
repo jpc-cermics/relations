@@ -80,8 +80,12 @@ ignore:
 
 new: snippets/erel3/D_Un.tex
 
-SED= -e 's/{exists}/{\\(\\exists\\)}/g' -e 's/{forall}/{\\(\\forall\\)}/g' -e 's/⊥/\\(\\bot\\))/g' \
-	-e 's/Δ/\\(\\Delta\\))/g' -e 's+{/\\PYZbs{}+{\\(\\,\\wedge\\,\\)+g' \
+SED= \
+	-e 's/{exists}/{\\(\\exists\\)}/g' \
+	-e 's/{forall}/{\\(\\forall\\)}/g' \
+	-e 's/⊥/\\(\\bot\\))/g' \
+	-e 's/Δ/\\(\\Delta\\)/g' \
+	-e 's+{/\\PYZbs{}+{\\(\\,\\wedge\\,\\)+g' \
 	-e 's/\\PY{o}{\\PYZbs{}}\\PY{k+kr}{in}/\\(\\in\\)/g' \
 	-e 's/\\PY{o}{\[\\PYZbs{}}\\PY{k+kr}{in}\\PY{o}{\]}/\\([{\\in}]\\)/g' \
 	-e 's/\[\\PYZbs{}in\]/\\([{\\in}]\\)/g' \
@@ -90,7 +94,9 @@ SED= -e 's/{exists}/{\\(\\exists\\)}/g' -e 's/{forall}/{\\(\\forall\\)}/g' -e 's
 	-e 's/`&`/\\(\\cap\\)/g' \
 	-e 's+{\\PYZbs{}/+{\\(\\,\\vee\\,\\)+g' \
 	-e 's+{\\PYZlt{}\\PYZhy{}\\PYZgt{}}+{\\(\\leftrightarrow\\)}+g' \
-	-e 's+{\\PYZhy{}\\PYZgt{}}+{\\(\\rightarrow\\)}+g' 
+	-e 's+{\\PYZhy{}\\PYZgt{}}+{\\(\\rightarrow\\)}+g' \
+	-e 's+{`\\PYZam{}`}+{\\(\\cap\\)}+g' \
+	-e 's+~\\PY{o}{;}~+\\PY{o}{;}+g' \
 
 allplus: $(SNIPPETS)
 
