@@ -2,16 +2,15 @@ SHELL=/bin/sh
 MAKEFLAGS += --no-print-directory
 
 PDF= \
-	Conditional_Separation_Binary_Relation.pdf \
-	tuto.pdf \
+	allsnippets.pdf \
 
 all: movies_ $(PDF)
 
 movies_:
 	@+${MAKE} -C movies all
 
-tuto.pdf: movies tuto.tex 
-	pdflatex tuto
+allsnippets.pdf: movies allsnippets.tex 
+	pdflatex allsnippets
 
 %.pdf : %.tex
 	pdflatex $*.tex
