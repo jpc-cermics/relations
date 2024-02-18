@@ -697,10 +697,10 @@ Section Lift_bijective.
   Qed.
   
   (* begin snippet DI:: no-out *)  
-  Definition D {T: Type} := [set st:seq T | size(st) > 1].
-  Definition I := [set spt:seq (T*T) | size(spt) > 0 /\ spt [Suc\in] Chrel].
+  Definition D {T: Type}:= [set st:seq T| size(st) > 1].
+  Definition I {T: Type}:= [set spt:seq (T*T)| size(spt) > 0 /\ spt [Suc\in] Chrel].
   (* end snippet DI *)
-  
+
   Lemma Lift_image: forall (st: seq T),
       st \in D -> (Lift st) \in I.
   Proof.
@@ -762,7 +762,7 @@ Section Lift_bijective.
   Qed.
   
   (* begin snippet Liftsurj:: no-out *) 
-  Lemma Lift_surj: forall spt, spt \in I -> exists st, st\in D /\ Lift st=spt. 
+  Lemma Lift_surj: forall (spt: seq (T*T)), spt \in I -> exists st, st\in D /\ Lift st=spt. 
   (* end snippet Liftsurj *) 
   Proof.
     move => st H0; move: (H0);rewrite /I /mkset => /inP [H1 H2].
@@ -840,8 +840,7 @@ Section Endpoints_and_Deployment.
   
   (* Pe (UnLift spt ptv.1) = Epe spt. *) 
   (* begin snippet PeUnLift:: no-out *)  
-  Lemma Pe_UnLift: forall (spt: seq (T*T)), 
-      spt \in (@I T) -> Pe (UnLift spt ptv.1) = Epe spt.
+  Lemma Pe_UnLift: forall (spt: seq (T*T)), spt \in I -> Pe (UnLift spt ptv.1) = Epe spt.
   (* end snippet PeUnLift *)  
   Proof. 
     by move => spt /inP [H1 H2]; rewrite -Epe_Epe1 /Epe1.
@@ -854,7 +853,7 @@ Section Endpoints_and_Deployment.
   
   (* begin snippet DP:: no-out *)  
   Definition D_P (R E: relation T):= 
-    [set spt| spt \in (@I T) /\ R (Epe spt) /\ spt [\in] E ].
+    [set spt| spt \in I /\ R (Epe spt) /\ spt [\in] E ].
   (* end snippet DP *)  
   
   (* begin snippet DPs:: no-out *)  
@@ -863,7 +862,7 @@ Section Endpoints_and_Deployment.
 
   (* begin snippet DV:: no-out *)  
   Definition D_V (R E: relation T):=
-    [set st| st \in (@D T) /\ R (Pe st) /\ st [Suc\in] E].
+    [set st| st \in D /\ R (Pe st) /\ st [Suc\in] E].
   (* end snippet DV *)  
   
   (* begin snippet DVs:: no-out *)  
@@ -872,7 +871,7 @@ Section Endpoints_and_Deployment.
 
   (** * Lift D_V = D_P *)
   Definition D_P1 (R E: relation T):= 
-    [set spt| spt \in (@I T) /\ R (Epe1 spt) /\ spt [\in] E ].
+    [set spt| spt \in I /\ R (Epe1 spt) /\ spt [\in] E ].
 
   Lemma D_P_D_P1: forall (R E: relation T), D_P R E = D_P1 R E.
     move => R E;rewrite /D_P /D_P1 /mkset predeqE => spt.
@@ -1114,7 +1113,7 @@ Section pair.
     match stt, so with 
     | (pt)::stt, o::so => (pt,o)::(pair stt so)
     | (pt)::stt, [::] =>  (pt,P)::(pair stt [::])
-    | _ , _ => @nil (T*T*O)
+    | _ , _ => Nil (T*T*O)
     end.
   (* end snippet pair *)  
   
