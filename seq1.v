@@ -697,7 +697,7 @@ Section Lift_bijective.
   Qed.
   
   (* begin snippet DI:: no-out *)  
-  Definition D := [set st:seq T | size(st) > 1].
+  Definition D {T: Type} := [set st:seq T | size(st) > 1].
   Definition I := [set spt:seq (T*T) | size(spt) > 0 /\ spt [Suc\in] Chrel].
   (* end snippet DI *)
   
@@ -737,7 +737,7 @@ Section Lift_bijective.
   Qed.
   
   (* begin snippet Liftinj:: no-out *) 
-  Lemma Lift_inj: forall st st', st \in D -> Lift st = Lift st' -> st = st'.
+  Lemma Lift_inj: forall (st st': seq T), st \in D -> Lift st = Lift st' -> st = st'.
   (* end snippet Liftinj *) 
   Proof.
     rewrite /D /mkset.
@@ -750,7 +750,7 @@ Section Lift_bijective.
     by rewrite -(H6 x) -(H7 x) H2. 
   Qed.
   
-  Lemma Lift_inj': forall st st',
+  Lemma Lift_inj': forall (st st': seq T),
       st \in D -> st' \in D -> Lift st = Lift st' -> st = st'.
   Proof.
     move => st q /inP H1 /inP H2 H3.
@@ -815,10 +815,10 @@ Section Endpoints_and_Deployment.
   
   (* Epe (Lift st) = Pe st *)
   (* begin snippet EpeLift:: no-out *)  
-  Lemma Epe_Lift: forall (st:seq T), size(st) > 1 -> Epe (Lift st) = Pe st.
+  Lemma Epe_Lift: forall (st:seq T), st \in D -> Epe (Lift st) = Pe st.
   (* end snippet EpeLift *)  
   Proof.
-    move => st H1; rewrite /Epe /Pe.
+    move => st /inP H1; rewrite /Epe /Pe.
     have ->: (head ptv (Lift st)).1 = head ptv.1 st by apply head_Lift.
     have ->: (last ptv (Lift st)).2 = last ptv.1 st by apply last_Lift.
     by [].
@@ -830,10 +830,10 @@ Section Endpoints_and_Deployment.
     move => spt H1 H2.
     have H4: spt \in (@I T) by apply inP.
     pose proof Lift_surj H4 as [st [H5 H6]].
-    move: H5 => /inP H5.
+    move: (H5) => /inP H5'.
     have H7: Epe1 (Lift st) = Pe st 
       by rewrite /Epe1 /Pe;
-      have -> :(UnLift (Lift st) ptv.1) = st by apply: UnLift_left H5.
+      have -> :(UnLift (Lift st) ptv.1) = st by apply: UnLift_left H5'.
     have H8: Epe (Lift st) = Pe st by apply Epe_Lift.
     by rewrite -H6 H7 H8.
   Qed.
@@ -841,10 +841,10 @@ Section Endpoints_and_Deployment.
   (* Pe (UnLift spt ptv.1) = Epe spt. *) 
   (* begin snippet PeUnLift:: no-out *)  
   Lemma Pe_UnLift: forall (spt: seq (T*T)), 
-      size(spt) > 0 -> spt [Suc\in] Chrel -> Pe (UnLift spt ptv.1) = Epe spt.
+      spt \in (@I T) -> Pe (UnLift spt ptv.1) = Epe spt.
   (* end snippet PeUnLift *)  
   Proof. 
-    by move => spt H1 H2; rewrite -Epe_Epe1 /Epe1.
+    by move => spt /inP [H1 H2]; rewrite -Epe_Epe1 /Epe1.
   Qed.
 
   (** * deployment paths 
@@ -907,7 +907,7 @@ Section Endpoints_and_Deployment.
     move => R E spt.
     rewrite D_P_D_P1 inP => [[H1 [H3 H4]]].
     move: (H1) => /inP [H1' H2].
-    pose proof Pe_UnLift H1' H2 as H5.
+    pose proof Pe_UnLift H1 as H5.
     pose proof Epe_Epe1 H1' H2 as H6.
     pose proof UnLift_image H1 ptv.1 as H7.
     pose proof Lift_UnLift H1 ptv.1 as H8.
@@ -1039,7 +1039,7 @@ Section PathRel.
    * is the relation E.+ the transitive closure of E 
    *)
 
-  Variables (T: Type) (E: relation T).
+  Variables (T: Type) (ptv: T*T) (E: relation T).
   
   (* relation based on paths: take care that the path p depends on (x,y) *)
   Definition PathRel_n (E: relation T) (n:nat) :=
@@ -1063,9 +1063,9 @@ Section PathRel.
   Qed.
   
   (* R.+ =  PathRel R *)
-  (* begin snippet TCP:: no-out *)  
-  Lemma TCP: E.+ = [set vp | exists p, (Lift (vp.1::(rcons p vp.2))) [\in] E].
-  (* end snippet TCP *)  
+  (* begin snippet TCP':: no-out *)  
+  Lemma TCP': E.+ = [set vp | exists p, (Lift (vp.1::(rcons p vp.2))) [\in] E].
+  (* end snippet TCP' *)  
   Proof.
     rewrite /mkset predeqE => [[x y]].
     split => [H1 | [p H1]].
@@ -1077,6 +1077,25 @@ Section PathRel.
     - have H2:  PathRel_n E (size p) (x, y) by (exists p).
       rewrite -Itern_iff_PathReln in H2.
       by apply iterk_inc_clos_trans in H2.
+  Qed.
+
+  (* begin snippet TCP:: no-out *) 
+  Lemma TCP: E.+ = [set vp| exists p, size(p) > 1 /\ Pe ptv p = vp /\ p [L\in] E].
+  (* end snippet TCP *)  
+  Proof.
+    rewrite /mkset /Pe predeqE => [[x y]].
+    split => [H1 | [p [H1 [H2 H3]]]].
+    - apply clos_t_iterk in H1.
+      move: H1 => [n H1].
+      rewrite  Itern_iff_PathReln /PathRel_n in H1.
+      move: H1 => [p [H1 H2]].
+      exists (x::(rcons p y)).
+      by split;[rewrite /= size_rcons|split;[rewrite /= last_rcons |]].
+    - pose proof seq_crc H1 as [q [x' [y' H4]]].
+      move: H2; rewrite H4 /= last_rcons => [[<- <-]].
+      have H5:  PathRel_n E (size q) (x', y') by (exists q);rewrite /allL -H4. 
+      rewrite -Itern_iff_PathReln in H5.
+      by apply iterk_inc_clos_trans in H5.
   Qed.
 
 End PathRel.
@@ -1495,7 +1514,7 @@ Section pair_lift1.
       (Pe ptv (UnLiftO stto ptv.1).1) =  Eope stto.
   (* end snippet PeUnLiftO *)  
   Proof. 
-    move => stto H1 H2. 
+    move => stto H1 H2.
     rewrite /UnLiftO.
     rewrite /UnLiftO Pe_UnLift /Epe.
     pose proof unpair_right stto as H3.
@@ -1504,8 +1523,8 @@ Section pair_lift1.
     by [].
     by rewrite unpair_sz.
     by rewrite unpair_sz.
-    by rewrite unpair_sz1.
-    by pose proof LiftO_right_0 H1 H2 as [H3 H4].
+    pose proof LiftO_right_0 H1 H2 as [H3 H4].
+    by rewrite inP.
   Qed.
   
   (** * Eope properties *)
@@ -1576,7 +1595,8 @@ Section pair_lift1.
     have H4: size p > 1 by rewrite H2 addn1.
     exists p; exists (unpair sto).2.
     rewrite -unpair_sz. 
-    split. by []. split. 
+    split. by []. 
+    split. 
     rewrite -H3.
     rewrite [in RHS]Lift_sz. 
     rewrite subn1 addn1.

@@ -54,6 +54,7 @@ SNIPPETS = \
 	snippets/seq1/Activeeq-n.tex \
 	snippets/seq1/allL-n.tex \
 	snippets/seq1/Atr-n.tex \
+	snippets/paper_relations/Aw-n.tex \
 
 all: allstd allplus ../snippets.tex
 

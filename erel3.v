@@ -491,7 +491,7 @@ Section PathRel_Examples.
       (exists (p: seq T), (x::p) [\in] W.^c /\ allL E p x y
                      /\ (x::p) [\in] ((Δ_(W.^c) `;` E).+)#_(y)).
   Proof.
-    move => x y; rewrite {1}TCP; move => [p /= H1]; exists p.
+    move => x y; rewrite {1}TCP'; move => [p /= H1]; exists p.
     move: (H1) => /allL_WS_iff/andP [H2 H2'].
     apply allL_All in H1;apply allset_cons in H1;move: H1=> [/inP H1 H1'].
     by rewrite -allset_consb H1 H1' andbT.
@@ -502,7 +502,7 @@ Section PathRel_Examples.
       (exists (p: seq T), (rcons p y) [\in] W.^c /\ allL E p x y
                      /\ (y::(rev p)) [\in] ((Δ_(W.^c) `;` E.-1).+)#_(x)).
   Proof.
-    move => x y; rewrite {1}TCP; move  => [p H1]; exists p.
+    move => x y; rewrite {1}TCP'; move  => [p H1]; exists p.
     rewrite allL_rev inverse_compose DeltaE_inverse /= in H1.
     move: (H1) => /allL_WS_iff/andP /= [/andP [/inP H2 H3] H2'].
     apply allL_All in H1;apply allset_cons in H1;move: H1=> [/inP /= H1 H1'].

@@ -31,6 +31,7 @@ Section Papers_relations.
 
   (** * The relations used in the two papers  *)
 
+  (* begin snippet Aw:: no-out *)  
   Definition Em := E.-1.
   Definition Ew := Δ_(W.^c) `;` E.
   Definition Bw := E `;` Ew.* .
@@ -39,9 +40,10 @@ Section Papers_relations.
   Definition Kw := (Bmw `;` Δ_(W.^c) `;` Bw).
   
   Definition DKD := ( Δ_(W) `;` Kw `;`  Δ_(W)).
-  Definition Cw := ((DKD).+) `|`   Δ_(W).
+  Definition Cw := ((DKD).+) `|` Δ_(W).
   Definition Dw := (Bw `|` Kw) `;` (Cw `;` (Bmw `|` Kw)).
   Definition Aw := 'Δ `|` Bw `|` Bmw `|` Kw `|` Dw.
+  (* end snippet Aw *)  
   
   Definition W_s := Fset E.* W.
   Definition DKD_s := ( Δ_(W_s) `;` Kw `;`  Δ_(W_s)).
