@@ -100,6 +100,8 @@ SED= \
 	-e 's+~\\PY{o}{;}~+\\PY{o}{;}+g' \
 	-e 's+Suc\\PYZbs{}in+Suc{\\(\\in\\)}+g' \
 	-e 's/ \\PY{k+kn}{Notation}/ ~~\\PY{k+kn}{Notation}/g' \
+	-e 's/\\begin{alectryon}/%/g' \
+	-e 's/\\end{alectryon}//g' \
 
 allplus: $(SNIPPETS)
 
