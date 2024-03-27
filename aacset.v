@@ -14,7 +14,7 @@ From AAC_tactics Require Import AAC.
 From mathcomp Require Import ssreflect.
 
 Set Warnings "-parsing -coercions".
-From mathcomp Require Import all_ssreflect ssralg matrix finmap order ssrnum.
+From mathcomp Require Import all_ssreflect order.
 From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
 Set Warnings "parsing coercions".

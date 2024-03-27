@@ -10,7 +10,7 @@
 (************************************************************************)
 
 Set Warnings "-parsing -coercions".
-From mathcomp Require Import all_ssreflect ssralg matrix finmap order ssrnum.
+From mathcomp Require Import all_ssreflect order.
 From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
 Set Warnings "parsing coercions".
@@ -126,19 +126,6 @@ Section Seq_utilities.
     have H4: 0 < size r by rewrite H3 ltnS in H1.
     pose proof seq_c H4 as [q [x H5]].
     by exists q,y,x;rewrite H3 H5.
-  Qed.
-
-  Lemma seq_cc': forall (s: seq T), 
-      1 < size s <-> exists (s':seq T) (x y:T), s = [::x,y &s'].
-  Proof.
-    move => s.
-    - split => [H1 | ].
-      have H2: 0 < size s by apply leq_ltn_trans with 1.  
-      pose proof seq_c H2 as [r [y H3]].
-      have H4: 0 < size r by rewrite H3 ltnS in H1.
-      pose proof seq_c H4 as [q [x H5]].
-      by exists q,y,x;rewrite H3 H5.
-    - by move => [s' [x [y -> /=]]].
   Qed.
   
   Lemma seq_1: forall (s: seq T), 
@@ -377,45 +364,6 @@ Section Lift_props.
     by elim => [// | x st ]; elim: st x => [// | x st Hr y H1 // H2].
   Qed.
 
-  Lemma Lift_sz3: forall (st:seq T),
-      size(Lift st) > 0 -> size(st) = size(Lift st) +1. 
-  Proof.
-    move => st H1.
-    have H2:  size st >1. by apply Lift_sz2.
-    have H3:  size (Lift st) = (size st) -1 by apply Lift_sz.
-    rewrite H3 subn1 addn1. 
-    by have ->: (size st).-1.+1 = size st by apply: (ltn_predK H2).
-  Qed.
-
-  Lemma Lift_szn': forall (st:seq T) (n:nat),
-      size(Lift st) = n.+1 <-> size (st) = n.+2.
-  Proof.
-    move => st n.
-    split => H1.
-    - have H2: size(Lift st) > 0 by rewrite H1.
-      have H3: size(st) > 1 by rewrite -Lift_sz2.
-      move: (H3) => /Lift_sz H4.
-      have H5: ((size st).-1)%N  = n.+1 by rewrite -subn1 -H4.
-      have H6: (size st).-1.+1 = size(st) by apply: (ltn_predK H3).
-      by rewrite -H5 -[in LHS]H6.
-    - have H3: size(st)> 1 by rewrite H1.
-      pose proof (Lift_sz H3) as H4.
-      by move: H4;rewrite H1 subn1 /=.
-  Qed.
-  
-  Lemma Lift_szn: forall (st:seq T) (n:nat),
-      size(Lift st) > n <-> size (st) > n.+1.
-  Proof.
-    move => st n.
-    split => H1.
-    - have H3: size(st)> 1 by rewrite -Lift_sz2 ;apply leq_ltn_trans with n.
-      pose proof Lift_sz H3 as H4.
-      by move: H1;rewrite H4 -ltn_predRL -subn1.
-    - have H3: size(st)> 1 by apply leq_ltn_trans with n.+1.
-      pose proof Lift_sz H3 as H4.
-      by rewrite H4 subn1 ltn_predRL.
-  Qed.
-
 End Lift_props. 
 
 Section allset.
@@ -538,7 +486,41 @@ Section allset2.
 
 End allset2.
 
-Notation "[L: x ; st ; y `\in` E ]" := ((Lift (x::(rcons st y))) [\in] E).
+Section Lift_in. 
+  (** * properties of [L\in] *)
+
+  Variables (T: Type) (R: relation T).
+
+  Lemma Lift_in_F: forall (S: relation T) (st: seq T) (y: T),
+        (rcons st y) [L\in] S -> st [\in] (S.+)#_(y).
+  Proof.
+    move => S.
+    elim => [ // | x st Hr y].
+    rewrite rcons_cons. 
+    elim: st Hr.
+    - by move => _;rewrite /= => /andP [/inP H1 _];rewrite andbT inP;apply Fset_t1 in H1.
+    - move => z st Hr' H1. 
+      rewrite Lift_crc 2!allset_cons => [[H2 /H1 H3]].
+      split; last by [].
+      move: H3; rewrite allset_cons => [[H3 /inP H4]].
+      by apply Fset_t2;exists z.
+  Qed.
+  
+  Lemma Lift_in_rev: forall (st: seq T),
+      st [L\in] R <-> (rev st) [L\in] R.-1. 
+  Proof.
+    by move => st;rewrite allset_rev allset_inv Lift_rev.
+  Qed.
+
+  Lemma Lift_in_A: forall (st: seq T) (x: T),
+      (x::st) [L\in] R -> st [\in] (R.+.-1)#_(x).
+  Proof.
+    move => st x. 
+    rewrite Lift_in_rev rev_cons => /Lift_in_F H1.
+    by rewrite allset_rev inverse_clos_t.
+  Qed.
+  
+End Lift_in. 
 
 Section allset_Lifted.
   (** * properties of st [L\in] R for st: seq T  *)
@@ -618,27 +600,16 @@ Section allset_Lifted.
   Lemma allL_rev: forall (st: seq T) (x y: T),
       allL E st x y <->  allL E.-1 (rev st) y x.
   Proof.
-    move => st x y. 
-    have H1: (y :: rcons (rev st) x) = rev (x::(rcons st y)) 
-      by rewrite rev_cons rev_rcons -rcons_cons.
-    by rewrite /allL allset_rev allset_inv H1 Lift_rev.
+    by move => st x y;rewrite Lift_in_rev rev_cons rev_rcons. 
   Qed.
   
   Lemma allL_All: forall (st: seq T) (x y: T),
       allL E st x y -> (x::st) [\in] (E.+)#_(y).
   Proof.
-    move => st x y.
-    elim: st x => [x | z st Hr x].
-    by rewrite /allL /= => /andP [/inP H1 _];
-                          apply /andP;split;[apply mem_set;apply Fset_t1|].
-    rewrite allL_c => /andP [/inP H1 /Hr H2].
-    move: (H2);rewrite allset_cons => [[H3 H4]].
-    by rewrite allset_cons;split;[ apply Fset_t2; exists z |].
+    by move => st x y;rewrite /allL -rcons_cons; apply: Lift_in_F.
   Qed.
   
 End allset_Lifted.
-
-
 
 Section Suc_as_Lift. 
   (** * st [L\in] R <-> st [Suc\in] R *)
@@ -840,7 +811,7 @@ Section Endpoints_and_Deployment.
   
   (* Pe (UnLift spt ptv.1) = Epe spt. *) 
   (* begin snippet PeUnLift:: no-out *)  
-  Lemma Pe_UnLift: forall (spt: seq (T*T)), spt \in I -> Pe (UnLift spt ptv.1) = Epe spt.
+  Lemma Pe_UnLift: forall (spt: seq (T*T)), spt \in I->Pe (UnLift spt ptv.1)=Epe spt.
   (* end snippet PeUnLift *)  
   Proof. 
     by move => spt /inP [H1 H2]; rewrite -Epe_Epe1 /Epe1.
@@ -1007,27 +978,6 @@ Section seq_pairs_subsets.
   Definition P_gt (n: nat) (E: relation T)  := 
     [set spt | size(spt) > n /\ spt [\in] E /\ spt [Suc\in] Chrel].
   (* end snippet Epathgt *)  
-  
-  Definition REpaths (E: relation T) (R: relation (T*T)) := 
-    [set spt:seq (T*T) | spt [\in] E /\ spt [L\in] Chrel /\ spt [L\in] R].
-  
-  Lemma REpath_iff1: forall (E: relation T) (R: relation (T*T)),
-      [set spt:seq (T*T) | spt [\in] E /\ spt [L\in] (Chrel `&` R)]
-    = [set spt | spt = [::]] 
-        `|` [set spt | size(spt) = 1 /\ (spt [\in] E) ] 
-        `|` [set spt | size(spt) > 1 /\ spt [L\in] ((E `*` E)`&` (Chrel `&` R))]. 
-  Proof.
-    by move => E R;rewrite -[RHS]Rpath_iff.
-  Qed.
-
-  Lemma REpath_iff2: forall (E: relation T) (R: relation (T*T)),
-      [set p:seq (T*T) | p [\in] E /\ p [L\in] (Chrel  `&` R)]
-      = [set p | p [\in] E /\ p [L\in] (@Chrel T) /\ p [L\in] R].
-  Proof.
-    move => E R. rewrite /mkset predeqE => p.
-    split => [ [H1 /allset_I/andP [H2 H3]]// | [H1 [H2 H3]] ].
-    by rewrite allset_I H1 H2 H3.
-  Qed.
 
 End seq_pairs_subsets.
   
@@ -1526,86 +1476,6 @@ Section pair_lift1.
     by rewrite inP.
   Qed.
   
-  (** * Eope properties *)
-  
-  Lemma Lift_ChrelO: forall (sto: seq(T*T*O)),
-      sto [L\in] ChrelO <-> (unpair sto).1 [L\in] (@Chrel T).
-  Proof.
-    split. 
-    - elim:sto  => [ // | tto sto Hr].
-      elim: sto tto Hr => [ [t1 t2 o1] _ // | [[t1' t2'] o1'] sto Hr [[t1 t2] o1] H1 H2].
-      move: H2;rewrite Lift_c allset_cons=> [[H2 H3]].
-      rewrite /unpair Lift_c allset_cons.
-      by split;[ | apply H1].
-    - elim:sto => [ // | tto sto Hr].
-      elim: sto tto Hr => [ [t1 t2 o1] _ // | [[t1' t2'] o1'] sto _ [[t1 t2] o1] H1 H2].
-      rewrite Lift_c allset_cons.
-      move: H2; rewrite 2!unpair_c Lift_c allset_cons => [[H3 H4]].
-      by split;[rewrite /ChrelO /mkset /= | apply H1;rewrite unpair_c].
-  Qed.
-  
-  Lemma Lift_ChrelO1: forall (sto: seq(T*T*O)),
-      size(sto) > 0 -> sto [L\in] ChrelO 
-      -> exists p: seq T, size(p) = size(sto)+1 /\ Lift p = (unpair sto).1 
-                    /\  (Lift p) [Suc\in] (@Chrel T).
-  Proof.
-    move => sto H0 H1.
-    have H2: (unpair sto).1 [L\in] (@Chrel T) by apply Lift_ChrelO.
-    move: H2;rewrite Lift_Chrel => [[p H3]].
-    exists p. 
-    split.
-    have H2: size(Lift p)= size(sto) by rewrite -[RHS]unpair_sz1 H3.
-    have H4: size(p) > 1 by rewrite -Lift_sz2 H2.
-    have H5: size(p) = size (Lift p) +1 by apply Lift_sz3;rewrite H2.
-    by rewrite H5 H2. 
-    split. 
-    by [].
-    by rewrite H3 -RPath_equiv;apply Lift_ChrelO.
-  Qed.
-
-  Lemma Lift_ChrelO2: forall (sto: seq(T*T*O)) (x y:T),
-      size(sto) > 0 -> sto [L\in] ChrelO -> Eope sto = (x, y)
-      -> exists p, size p = size sto + 1 /\ Lift p = (unpair sto).1 
-             /\ (Lift p) [L\in] (Chrel (T:=T))
-             /\ Epe1 ptv (Lift p) = (x, y). 
-  Proof.
-    move => sto x y H1 H2 H3.
-    have H2': sto [Suc\in] ChrelO by rewrite -RPath_equiv.
-    pose proof Pe_UnLiftO H1 H2' as H4. 
-    rewrite H3 /UnLiftO /= in H4.
-    pose proof Lift_ChrelO1 H1 H2 as [p [H5 [H6 H6']]].
-    have H7: pair ((unpair sto).1) ((unpair sto).2) = sto
-      by apply unpair_right.
-    have H8: (pair ((unpair sto).1) ((unpair sto).2)) [L\in] ChrelO
-      by rewrite unpair_right.
-    have H9: (LiftO p (unpair sto).2) [L\in] ChrelO
-      by rewrite  /LiftO H6.
-    have H10: size (unpair sto).1 = size (unpair sto).2 by apply unpair_sz.
-    by exists p;rewrite /Epe1 H6 H4 -[in (unpair sto).1 [L\in] Chrel]H6 RPath_equiv.
-  Qed.
-  
-  Lemma Lift_ChrelO2': forall (sto: seq(T*T*O)),
-    size(sto) > 0 -> sto [L\in] ChrelO -> 
-    exists p: seq T,exists so: seq O, 
-      size(p) = size(sto)+1 /\ size(p)=size(so) +1 /\ LiftO p so = sto.
-  Proof.
-    move => sto H0 H1.
-    pose proof Lift_ChrelO1 H0 H1 as [p [H2 [H3 H3']]].
-    have H4: size p > 1 by rewrite H2 addn1.
-    exists p; exists (unpair sto).2.
-    rewrite -unpair_sz. 
-    split. by []. 
-    split. 
-    rewrite -H3.
-    rewrite [in RHS]Lift_sz. 
-    rewrite subn1 addn1.
-    pose proof (ltn_predK H4) as H5.
-    by rewrite H5.
-    by [].
-    rewrite /LiftO H3. 
-    apply unpair_right.
-  Qed.
-
   (** * deployment paths for extended oriented
    * Lift and UnLift are bijective on deployment path 
    * D_V <-[Lift]-> D_P 
@@ -1857,7 +1727,7 @@ Section pair_lift1.
   Qed.
 
   (* begin snippet  Activeeq:: no-out *)  
-  Theorem Active_eq: forall (E: relation T) (W: set T) (x y:T) stto,
+  Lemma Active_eq: forall (E: relation T) (W: set T) (x y:T) stto,
       ((x=y /\ stto = [::]) \/  stto \in (D_U_a1 E W x y))
       <-> Active_path W E stto x y.
   (* end snippet  Activeeq *)  
@@ -1991,3 +1861,466 @@ Section Seq_lifto.
   Qed.
   
 End Seq_lifto. 
+
+Section Active_relation.
+  (** * D_U and active relation *)
+  
+  Variables (T: Type) (ptv: T*T).
+  Variables (W: set T) (E: relation T).
+  
+  Definition R_o (o:O):= match o with | P => E | N=> E.-1 end.
+
+  Lemma R_o': forall (o:O) (xy: T*T),
+      R_o o xy <-> match o with | P => E xy | N=> E.-1 xy end.
+  Proof.
+    by move => o xy; case: o.
+  Qed.
+
+  (** increase active path by left addition *)
+  Lemma Active_path_cc: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (y: T),
+      Active_path W E [:: eo1, eo2 & p] eo1.1.1 y
+      <-> Active_path W E [:: eo2 & p] eo2.1.1 y /\ ActiveOe W E (eo1, eo2).
+  Proof.
+    elim => [ | eo3 p _] eo1 eo2 y. 
+    - split.
+      + by move => [_ [/= -> /allL0' H3]];move: (H3) => /ActiveOe_Oedge [_ H4].
+      + by move => [[_ [<- H3]] /inP H4] /=; rewrite allL0.
+    - split.
+      by move => [H2 [/= H3 /= /allL_c/andP [/inP H4 H5]]] //.  
+      by move => [[_ [H3 H4]] /inP H5] /=;
+                  rewrite allL_c;split;[| split;[| apply /andP]].
+  Qed.
+  
+  Lemma Active_path_cc_ht: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (x y: T),
+      Active_path W E [:: eo1, eo2 & p] x y -> 
+      x = eo1.1.1 /\ y = (last eo2 p).1.2.
+  Proof.
+    by move => p eo1 eo2 x y [H1 [H2 _]].
+  Qed. 
+  
+  Lemma Active_path_cc_a: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (x y: T),
+      Active_path W E [:: eo1, eo2 & p] x y -> ActiveOe W E (eo1, eo2) .
+  Proof.
+    move => p eo1 eo2 x y H1.
+    pose proof Active_path_cc_ht H1 as [H2 H3].
+    by move: H1; rewrite H2 H3; move => /Active_path_cc [_ H1].
+  Qed.
+  
+  Lemma Active_path_crc: forall  (p: seq (T*T*O)) (eo1 eo2: T*T*O),
+      Active_path W E (eo1::(rcons p eo2)) eo1.1.1 eo2.1.2
+      <-> allL (ActiveOe W E) p eo1 eo2.
+  Proof.
+    elim => [ | eo p H1] eo1 eo2;
+           first by split;[move => [_ [_ /= H2]] |move => H1;split;[ |split]].
+    split; rewrite rcons_cons.
+    move => /Active_path_cc [H2 /inP H3]. 
+    by rewrite allL_c; apply/andP; split;[ | apply H1].
+    by move => H2;split;[ | split;[ rewrite last_rcons | rewrite belast_rcons last_rcons]].
+  Qed.
+  
+  Lemma Active_path_crc_ht: forall  (p: seq (T*T*O)) (eo1 eo2: T*T*O) (x y: T),
+      Active_path W E (eo1::(rcons p eo2)) x y -> eo1.1.1 = x /\  eo2.1.2 = y.
+  Proof.
+    move => p eo1 eo2 x y;rewrite headI;move => [H1 [H2 _]].
+    by elim: p H2 => [ //= | a p _ //=]; rewrite last_rcons.
+  Qed.
+  
+  Lemma Active_path_crc_a: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (x y: T),
+      Active_path W E (eo1::(rcons p eo2)) x y
+      -> ActiveOe W E (eo1, (head eo2 p)) /\ ActiveOe W E ((last eo1 p), eo2).
+  Proof.
+    elim => [eo1 eo2 x y [_ [/= _ /allL0' H4]] // | eo3 p H1 eo1 eo2 x y].
+    rewrite rcons_cons. move => H2.
+    pose proof Active_path_cc_ht H2 as [H3 H4].
+    pose proof Active_path_cc_a H2 as H5.
+    move: H2;rewrite H3 Active_path_cc;move => [H6 H7].
+    apply H1 in H6 as [H6 H8].
+    by split;[ | rewrite last_cons].
+  Qed.
+  
+  Lemma Active_path_rcrc: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O),
+      Active_path W E (rcons (rcons p eo1) eo2) (head eo1 p).1.1 eo2.1.2
+      <-> Active_path W E (rcons p eo1) (head eo1 p).1.1 eo1.1.2
+        /\ ActiveOe W E (eo1, eo2).
+  Proof.
+    elim => [ | eo p H1] eo1 eo2.
+    - split. 
+      by move => [_ [_ /= /allL0' H3]];move: (H3) => /ActiveOe_Oedge [H4 _ /=].
+      by move => [_ H2] /=;rewrite allL0'. 
+    - 
+      rewrite !rcons_cons.
+    rewrite Active_path_crc.
+    split. 
+    move => /allL_rc/andP [/inP H2 H3].
+    by rewrite Active_path_crc.
+    rewrite Active_path_crc. move => [H2 /inP H3].
+    rewrite allL_rc. 
+    by apply/andP.
+  Qed.
+
+  Lemma Active_path_rcrc_ht: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (x y: T),
+      Active_path W E (rcons (rcons p eo1) eo2) x y 
+      -> x = (head eo1 p).1.1 /\ y= eo2.1.2.
+  Proof.
+    elim => [ | eo p H1] eo1 eo2 x y; first by move => [H1 [H2 _]]; split.
+    by rewrite !rcons_cons => /Active_path_crc_ht [H2 H3].
+  Qed.
+
+  Lemma Active_path_rcrc_a: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (x y: T),
+      Active_path W E (rcons (rcons p eo1) eo2) x y 
+      -> ActiveOe W E (eo1, eo2).
+  Proof.
+    move => p eo1 eo2 x y H1.
+    pose proof Active_path_rcrc_ht H1 as [H2 H3].
+    by move: H1; rewrite H2 H3; move => /Active_path_rcrc [_ H1].
+  Qed.
+
+  Lemma Active_path_rc_hto: forall (p: seq (T*T*O)) (eo1: T*T*O) (x y: T),
+      Active_path W E (rcons p eo1) x y ->
+      x = (head eo1 p).1.1 /\ y = eo1.1.2 
+      /\ Oedge E eo1 /\ Oedge E (head eo1 p).
+  Proof.
+    elim => [eo1 x y [H2 [H3 H4]] // | eo2 p _ eo1 x y H1]. 
+    by pose proof Active_path_crc_ht H1 as [H2 H3];
+    pose proof Active_path_crc_a H1 as [[H4 _] [_ [H8 _]]].
+  Qed.
+  
+  Lemma Active_path_c_hto: forall (p: seq (T*T*O)) (eo1: T*T*O) (x y: T),
+      Active_path W E (eo1::p) x y -> 
+      x = eo1.1.1 /\ y = (last eo1 p).1.2
+      /\ Oedge E eo1 /\ Oedge E (last eo1 p).
+  Proof.
+    elim => [eo1 x y [H1 [H2 H3]] // | eo2 p _ eo1 x y H1]. 
+    pose proof Active_path_cc_ht H1 as [H2 H3];
+      pose proof Active_path_cc_a H1 as [H4 [H5 _]]. 
+    rewrite lastI in H1.
+    by pose proof Active_path_rc_hto H1 as [_ [_ [H8 _]]].
+  Qed.
+    
+  Lemma Active_path_split: forall (p q: seq (T*T*O)) (eop eoq: T*T*O) (x y: T),
+      Active_path W E ((rcons p eop)++ eoq::q) x y
+      -> Active_path W E (rcons p eop) x eop.1.2
+        /\ Active_path W E (eoq::q) eoq.1.1 y
+        /\ ActiveOe W E (eop, eoq).
+  Proof.
+    elim => [ q eop eoq x y // | z p Hr q eop eoq x y ].
+    - rewrite cat_rcons cat0s => H1.
+      pose proof Active_path_cc_ht H1 as [H2 _].
+      pose proof Active_path_cc_a H1 as [H3 _].
+      by move: H1; rewrite H2 Active_path_cc; move => [H4 H5];split.
+    - elim/last_ind: q Hr eop eoq x y.
+      + move => _ eop eoq x y.
+        rewrite -cat_rcons cats0 => H1.
+        pose proof Active_path_rcrc_ht H1 as [H2 H3].
+        move: H1; rewrite H2 H3 Active_path_rcrc; move => [H4 H5]. 
+        by pose proof H5 as [H6 [H7 _]].
+      + move => q1 t _ H1 eo1 eo2 x y H3.
+        rewrite rcons_cons cat_cons -rcons_cons -rcons_cat in H3.
+        pose proof Active_path_crc_ht H3 as [H4 H5].
+        move: H3; rewrite -H4 -H5.
+        move => /Active_path_crc /allL_cat/andP [H6 /allL_c/andP [/inP H7 H8]]. 
+        by rewrite rcons_cons Active_path_crc Active_path_crc.
+  Qed.
+  
+  Lemma Active_path_cat: forall (p q: seq (T*T*O)) (eop eoq: T*T*O) (x y z: T),
+      ActiveOe W E (eop, eoq)
+      /\ Active_path W E (rcons p eop) x y 
+      /\ Active_path W E (eoq::q) y z
+      -> Active_path W E (rcons p eop++ eoq::q) x z.
+  Proof.
+    elim. 
+    - move => q eop eoq x y z [H1 [H2 H3]].
+      have -> : rcons [::] eop ++ eoq :: q = [:: eop, eoq & q] by [].
+      pose proof Active_path_rc_hto H2 as [H4 _].
+      pose proof Active_path_c_hto H3 as [H6 _].
+      by rewrite H4 Active_path_cc -H6.
+    - move => eo1 p1 Hr q eop eoq x y z [H1 [H2 H3]]. 
+      rewrite rcons_cons cat_cons.
+      rewrite rcons_cons in H2.
+      elim/last_ind: q Hr H1 H2 H3.
+      + move => _ /inP H1 H2 H3.
+        pose proof Active_path_crc_ht H2 as [H4 H5].
+        have [H7 H8]: y = eoq.1.1 /\ z = eoq.1.2 by move: H3 => [H3 [H3' _]].
+        rewrite -H4 -H5 Active_path_crc in H2.
+        rewrite cats1 -H4 H8 Active_path_crc allL_rc. 
+        by apply/andP.
+      + move => q1 eoq1 _ _ /inP H2 H3 H4.
+        pose proof Active_path_crc_ht H3 as [H5 H6].
+        pose proof Active_path_crc_ht H4 as [H7 H8].
+        rewrite -H5-H6 Active_path_crc in H3.
+        rewrite -H7 -H8 Active_path_crc in H4.
+        rewrite -rcons_cons -{1}cat_rcons -/rcons -rcons_cat.
+        rewrite -H5 -H8 Active_path_crc allL_cat. 
+        apply/andP. rewrite allL_rc.
+        split. by apply/andP. by [].
+  Qed.
+
+  Lemma Active_path_iff: forall (p q: seq (T*T*O)) (eop eoq: T*T*O) (x y z: T),
+      ActiveOe W E (eop, eoq)
+      /\ Active_path W E (rcons p eop) x y 
+      /\ Active_path W E (eoq::q) y z
+      <-> Active_path W E (rcons p eop++ eoq::q) x z /\ y= eop.1.2.
+  Proof.
+    move => p q eop eoq x y z.
+    split => [ [H1 [H2 H3]] | [H1 H2]].
+    - pose proof Active_path_rc_hto H2 as [_ [H4 _]].
+      by split;[apply Active_path_cat with y | ].
+    - pose proof Active_path_split H1 as [H3 [H4 H5]].
+      pose proof H5 as [_ [H7 [H8 _]]].
+      by split;[ | split;[rewrite H2 | rewrite H2 H8]].
+  Qed.
+  
+  Lemma Active_path_cat': forall (p q: seq (T*T*O)) (x y z: T),
+      (exists (p' q': seq (T*T*O)), exists (eop eoq: T*T*O),
+          p = rcons p' eop /\ q = eoq::q' /\  ActiveOe W E (eop, eoq))
+      /\ Active_path W E p x y 
+      /\ Active_path W E q y z
+      -> Active_path W E (p++q) x z.
+  Proof.
+    move => p q x y z [[p1 [q1 [eop [eoq [H1 [H2 H3]]]]]] [H4 H5]].
+    by rewrite H1 H2; apply Active_path_cat with y; rewrite -H1 -H2.
+  Qed.
+
+  
+  Section Active_path_unique. 
+
+    (** * If there exists an active path from x to y there exists a walk from x to y
+        we just prove that when a variable is repeated twice we can shorten the
+        active path * to prove the general property, we have maybe to switch from
+        Type to eqType to use unique * in seq ?  *)
+    
+    Lemma Oedge_Fset:  forall (u v: T), Oedge E (u,v, P) /\ E.*#W v -> E.*#W u.
+    Proof.
+      move => u v [H1 H2]. 
+      move: H2 => [w [H2 H3]].
+      have H4: (E `;` E.* ) (u,w) by (exists v).
+      have H5:  (E.+ `<=` E.*) by apply clos_t_clos_rt.
+      have H6: E.* (u, w) by rewrite r_clos_rt_clos_t in H4 ;apply H5 in H4.
+      by (exists w).
+    Qed.
+  
+    Lemma Active_path_Fset:  forall (p: seq T) (x y: T),
+        Active_path W E ((x, y, P) :: Lifto (y :: p) P) x (last y p) 
+        /\ E.*#W (last y p) -> E.*#W x. 
+    Proof.
+      elim. 
+      - rewrite /last /Lifto /pair_o /Lift.
+        move => x y [[_ [_ H2]] H3].
+        by apply Oedge_Fset with y.
+      - move => z p Hr x y.
+        rewrite Lifto_c last_cons Active_path_cc. 
+        move => [[H1 H2] H3].
+        have H4: E.*#W y by apply Hr with z.
+        move: H2 => [H2 _].
+        by apply Oedge_Fset with y.
+    Qed.
+    
+    Lemma Active_path_Fset':  forall (p: seq T) (x y: T),
+        Active_path W E ((x, y, P) :: Lifto (y :: p) P) x (last y p) 
+        /\ E.*#W (last y p) -> E.*#W y. 
+    Proof.
+      elim. 
+      - rewrite /last /Lifto /pair_o /Lift.
+        by move => x y [[_ [_ H2]] H3].
+      - move => z p Hr x y.
+        rewrite Lifto_c last_cons Active_path_cc.
+        move => [[H1 H2] H3].
+        have H4: E.*#W z by apply Hr with y.
+        move: H2 => [_ [H2 _]].
+        by apply Oedge_Fset with z.
+    Qed.
+    
+    Lemma Active_path_shorten_L1: forall (p: seq (T*T*O)) (x y z u v w: T),
+        Active_path W E [::(x,y,P),(y,z,P) & (rcons (rcons p (u,v,N)) (v,w,N))] x w
+        -> exists (q: seq T), Active_path W E (Lifto [::x,y & q] P) x (last y q) 
+                        /\ (Fset E.* W) (last y q).
+    Proof. 
+      elim => [x y z u v w| ].
+      - rewrite -rcons_cons -rcons_cons -rcons_cons -rcons_cons Active_path_rcrc.
+        have -> : [:: (x, y, P); (y, z, P)] = rcons [:: (x, y, P)]  (y, z, P) by [].
+        rewrite Active_path_rcrc /head.
+        move => [[H1 [H'2 [H'3 [/ChrelO_eq H'4 H'5]]]] [H3 [H4 [_ H6]]]].
+        by (exists [::z]).
+      - move => [[t s] o] p Hr x y z u v w.
+        rewrite rcons_cons rcons_cons Active_path_cc.
+        elim: p Hr.
+        + move => Hr [H1 H2].
+          move: (H1); rewrite Active_path_cc => [[_ [_ [_ [/ChrelO_eq H3 _]]]]];
+                                               rewrite <- H3 in *.
+          elim: o H1 => [ /Hr [q [H1 H4]] | ].
+          ++ exists [:: z & q].
+             by rewrite Lifto_c Lifto_c Active_path_cc -Lifto_c /last_cons. 
+          ++ exists [::z].
+             move: H1 => /Active_path_cc [H1 [_ [_ [_ H7]]]]. 
+             move: (H2) => [H2' [H2'' _]].
+             rewrite !Lifto_c Active_path_cc -Lifto_c /last.
+             by split.
+        + move => [[a b] o2] p _ H1 H2.
+          move: (H2);rewrite Active_path_cc rcons_cons rcons_cons;
+            move => [[_ [_ [_ [/ChrelO_eq H6 _]]]] _].
+          rewrite <- H6 in *; clear H6.
+          elim: o H2 => [[H2 H3] | ].
+          ++ apply H1 in H2;move:H2 => [q H2].
+             exists [::z].
+             move: H2;rewrite Lifto_c => [[H2 H4]].
+             rewrite /Lifto /Lift /pair_o.
+             rewrite Active_path_cc last_cons /last.
+             move: (H3) => [H5 [H6 _]].
+             specialize Active_path_Fset' with q y z => H7.
+             by split;[split | apply H7].
+          ++ move => [H2 H3].
+             pose proof H2 as H5.
+             rewrite Active_path_cc in H2.
+             rewrite Active_path_crc in H2.
+             move: H2 => [H2 [_ [_ [_ H8 ]]]].
+             exists [::z];rewrite last_cons /last.
+             split. 
+             by rewrite /= allL0'.
+             by [].
+    Qed.
+    
+    Lemma Active_path_shorten_L2: forall (p: seq (T*T*O)) (x y z u w: T),
+        Active_path W E [::(x,y,P),(y,z,P) & (rcons (rcons p (u,y,N)) (y,w,N))] x w
+        -> E.*#W y. 
+    Proof. 
+      move => p x y z u w H1.
+      pose proof Active_path_shorten_L1 H1 as [q H2].
+      rewrite Lifto_c in H2.
+      by apply  Active_path_Fset' in H2.
+    Qed.
+
+    Lemma Active_path_shorten_L3: forall (p: seq (T*T*O)) (x y z u w: T),
+        Active_path W E [::(x,y,P),(y,z,P) & (rcons (rcons p (u,y,N)) (y,w,N))] x w
+        -> ActiveOe W E ((x,y,P), (y,w,N)).
+    Proof. 
+      move => p x y z u w H1.
+      move: (H1) => /Active_path_shorten_L2 H2.
+      pose proof Active_path_cc_a H1 as [H3 _].
+      move: (H1); rewrite -rcons_cons -rcons_cons -rcons_cons -rcons_cons. 
+      move => /Active_path_rcrc_a [_ [H4 _]].
+      by [].
+    Qed.
+    
+    (* the only complex case is (o1 o2 o3 o4)= ( P P N N) which was is treated 
+       in the previous lemmata *) 
+    Lemma Active_path_shorten: forall (p: seq (T*T*O)) (x y z u w: T) (o1 o2 o3 o4:O) ,
+        Active_path W E [::(x,y,o1),(y,z,o2) & (rcons (rcons p (u,y,o3)) (y,w,o4))] x w
+        -> ActiveOe W E ((x,y,o1), (y,w,o4)).
+    Proof. 
+      move => p x y z u w o1 o2 o3 o4 H1. 
+      move: (H1); rewrite -rcons_cons -rcons_cons -rcons_cons -rcons_cons. 
+      move => /Active_path_rcrc_a [_ [H2 [_ H3]]].
+      move: o1 o2 o3 o4 H1 H2 H3.
+      case; case; case; case;
+        move => H1 H2 H3;
+               pose proof Active_path_cc_a H1 as [H4 [_ [_ H5]]];
+               move: H5 => //= H5;move: H3 => //= H3.
+      by apply Active_path_shorten_L3 with p z u.
+    Qed.
+    
+  End Active_path_unique. 
+
+End Active_relation.
+
+Section Active. 
+  (** * The Active relation as a relation on TxT *)
+
+  Variables (T: Type). 
+
+  (* begin snippet Dseparated:: no-out *)  
+  Definition D_separated (W: set T) (E: relation T) (x y: T) := 
+    ~(exists (p: seq (T*T*O)), Active_path W E p x y).
+  (* end snippet Dseparated *)  
+
+  (* begin snippet Active:: no-out *)  
+  Definition Active (W: set T) (E: relation T) (x y: T) :=
+   (exists (p: seq (T*T*O)), Active_path W E p x y).
+  (* end snippet Active *)  
+
+  Lemma Deployment_to_Active_path:
+    forall (W: set T) (E: relation T) (p: seq T) (x y: T) (o:O),
+      p [\in] W.^c /\ allL (R_o E o) p x y 
+      <-> Active_path W E (Lifto (x::(rcons p y)) o) x y.
+  Proof.
+    split.
+    + elim: p x y => [x y [_ /allL0' /R_o' _] // | ]. 
+      move => x1 p _ x y. 
+      rewrite allset_consb allL_c. 
+      move => [ /andP [H2 H'2] /andP [/inP H3 H4]].
+      rewrite Lifto_crc Lifto_rcc Active_path_crc /=. 
+      elim: p x x1 H3 H2 H'2 H4 => [x x1 H3 /inP H1 _ /allL0' H4 // | ].  
+      ++ by rewrite allL0 /=; apply mem_set; split;case: o H3 H4 => /R_o' H3 /R_o' H4.
+      ++ move => z p H1 x1 x H3 /inP H2 /allset_cons [H4 H4'] /allL_c/andP [/inP H5 H6] /=. 
+         rewrite Lifto_c allL_c;apply /andP;split; last first. 
+         by apply: (H1 x z H5 _ H4' H6); apply mem_set. 
+         clear H1 H6;apply mem_set;rewrite ActiveOe_o /Oedge.
+         by case: o H3 H5 => /R_o' H3 /R_o' H5. 
+    + elim: p x y;
+        first by move => x y //= [_ [_ H]];
+                        split; elim: o H => H;[ | | apply /allL0'/R_o' | apply /allL0'/R_o'].
+      
+      move => z p H1 x y; rewrite Lift_o_cons;elim: p x y H1. 
+      move => x y H1 /Active_path_cc [H2 [H3 [H4 [H5 H6]]]]. 
+      elim: o H1 H2 H3 H4 H5 H6 => /= H1 H2 H3 H4 H5 H6.
+      rewrite andbT.
+      split. apply mem_set. by []. rewrite /allL /=.
+      by move: H3 => /inP ->;move: H4 => /inP ->.
+      rewrite andbT.
+      split. apply mem_set. by []. rewrite /allL /=.
+      by move: H3 => /inP ->;move: H4 => /inP ->.
+      (* size p >= 2 *)
+      move => t p _ x y H2;rewrite Lift_o_cons;move => /Active_path_cc [/H2 [H3 H5] H4].
+      split.
+        rewrite allset_cons andC. 
+          split;[ | move: H4 => [_ [_ [_ H4]]]].
+        by elim: o H2 H4 H5 => _ H4 H5.
+        by elim: o H2 H4 H5 => _ /= H4 H5.
+        rewrite allL_c H5 andbT.
+        by elim: o H2 H4 H5 => _ [/= /inP H4 _] _ /=.
+  Qed.
+  
+  Lemma Deployment_to_Active: forall (W: set T) (E: relation T) (p: seq T) (x y: T),
+      p [\in] W.^c /\ allL E p x y -> Active W E x y.
+  Proof.
+    move => W E p x y [H1 H2].
+    by exists (Lifto (x::(rcons p y)) P); apply Deployment_to_Active_path;split.
+  Qed.
+
+  Lemma Deployment_inv_to_Active: forall (W: set T) (E: relation T) (p: seq T) (x y: T),
+      p [\in] W.^c /\ allL E.-1 p x y -> Active W E x y.
+  Proof.
+    move => W E p x y [H1 H2].
+    by exists (Lifto (x::(rcons p y)) N); apply Deployment_to_Active_path;split.
+  Qed.
+
+End Active. 
+
+Section PathRel_Examples.
+  (** * Utilities *)
+  
+  Variables (T: Type) (E: relation T) (W: set T).
+
+  Lemma clos_t_to_paths_l : forall (x y: T),
+      (Δ_(W.^c) `;` E).+ (x, y) ->
+      (exists (p: seq T), (x::p) [\in] W.^c /\ allL E p x y
+                     /\ (x::p) [\in] ((Δ_(W.^c) `;` E).+)#_(y)).
+  Proof.
+    move => x y; rewrite {1}TCP'; move => [p /= H1]; exists p.
+    move: (H1) => /allL_WS_iff/andP [H2 H2'].
+    apply allL_All in H1;apply allset_cons in H1;move: H1=> [/inP H1 H1'].
+    by rewrite -allset_consb H1 H1' andbT.
+  Qed.
+  
+  Lemma clos_t_to_paths_r : forall (x y: T),
+      (E `;` Δ_(W.^c)).+ (x, y) ->
+      (exists (p: seq T), (rcons p y) [\in] W.^c /\ allL E p x y
+                     /\ (y::(rev p)) [\in] ((Δ_(W.^c) `;` E.-1).+)#_(x)).
+  Proof.
+    move => x y; rewrite {1}TCP'; move  => [p H1]; exists p.
+    rewrite allL_rev inverse_compose DeltaE_inverse /= in H1.
+    move: (H1) => /allL_WS_iff/andP /= [/andP [/inP H2 H3] H2'].
+    apply allL_All in H1;apply allset_cons in H1;move: H1=> [/inP /= H1 H1'].
+    by rewrite H1 H1' andbT allL_rev H2' allset_rcons allset_rev H3. 
+  Qed.
+  
+End PathRel_Examples.

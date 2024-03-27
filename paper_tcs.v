@@ -13,13 +13,12 @@
 From AAC_tactics Require Import AAC.
 
 Set Warnings "-parsing -coercions".
-From mathcomp Require Import all_ssreflect ssralg matrix finmap order ssrnum.
+From mathcomp Require Import all_ssreflect order.
 From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
 Set Warnings "parsing coercions".
 
-From RL Require Import  ssrel rel erel3 aacset paper_relations paper_csbr_rel
-  paper_tcs_facts.
+From RL Require Import  ssrel rel  aacset paper_relations paper_tcs_facts.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

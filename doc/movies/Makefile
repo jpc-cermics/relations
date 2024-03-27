@@ -6,9 +6,9 @@ include config.mk
 
 SNIPPETS = \
 	snippets/seq1/ActiveOe-n.tex \
-	snippets/erel3/Active-n.tex \
-	snippets/erel3/Dseparated-n.tex \
-	snippets/erel3/Aeop-n.tex \
+	snippets/seq1/Active-n.tex \
+	snippets/seq1/Dseparated-n.tex \
+	snippets/seq1/Aeop-n.tex \
 	snippets/seq1/allnotation-n.tex \
 	snippets/seq1/Chrel-n.tex \
 	snippets/seq1/DU-n.tex \
@@ -18,8 +18,7 @@ SNIPPETS = \
 	snippets/seq1/Oedge-n.tex \
 	snippets/seq1/TCP-n.tex \
 	snippets/seq1/Ugeone-n.tex \
-	snippets/paper_csbr/Lsevencsbr-n.tex \
-	snippets/paper_csbr_paths/dsepnota-n.tex \
+	snippets/paper_csbr/dsepnota-n.tex \
 	snippets/rel/Sone-n.tex \
 	snippets/rel/Stwo-n.tex \
 	snippets/rel/Sthree-n.tex \
@@ -55,6 +54,8 @@ SNIPPETS = \
 	snippets/seq1/allL-n.tex \
 	snippets/seq1/Atr-n.tex \
 	snippets/paper_relations/Aw-n.tex \
+	snippets/paper_csbr/theoremfive-n.tex \
+
 
 all: allstd allplus ../snippets.tex
 

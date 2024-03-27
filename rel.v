@@ -10,7 +10,7 @@
 (************************************************************************)
 
 Set Warnings "-parsing -coercions".
-From mathcomp Require Import all_ssreflect ssralg matrix finmap order ssrnum.
+From mathcomp Require Import all_ssreflect order. 
 From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
 Set Warnings "parsing coercions".
@@ -551,7 +551,10 @@ Section Foresets.
 
   Definition Fset (T:Type) (R: relation T) (Y: set T) : set T :=
     [set x | exists (y: T), R (x,y) /\ Y y].
-    
+
+  Definition Aset (T:Type) (R: relation T) (Y: set T) : set T :=
+    Fset R.-1 Y. 
+
 End Foresets.
 
 (* Foreset of Y for the relation R*)
@@ -739,7 +742,11 @@ Section Foreset_facts.
       exists y. split. exists y. split. by []. split. apply H. by []. by []. by [].
     - by move => [y [[z [H1 [_ <- ]]] H4]];(exists z). 
   Qed.
-
+  
+  Lemma Fset_t0: forall (x y:T) (R':relation T), R' (x, y) <-> R'#_(y) x. 
+  Proof.
+    by move => x y R'; split => [H1 | [z [H1 /= <-]]];[exists y |].
+  Qed.
   
   Lemma Fset_t1: forall (x y:T), R (x, y) -> R.+#_(y) x. 
   Proof.
@@ -770,6 +777,15 @@ Section Foreset_facts.
       R (y, z) -> ( (R.+)#_(y) `<=` (R.+)#_(z) ).
   Proof.
     move => y z H1 x H2. by apply Fset_t3 with y.
+  Qed.
+
+  Lemma Fset_t5: forall (y z:T), 
+      y \in (R.+)#_(z) -> ((R.+)#_(y) `<=` (R.+)#_(z) ).
+  Proof.
+    move => y z. 
+    rewrite inP -Fset_t0 => H1.
+    move => t; rewrite -2!Fset_t0 => H2. 
+    by apply t_trans with y.
   Qed.
 
 End Foreset_facts.

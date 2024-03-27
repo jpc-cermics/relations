@@ -45,7 +45,7 @@
   \begin{sentence}
     \begin{input}
       ~~\PY{k+kn}{Definition}~\PY{n+nf}{Active\PYZus{}path}\nl
-      ~~~~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{n}{seq}~\PY{n}{EO}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}\nl
+      ~~~~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{))}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}\nl
       ~~~~\PY{k+kr}{match}~\PY{n}{p}~\PY{k+kr}{with}~\nl
       ~~~~\PY{o}{|}~\PY{o}{[::]}~\PY{o}{=\PYZgt{}}~\PY{n}{x}~\PY{o}{=}~\PY{n}{y}~\nl
       ~~~~\PY{o}{|}~\PY{o}{[::}\PY{n}{eo1}\PY{o}{]}~\PY{o}{=\PYZgt{}}~\PY{n}{eo1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}~\PY{o}{=}~\PY{n}{x}~\PY{o}{\(\,\wedge\,\)}~~\PY{n}{eo1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}~\PY{o}{=}~\PY{n}{y}~\PY{o}{\(\,\wedge\,\)}~~\PY{n}{Oedge}~\PY{n}{E}~\PY{n}{eo1}~\nl
@@ -151,39 +151,6 @@
       ~~\PY{k+kn}{Definition}~\PY{n+nf}{U\PYZus{}ge\PYZus{}1}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):=}\nl
       ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{sto}~\PY{o}{|}~\PY{n}{sto}~\([{\in}]\)~\PY{o}{(}\PY{n}{Oedge}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~~\PY{n}{size}\PY{o}{(}\PY{n}{sto}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{l+m+mi}{0}~\PY{o}{\(\,\wedge\,\)}~\nl
       ~~~~~~~~~~~~~~~~~\PY{o}{(}\PY{n}{Lift}~\PY{n}{sto}\PY{o}{)}~\([{\in}]\)~\PY{n}{ChrelO}\PY{o}{].}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetLsevencsbr}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Lemma}~~\PY{n+nf}{L7\PYZus{}csbr}\PY{o}{:}\nl
-      ~~~~\PY{o}{(}\PY{n}{Emw}\PY{o}{.*}\PY{o}{;}\PY{n}{Ew}\PY{o}{.*}~\PY{o}{)}~\PY{o}{=}~\PY{o}{(\PYZsq{}}\PY{n}{\(\Delta\)}~\PY{o}{\(\cup\)}~\PY{o}{(}\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}\PY{o}{;}\PY{n}{Bw}\PY{o}{)}~\PY{o}{\(\cup\)}~\PY{o}{(}\PY{n}{Bmw}\PY{o}{;}\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{))}~\PY{o}{\(\cup\)}~\PY{n}{Kw}\PY{o}{)}\nl
-      ~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{Cw}\PY{o}{;}\PY{o}{(}\PY{n}{Emw}~\PY{o}{.*}~\PY{o}{)}\PY{o}{;}\PY{o}{(}\PY{n}{Ew}~\PY{o}{.*}~\PY{o}{)}~\PY{o}{=}~\PY{n}{Cw}\PY{o}{;}\PY{o}{(\PYZsq{}}\PY{n}{\(\Delta\)}~\PY{o}{\(\cup\)}~\PY{n}{Bmw}\PY{o}{;}\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}~\PY{o}{\(\cup\)}~\PY{n}{Kw}\PY{o}{)}\nl
-      ~~~~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Cw}\PY{o}{;}\PY{o}{(}\PY{n}{Emw}~\PY{o}{.*}~\PY{o}{)}\PY{o}{;}\PY{o}{(}\PY{n}{Ew}~\PY{o}{.*}~\PY{o}{))}\PY{o}{;}\PY{n}{Cw}~~\PY{o}{=}~\PY{n}{Cw}~\nl
-      ~~~~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Cw}\PY{o}{;}\PY{o}{(}\PY{n}{Emw}~\PY{o}{.*}~\PY{o}{)}\PY{o}{;}\PY{o}{(}\PY{n}{Ew}~\PY{o}{.*}~\PY{o}{))}\PY{o}{;}\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}~~\PY{o}{=}~\PY{n}{Cw}\PY{o}{;}\PY{o}{(}\PY{n}{Bmw}~\PY{o}{\(\cup\)}~\PY{n}{Kw}\PY{o}{)}~\PY{o}{;}\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}\nl
-      ~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}\PY{o}{;}\PY{o}{(}\PY{n}{Emw}\PY{o}{.*}\PY{o}{;}\PY{n}{Ew}\PY{o}{.*}~\PY{o}{)}\PY{o}{;}\PY{n}{Cw}~\PY{o}{=}~\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{W}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}\PY{o}{;}\PY{o}{(}\PY{n}{Bw}~\PY{o}{\(\cup\)}~\PY{n}{Kw}\PY{o}{)}\PY{o}{;}\PY{n}{Cw}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Proof}\PY{o}{.}~
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{n+nb}{apply}~\PY{n}{L7}\PY{o}{.}~
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kn}{Qed}\PY{o}{.}
     \end{input}
   \end{sentence}
 }
@@ -566,7 +533,7 @@
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Pe\PYZus{}UnLift}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{spt}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)),}~\PY{n}{spt}~\(\in\)~\PY{n}{I}~\PY{o}{\(\rightarrow\)}~\PY{n}{Pe}~\PY{o}{(}\PY{n}{UnLift}~\PY{n}{spt}~\PY{n}{ptv}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)}~\PY{o}{=}~\PY{n}{Epe}~\PY{n}{spt}\PY{o}{.}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Pe\PYZus{}UnLift}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{spt}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)),}~\PY{n}{spt}~\(\in\)~\PY{n}{I}\PY{o}{\(\rightarrow\)}\PY{n}{Pe}~\PY{o}{(}\PY{n}{UnLift}~\PY{n}{spt}~\PY{n}{ptv}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)=}\PY{n}{Epe}~\PY{n}{spt}\PY{o}{.}
     \end{input}
   \end{sentence}
 }
@@ -610,7 +577,7 @@
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Theorem}~\PY{n+nf}{Active\PYZus{}eq}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}\PY{n}{T}\PY{o}{)}~\PY{n+nv}{stto}\PY{o}{,}\nl
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Active\PYZus{}eq}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}\PY{n}{T}\PY{o}{)}~\PY{n+nv}{stto}\PY{o}{,}\nl
       ~~~~~~\PY{o}{((}\PY{n}{x}\PY{o}{=}\PY{n}{y}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{stto}~\PY{o}{=}~\PY{o}{[::])}~\PY{o}{\(\,\vee\,\)}~~\PY{n}{stto}~\(\in\)~\PY{o}{(}\PY{n}{D\PYZus{}U\PYZus{}a1}~\PY{n}{E}~\PY{n}{W}~\PY{n}{x}~\PY{n}{y}\PY{o}{))}\nl
       ~~~~~~\PY{o}{\(\leftrightarrow\)}~\PY{n}{Active\PYZus{}path}~\PY{n}{W}~\PY{n}{E}~\PY{n}{stto}~\PY{n}{x}~\PY{n}{y}\PY{o}{.}
     \end{input}
@@ -704,6 +671,16 @@
   \begin{sentence}
     \begin{input}
       ~~\PY{k+kn}{Definition}~\PY{n+nf}{Aw}~\PY{o}{:=}~\PY{o}{\PYZsq{}}\PY{n}{\(\Delta\)}~\PY{o}{\(\cup\)}~\PY{n}{Bw}~\PY{o}{\(\cup\)}~\PY{n}{Bmw}~\PY{o}{\(\cup\)}~\PY{n}{Kw}~\PY{o}{\(\cup\)}~\PY{n}{Dw}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippettheoremfive}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Theorem}~\PY{n+nf}{Th5}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{),}~\PY{o}{(}~\PY{n}{x}~\PY{o}{[\(\bot\)}\PY{n}{d}\PY{o}{]}~\PY{n}{y}~\PY{o}{|}~\PY{n}{W}~\PY{o}{)}~\PY{o}{\(\leftrightarrow\)}~\PY{o}{\PYZti{}}~\PY{n}{Aw}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{).}
     \end{input}
   \end{sentence}
 }
