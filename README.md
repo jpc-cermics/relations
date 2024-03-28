@@ -1,4 +1,4 @@
-# coq-dpdgraph
+# binary relations and extended oriented graphs
 
 Coq code used to serve as companion code for the followind papers
 - [latest distributed version](https://github.com/coq-community/coq-dpdgraph/releases)
