@@ -35,6 +35,8 @@ You can:
 
  make
 
+ The makefile will just call dune build
+ 
  
     
 
