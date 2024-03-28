@@ -1,8 +1,8 @@
 # binary relations and extended oriented graphs
 
 Coq code used to serve as companion code for the followind papers
-- [latest distributed version](https://github.com/coq-community/coq-dpdgraph/releases)
-- [latest distributed version](https://github.com/coq-community/coq-dpdgraph/releases)
+- [Conditional Separation as a Binary Relation. A Coq Assisted Proof](https://hal.science/hal-03315809v2)
+- [Topological Conditional Separation](https://hal.science/hal-03315811)
 
 ## Meta
 
@@ -12,9 +12,13 @@ Coq code used to serve as companion code for the followind papers
 - Compatible Coq versions: 8.18.0
 - Additional dependencies:
   - dune
+  - coq-aac-tactics
+  - coq-mathcomp-ssreflect
 - Related publication(s): see above
 
 ## What's inside?
+
+- 
 
 ## How to get it
 
