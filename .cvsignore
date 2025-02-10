@@ -6,5 +6,9 @@ _build
 imp*.ml*
 .Makefile.coq.d
 Makefile.coq*
+graph*.dpd
+graph*.dot
+graph*.svg
+graph*.pdf
 TAGS
 auto

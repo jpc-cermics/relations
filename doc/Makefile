@@ -4,7 +4,7 @@ MAKEFLAGS += --no-print-directory
 PDF= \
 	allsnippets.pdf \
 
-all: movies_ $(PDF)
+all:: movies_ $(PDF)
 
 movies_:
 	@+${MAKE} -C movies all
@@ -30,5 +30,4 @@ distclean: clean
 
 ignore:
 	svn propset svn:ignore -F .cvsignore .
-
 

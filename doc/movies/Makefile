@@ -55,7 +55,15 @@ SNIPPETS = \
 	snippets/seq1/Atr-n.tex \
 	snippets/paper_relations/Aw-n.tex \
 	snippets/paper_csbr/theoremfive-n.tex \
-
+	snippets/mono/RelIndep-n.tex \
+	snippets/mono/leset-n.tex \
+	snippets/mono/Mono-n.tex \
+	snippets/mono/ScalP-n.tex \
+	snippets/mono/Scal-n.tex \
+	snippets/mono/Rloop-n.tex \
+	snippets/mono/Assumptions-n.tex \
+	snippets/mono/RloopErp-n.tex \
+	snippets/mono/Scalnotempty-n.tex \
 
 all: allstd allplus ../snippets.tex
 
@@ -103,6 +111,7 @@ SED= \
 	-e 's/ \\PY{k+kn}{Notation}/ ~~\\PY{k+kn}{Notation}/g' \
 	-e 's/\\begin{alectryon}/%/g' \
 	-e 's/\\end{alectryon}//g' \
+	-e 's+{\\PYZti{}+{\\(\\neg\\)+g' \
 
 allplus: $(SNIPPETS)
 
