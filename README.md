@@ -26,7 +26,7 @@ Coq code used to serve as companion code for the followind papers
 - seq1.v: edge, extended oriented paths and active extended oriented paths
 - rel.v: binary relations
 - ssrel.v: transitive closure (mathcomp/ssreflect version of existing lib/coq/theories/Relations)
-
+- doc/ : repository used to produce snippets of code 
 ## How to get it
 
 You can:
