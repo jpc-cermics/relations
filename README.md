@@ -9,11 +9,12 @@ Coq code used to serve as companion code for the followind papers
 - Author(s):
   - Jean-Philippe Chancelier
 - License: see LICENCE file
-- Compatible Coq versions: 8.18.0
+- Compatible Coq versions: 8.20.1
 - Additional dependencies:
   - dune
   - coq-aac-tactics
   - coq-mathcomp-ssreflect
+  - coq-mathcomp-classical
 - Related publication(s): see above
 
 ## What's inside?
