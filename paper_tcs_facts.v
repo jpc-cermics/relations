@@ -482,7 +482,7 @@ Section Tcs.
       pose proof lem (X z) as [Hz | Hz].
       - (exists z; exists y'). split. by rewrite in_setE. by [].
       - have H8: W z. by move: H7 => [u [[v [[H7 _] _]] _]].
-        have H9: Y z.  rewrite H3 -in_setE in_setD. rewrite -notin_set in Hz. 
+        have H9: Y z.  rewrite H3 -in_setE in_setD. rewrite -notin_setE in Hz. 
         rewrite -in_setE in H8. by rewrite H8 Hz.
         have H10: let Rw:=(Δ_(W) `;` R `;` Δ_(W))in exists x' y' : T, x' \in X /\ y' \in Y /\ Rw (x', y').
         rewrite -in_setE in H9. by apply H0 with y z.
@@ -758,19 +758,19 @@ Section Tcs.
           by rewrite -notempty_exists; exists u;rewrite in_setE; split.
         by  rewrite -empty_iff  in H6.
       - have H21: w_y \in W''
-            by rewrite H2 in_setD H13 notin_set; move => H21; by rewrite -in_setE in H21. 
+            by rewrite H2 in_setD H13 notin_setE; move => H21; by rewrite -in_setE in H21. 
         have H23: (exists w' w'' : T, w' \in W' /\ w'' \in W'' /\ Cw (w', w''))
           by (exists w_x;exists w_y).
         by [].
       - have H21: w_x \in W''
-            by rewrite H2 in_setD H12 notin_set; move => H21; by rewrite -in_setE in H21. 
+            by rewrite H2 in_setD H12 notin_setE; move => H21; by rewrite -in_setE in H21. 
         have H23: (exists w' w'' : T, w' \in W' /\ w'' \in W'' /\ Cw (w', w''))
           by (exists w_y;exists w_x; split;[ |split;[ |apply Cw_sym]]).
         by [].
       - have H21: Clos(Λ `|` W' | E,W) t
             by rewrite Clos_to_singleton; exists λ; split;[left|].
         have H23: w_x \in W''
-            by rewrite H2 in_setD H12 notin_set; move => H24; by rewrite -in_setE in H24.
+            by rewrite H2 in_setD H12 notin_setE; move => H24; by rewrite -in_setE in H24.
         have H24: Clos(Γ `|` W'' | E,W) t
           by  rewrite Clos_to_singleton;exists w_x; split;[right;rewrite -in_setE|].
         have H25: Clos(Λ `|` W'|E,W) `&` Clos(Γ `|` W''|E,W) != set0

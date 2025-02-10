@@ -37,6 +37,7 @@ Section Relation_Definition.
   Definition transitive : Prop := forall x y z:T, R (x,y) -> R (y,z) -> R (x,z).
   Definition symmetric : Prop := forall x y:T, R (x,y) -> R (y,x).
   Definition antisymmetric : Prop := forall x y:T, R (x,y) -> R (y,x) -> x = y.
+  Definition irreflexive : Prop := forall x:T, ~ R (x,x).
   
   Record preorder : Prop :=
     { preord_refl : reflexive; preord_trans : transitive}.

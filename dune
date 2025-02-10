@@ -1,5 +1,5 @@
 (coq.theory
  (name RL)
-  (theories elpi HB mathcomp.ssreflect mathcomp AAC_tactics);; dpdgraph)
+  (theories elpi_elpi elpi HB mathcomp.ssreflect mathcomp AAC_tactics dpdgraph)
  )
  

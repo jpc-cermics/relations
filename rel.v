@@ -36,7 +36,7 @@ Reserved Notation "R `;` U" (at level 51, left associativity, format "R `;` U").
 Section Sets_facts.
 
   Variables (T:Type).
-
+  
   (* usefull to ease moves with views*)
   Lemma inP: forall (x:T) (X: set T), x \in X <-> X x. 
   Proof.
@@ -47,7 +47,7 @@ Section Sets_facts.
   Proof.
     by move => X; rewrite set0P;split;move => [z /inP H1]; exists z. 
   Qed.
-
+  
   (* begin snippet Sone:: no-out *)  
   Lemma empty_notexists: forall (X: set T), X = set0 <-> ~ (exists z, z \in X).
   Proof.
@@ -564,6 +564,13 @@ Notation "R # Y" := (Fset R Y)
 (* Foreset of {y} for the relation R*)
 Notation "R #_( y )" := (Fset R ([set y]))
                           (at level 3, no associativity, format "R #_( y )").
+
+Notation "Y :# R" := (Aset R Y) 
+                       (at level 3, no associativity, format "Y :# R").
+
+(* Foreset of {y} for the relation R*)
+Notation " y _:# R" := (Aset R ([set y]))
+                          (at level 3, no associativity, format " y _:# R").
 
 (* Closure of Y for the relation R and subset W *)
 Notation "Clos( Y | R , W )" :=  (Fset ((Δ_(W.^c) `;` R).* ) Y)
@@ -1218,7 +1225,7 @@ Section Clos_Fset.
 End Clos_Fset.
 
 Section Relation_restricted.
-
+  (** * XXX to be done with sigma_types *)
   Definition Restrict (T:Type) (R: relation T) (X: set T) := 
     [ set x | X x.1 /\ X x.2 /\ R x].
   

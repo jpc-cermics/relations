@@ -99,7 +99,7 @@ Section Seq_utilities.
       1 < size s -> exists (s':seq T) (x y:T), s = (rcons (rcons s' x) y).
   Proof.
     move => s H1.
-    have H2: 0 < size s by apply leq_ltn_trans with 1.  
+    have H2: 0 < size s by apply: (leq_ltn_trans _ H1).
     pose proof seq_rc H2 as [q [x H3]].
     have H4: 0 < size q by rewrite H3 size_rcons ltnS in H1.
     pose proof seq_rc H4 as [r [z H5]].
@@ -110,7 +110,7 @@ Section Seq_utilities.
       1 < size s -> exists (s':seq T) (x y:T), s = x::(rcons s' y).
   Proof.
     move => s H1.
-    have H2: 0 < size s by apply leq_ltn_trans with 1.  
+    have H2: 0 < size s by apply: leq_ltn_trans _ H1.
     pose proof seq_rc H2 as [r [y H3]].
     have H4: 0 < size r by rewrite H3 size_rcons ltnS in H1.
     pose proof seq_c H4 as [q [x H5]].
@@ -121,7 +121,7 @@ Section Seq_utilities.
       1 < size s -> exists (s':seq T) (x y:T), s = [::x,y &s'].
   Proof.
     move => s H1.
-    have H2: 0 < size s by apply leq_ltn_trans with 1.  
+    have H2: 0 < size s by apply: leq_ltn_trans _ H1.
     pose proof seq_c H2 as [r [y H3]].
     have H4: 0 < size r by rewrite H3 ltnS in H1.
     pose proof seq_c H4 as [q [x H5]].
@@ -132,8 +132,7 @@ Section Seq_utilities.
       size s = 1 <-> exists (x:T), s = [::x].
   Proof.
     split; last by move => [x H1];rewrite H1.
-    elim:s => [// | x s H1 /= H2].
-    by (have -> : s = [::] by apply size0nil; apply succn_inj in H2);(exists x).
+    by elim:s => [// | x s _ /= /succn_inj/size0nil ->];exists x.
   Qed. 
   
   Lemma seq_rcrc0: forall (s: seq T), 
@@ -153,10 +152,21 @@ Section Seq_utilities.
     elim => [| n Hn s H1].
     + elim => [_ // | t s H1 /= /succn_inj/size0nil H2]. 
       by rewrite H2;exists [::], t.
-    + have H2: size(s) > 0.  by rewrite H1. 
+    + have H2: size(s) > 0  by rewrite H1. 
       pose proof (seq_c H2) as [q [x H3]].
-      rewrite H3 /= in H1. apply succn_inj in H1.
+      move: H1;rewrite H3 /= => /succn_inj H1.
       by exists q, x. 
+  Qed.
+  
+  Lemma seq_rcn: forall (n:nat) (s: seq T), 
+      size s = n.+1 -> exists s',exists x, s = rcons s' x /\ size(s') = n.
+  Proof.
+    elim => [| n Hn s H1].
+    + by elim => [_ // | t s _ /= /succn_inj/size0nil ->]; exists [::], t.
+    + have H2: size(s) > 0  by rewrite H1. 
+      pose proof (seq_rc H2) as [s' [x H3]].
+      move: H1; rewrite H3 size_rcons => /succn_inj H1.
+      by (exists s', x).
   Qed.
   
   Lemma seq_cases: forall (s: seq T), 
@@ -1586,7 +1596,7 @@ Section pair_lift1.
       A_tr_eo W E = ActiveOe W E.
   Proof.
     move => W E.
-    rewrite /A_tr_eo /A_tr /ActiveOe /setI /setM /mkset predeqE => [[eo1 eo2]].
+    rewrite /A_tr_eo /A_tr /ActiveOe /setI /setX /mkset predeqE => [[eo1 eo2]].
     by split => [[[H1 H2] [H3 H4]] | [H1 [H2 [H3 H4]]]]. 
   Qed.
   
@@ -1639,7 +1649,7 @@ Section pair_lift1.
       (((Oedge E)`*`(Oedge E))`&`(A_tr W E)) = (ActiveOe W E).
   Proof.
     move => W E.
-    rewrite /A_tr /ActiveOe /setI /setM /mkset predeqE /= => [[tto1 tto2]].
+    rewrite /A_tr /ActiveOe /setI /setX /mkset predeqE /= => [[tto1 tto2]].
     by split => [[[H1 H2] [H3 H4]] | [H1 [H2 [H3 H4]]]].
   Qed.
 
