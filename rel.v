@@ -29,7 +29,8 @@ Notation "R .+" := (clos_t R)
                      (at level 2, left associativity, format "R .+").
 Notation "R .*" := (clos_rt R) 
                      (at level 2, left associativity, format "R .*").
-Reserved Notation "R .-1" (at level 2, left associativity, format "R .-1"). 
+
+(* Reserved Notation "R .-1" (at level 2, left associativity, format "R .-1").  *)
 
 Reserved Notation "R `;` U" (at level 51, left associativity, format "R `;` U").
 
