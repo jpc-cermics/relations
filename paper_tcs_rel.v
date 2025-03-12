@@ -37,7 +37,7 @@ Section Tcs_Lemma7.
       by rewrite /Bw -composeA -/Ew r_clos_rt_clos_t.
     have L9_E25a2 : Emw.+ = Bmw `;` Δ_(W.^c)
       by rewrite -inverse_clos_t L9_E25a1 inverse_compose -/Bmw DeltaE_inverse.
-    by rewrite L1 !composeDr !composeDl !Delta_idem_r !Delta_idem_l -unionA -E9e;
+    by rewrite L1 !composeDr !composeDl !Delta_idem_r !Delta_idem_l setUA -E9e;
     rewrite -L9_E25a2 -L9_E25a1.
   Qed.
 
@@ -85,10 +85,10 @@ Section Tcs_Lemma7.
     move => R H1 H2.
     rewrite composeDr !composeDl DeltaE_compose_same -H2.
     rewrite L9_E25c2 //. 
-    rewrite unionA -[in (R `|` _)]unionA [in (R `|` _)]unionC.
-    rewrite [in (R .+ `|` R `|` R .+ `;` R)]unionA.
+    rewrite -setUA [in (R `|` _)]setUA [in (R `|` _)]setUC.
+    rewrite -[in (R .+ `|` R `|` R .+ `;` R)]setUA.
     rewrite clos_t_decomp_rt_r. 
-    by rewrite union_RR.
+    by rewrite setUid.
   Qed.
 
   Lemma L9_E25c5 : forall (R: relation T), 
@@ -97,9 +97,9 @@ Section Tcs_Lemma7.
     move => R H1 H2.
     rewrite composeDr !composeDl DeltaE_compose_same.
     rewrite L9_E25c2 // L9_E25c3 //.
-    by rewrite clos_t_decomp_2 unionA union_RR.
+    by rewrite clos_t_decomp_2 -setUA setUid.
   Qed.
-
+  
   Lemma L9_E25c : (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw. 
   Proof.
     have H1: DKD `;`  Δ_(W) = DKD
@@ -114,7 +114,7 @@ Section Tcs_Lemma7.
     rewrite DeltaE_compose_same.
     rewrite -[in  Δ_(W) `;` (Kw `;`  Δ_(W))]composeA.
     rewrite /Cw -/DKD. 
-    rewrite [in (DKD .+ `|`  Δ_(W))]unionC.
+    rewrite [in (DKD .+ `|`  Δ_(W))]setUC.
     rewrite -composeA. 
     by rewrite L9_E25c4; first by rewrite L9_E25c5. 
   Qed.

@@ -209,11 +209,11 @@ Section CwCw_s_facts.
     have H1: ((D X).+ `;` (D X).+ `|` (D X).+ `|` ((D X).+ `|` Δ_(X)))
              = ((D X).+ `;` (D X).+ `|` ((D X).+ `|` (D X).+) `|` Δ_(X))
       by aac_reflexivity.
-    rewrite H1 union_RR.
+    rewrite H1 setUid.
     have H2: forall (T: relation T), ( T.+ `;` T.+ `<=` T.+)
         by move => T [x y] [z [/= H3 H4]];apply t_trans with z.
     have H3: ((D X).+ `;` (D X).+ `|` (D X).+ = (D X).+)
-      by rewrite unionC; apply union_inc_eq.
+      by rewrite setUC; apply setUidPl.
     by rewrite H3.
   Qed.
   
@@ -413,7 +413,7 @@ Section Aw_facts.
   Lemma E_inc_Aw: E `<=` Aw.
   Proof.
     have H1: Aw = Bw `|` ('Δ `|` Bmw `|` Kw `|` Dw) by rewrite /Aw;aac_reflexivity.
-    have H2: Bw `<=` Aw by rewrite H1;apply union_containsl.
+    have H2: Bw `<=` Aw by rewrite H1;apply subsetUl.
     pose proof E_incl_Bw as H3.
     by apply subset_trans with Bw.
   Qed.
@@ -421,7 +421,7 @@ Section Aw_facts.
   Lemma Einv_inc_Aw: E.-1 `<=` Aw.
   Proof.
     have H1: Aw = Bmw `|` ('Δ `|` Bw `|` Kw `|` Dw) by rewrite /Aw;aac_reflexivity.
-    have H2: Bmw `<=` Aw by rewrite H1;apply union_containsl.
+    have H2: Bmw `<=` Aw by rewrite H1;apply subsetUl.
     pose proof Einv_inc_Bmw as H3.
     by apply subset_trans with Bmw.
   Qed.
@@ -434,7 +434,7 @@ Section Aw_s_facts.
   Proof.
     have H1: Aw_s = Bw `|` ( 'Δ `|` Bmw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` (Bmw `|` Kw))
       by rewrite /Aw_s;aac_reflexivity.     
-    have H2: Bw `<=` Aw_s by rewrite H1;apply union_containsl.
+    have H2: Bw `<=` Aw_s by rewrite H1;apply subsetUl.
     pose proof E_incl_Bw as H3.
     by apply subset_trans with Bw.
   Qed.
@@ -443,7 +443,7 @@ Section Aw_s_facts.
   Proof.
     have H1: Aw_s = Bmw `|` ( 'Δ `|` Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` (Bmw `|` Kw))
       by rewrite /Aw_s;aac_reflexivity.
-    have H2: Bmw `<=` Aw_s by rewrite H1;apply union_containsl.
+    have H2: Bmw `<=` Aw_s by rewrite H1;apply subsetUl.
     pose proof Einv_inc_Bmw as H3.
     by apply subset_trans with Bmw.
   Qed.
@@ -464,7 +464,7 @@ Section Aw_sp_facts.
     have H5: E.-1 `;` Δ_(W.^c) `;` E `<=`  Kw
       by apply subset_trans with (E.-1 `;` Δ_(W.^c) `;` Bw).
     have H6: Kw `<=` Aw_sp
-      by rewrite /Aw_sp; rewrite unionA unionC unionA.
+      by rewrite /Aw_sp; rewrite -setUA setUC -setUA.
     
     by apply subset_trans with Kw.
   Qed.
@@ -473,7 +473,7 @@ Section Aw_sp_facts.
   Proof.
     have H1: E `;` Δ_(W.^c) `;` E `<=` Bw by apply EDwE_in_Bw.
     have H2: Bw `<=` Aw_sp 
-      by rewrite /Aw_sp unionA;apply union_containsl.
+      by rewrite /Aw_sp -setUA;apply subsetUl.
     
     by apply subset_trans with Bw.
 
@@ -494,16 +494,16 @@ Section Aw_sm_facts.
       by apply composer_inc; apply composer_inc.
     have H5: E `;` Δ_(W_s) `;` E.-1 `<=` Bw `;` Δ_(W_s) `;` Bmw
       by apply subset_trans with (E `;` Δ_(W_s) `;` Bmw).
-    have H'1: Δ_(W_s) `<=` Cw_s by apply union_containsr.
+    have H'1: Δ_(W_s) `<=` Cw_s by apply subsetUr.
     have H'2: Δ_(W_s) `;` Bmw `<=` Cw_s `;` Bmw by apply composer_inc.
     have H'3: Bw `;` Δ_(W_s) `;` Bmw `<=` Bw `;` Cw_s `;` Bmw
       by rewrite composeA composeA; apply compose_inc.
     have H'4: Bw `;` Cw_s `;` Bmw `<=` (Bw `|` Kw) `;` Cw_s `;` Bmw
-      by apply composer_inc;apply composer_inc;apply union_containsl.
+      by apply composer_inc;apply composer_inc;apply subsetUl.
     have H'5: Bw `;` Δ_(W_s) `;` Bmw `<=` (Bw `|` Kw) `;` Cw_s `;` Bmw
       by apply subset_trans with (Bw `;` Cw_s `;` Bmw).
     have H'6: (Bw `|` Kw) `;` Cw_s `;` Bmw `<=` Bmw `|` ((Bw `|` Kw) `;` Cw_s `;` Bmw)
-      by apply union_containsr.
+      by apply subsetUr.
     have H'7: Bw `;` Δ_(W_s) `;` Bmw `<=` Aw_sm
       by rewrite /Aw_sm;apply subset_trans with ((Bw `|` Kw) `;` Cw_s `;` Bmw).
     by apply subset_trans with (Bw `;` Δ_(W_s) `;` Bmw).
@@ -515,7 +515,7 @@ Section Aw_sm_facts.
     rewrite composeA -DeltaE_inverse 
             -[Δ_(W.^c).-1 `;` E.-1]inverse_compose -inverse_compose.
     by apply inverse_inc; apply EDwE_in_Bw.
-    have H2: Bmw `<=` Aw_sm by apply union_containsl.
+    have H2: Bmw `<=` Aw_sm by apply subsetUl.
     by apply  subset_trans with Bmw.
   Qed.
 
@@ -546,18 +546,18 @@ Section Aw_sp_sm_facts.
     pose proof Bw_ends1 as H1.
     pose proof Kw_ends1 as H2.
     have H3: (Bw `;` Ew `|` Kw `;` Ew `<=` Bw `;` Ew `|` Kw)
-      by apply union_inc_l.
+      by apply setUS.
     have H4: (Bw `;` Ew `|` Kw `<=` Bw `|` Kw)
-      by apply union_inc_r.
+      by apply setSU.
     have H5: (Bw `;` Ew `|` Kw `;` Ew `<=` Bw `|` Kw)
       by apply subset_trans with (Bw `;` Ew `|` Kw).
     have H6: (Bw `;` Ew `|` Kw `;` Ew 
                 `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew `<=` Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew)
-      by apply union_inc_r.
+      by apply setSU.
     have H7: ((Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew `<=` (Bw `|` Kw) `;` Cw_s `;` Kw)
       by rewrite composeA; apply compose_inc.
     have H8: (Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew `<=` Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw).
-    by apply union_inc_l.
+    by apply setUS.
     
     rewrite /Aw_sp. 
     rewrite composeDr [((Bw `|` Kw) `;` Ew)]composeDr.
@@ -584,9 +584,9 @@ Section Aw_sp_sm_facts.
     rewrite -/S.
     rewrite composeDr.
     have H2: (Bmw `;` R `|` S `;` Bmw `;` R `<=` Bmw `|` S `;` Bmw `;` R)
-      by apply union_inc_r.
+      by apply setSU. 
     have H3: (Bmw `|` S `;` Bmw `;` R `<=` Bmw `|` S `;` Bmw)
-      by apply union_inc_l; rewrite composeA; apply compose_inc.
+      by apply setUS; rewrite composeA; apply compose_inc.
     by apply subset_trans with (Bmw `|` S `;` Bmw `;` R).
   Qed.
 

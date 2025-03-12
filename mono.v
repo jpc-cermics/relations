@@ -243,7 +243,7 @@ Section Paper.
   Lemma Scal_not_empty: exists v, Scal [set v].
   (* end snippet Scalnotempty *)
   Proof.
-    have H2': Er.+ `<=` Mono by apply:  union_containsr.
+    have H2': Er.+ `<=` Mono by apply:  subsetUr.
     move: A2 => [v H1]; exists v.
     split;first by rewrite /RelIndep;move => x y /inP /= -> /inP /= ->.
     split;first by move => t [y [/= H3 H4]];move: H3; rewrite H4 /= => /H1/H2' H3;exists v.
@@ -271,7 +271,7 @@ Section Paper.
   Proof. 
     move => [A Ha] [B Hb] H1 H2.
     move: (Ha) (Hb) => [Ha' Ha''] [Hb' Hb''].
-    have H3: Eb.+ `<=` Mono by apply: union_containsl.
+    have H3: Eb.+ `<=` Mono by apply: subsetUl.
     have H4: transitive Eb.+ by apply: t_trans. 
     move: (le_antisym H4 H3 Ha' Hb' H1 H2) => H5.
     subst A. (** why I cannot use rewrite *)

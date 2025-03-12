@@ -103,7 +103,7 @@ Section Tcs.
       have H7: (Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W))  (w1', w2') by rewrite -Kw_W'.
       by move: H7 => [[z H7] | H7] //.
     - have H5:  (Δ_(W) `|` (Δ_(W) `;` Kw `;` Δ_(W)))  (w1', w2')
-        by apply union_containsr.
+        by apply subsetUr.
       have H6: (Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W)) (w1', w2') by rewrite Kw_W'.
       have H7: (Emw.* `;` Ew.* ) (w1', w2') by apply R_restrict in H6.
       by rewrite -Clos_Intersect_eq in H7.
@@ -119,7 +119,7 @@ Section Tcs.
   Proof.
     have H1: (Closure_intersectW).+ `<=` (Δ_(W) `;` Kw `;` Δ_(W)).+ 
       by apply clos_t_inc; apply Clos_Intersect_W_inc.
-    have H2: (Δ_(W) `;` Kw `;` Δ_(W)).+ `<=` Cw by apply union_containsl.
+    have H2: (Δ_(W) `;` Kw `;` Δ_(W)).+ `<=` Cw by apply subsetUl.
     by apply subset_trans with (Δ_(W) `;` Kw `;` Δ_(W)).+ .
   Qed.
 
@@ -167,7 +167,7 @@ Section Tcs.
       have H1: (Δ_(W.^c) `;` ((Bw `|` Kw) `;` Cw) `;` Emw.* `;` Ew.* `;` Cw) =
                  (Δ_(W.^c) `;` (Bw `|` Kw) `;` (Cw `;` Emw.* `;` Ew.* `;` Cw))
         by aac_normalise.
-      by rewrite H1 L9_E25c union_RR.
+      by rewrite H1 L9_E25c setUid.
     Qed.
 
     Lemma L13: (Δ_(W.^c) `;` ('Δ `|` (Bw `|` Kw) `;` Cw) `;` Emw.* `;` Ew.* `;` Cw `;` Emw.* `;` Ew.* 
@@ -244,7 +244,7 @@ Section Tcs.
       rewrite -[(Bw `;` Cw `|` Kw `;` Cw)]composeDr.
       rewrite -[(DKD.+ `;` (Bmw `|` Kw) `|` Δ_(W) `;` (Bmw `|` Kw))]composeDr -/Cw.
       (* now we have 4 terms as in the math proof *)
-      rewrite L14_d L14_b L14_c L14_a union_RR unionA union_RR.
+      rewrite L14_d L14_b L14_c L14_a setUid -setUA setUid.
       rewrite -composeDr. 
       have H1: (Δ_(W.^c) `;` ('Δ `|` Bw `|` Bmw `|` Kw) `|`
                   Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw `;` (Bmw `|` Kw))
@@ -346,7 +346,7 @@ Section Tcs.
         Kw (x,y) -> Clos_( x | E,W) `&` Clos_(y | E,W) != set0.
     Proof. 
       have H0: Ew.+ `<=` Ew.* 
-        by move => xy; rewrite -DuT_eq_Tstar; apply union_containsr.
+        by move => xy; rewrite -DuT_eq_Tstar; apply subsetUr.
       
       rewrite E9e; move => x y [z [/= H1 H2]];rewrite -notempty_exists;exists z. 
       rewrite in_setE.
@@ -608,13 +608,12 @@ Section Tcs.
         by rewrite in_setE; exists x; split.
       - move => [w' [H2 [z [H3 H4]]]].
         rewrite in_setE in H3. rewrite in_setE in H4. 
-        move: H3 => [w'' [H3 /inP/Singl_iff H3']].
+        move: H3 => [w'' [H3  H3']].
         move: H4 => [x [H4 H4']].
         rewrite in_setE /= . 
         exists x; split; last by [].
         exists w';split; first by[].
-        exists z;split. 
-        by rewrite Emw_1 /inverse /mkset /= -H3'.
+        exists z;split; first  by rewrite Emw_1 /inverse /mkset /= -H3'.
         by [].
     Qed.
     

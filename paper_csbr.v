@@ -38,14 +38,14 @@ Section Csbr.
 
     Lemma D_L16_E42a :  Aw_s = 'Δ `|` Aw_sp `|`  Aw_sm.
     Proof.
-      rewrite /Aw_s [Bmw `|` Kw]unionC  composeDl.
-      rewrite unionA unionA [Bmw `|` (_)]unionC unionA.
-      rewrite -[Bw `|` _]unionA -[Bw `|` _]unionA.
-      rewrite -[Bw `|` Kw `|` _]unionA.
+      rewrite /Aw_s [Bmw `|` Kw]setUC  composeDl.
+      rewrite -setUA -setUA [Bmw `|` (_)]setUC -setUA.
+      rewrite [Bw `|` _]setUA [Bw `|` _]setUA.
+      rewrite [Bw `|` Kw `|` _]setUA.
       rewrite -/Aw_sp. 
-      rewrite [Aw_sp `|` (Bw `|` Kw) `;` Cw_s `;` Bmw `|` Bmw]unionA.
-      rewrite [ (Bw `|` Kw) `;` Cw_s `;` Bmw `|` Bmw]unionC.
-      by rewrite -/Aw_sm unionA.
+      rewrite -[Aw_sp `|` (Bw `|` Kw) `;` Cw_s `;` Bmw `|` Bmw]setUA.
+      rewrite [ (Bw `|` Kw) `;` Cw_s `;` Bmw `|` Bmw]setUC.
+      by rewrite -/Aw_sm -setUA.
     Qed.
     
     Lemma D_L16_E42b :  (Aw_sm `;` Δ_(W.^c) `;` E) `<=`  Aw_sp.
@@ -59,8 +59,8 @@ Section Csbr.
       suff H2: (R2 `;` Bw) `<=` Aw_sp by apply: subset_trans H1 H2.
       rewrite /R2 composeA composeA.
       rewrite -[(Bmw `;` (_ `;` Bw))]composeA -/Kw composeDr. 
-      rewrite Delta_idem_l /R1 /Aw_sp [Bw `|` Kw `|` _]unionA.
-      by apply: union_containsr.
+      rewrite Delta_idem_l /R1 /Aw_sp -[Bw `|` Kw `|` _]setUA.
+      by apply: subsetUr.
     Qed.
     
     Lemma D_L16_E42c :  (Aw_sp `;` Δ_(W_s) `;` Em) `<=`  Aw_sm.
@@ -68,7 +68,7 @@ Section Csbr.
       have E21c1: E.-1 `<=` Bmw
         by rewrite E9d -{1}[E.-1]Delta_idem_l;apply: composer_inc;
         apply: clos_refl_trans_containsD.
-      have E21c2: Δ_(W_s) `<=` Cw_s by rewrite /Cw_s;apply: union_containsr.
+      have E21c2: Δ_(W_s) `<=` Cw_s by rewrite /Cw_s;apply: subsetUr.
       have H1: (Δ_(W_s) `;` E.-1) `<=` (Cw_s `;` E.-1) by apply composer_inc; apply: E21c2.
       have H2: (Cw_s `;` E.-1) `<=` (Cw_s `;` Bmw) by apply compose_inc; apply: E21c1.
       have E21c3: (Δ_(W_s) `;` E.-1) `<=` (Cw_s `;` Bmw) by apply: subset_trans H1 H2.
@@ -76,19 +76,19 @@ Section Csbr.
         by rewrite [_ `;` _ `;` E.-1]composeA [_ `;` _ `;` Bmw]composeA;
         apply: compose_inc; apply: E21c3.
       have H3: ((Bw `|` Kw) `;` Cw_s `;` Bmw) `<=`  Aw_sm 
-        by rewrite /Aw_sm; apply: union_containsr.
+        by rewrite /Aw_sm; apply: subsetUr.
       have H4: ((Bw `|` Kw) `;` Δ_( W_s) `;` Em) `<=` Aw_sm 
         by apply: subset_trans E21c4 H3.
       have E21c5: Cw_s `;` Δ_(W_s) = Cw_s
         by rewrite {1}/Cw_s composeDr -Delta_clos_trans_ends DeltaE_inv -/Cw_s.
       have E21c6: forall (R S: relation T), (S `;` R = R) -> ((R.+ `|` S) `;` R) = (R.+)
-          by move => R S H; rewrite composeDr H unionC clos_t_decomp_rt_r.
+          by move => R S H; rewrite composeDr H setUC clos_t_decomp_rt_r.
       have E21c7: Cw_s `;` Kw `;` Δ_(W_s) = (Δ_( W_s) `;` Kw `;` Δ_( W_s)) .+ 
         by rewrite -{1}E21c5 {1}/Cw_s composeA composeA 
            -[Δ_( W_s) `;` (Kw `;` Δ_( W_s))]composeA;
         apply: E21c6;rewrite -composeA -composeA {1}DeltaE_inv.
       have E21c8: (Cw_s `;` Kw `;` Δ_(W_s)) `<=` Cw_s 
-        by rewrite E21c7 /Cw_s;apply: union_containsl.
+        by rewrite E21c7 /Cw_s;apply: subsetUl.
       have H1': (((Bw `|` Kw) `;` Cw_s `;` Kw `;` Δ_(W_s)) `;` E.-1) `<=` (((Bw `|` Kw) `;` Cw_s) `;` E.-1)
         by apply: composer_inc;rewrite composeA composeA;apply: compose_inc;
         rewrite -composeA;apply E21c8.
@@ -100,7 +100,7 @@ Section Csbr.
         by apply:  subset_trans E21c9 H3.
       by rewrite /Aw_sp composeDr composeDr;apply: union_inc_b H4 H5.
     Qed.
-
+    
   End Appendix_D_L16. 
     
   Section Appendix_B_L7.

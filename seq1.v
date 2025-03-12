@@ -382,7 +382,7 @@ Section allset.
   Variables (T: Type).
 
   (* begin snippet Sn:: no-out *)  
-  Definition Sn (n: nat) (D: set T):= [set st| st [\in] D/\size(st)=n].
+  (* Definition Sn (n: nat) (D: set T):= [set st| st [\in] D/\size(st)=n]. *)
   (* end snippet Sn *)
   
   Lemma allsetP: forall (X: set T) (st: seq T) (x:T),
@@ -432,9 +432,8 @@ Section allset.
     st [\in] (X `&` Y) <-> st [\in] X && st [\in] Y. 
   Proof.
     move => X Y st.
-    pose proof intersectionSr.
-    have H1: (X `&` Y) `<=` X by rewrite /setI /mkset /subset => [t [? ?]].
-    have H2: (X `&` Y) `<=` Y by rewrite /setI /mkset /subset => [t [? ?]].
+    have H1: (X `&` Y) `<=` X by apply: subIsetl. 
+    have H2: (X `&` Y) `<=` Y by apply: subIsetr. 
     split => [H3 | ]. 
     by apply/andP;split;[apply: (allset_subset H1 H3)
                         | apply: (allset_subset H2 H3)].
@@ -586,8 +585,8 @@ Section allset_Lifted.
       allL (Δ_(W.^c) `;` E) st x y <-> (x::st) [\in] W.^c && allL E st x y.
   Proof.
     move => W st x y.
-    have H1: (L_(W.^c) `&` E) `<=` E by apply intersectionSr.
-    have H2: (L_(W.^c) `&` E) `<=` L_(W.^c) by apply intersectionSl.
+    have H1: (L_(W.^c) `&` E) `<=` E by apply: subIsetr.
+    have H2: (L_(W.^c) `&` E) `<=` L_(W.^c) by apply: subIsetl.
     pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) L_(W.^c)) as H3.
     pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) E) as H4.    
     rewrite DeltaLco /allL allset_I.
@@ -598,8 +597,8 @@ Section allset_Lifted.
       allL (E `;` Δ_(W.^c)) st x y <-> (rcons st y) [\in] W.^c && allL E st x y.
   Proof.
     move => W st x y.
-    have H1: (E `&` L_(W.^c)) `<=` E by apply intersectionSl.
-    have H2: (E `&` L_(W.^c)) `<=` L_(W.^c) by apply intersectionSr.
+    have H1: (E `&` L_(W.^c)) `<=` E by apply: subIsetl.
+    have H2: (E `&` L_(W.^c)) `<=` L_(W.^c) by apply: subIsetr.
     pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) L_(W.^c)) as H3.
     pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) E) as H4.    
     rewrite DeltaRco /allL allset_I; split => /andP [H5 H6]. 
@@ -623,7 +622,10 @@ End allset_Lifted.
 
 Section Suc_as_Lift. 
   (** * st [L\in] R <-> st [Suc\in] R *)
-    
+  (* st [Suc\in] R is more natural to define a path and st [L\in] R is more computational 
+     for sanity check we prove that the two are equivalent
+   *)
+
   Variables (T: Type) (R:relation T).
 
   (* begin snippet RPathequiv:: no-out *)  
@@ -1301,9 +1303,9 @@ Section pair_lift1.
   
   (* begin snippet Oedge:: no-out *)  
   Definition Oedge (E: relation T): set (T*T*O) :=
-    fun (oe: T*T*O) => match oe with | (e,P) => E e | (e,N) => E.-1 e end.
+    [set oe: T*T*O | (match oe with | (e,P) => E e | (e,N) => E.-1 e end)].
   (* end snippet Oedge *)
-
+  
   (* begin snippet ChrelO:: no-out *)  
   Definition ChrelO := [set ppa: (T*T*O)*(T*T*O) | (ppa.1.1).2 = (ppa.2.1).1].
   (* end snippet ChrelO *)  
