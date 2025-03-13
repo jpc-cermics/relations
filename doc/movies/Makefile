@@ -32,7 +32,6 @@ SNIPPETS = \
 	snippets/ssrel/relation-n.tex \
 	snippets/seq1/RPathequiv-n.tex \
 	snippets/seq1/RPath-n.tex \
-	snippets/seq1/LiftSuc-n.tex \
 	snippets/seq1/RpathLone-n.tex \
 	snippets/seq1/DI-n.tex \
 	snippets/seq1/Liftinj-n.tex \

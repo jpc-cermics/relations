@@ -9,6 +9,38 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 
+(******************************************************************************)
+(* some operations on sequences which are usefull for dealing with graph paths*)
+(* when the graph is described by a relation (relation as sets (set T*T))     *)
+(*    p [\in] X    ==  all the elements of a node path p are in X              *)
+(*    spt [\in] R  ==  all the elements of an edge path spt satisfy relation R *)
+(*    p [Suc\in] R ==  the successive elements of the node paths p satisfy     *)
+(*                  relation R                                                *)
+(*    Lift st     == an edge path built from a node path                      *)
+(*    p [L\in]  R  == same as (p [Suc\in] R) but using a Lift                   *)
+(*    UnLift spt  == Left inverse of Lift (spt: seq (T*T))                    *)
+(* Seq_utilities: some utilities for sequences                                *)
+(* Lift_props: properties of the Lift mapping                                 *)
+(* allset: utilities for st [\in] X, X: set T                                  *)
+(* allset2: utilities for spt [\in] R, R: relation T                           *)
+(* Lift_in: properties of [L\in]                                               *)
+(* allset_Lifted: properties of st [L\in] R for st: seqT                       *) 
+(*                with specified endpoints                                    *)
+(* Suc_as_Lift: st [L\in] R <-> st [Suc\in] R                                   *)
+(* Lift_bijective: Lift is a bijection between                                *)
+(*                 D:= [set p:seq T | size(p) > 1] and Lift D                 *)
+(* Endpoints_and_Deployment: endpoints and Deployments                        *)
+(* seq_subsets: properties of p: seq T, p [\in] X and p [L\in] R]               *)
+(* seq_pairs_subsets: p: seq (T*T), p [\in] E and p [L\in] R]                   *)
+(* PathRel: transitive closure and paths                                     *)
+(* pair: sequences in  seq (T*T*O)                                           *)
+(* pair_lift1: pair combined with Lift                                       *)
+(* Seq_lifto: Lifto that is LiftO with constant orientation along the path   *)
+(* Active_relation: D_U and active relation                                  *)
+(* Active: The D_separated and Active relation as a relation on TxT          *)
+(* PathRel_Examples: Utilities                                               *)
+(******************************************************************************)
+
 Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_ssreflect order.
 From mathcomp Require Import mathcomp_extra boolp.
@@ -623,7 +655,7 @@ End allset_Lifted.
 Section Suc_as_Lift. 
   (** * st [L\in] R <-> st [Suc\in] R *)
   (* st [Suc\in] R is more natural to define a path and st [L\in] R is more computational 
-     for sanity check we prove that the two are equivalent
+   * for sanity check we prove that the two are equivalent
    *)
 
   Variables (T: Type) (R:relation T).
@@ -659,6 +691,7 @@ Section Lift_bijective.
   Definition Chrel {T:Type} :=[set s: (T*T)*(T*T)| (s.1).2 = (s.2).1].
   (* end snippet Chrel *)  
   
+  (* a sequence of edges obtained by the Lift operations is always an edge path *)
   Lemma Lift_Lift: forall (st:seq T), (Lift st) [L\in] Chrel. 
   Proof.
     move => st. 
@@ -672,37 +705,30 @@ Section Lift_bijective.
     by rewrite 3!Lift_c allset_cons -Lift_c;split;[ |apply Hr].
   Qed.
 
-  (* begin snippet LiftSuc:: no-out *)  
-  Lemma Lift_Suc: forall (st:seq T), (Lift st) [Suc\in] Chrel. 
-  (* end snippet LiftSuc *)  
-  Proof.
-    by move => st; rewrite -RPath_equiv; apply Lift_Lift.
-  Qed.
-  
   (* begin snippet DI:: no-out *)  
-  Definition D {T: Type}:= [set st:seq T| size(st) > 1].
-  Definition I {T: Type}:= [set spt:seq (T*T)| size(spt) > 0 /\ spt [Suc\in] Chrel].
+  Definition Lift_Dom {T: Type}:= [set st:seq T| size(st) > 1].
+  Definition Lift_Im  {T: Type}:= [set spt:seq (T*T)| size(spt) > 0 /\ spt [L\in] Chrel].
   (* end snippet DI *)
-
+  
   Lemma Lift_image: forall (st: seq T),
-      st \in D -> (Lift st) \in I.
+      st \in Lift_Dom -> (Lift st) \in Lift_Im.
   Proof.
-    rewrite /D /I /mkset; move => st /inP H1;rewrite inP Lift_sz2.
-    by split;[ | rewrite -RPath_equiv;apply Lift_Lift].
+    rewrite /Lift_Dom /Lift_Im /mkset; move => st /inP H1;rewrite inP Lift_sz2.
+    by split;[ | apply Lift_Lift].
   Qed.
   
   Lemma UnLift_image: forall (spt: seq (T*T)),
-      spt \in I -> (forall (z:T), (UnLift spt z) \in D).
+      spt \in Lift_Im -> (forall (z:T), (UnLift spt z) \in Lift_Dom).
   Proof.
     move => st /inP [H1 _] z; apply inP.
-    rewrite /D /mkset.
+    rewrite /Lift_Dom /mkset.
     elim: st H1 => [// | [x y] st _ /= _].
     elim: st y => [ // | [x' y'] st' _ z'].
     by rewrite UnLift_c /=. 
   Qed.
 
   Lemma Lift_UnLift: forall (spt: seq (T*T)),
-      spt \in I -> (forall (z:T), Lift (UnLift spt z) = spt).
+      spt \in Lift_Im -> (forall (z:T), Lift (UnLift spt z) = spt).
   Proof.
     move => st /inP [H1 H2] z; apply inP.
     elim: st H1 H2 => [// | [x y] st Hr H1 H2].
@@ -711,19 +737,19 @@ Section Lift_bijective.
     by apply inP.
     rewrite UnLift_c in H1.
     rewrite UnLift_c Lift_c.
-    move: (H3). rewrite -RPath_equiv Lift_c allset_cons => [[H4 H5]].
+    move: (H3). rewrite Lift_c allset_cons => [[H4 H5]].
     move: H4. rewrite /Chrel /mkset => [H4].
     have H6:  (Lift (x' :: UnLift st y'))= ((x', y') :: st)
-      by apply inP; apply H1;[ | rewrite -RPath_equiv].
+      by apply inP; apply H1. 
     apply inP. rewrite H6.
     by have -> : y=x' by [].
   Qed.
   
   (* begin snippet Liftinj:: no-out *) 
-  Lemma Lift_inj: forall (st st': seq T), st \in D -> Lift st = Lift st' -> st = st'.
+  Lemma Lift_inj: forall (st st': seq T), st \in Lift_Dom -> Lift st = Lift st' -> st = st'.
   (* end snippet Liftinj *) 
   Proof.
-    rewrite /D /mkset.
+    rewrite /Lift_Dom /mkset.
     move => st q /inP H1 H2.
     move: (H1) => /Lift_sz2 H3. 
     have H4: size(q) > 1. by rewrite -Lift_sz2 -H2. 
@@ -734,7 +760,7 @@ Section Lift_bijective.
   Qed.
   
   Lemma Lift_inj': forall (st st': seq T),
-      st \in D -> st' \in D -> Lift st = Lift st' -> st = st'.
+      st \in Lift_Dom -> st' \in Lift_Dom -> Lift st = Lift st' -> st = st'.
   Proof.
     move => st q /inP H1 /inP H2 H3.
     pose proof seq_crc H1 as [_ [x _]].
@@ -745,10 +771,10 @@ Section Lift_bijective.
   Qed.
   
   (* begin snippet Liftsurj:: no-out *) 
-  Lemma Lift_surj: forall (spt: seq (T*T)), spt \in I -> exists st, st\in D /\ Lift st=spt. 
+  Lemma Lift_surj: forall (spt: seq (T*T)), spt \in Lift_Im -> exists st, st\in Lift_Dom /\ Lift st=spt. 
   (* end snippet Liftsurj *) 
   Proof.
-    move => st H0; move: (H0);rewrite /I /mkset => /inP [H1 H2].
+    move => st H0; move: (H0);rewrite /Lift_Im /mkset => /inP [H1 H2].
     pose proof (seq_c H1) as [_ [[x _] _]].
     pose proof Lift_UnLift H0 x as H3.
     pose proof UnLift_image H0 x as H4.
@@ -762,7 +788,7 @@ Section Lift_bijective.
     elim => [ | [x y] spt _ ];first by split => ?;[(exists [::]) |].
     have H1: size ((x, y) :: spt) > 0 by [].
     split => [H2 |].
-    - have H5: ((x, y) :: spt) \in I by rewrite inP /I /mkset -RPath_equiv.  
+    - have H5: ((x, y) :: spt) \in Lift_Im by rewrite inP /Lift_Im /mkset.  
       pose proof Lift_UnLift H5 as H6.
       by (exists (UnLift ((x, y) :: spt) x));rewrite H6.
     - by move => [st <-]; apply Lift_Lift.
@@ -798,7 +824,7 @@ Section Endpoints_and_Deployment.
   
   (* Epe (Lift st) = Pe st *)
   (* begin snippet EpeLift:: no-out *)  
-  Lemma Epe_Lift: forall (st:seq T), st \in D -> Epe (Lift st) = Pe st.
+  Lemma Epe_Lift: forall (st:seq T), st \in Lift_Dom -> Epe (Lift st) = Pe st.
   (* end snippet EpeLift *)  
   Proof.
     move => st /inP H1; rewrite /Epe /Pe.
@@ -808,10 +834,10 @@ Section Endpoints_and_Deployment.
   Qed.
   
   Lemma Epe_Epe1: forall (spt: seq (T*T)), 
-      size(spt) > 0 -> spt [Suc\in] Chrel -> Epe1 spt = Epe spt.
+      size(spt) > 0 -> spt [L\in] Chrel -> Epe1 spt = Epe spt.
   Proof.
     move => spt H1 H2.
-    have H4: spt \in (@I T) by apply inP.
+    have H4: spt \in (@Lift_Im T) by apply inP.
     pose proof Lift_surj H4 as [st [H5 H6]].
     move: (H5) => /inP H5'.
     have H7: Epe1 (Lift st) = Pe st 
@@ -823,7 +849,7 @@ Section Endpoints_and_Deployment.
   
   (* Pe (UnLift spt ptv.1) = Epe spt. *) 
   (* begin snippet PeUnLift:: no-out *)  
-  Lemma Pe_UnLift: forall (spt: seq (T*T)), spt \in I->Pe (UnLift spt ptv.1)=Epe spt.
+  Lemma Pe_UnLift: forall (spt: seq (T*T)), spt \in Lift_Im->Pe (UnLift spt ptv.1)=Epe spt.
   (* end snippet PeUnLift *)  
   Proof. 
     by move => spt /inP [H1 H2]; rewrite -Epe_Epe1 /Epe1.
@@ -836,7 +862,7 @@ Section Endpoints_and_Deployment.
   
   (* begin snippet DP:: no-out *)  
   Definition D_P (R E: relation T):= 
-    [set spt| spt \in I /\ R (Epe spt) /\ spt [\in] E ].
+    [set spt| spt \in Lift_Im /\ R (Epe spt) /\ spt [\in] E ].
   (* end snippet DP *)  
   
   (* begin snippet DPs:: no-out *)  
@@ -845,7 +871,7 @@ Section Endpoints_and_Deployment.
 
   (* begin snippet DV:: no-out *)  
   Definition D_V (R E: relation T):=
-    [set st| st \in D /\ R (Pe st) /\ st [Suc\in] E].
+    [set st| st \in Lift_Dom /\ R (Pe st) /\ st [L\in] E].
   (* end snippet DV *)  
   
   (* begin snippet DVs:: no-out *)  
@@ -854,7 +880,7 @@ Section Endpoints_and_Deployment.
 
   (** * Lift D_V = D_P *)
   Definition D_P1 (R E: relation T):= 
-    [set spt| spt \in I /\ R (Epe1 spt) /\ spt [\in] E ].
+    [set spt| spt \in Lift_Im /\ R (Epe1 spt) /\ spt [\in] E ].
 
   Lemma D_P_D_P1: forall (R E: relation T), D_P R E = D_P1 R E.
     move => R E;rewrite /D_P /D_P1 /mkset predeqE => spt.
@@ -874,13 +900,13 @@ Section Endpoints_and_Deployment.
       move: (H1) => /Lift_sz2 H1'.
       rewrite /Epe1. 
       have -> : (UnLift (Lift p) ptv.1) = p by apply UnLift_left. 
-      rewrite RPath_equiv inP.
-      by pose proof Lift_Suc p as H5.
+      rewrite inP.
+      by pose proof Lift_Lift p as H5.
     - move => [/inP [H1 H2] [H3 H4]].
-      have H6 : Lift (UnLift q ptv.1) = q  by apply Lift_UnLift;rewrite inP /I. 
+      have H6 : Lift (UnLift q ptv.1) = q  by apply Lift_UnLift;rewrite inP /Lift_Im. 
       have H7: 1 < size (UnLift q ptv.1) by rewrite -H6 Lift_sz2 in H1.
       rewrite -H6 /=.
-      by exists (UnLift q ptv.1);[rewrite -RPath_equiv H6 inP|].
+      by exists (UnLift q ptv.1);[rewrite H6 inP|].
   Qed.
   
   Lemma DV_DP: forall (R E: relation T) (spt: seq (T*T)), 
@@ -894,7 +920,7 @@ Section Endpoints_and_Deployment.
     pose proof UnLift_image H1 ptv.1 as H7.
     pose proof Lift_UnLift H1 ptv.1 as H8.
     exists (UnLift spt ptv.1).
-    by rewrite inP /D_V /mkset H5 -H6 -RPath_equiv H8.
+    by rewrite inP /D_V /mkset H5 -H6 H8.
   Qed.
   
 End Endpoints_and_Deployment.
@@ -1063,7 +1089,7 @@ Section PathRel.
 End PathRel.
 
 Section pair. 
-  (** * pair sequences *)
+  (** * sequences in  seq (T*T*O) *)
   Variables (T: Type).
 
   (* orientation  *)
@@ -1247,9 +1273,9 @@ Section pair.
     [set tto : (T*T*O)*(T*T*O) | R (tto.1.1,tto.2.1)].
   
   Lemma pair_L1: forall (R: relation  (T*T)) (st:seq (T*T)) (so:seq O), 
-      size(st) = size (so) -> (pair st so) [Suc\in] (Extend R) <-> st [Suc\in] R.
+      size(st) = size (so) -> (pair st so) [L\in] (Extend R) <-> st [L\in] R.
   Proof.
-    move => R st so H1; rewrite -2!RPath_equiv.
+    move => R st so H1.
     elim: st so H1 => [so H1 // | tt st Hr so H1].
     have H2: size so > 0 by rewrite -H1 /=.
     pose proof seq_c H2 as [so' [o H3]].
@@ -1270,9 +1296,9 @@ Section pair.
   Qed.
 
   Lemma pair_L2: forall (R: relation  (T*T)) (stto:seq (T*T*O)),
-      stto [Suc\in] (Extend R) <-> (unpair stto).1 [Suc\in] R.
+      stto [L\in] (Extend R) <-> (unpair stto).1 [L\in] R.
   Proof.
-    move => R stto; rewrite -2!RPath_equiv.
+    move => R stto. 
     elim: stto => [ // | [[t1 t1'] o1] stto Hr ].
     elim: stto Hr => [ Hr // |[[t2 t2'] o2] stto Hr Hr'].
     rewrite unpair_c Lift_c allset_cons.
@@ -1366,38 +1392,38 @@ Section pair_lift1.
   
   Lemma LiftO_image: forall (st:seq T) (so:seq O), 
       size(st)> 1 -> size(st) = size(so)+1
-      -> size (LiftO st so) > 0 /\ (LiftO st so) [Suc\in] ChrelO.
+      -> size (LiftO st so) > 0 /\ (LiftO st so) [L\in] ChrelO.
   Proof.
     move => st so H1 H2.
     have H3: size(Lift st) = size so by apply Lift_sz in H1;rewrite H2 addn1 subn1 in H1.
     split; first by rewrite pair_sz1 H3;rewrite H2 addn1 in H1;apply leq_ltn_trans with 0. 
     rewrite /LiftO.
-    have -> : (pair (Lift st) so) [Suc\in] (Extend Chrel) 
-         <-> (Lift st) [Suc\in] Chrel by  apply pair_L1.
-    by rewrite -RPath_equiv Lift_Lift.
+    have -> : (pair (Lift st) so) [L\in] (Extend Chrel) 
+         <-> (Lift st) [L\in] Chrel by  apply pair_L1.
+    by rewrite Lift_Lift.
   Qed.
   
   Lemma LiftO_right_0: forall (stto:seq (T*T*O)),
-      size stto > 0 -> stto [Suc\in] ChrelO 
-      -> size (unpair stto).1 > 0 /\ (unpair stto).1 [Suc\in] Chrel.
+      size stto > 0 -> stto [L\in] ChrelO 
+      -> size (unpair stto).1 > 0 /\ (unpair stto).1 [L\in] Chrel.
   Proof.
-    move => stto; rewrite -2!RPath_equiv;move => H1 H2.
+    move => stto;move => H1 H2.
     split; first by rewrite unpair_sz1.
     pose proof unpair_right stto as H3.
     have H4: (Extend Chrel) = ChrelO by [].
     have H5: size ((unpair stto).1) = size (unpair stto).2 by apply unpair_sz.
     pose proof pair_L1 Chrel H5 as H6.
-    by rewrite RPath_equiv -H6 unpair_right H4 -RPath_equiv.
+    by rewrite -H6 unpair_right H4. 
   Qed.
   
   Lemma LiftO_right: forall (t:T) (stto:seq (T*T*O)),
-      size stto > 0 -> stto [Suc\in] ChrelO 
+      size stto > 0 -> stto [L\in] ChrelO 
       -> LiftO (UnLiftO stto t).1 (UnLiftO stto t).2 = stto. 
   Proof.
     move => t stto H1 H2.
     rewrite /LiftO /UnLiftO /=.
     pose proof LiftO_right_0 H1 H2 as [H3 H4].
-    have H5: (unpair stto).1 \in (@I T). by rewrite inP;by split.
+    have H5: (unpair stto).1 \in (@Lift_Im T). by rewrite inP;by split.
     pose proof Lift_UnLift H5 t as H6.
     by rewrite H6 unpair_right.
   Qed.
@@ -1406,8 +1432,7 @@ Section pair_lift1.
       size st > 1 -> size(st) = size(so)+1 -> (LiftO st so) [L\in] ChrelO. 
   Proof.
     move => st so H1 H2.
-    pose proof LiftO_image H1 H2 as [H3 H4].
-    by rewrite RPath_equiv.
+    by pose proof LiftO_image H1 H2 as [H3 H4].
   Qed.
   
   (** * Y_gt and p: seq (T*T*O), p [\in] E and p [L\in] R] *)
@@ -1472,7 +1497,7 @@ Section pair_lift1.
   
   (* begin snippet PeUnLiftO:: no-out *)  
   Lemma Pe_UnLiftO: forall (stto: seq (T*T*O)), 
-      size(stto) > 0 -> stto [Suc\in] ChrelO -> 
+      size(stto) > 0 -> stto [L\in] ChrelO -> 
       (Pe ptv (UnLiftO stto ptv.1).1) =  Eope stto.
   (* end snippet PeUnLiftO *)  
   Proof. 
@@ -1496,7 +1521,7 @@ Section pair_lift1.
   
   (* begin snippet DU:: no-out *)  
   Definition D_U (R E: relation T) := [set stto : seq (T*T*O) |size(stto)>0 
-     /\ R (Eope stto) /\ stto [\in] (Oedge E) /\ stto [Suc\in] ChrelO].
+     /\ R (Eope stto) /\ stto [\in] (Oedge E) /\ stto [L\in] ChrelO].
   (* end snippet DU *)  
   
   (* begin snippet DU1:: no-out *)  
@@ -1506,7 +1531,7 @@ Section pair_lift1.
   (* begin snippet DUp:: no-out *)  
   Definition D_U' (R E: relation T):=
     [set st : (seq T)*(seq O) | 
-      st.1 \in (@D T) /\ size(st.2) = size(st.1) -1 /\ 
+      st.1 \in (@Lift_Dom T) /\ size(st.2) = size(st.1) -1 /\ 
                R (@Pe T ptv st.1) /\ (LiftOp st) [\in] (Oedge E)].
   (* end snippet DUp *)  
   
@@ -1538,7 +1563,7 @@ Section pair_lift1.
       rewrite -H6 /=. 
       exists (UnLiftO stto ptv.1); last by [].
       pose proof  Pe_UnLiftO H1 H4 as H7.
-      by rewrite H6 H7 inP /UnLiftO /= /D /mkset UnLift_sz 
+      by rewrite H6 H7 inP /UnLiftO /= /Lift_Dom /mkset UnLift_sz 
          -unpair_sz unpair_sz1 addn1 subn1.
   Qed.
   
@@ -1554,7 +1579,7 @@ Section pair_lift1.
     rewrite inP /D_U' /mkset.
     split;last by rewrite -[RHS]H6.
     split.
-    by rewrite /UnLiftO inP /D /mkset UnLift_sz unpair_sz1 addn1.
+    by rewrite /UnLiftO inP /Lift_Dom /mkset UnLift_sz unpair_sz1 addn1.
     split.
     by rewrite /UnLiftO UnLift_sz /= unpair_sz addn1 subn1.
     split.
@@ -1660,13 +1685,13 @@ Section pair_lift1.
 
   (* begin snippet DUa:: no-out *)  
   Definition D_U_a (R E: relation T) (W: set T) (x y:T):=
-    (D_U R E) `&` [set stto | stto [Suc\in] (A_tr W E)].
+    (D_U R E) `&` [set stto | stto [L\in] (A_tr W E)].
   (* end snippet DUa *)  
   
   (* begin snippet DUaone:: no-out *)  
   Definition D_U_a1 (E: relation T) (W: set T) (x y:T):=
     [set stto |size(stto)>0 /\ (Eope stto)=(x,y) /\ stto [\in] (Oedge E) 
-     /\ stto [Suc\in] ChrelO /\ stto [Suc\in] (A_tr W E)].
+     /\ stto [L\in] ChrelO /\ stto [L\in] (A_tr W E)].
   (* end snippet DUaone *)  
   
   (* Active is now almost expressed as a transitive closure 
@@ -1702,7 +1727,7 @@ Section pair_lift1.
       have H4: eo1::(rcons (belast eo2 stto') (last eo2 stto')) = stto
         by rewrite -lastI.
       rewrite -H2 -H3 /allL H4 -H1. 
-      move => [H5 [[H6 H6'] [H7 [H8 /RPath_equiv H9]]]].
+      move => [H5 [[H6 H6'] [H7 [H8 H9]]]].
       have H10: stto [L\in] (ActiveOe W E)
         by rewrite -ActiveOe_eq; apply (@Rpath_L3 (T*T*O)).
       by [].
@@ -1716,7 +1741,7 @@ Section pair_lift1.
     pose proof seq_cases1 stto as [H1 | [[[[t t'] o] H1] | [stto' [eo1 [eo2 H1]]]]].
     - by rewrite H1 /Active_path; left. 
     - rewrite H1 /Active_path; move => [/= -> [-> H4]]; right.
-      by rewrite inP /D_U_a1 /mkset /Eope allset_cons -2!RPath_equiv. 
+      by rewrite inP /D_U_a1 /mkset /Eope allset_cons.
     - rewrite H1 /Active_path; move => [H2 [H3 H4]]; right.
       have H5: (head (ptv,P) [:: eo1, eo2 & stto']).1.1 = eo1.1.1 by [].
       have H6: (last (ptv,P) [:: eo1, eo2 & stto']).1.2 = (last eo2 stto').1.2
@@ -1730,11 +1755,11 @@ Section pair_lift1.
       have H9':  0 < size stto by rewrite H1.
       have H10: stto [\in] (Oedge E)
         by move: H8;rewrite -ActiveOe_eq allset_I => /andP [H8 H8']; apply (@Rpath_L2 (T*T*O)).
-      have H11: stto [Suc\in] ChrelO
-        by rewrite -RPath_equiv;pose proof ActiveOe_ChrelO;apply allset_subset with (ActiveOe W E);
+      have H11: stto [L\in] ChrelO
+        by pose proof ActiveOe_ChrelO;apply allset_subset with (ActiveOe W E);
         [apply ActiveOe_ChrelO |].
-      have H12: stto [Suc\in] (A_tr W E)
-        by rewrite -RPath_equiv;apply allset_subset with (ActiveOe W E);[ rewrite -ActiveOe_eq|].
+      have H12: stto [L\in] (A_tr W E)
+        by apply allset_subset with (ActiveOe W E);[ rewrite -ActiveOe_eq|].
       
       by rewrite /Eope H2 H3. 
   Qed.
@@ -1754,7 +1779,7 @@ Section pair_lift1.
 End pair_lift1.
 
 Section Seq_lifto. 
-  (** * Lifto that is LiftO with constant orientatio along the  *)
+  (** * Lifto that is LiftO with constant orientation along the path  *)
   Variables (T: Type).
   
   Fixpoint pair_o (spt: seq (T*T)) (o: O):= 
@@ -2236,8 +2261,7 @@ Section Active_relation.
 End Active_relation.
 
 Section Active. 
-  (** * The Active relation as a relation on TxT *)
-
+  (** * The D_separated and Active relation as a relation on TxT *)
   Variables (T: Type). 
 
   (* begin snippet Dseparated:: no-out *)  
