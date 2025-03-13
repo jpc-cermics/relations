@@ -62,7 +62,7 @@ Section Sets_facts.
   Qed.
   (* end snippet Sone *) 
 
-  (* begin snippet Stwo *)  
+  (* begin snippet Stwo:: no-out *)  
   Lemma empty_iff: forall (X: set T), ~ (X != set0) <-> X = set0.
   (* end snippet Stwo *)  
   Proof.

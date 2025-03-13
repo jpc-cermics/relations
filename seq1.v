@@ -15,7 +15,8 @@
 (*    p [\in] X    ==  all the elements of a node path p are in X              *)
 (*    spt [\in] R  ==  all the elements of an edge path spt satisfy relation R *)
 (*    p [Suc\in] R ==  the successive elements of the node paths p satisfy     *)
-(*                  relation R                                                *)
+(*                  relation R. Just for sanity check and replaced by         *)
+(*                  p [L\in]  R in practice.                                   *)
 (*    Lift st     == an edge path built from a node path                      *)
 (*    p [L\in]  R  == same as (p [Suc\in] R) but using a Lift                   *)
 (*    UnLift spt  == Left inverse of Lift (spt: seq (T*T))                    *)
@@ -692,7 +693,9 @@ Section Lift_bijective.
   (* end snippet Chrel *)  
   
   (* a sequence of edges obtained by the Lift operations is always an edge path *)
+  (* begin snippet LiftLift:: no-out *)  
   Lemma Lift_Lift: forall (st:seq T), (Lift st) [L\in] Chrel. 
+  (* end snippet LiftLift *)
   Proof.
     move => st. 
     pose proof seq_cases st as [H1 | [[x H1] | [q [x [y H1]]]]].
@@ -1013,7 +1016,7 @@ Section seq_pairs_subsets.
   Variables (T: Type).
 
   (* begin snippet Epathgt:: no-out *)  
-  (* Definition P_gt (n: nat) (E: relation T)  := 
+  (* XXXX Definition P_gt (n: nat) (E: relation T)  := 
     [set spt | size(spt) > n /\ spt [\in] E /\ spt [Suc\in] Chrel].
    *)
   (* end snippet Epathgt *)  

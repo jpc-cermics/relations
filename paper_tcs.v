@@ -32,7 +32,7 @@ Section Paper.
  * We list here the results of the paper following the order given 
  * in the paper.
  ******************************************************************)
-  
+
 End Paper.
 
 

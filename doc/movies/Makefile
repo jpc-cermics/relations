@@ -15,6 +15,7 @@ SNIPPETS = \
 	snippets/seq1/DUa-n.tex \
 	snippets/seq1/DUaone-n.tex \
 	snippets/seq1/Liftlemma-n.tex \
+	snippets/seq1/Liftnota-n.tex \
 	snippets/seq1/Oedge-n.tex \
 	snippets/seq1/TCP-n.tex \
 	snippets/seq1/Ugeone-n.tex \
@@ -52,6 +53,7 @@ SNIPPETS = \
 	snippets/seq1/Activeeq-n.tex \
 	snippets/seq1/allL-n.tex \
 	snippets/seq1/Atr-n.tex \
+	snippets/seq1/LiftLift-n.tex \
 	snippets/paper_relations/Aw-n.tex \
 	snippets/paper_csbr/theoremfive-n.tex \
 	snippets/mono/RelIndep-n.tex \
@@ -107,6 +109,7 @@ SED= \
 	-e 's+{`\\PYZam{}`}+{\\(\\cap\\)}+g' \
 	-e 's+~\\PY{o}{;}~+\\PY{o}{;}+g' \
 	-e 's+Suc\\PYZbs{}in+Suc{\\(\\in\\)}+g' \
+	-e 's+L\\PYZbs{}in+L{\\(\\in\\)}+g' \
 	-e 's/ \\PY{k+kn}{Notation}/ ~~\\PY{k+kn}{Notation}/g' \
 	-e 's/\\begin{alectryon}/%/g' \
 	-e 's/\\end{alectryon}//g' \

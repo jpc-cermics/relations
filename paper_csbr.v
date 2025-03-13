@@ -166,7 +166,7 @@ Section Csbr.
 
 End Csbr. 
 
-(* begin snippet dsepnota *)  
+(* begin snippet dsepnota:: no-out *)  
 Notation "( x [⊥d] y | W )" := (D_separated W E x y).
 (* end snippet dsepnota *)
 
