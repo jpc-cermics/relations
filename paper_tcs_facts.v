@@ -696,7 +696,7 @@ Section Tcs.
       have H10: Clos(Wt | E,W) `&` Clos(Λ `|` W''| E,W) = set0.
       rewrite H2; apply L12.
       by rewrite -H2.
-      by rewrite H3; apply In_Setminus.
+      by rewrite H3; apply: subDsetl.
       by [].
       by rewrite setUA Clos_union setIUl H10 setIC H'6 set0U.
     Qed.

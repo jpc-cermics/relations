@@ -987,15 +987,16 @@ Section seq_pairs_subsets.
   Variables (T: Type).
 
   (* begin snippet Epathgt:: no-out *)  
-  Definition P_gt (n: nat) (E: relation T)  := 
+  (* Definition P_gt (n: nat) (E: relation T)  := 
     [set spt | size(spt) > n /\ spt [\in] E /\ spt [Suc\in] Chrel].
+   *)
   (* end snippet Epathgt *)  
 
 End seq_pairs_subsets.
   
 Section PathRel.
   (** * transitive closure and paths
-   * the main result here is that the relation in AxA obtained 
+   * the main result here is that the relation in TxT obtained 
    * by fun (x y : T) => (exists (p: seq T), AllL E p x y)
    * is the relation E.+ the transitive closure of E 
    *)

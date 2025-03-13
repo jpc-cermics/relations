@@ -1,3 +1,4 @@
+
 (* -*- Encoding: utf-8 -*- *)
 (************************************************************************)
 (*         *   The Coq Proof Assistant / The Coq Development Team       *)
@@ -73,11 +74,6 @@ Section Sets_facts.
   Proof.
     move => X Y Z [? H2];rewrite empty_notexists H2.
     by move => [z /inP [? [_ ?]]].
-  Qed.
-  
-  Lemma In_Setminus : forall (X Y: set T), (X `\` Y) `<=` X. 
-  Proof.
-    by move => X Y x [? ?].
   Qed.
 
   Lemma Union_empty : forall (X Y: set T), X `|` Y = set0 <-> (X = set0) /\ ( Y = set0).
