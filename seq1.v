@@ -1323,7 +1323,8 @@ Section pair.
 
 End pair.
 
-Section pair_lift1.
+Section Extended_Oriented_Paths.
+      
   (** * pair combined with Lift *)
   Variable (T:Type) (tv:T) (ptv: T*T).
   
@@ -1444,7 +1445,7 @@ Section pair_lift1.
     by pose proof LiftO_image H1 H2 as [H3 H4].
   Qed.
   
-  (** * Y_gt and p: seq (T*T*O), p [\in] E and p [L\in] R] *)
+  (** * U_gt and  p: seq (T*T*O), p [\in] E and p [L\in] R] *)
   
   (* begin snippet Ugt:: no-out *) 
   Example U_gt (n: nat) (E: relation T):=
@@ -1812,23 +1813,26 @@ Section pair_lift1.
     apply Active_check2.
   Qed.
 
-  Definition D_separated' (W: set T) (E: relation T) (x y: T) := 
-    ~(exists (p: seq (T*T*O)), Active_path W E p x y).
-  
+  (** * Two equivalent definitions of D_separated *)
 
   Lemma D_separated_L3: forall (W: set T) (E: relation T) (x y: T),
-      (D_U_a1 E W x y) != set0
-      <-> (exists p, D_U_a1 E W x y p).
+      (D_U_a1 E W x y) != set0 <-> (exists p, D_U_a1 E W x y p).
   Proof.
     move => W E x y;rewrite -notempty_exists. 
     by split;move => [p /inP H1]; exists p.
   Qed.
-  
-  Lemma D_separated_L1: forall (W: set T) (E: relation T) (x y: T),
-    (exists (p: seq (T*T*O)), Active_path W E p x y)
-    <-> (x=y \/ (exists p, D_U_a1 E W x y p)).
+
+  Lemma D_separated_L5: forall (W: set T) (E: relation T) (x y: T),
+      ~ (exists p, D_U_a1 E W x y p) <-> (D_U_a1 E W x y) = set0.
   Proof.
-    move => W E x y; rewrite -D_separated_L3.
+    by move => W E x y;rewrite -D_separated_L3 empty_iff.
+  Qed.
+  
+  Lemma D_separated_L4: forall (W: set T) (E: relation T) (x y: T),
+      ~ (exists (p: seq (T*T*O)), Active_path W E p x y)
+      <-> ~( (x=y \/ (exists p, D_U_a1 E W x y p))).
+  Proof.
+    move => W E x y; rewrite iff_not2 -D_separated_L3.
     split. 
     - move => [p /Active_eq [[H1 _] | H1]].
       by left. 
@@ -1838,15 +1842,56 @@ Section pair_lift1.
       + by exists p;apply Active_eq; by right.
   Qed.
   
-  Lemma D_separated_L2: forall (W: set T) (E: relation T) (x y: T),
-      ~ (exists p, D_U_a1 E W x y p) <-> (D_U_a1 E W x y) = set0.
+  Lemma D_separated_L6: forall (W: set T) (E: relation T) (x y: T),
+      ~ (x=y \/ (exists p, D_U_a1 E W x y p))
+      <-> ~ (x = y) /\ (D_U_a1 E W x y) = set0.
   Proof.
-    move => W E x y. 
-    split. 
-    move => [H1 H2].
-Qed.
+    move => W E x y.
+    split.
+    by rewrite not_orE => [[H1 /D_separated_L5 H2]]. 
+    by move => [H1 H2]; rewrite not_orE D_separated_L5.
+  Qed.
+  
+  Lemma D_separated_L7: forall (W: set T) (E: relation T) (x y: T),
+      ~ (exists (p: seq (T*T*O)), Active_path W E p x y)
+      <->  ~ (x = y) /\ (D_U_a1 E W x y) = set0.
+  Proof.
+    by move => W E x y; rewrite D_separated_L4 D_separated_L6.
+  Qed.
+  
+  Lemma D_separated_L0: forall (W: set T) (E: relation T) (x y: T),
+    (D_U_a1 E W x y) = set0 
+    <-> ((D_U [set (x,y)] E) `&` [set stto | stto [L\in] (A_tr W E)]) = set0.
+  Proof. 
+    by move => W E x y; rewrite DU_a1_DU_a1' /D_U_a1' /D_U_a .
+  Qed.
 
-End pair_lift1.
+  Lemma D_separated_L1: forall (T': Type) (A B: set T'),
+      A `&` B = set0 <-> A `<=` ~` B.
+  Proof.
+    move => A B;split.
+    - by move => /disj_set2P/disj_setPLR ?.
+    - by move => /disj_setPLR/disj_set2P ?.
+  Qed.
+
+  Lemma D_separated_L2: forall (W: set T) (E: relation T) (x y: T),
+      (D_U_a1 E W x y) = set0 
+      <->  (D_U [set (x,y)] E) `<=` ~` [set stto | stto [L\in] (A_tr W E)].
+  Proof.
+    by move =>  W E x y;rewrite D_separated_L0 D_separated_L1.
+  Qed.
+  
+  (* begin snippet  Activeeq:: no-out *)  
+  Lemma D_separated_iff: forall (W: set T) (E: relation T) (x y: T),
+      ~(exists (p: seq (T*T*O)), Active_path W E p x y)
+      <-> ~ (x = y) /\  (D_U [set (x,y)] E) 
+                       `<=` ~` [set stto | stto [L\in] (A_tr W E)].
+  (* end snippet  Activeeq *)  
+  Proof.
+    by move  =>  W E x y;rewrite D_separated_L7 D_separated_L2.
+  Qed.
+  
+End Extended_Oriented_Paths.
 
 Section Seq_lifto. 
   (** * Lifto that is LiftO with constant orientation along the path  *)
