@@ -1,4 +1,3 @@
-
 (* -*- Encoding: utf-8 -*- *)
 (************************************************************************)
 (*         *   The Coq Proof Assistant / The Coq Development Team       *)
