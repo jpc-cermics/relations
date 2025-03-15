@@ -1615,12 +1615,11 @@ Section Extended_Oriented_Paths.
     by move => W E;rewrite /A_tr setIA setIid.
   Qed.
 
-  (* begin snippet ActiveOe:: no-out *)  
-  Definition ActiveOe (W: set T) (E: relation T) :=  
+  Definition ActiveOe' (W: set T) (E: relation T) :=  
     ((Oedge E) `*` Oedge E) `&` (A_tr W E).
-  (* end snippet ActiveOe *)  
 
-  Definition ActiveOe' (W: set T) (E: relation T) := 
+  (* begin snippet ActiveOe:: no-out *)  
+  Definition ActiveOe (W: set T) (E: relation T) := 
     [set oe : (T*T*O) * (T*T*O) | 
       Oedge E oe.1 /\ Oedge E oe.2 /\ (ChrelO oe)
       /\ match (oe.1.2,oe.2.2, oe.1.1.2) with 
@@ -1629,39 +1628,40 @@ Section Extended_Oriented_Paths.
         | (N,P,v) => W.^c v
         | (P,N,v) => (Fset E.* W) v
         end].
+  (* end snippet ActiveOe *)  
   
-  Lemma Active_iff: forall (W: set T) (E: relation T), 
-      ActiveOe W E = ActiveOe' W E.
+  Lemma ActiveOe_iff: forall (W: set T) (E: relation T), 
+      ActiveOe' W E = ActiveOe W E.
   Proof.
     move => W E.
-    rewrite /ActiveOe' /A_tr /ActiveOe /setI /setX /mkset predeqE => [[eo1 eo2]].
+    rewrite /ActiveOe /A_tr /ActiveOe' /setI /setX /mkset predeqE => [[eo1 eo2]].
     by split => [[[H1 H2] [H3 H4]] | [H1 [H2 [H3 H4]]]]. 
   Qed.
   
   Lemma ActiveOe_Oedge: forall (W: set T) (E: relation T) (eo : (T*T*O) * (T*T*O)),
-      (ActiveOe' W E) eo -> Oedge E eo.1 /\ Oedge E eo.2.
+      (ActiveOe W E) eo -> Oedge E eo.1 /\ Oedge E eo.2.
   Proof.
     by move => W E eo [H1 [H2 _]].
   Qed.
   
   Lemma ActiveOe_Compose: forall (W: set T) (E: relation T) (eo : (T*T*O) * (T*T*O)),
-      eo \in (ActiveOe' W E) -> ChrelO eo. 
+      eo \in (ActiveOe W E) -> ChrelO eo. 
   Proof.
     by move => W E eo /inP [_ [_ [H3 _]]].
   Qed.
 
   Lemma ActiveOe_ChrelO: forall (W: set T) (E: relation T),
-      (ActiveOe' W E) `<=` ChrelO.
+      (ActiveOe W E) `<=` ChrelO.
   Proof.
     move => W E;rewrite /subset => s /inP H1.
     by apply ActiveOe_Compose with W E.
   Qed.
   
   Lemma ActiveOe_o: forall (W: set T) (E: relation T) (x y z: T) (o:O),
-      (ActiveOe' W E) ((x,y,o),(y,z,o)) 
+      (ActiveOe W E) ((x,y,o),(y,z,o)) 
       <-> (Oedge E (x,y,o)) /\ (Oedge E (y,z,o)) /\ W.^c y.
   Proof.
-    move => W E x y z o;rewrite /ActiveOe /mkset /ChrelO /=.
+    move => W E x y z o;rewrite /ActiveOe' /mkset /ChrelO /=.
     case: o.
     by split => [[? [? [_ ?]]] // | [? [? ?]]].
     by split => [[? [? [_ ?]]] // | [? [? ?]]].
@@ -1669,8 +1669,8 @@ Section Extended_Oriented_Paths.
   
   Lemma ActiveOeT: forall (W: set T) (E: relation T) (x u v z t: T) (o1 o2 o3 o4: O),
       (Fset E.* W) x 
-      /\ ActiveOe' W E ((u,x,o1), (x,v,o2)) /\ ActiveOe' W E ((z,x,o3), (x,t,o4))
-      -> ActiveOe' W E ((u,x,o1), (x,t,o4)).
+      /\ ActiveOe W E ((u,x,o1), (x,v,o2)) /\ ActiveOe W E ((z,x,o3), (x,t,o4))
+      -> ActiveOe W E ((u,x,o1), (x,t,o4)).
   Proof.
     move => W E x u v z t o1 o2 o3 o4.
     case: o1;case: o2; case:o3; case:o4;
@@ -1678,16 +1678,16 @@ Section Extended_Oriented_Paths.
   Qed.
   
   Lemma ActiveOe_rev: forall (W:set T) (E: relation T) (e1 e2: T*T) (o:O),
-      (ActiveOe' W E).-1 ((e1,o), (e2,o)) <-> ActiveOe' W E.-1 ((e2,O_rev o), (e1,O_rev o)).
+      (ActiveOe W E).-1 ((e1,o), (e2,o)) <-> ActiveOe W E.-1 ((e2,O_rev o), (e1,O_rev o)).
   Proof.
     by move => W E [x1 y1] [x2 y2] o; case: o. 
   Qed.
   
   Lemma ActiveOe_eq: forall  (W: set T) (E: relation T),
-      (((Oedge E)`*`(Oedge E))`&`(A_tr W E)) = (ActiveOe' W E).
+      (((Oedge E)`*`(Oedge E))`&`(A_tr W E)) = (ActiveOe W E).
   Proof.
     move => W E.
-    rewrite /A_tr /ActiveOe' /setI /setX /mkset predeqE /= => [[tto1 tto2]].
+    rewrite /A_tr /ActiveOe /setI /setX /mkset predeqE /= => [[tto1 tto2]].
     by split => [[[H1 H2] [H3 H4]] | [H1 [H2 [H3 H4]]]].
   Qed.
 
@@ -1741,7 +1741,7 @@ Section Extended_Oriented_Paths.
     | [::eo1] => eo1.1.1 = x /\  eo1.1.2 = y /\  Oedge E eo1 
     | eo1 :: [:: eo2 & p]
       => eo1.1.1 = x /\ (last eo2 p).1.2 = y 
-        /\ allL (ActiveOe' W E) (belast eo2 p) eo1 (last eo2 p)
+        /\ allL (ActiveOe W E) (belast eo2 p) eo1 (last eo2 p)
     end.
   (* end snippet Aeop *)
 
@@ -1765,7 +1765,7 @@ Section Extended_Oriented_Paths.
         by rewrite -lastI.
       rewrite -H2 -H3 /allL H4 -H1. 
       move => [H5 [[H6 H6'] [H7 [H8 H9]]]].
-      have H10: stto [L\in] (ActiveOe' W E)
+      have H10: stto [L\in] (ActiveOe W E)
         by rewrite -ActiveOe_eq; apply (@Rpath_L3 (T*T*O)).
       by [].
   Qed.
@@ -1785,7 +1785,7 @@ Section Extended_Oriented_Paths.
         by rewrite 2!last_cons.
       have H7: eo1::(rcons (belast eo2 stto') (last eo2 stto')) = stto
         by rewrite -lastI.
-      have H8: stto [L\in]  (ActiveOe' W E) by rewrite -H7.
+      have H8: stto [L\in]  (ActiveOe W E) by rewrite -H7.
       move: H2 H3 H8;rewrite -H5 -H6 -H1 => H2 H3 H8.
       rewrite inP /D_U_a1 /mkset.
       have H9:  1 < size stto by rewrite H1.
@@ -1793,28 +1793,27 @@ Section Extended_Oriented_Paths.
       have H10: stto [\in] (Oedge E)
         by move: H8;rewrite -ActiveOe_eq allset_I => /andP [H8 H8']; apply (@Rpath_L2 (T*T*O)).
       have H11: stto [L\in] ChrelO
-        by pose proof ActiveOe_ChrelO;apply allset_subset with (ActiveOe' W E);
+        by pose proof ActiveOe_ChrelO;apply allset_subset with (ActiveOe W E);
         [apply ActiveOe_ChrelO |].
       have H12: stto [L\in] (A_tr W E)
-        by apply allset_subset with (ActiveOe' W E);[ rewrite -ActiveOe_eq|].
+        by apply allset_subset with (ActiveOe W E);[ rewrite -ActiveOe_eq|].
       
       by rewrite /Eope H2 H3. 
   Qed.
-    
-  (* begin snippet  Activeeq:: no-out *)  
+
+  (** * Two equivalent definitions of D_separated *)
+  (** * in D_separated_iff. *)
+
   Lemma Active_eq: forall (E: relation T) (W: set T) (x y:T) stto,
       ((x=y /\ stto = [::]) \/  stto \in (D_U_a1 E W x y))
       <-> Active_path W E stto x y.
-  (* end snippet  Activeeq *)  
   Proof.
     move => E W x y stto.
     split. 
     apply Active_check1.
     apply Active_check2.
   Qed.
-
-  (** * Two equivalent definitions of D_separated *)
-
+  
   Lemma D_separated_L3: forall (W: set T) (E: relation T) (x y: T),
       (D_U_a1 E W x y) != set0 <-> (exists p, D_U_a1 E W x y p).
   Proof.
@@ -2032,7 +2031,7 @@ Section Active_relation.
   (** increase active path by left addition *)
   Lemma Active_path_cc: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (y: T),
       Active_path W E [:: eo1, eo2 & p] eo1.1.1 y
-      <-> Active_path W E [:: eo2 & p] eo2.1.1 y /\ ActiveOe' W E (eo1, eo2).
+      <-> Active_path W E [:: eo2 & p] eo2.1.1 y /\ ActiveOe W E (eo1, eo2).
   Proof.
     elim => [ | eo3 p _] eo1 eo2 y. 
     - split.
@@ -2052,7 +2051,7 @@ Section Active_relation.
   Qed. 
   
   Lemma Active_path_cc_a: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (x y: T),
-      Active_path W E [:: eo1, eo2 & p] x y -> ActiveOe' W E (eo1, eo2) .
+      Active_path W E [:: eo1, eo2 & p] x y -> ActiveOe W E (eo1, eo2) .
   Proof.
     move => p eo1 eo2 x y H1.
     pose proof Active_path_cc_ht H1 as [H2 H3].
@@ -2061,7 +2060,7 @@ Section Active_relation.
   
   Lemma Active_path_crc: forall  (p: seq (T*T*O)) (eo1 eo2: T*T*O),
       Active_path W E (eo1::(rcons p eo2)) eo1.1.1 eo2.1.2
-      <-> allL (ActiveOe' W E) p eo1 eo2.
+      <-> allL (ActiveOe W E) p eo1 eo2.
   Proof.
     elim => [ | eo p H1] eo1 eo2;
            first by split;[move => [_ [_ /= H2]] |move => H1;split;[ |split]].
@@ -2080,7 +2079,7 @@ Section Active_relation.
   
   Lemma Active_path_crc_a: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (x y: T),
       Active_path W E (eo1::(rcons p eo2)) x y
-      -> ActiveOe' W E (eo1, (head eo2 p)) /\ ActiveOe' W E ((last eo1 p), eo2).
+      -> ActiveOe W E (eo1, (head eo2 p)) /\ ActiveOe W E ((last eo1 p), eo2).
   Proof.
     elim => [eo1 eo2 x y [_ [/= _ /allL0' H4]] // | eo3 p H1 eo1 eo2 x y].
     rewrite rcons_cons. move => H2.
@@ -2094,7 +2093,7 @@ Section Active_relation.
   Lemma Active_path_rcrc: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O),
       Active_path W E (rcons (rcons p eo1) eo2) (head eo1 p).1.1 eo2.1.2
       <-> Active_path W E (rcons p eo1) (head eo1 p).1.1 eo1.1.2
-        /\ ActiveOe' W E (eo1, eo2).
+        /\ ActiveOe W E (eo1, eo2).
   Proof.
     elim => [ | eo p H1] eo1 eo2.
     - split. 
@@ -2121,7 +2120,7 @@ Section Active_relation.
 
   Lemma Active_path_rcrc_a: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (x y: T),
       Active_path W E (rcons (rcons p eo1) eo2) x y 
-      -> ActiveOe' W E (eo1, eo2).
+      -> ActiveOe W E (eo1, eo2).
   Proof.
     move => p eo1 eo2 x y H1.
     pose proof Active_path_rcrc_ht H1 as [H2 H3].
@@ -2154,7 +2153,7 @@ Section Active_relation.
       Active_path W E ((rcons p eop)++ eoq::q) x y
       -> Active_path W E (rcons p eop) x eop.1.2
         /\ Active_path W E (eoq::q) eoq.1.1 y
-        /\ ActiveOe' W E (eop, eoq).
+        /\ ActiveOe W E (eop, eoq).
   Proof.
     elim => [ q eop eoq x y // | z p Hr q eop eoq x y ].
     - rewrite cat_rcons cat0s => H1.
@@ -2176,7 +2175,7 @@ Section Active_relation.
   Qed.
   
   Lemma Active_path_cat: forall (p q: seq (T*T*O)) (eop eoq: T*T*O) (x y z: T),
-      ActiveOe' W E (eop, eoq)
+      ActiveOe W E (eop, eoq)
       /\ Active_path W E (rcons p eop) x y 
       /\ Active_path W E (eoq::q) y z
       -> Active_path W E (rcons p eop++ eoq::q) x z.
@@ -2209,7 +2208,7 @@ Section Active_relation.
   Qed.
 
   Lemma Active_path_iff: forall (p q: seq (T*T*O)) (eop eoq: T*T*O) (x y z: T),
-      ActiveOe' W E (eop, eoq)
+      ActiveOe W E (eop, eoq)
       /\ Active_path W E (rcons p eop) x y 
       /\ Active_path W E (eoq::q) y z
       <-> Active_path W E (rcons p eop++ eoq::q) x z /\ y= eop.1.2.
@@ -2225,7 +2224,7 @@ Section Active_relation.
   
   Lemma Active_path_cat': forall (p q: seq (T*T*O)) (x y z: T),
       (exists (p' q': seq (T*T*O)), exists (eop eoq: T*T*O),
-          p = rcons p' eop /\ q = eoq::q' /\  ActiveOe' W E (eop, eoq))
+          p = rcons p' eop /\ q = eoq::q' /\  ActiveOe W E (eop, eoq))
       /\ Active_path W E p x y 
       /\ Active_path W E q y z
       -> Active_path W E (p++q) x z.
@@ -2344,7 +2343,7 @@ Section Active_relation.
 
     Lemma Active_path_shorten_L3: forall (p: seq (T*T*O)) (x y z u w: T),
         Active_path W E [::(x,y,P),(y,z,P) & (rcons (rcons p (u,y,N)) (y,w,N))] x w
-        -> ActiveOe' W E ((x,y,P), (y,w,N)).
+        -> ActiveOe W E ((x,y,P), (y,w,N)).
     Proof. 
       move => p x y z u w H1.
       move: (H1) => /Active_path_shorten_L2 H2.
@@ -2358,7 +2357,7 @@ Section Active_relation.
        in the previous lemmata *) 
     Lemma Active_path_shorten: forall (p: seq (T*T*O)) (x y z u w: T) (o1 o2 o3 o4:O) ,
         Active_path W E [::(x,y,o1),(y,z,o2) & (rcons (rcons p (u,y,o3)) (y,w,o4))] x w
-        -> ActiveOe' W E ((x,y,o1), (y,w,o4)).
+        -> ActiveOe W E ((x,y,o1), (y,w,o4)).
     Proof. 
       move => p x y z u w o1 o2 o3 o4 H1. 
       move: (H1); rewrite -rcons_cons -rcons_cons -rcons_cons -rcons_cons. 

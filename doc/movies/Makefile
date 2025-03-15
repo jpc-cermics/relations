@@ -114,6 +114,7 @@ SED= \
 	-e 's/\\begin{alectryon}/%/g' \
 	-e 's/\\end{alectryon}//g' \
 	-e 's+{\\PYZti{}+{\\(\\neg\\)+g' \
+	-e 's+`\\PYZlt{}=`+\\(\\subset\\)+g' \
 
 allplus: $(SNIPPETS)
 
