@@ -298,7 +298,8 @@ Section Kw_implies_active_path.
     pose proof C_L12 H1 as [p [q [t [H2 _]]]].
     pose proof @Lift_o_start_end T p q x y t as [x' [y' [r H3]]].
     rewrite H3 in H2. clear H3.
-    pose proof Active_path_crc_a H2 as [[H3 _] [_ [H4 _]]].
+    pose proof Active_path_crc_a H2 as H3. 
+    move: H3; rewrite ActiveOe_iff => [[[H3 _] [_ [H4 _]]]].
     by exists r, x', y'.
   Qed.
 
@@ -322,7 +323,8 @@ Section Cw_s_implies_active_path.
     pose proof C_L12 H2 as [p1 [q1 [t1 [H6 [H7 H8]]]]].
     pose proof (Lift_o_start_end p1 q1 x z t1) as [x1 [z1 [r1 H12]]].
     rewrite H12 in H6.
-    pose proof Active_path_crc_a H6 as [[H14' _] [_ [H14 _]]].
+    pose proof Active_path_crc_a H6 as H14. 
+    move: H14; rewrite ActiveOe_iff => [[[H14' _] [_ [H14 _]]]].
     by exists r1, ((x, x1, N) :: rcons r1 (z1, z, P)), x1, z1.
   Qed.
   
@@ -409,8 +411,8 @@ Section Dw_path.
       pose proof C_L13 H4 as [p2 [p3 [t' [z' [H7 [H8 [Ho2 Ho3]]]]]]].
       pose proof C_L14_2 H5 as [p4 [z'' [H9 Ho4]]].
       pose proof C_L13_2 H4 as [H10 H11].
-      have H12: ActiveOe W E ((y', t, P), (t, t', N)) by [].
-      have H13: ActiveOe W E ((z', z, P),(z, z'', N)) by [].
+      have H12: ActiveOe' W E ((y', t, P), (t, t', N)) by [].
+      have H13: ActiveOe' W E ((z', z, P),(z, z'', N)) by [].
       have H14: Active_path W E
                   (rcons p1 (y', t, P) ++ (t, t', N)::(rcons p2 (z', z, P)))
                   x z
@@ -423,7 +425,7 @@ Section Dw_path.
     + move: H4 => [H1 /= H4];rewrite -H4 in H5;clear H4.
       pose proof C_L14_1 H3 as [p1 [y' [H6 Ho1]]].
       pose proof C_L14_2 H5 as [p4 [t' [H9 Ho4]]].
-      have H12: ActiveOe W E ((y', t, P), (t, t', N)) by [].
+      have H12: ActiveOe' W E ((y', t, P), (t, t', N)) by [].
       exists ((rcons p1 (y', t, P))++ ((t, t', N) :: p4)).
       by apply Active_path_cat with t.
   Qed.
@@ -465,10 +467,12 @@ Section Active_path_implies_Aw_s.
   Proof.
     move => o1 o2 x y t. 
     elim: o2 => [|] [H1 [H2 H3]].
-    - elim: o1 H1 H3 => [|] _ /= /allL0' [/= H5 [H6 [_ H8]]].  
+    - rewrite ActiveOe_iff in H3.
+      elim: o1 H1 H3 => [|] _ /= /allL0' [/= H5 [H6 [_ H8]]].  
       by left;split;[right; exists t;split;[exists t| ] | ].
       by left;split;[left; exists t;split;[exists t| ] | ].
-    - elim: o1 H1 H3 => [|] _ /= /allL0' [/= H5 [H6 [_ H8]]]. 
+    - rewrite ActiveOe_iff in H3.
+      elim: o1 H1 H3 => [|] _ /= /allL0' [/= H5 [H6 [_ H8]]]. 
       by right;split;[left; exists t;split;[exists t| ] | ].
       by right;split;[right; exists t;split;[exists t| ] | ].
   Qed.
@@ -497,7 +501,8 @@ Section Active_path_implies_Aw_s.
       pose proof Active_path_cc_ht H2 as [H5 H6].
       rewrite /last /= in H5 H6.
       rewrite H5 H6.
-      pose proof Active_path_cc_a H2 as [H7 [H8 [H9 H10]]].
+      pose proof Active_path_cc_a H2 as H7. 
+      move: H7; rewrite ActiveOe_iff => [[H7 [H8 [H9 H10]]]].
       rewrite /ChrelO /mkset /fst /snd in H9.
       rewrite H9 H5 H6 in H2 *.
       exists [:: (u, v, o1)],o2,z.
@@ -530,6 +535,7 @@ Section Active_path_implies_Aw_s.
       
       + move: H11 => /rcons_inj [_ _ H14];rewrite H13 in H14;clear H13.
         exists (rcons q (u, v, o1)),o2, v.
+        rewrite ActiveOe_iff in H7.
         move: H7 => [/= H15 [H16 [/ChrelO_eq H17  H18]]].
         rewrite H17 in H4 *.
         split. 
@@ -544,6 +550,7 @@ Section Active_path_implies_Aw_s.
            by right;split;[apply D_L16_E42c|].
       + move: H11 => /rcons_inj [_ _ H14];rewrite H13 in H14;clear H13.
         exists (rcons q (u, v, o1)),o2, v.
+        rewrite ActiveOe_iff in H7.
         move: H7 => [/= H15 [H16 [/ChrelO_eq H17  H18]]].
         rewrite H17 in H4 *.
         split. 
