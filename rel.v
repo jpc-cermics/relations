@@ -47,7 +47,7 @@ Section Sets_facts.
   
   Lemma notempty_exists: forall (X: set T), (exists z, z \in X) <-> (X != set0).
   Proof.
-    by move => X;  rewrite set0P;split;[ move => [z /set_mem H1] | move => [z /mem_set H1] ];exists z.
+     by move => X;rewrite set0P;split;[ move => [z /set_mem H1] | move => [z /mem_set H1] ];exists z.
   Qed.
   
   (* begin snippet Sone:: no-out *)  
@@ -60,7 +60,7 @@ Section Sets_facts.
       by split => [/inP H2 | H2];[have H3: exists (z:T), z \in X by (exists x) |].
   Qed.
   (* end snippet Sone *) 
-
+  
   (* begin snippet Stwo:: no-out *)  
   Lemma empty_iff: forall (X: set T), ~ (X != set0) <-> X = set0.
   (* end snippet Stwo *)  
@@ -96,8 +96,7 @@ Section Union_facts.
   
   Lemma union_inc_b : S `<=` U -> R `<=` U -> (S `|` R) `<=` U.
   Proof.
-    move => H1 H2; have <- : U `|` R = U by apply setUidPl.
-    by apply setSU.
+    by move => H1 H2;(have <- : U `|` R = U by apply setUidPl);apply setSU.
   Qed.
   
 End Union_facts.
@@ -113,13 +112,11 @@ Section Inverse.
   Local Notation "R .-1" := (@inverse _ R) : classical_set_scope.
   
   Lemma inverse_inverse (U : relation T):  U.-1.-1 = U.
-  Proof. rewrite /inverse /mkset predeqE; tauto. Qed.
+  Proof. by rewrite /inverse /mkset predeqE /=;tauto. Qed.
   
   Lemma inverse_sym : R.-1 = R <-> symmetric R.
   Proof.
-    rewrite predeqE /symmetric. 
-    split => [ H1 x y /H1 // H | H1 [x y]].
-    by rewrite /=; split; apply H1.
+    by rewrite predeqE /symmetric;split => [  H0 x y /H0 // | H1 [x y]];split; apply H1.
   Qed.
   
   Lemma inverse_star : R.*.-1 = R.-1.* .

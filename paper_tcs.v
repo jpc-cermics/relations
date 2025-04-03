@@ -29,9 +29,12 @@ Section Paper.
  * Topological Conditional Separation
  *   Jean-Philippe Chancelier, Michel De Lara, Benjamin Heymann 
  * 
- * We list here the results of the paper following the order given 
- * in the paper.
+ * We list here the results of the paper
+ *  Topological Conditional Separation
+ * following the order given in the paper.
  ******************************************************************)
+
+  (* To be done by copying results from paper_tcs_*.v *)
 
 End Paper.
 
