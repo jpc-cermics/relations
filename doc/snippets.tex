@@ -384,7 +384,8 @@
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Lift\PYZus{}Im}~~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{spt}\PY{o}{:}\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)|}~\PY{n}{size}\PY{o}{(}\PY{n}{spt}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{l+m+mi}{0}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{spt}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{Chrel}\PY{o}{].}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Lift\PYZus{}Im}~~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{spt}\PY{o}{:}\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)|}~\PY{n}{size}\PY{o}{(}\PY{n}{spt}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{l+m+mi}{0}~\nl
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{spt}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{Chrel}\PY{o}{].}
     \end{input}
   \end{sentence}
 }
@@ -394,7 +395,8 @@
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Lift\PYZus{}inj}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{st}~\PY{n+nv}{st\PYZsq{}}\PY{o}{:}~\PY{n}{seq}~\PY{n}{T}\PY{o}{),}~\PY{n}{st}~\(\in\)~\PY{n}{Lift\PYZus{}Dom}~\PY{o}{\(\rightarrow\)}~\PY{n}{Lift}~\PY{n}{st}~\PY{o}{=}~\PY{n}{Lift}~\PY{n}{st\PYZsq{}}~\PY{o}{\(\rightarrow\)}~\PY{n}{st}~\PY{o}{=}~\PY{n}{st\PYZsq{}}\PY{o}{.}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Lift\PYZus{}inj}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{st}~\PY{n+nv}{st\PYZsq{}}\PY{o}{:}~\PY{n}{seq}~\PY{n}{T}\PY{o}{),}\nl
+      ~~~~~~\PY{n}{st}~\(\in\)~\PY{n}{Lift\PYZus{}Dom}~\PY{o}{\(\rightarrow\)}~\PY{n}{Lift}~\PY{n}{st}~\PY{o}{=}~\PY{n}{Lift}~\PY{n}{st\PYZsq{}}~\PY{o}{\(\rightarrow\)}~\PY{n}{st}~\PY{o}{=}~\PY{n}{st\PYZsq{}}\PY{o}{.}
     \end{input}
   \end{sentence}
 }
@@ -404,7 +406,8 @@
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Lift\PYZus{}surj}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{spt}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)),}~\PY{n}{spt}~\(\in\)~\PY{n}{Lift\PYZus{}Im}~\PY{o}{\(\rightarrow\)}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{st}\PY{o}{,}~\PY{n}{st}\(\in\)~\PY{n}{Lift\PYZus{}Dom}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{Lift}~\PY{n}{st}\PY{o}{=}\PY{n}{spt}\PY{o}{.}~
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Lift\PYZus{}surj}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{spt}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)),}~\nl
+      ~~~~~~\PY{n}{spt}~\(\in\)~\PY{n}{Lift\PYZus{}Im}~\PY{o}{\(\rightarrow\)}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{st}\PY{o}{,}~\PY{n}{st}\(\in\)~\PY{n}{Lift\PYZus{}Dom}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{Lift}~\PY{n}{st}\PY{o}{=}\PY{n}{spt}\PY{o}{.}~
     \end{input}
   \end{sentence}
 }
@@ -508,7 +511,8 @@
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Pe\PYZus{}UnLift}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{spt}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)),}~\PY{n}{spt}~\(\in\)~\PY{n}{Lift\PYZus{}Im}\PY{o}{\(\rightarrow\)}\PY{n}{Pe}~\PY{o}{(}\PY{n}{UnLift}~\PY{n}{spt}~\PY{n}{ptv}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)=}\PY{n}{Epe}~\PY{n}{spt}\PY{o}{.}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Pe\PYZus{}UnLift}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{spt}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)),}~\nl
+      ~~~~~~\PY{n}{spt}~\(\in\)~\PY{n}{Lift\PYZus{}Im}\PY{o}{\(\rightarrow\)}\PY{n}{Pe}~\PY{o}{(}\PY{n}{UnLift}~\PY{n}{spt}~\PY{n}{ptv}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)=}\PY{n}{Epe}~\PY{n}{spt}\PY{o}{.}
     \end{input}
   \end{sentence}
 }
@@ -552,7 +556,8 @@
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Ub}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\PY{o}{\(\neg\)`}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{stto}~\PY{o}{|}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{o}{(}\PY{n}{A\PYZus{}tr}~\PY{n}{W}~\PY{n}{E}\PY{o}{)].}\nl
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Ub}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\nl
+      ~~~~\PY{o}{\(\neg\)`}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{stto}~\PY{o}{|}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{o}{(}\PY{n}{A\PYZus{}tr}~\PY{n}{W}~\PY{n}{E}\PY{o}{)].}\nl
     \end{input}
   \end{sentence}
   \sep
@@ -733,7 +738,7 @@
   \sep
   \begin{sentence}
     \begin{input}
-      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{ScalP}~\PY{o}{(}\PY{n+nv}{S}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\PY{n}{S}\PY{o}{:\PYZsh{}(}\PY{n}{Er}\PY{o}{.+)}~\PY{o}{`\PYZlt{}=`}~\PY{n}{Mono}\PY{o}{\PYZsh{}}\PY{n}{S}\PY{o}{.}
+      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{ScalP}~\PY{o}{(}\PY{n+nv}{S}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\PY{n}{S}\PY{o}{:\PYZsh{}(}\PY{n}{Er}\PY{o}{.+)}~\PY{o}{\(\subset\)}~\PY{n}{Mono}\PY{o}{\PYZsh{}}\PY{n}{S}\PY{o}{.}
     \end{input}
   \end{sentence}
 }

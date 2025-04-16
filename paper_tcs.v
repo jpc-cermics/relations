@@ -24,6 +24,8 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+Local Open Scope classical_set_scope.
+
 Section Paper.
 (** ****************************************************************
  * Topological Conditional Separation
@@ -35,7 +37,22 @@ Section Paper.
  ******************************************************************)
 
   (* To be done by copying results from paper_tcs_*.v *)
-
+  
+  Theorem tcs_T5: forall (x y: T), x \in W.^c -> y \in W.^c -> (t_separated x y <-> d_separated x y).
+  Proof.
+    by move => x y Hx Hy; apply: T5.
+  Qed.
+  
+  (* c'est un peu plus general que tcs_L7 car on a ici  x \in W.^c et y \in W.^c *)
+  Lemma tcs_L7: forall (x y: T), 
+        x \in W.^c -> y \in W.^c -> Clos_(x |E,W) `&` Clos_(y|E,W) = set0 -> Aw (x, y) -> 
+        exists w_x, exists w_y, w_x \in W /\ w_y \in W /\ Cw (w_x, w_y) 
+                                /\ (Clos_(x| E,W) `&`  Clos_(w_x| E,W) != set0)
+                                /\ (Clos_(y| E,W) `&`  Clos_(w_y| E,W) != set0).
+  Proof.
+    by move => x y; apply: L7.
+  Qed.
+  
 End Paper.
 
 

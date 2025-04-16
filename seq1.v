@@ -798,7 +798,8 @@ Section Lift_bijective.
 
   (* begin snippet DI:: no-out *)  
   Definition Lift_Dom {T: Type}:= [set st:seq T| size(st) > 1].
-  Definition Lift_Im  {T: Type}:= [set spt:seq (T*T)| size(spt) > 0 /\ spt [L\in] Chrel].
+  Definition Lift_Im  {T: Type}:= [set spt:seq (T*T)| size(spt) > 0 
+                                                      /\ spt [L\in] Chrel].
   (* end snippet DI *)
   
   Lemma Lift_image: forall (st: seq T),
@@ -837,7 +838,8 @@ Section Lift_bijective.
   Qed.
   
   (* begin snippet Liftinj:: no-out *) 
-  Lemma Lift_inj: forall (st st': seq T), st \in Lift_Dom -> Lift st = Lift st' -> st = st'.
+  Lemma Lift_inj: forall (st st': seq T),
+      st \in Lift_Dom -> Lift st = Lift st' -> st = st'.
   (* end snippet Liftinj *) 
   Proof.
     rewrite /Lift_Dom /mkset.
@@ -862,7 +864,8 @@ Section Lift_bijective.
   Qed.
   
   (* begin snippet Liftsurj:: no-out *) 
-  Lemma Lift_surj: forall (spt: seq (T*T)), spt \in Lift_Im -> exists st, st\in Lift_Dom /\ Lift st=spt. 
+  Lemma Lift_surj: forall (spt: seq (T*T)), 
+      spt \in Lift_Im -> exists st, st\in Lift_Dom /\ Lift st=spt. 
   (* end snippet Liftsurj *) 
   Proof.
     move => st H0; move: (H0);rewrite /Lift_Im /mkset => /inP [H1 H2].
@@ -940,7 +943,8 @@ Section Endpoints_and_Deployment.
   
   (* Pe (UnLift spt ptv.1) = Epe spt. *) 
   (* begin snippet PeUnLift:: no-out *)  
-  Lemma Pe_UnLift: forall (spt: seq (T*T)), spt \in Lift_Im->Pe (UnLift spt ptv.1)=Epe spt.
+  Lemma Pe_UnLift: forall (spt: seq (T*T)), 
+      spt \in Lift_Im->Pe (UnLift spt ptv.1)=Epe spt.
   (* end snippet PeUnLift *)  
   Proof. 
     by move => spt /inP [H1 H2]; rewrite -Epe_Epe1 /Epe1.
@@ -1874,7 +1878,8 @@ Section Extended_Oriented_Paths.
   Qed.
   
   (* begin snippet  Activeeq:: no-out *)  
-  Definition Ub (W: set T) (E: relation T) := ~` [set stto | stto [L\in] (A_tr W E)].
+  Definition Ub (W: set T) (E: relation T) := 
+    ~` [set stto | stto [L\in] (A_tr W E)].
   Lemma D_separated_iff: forall (W: set T) (E: relation T) (x y: T),
       ~(exists (p: seq (T*T*O)), Active_path W E p x y)
       <-> ~ (x = y) /\  (D_U [set (x,y)] E) `<=` (Ub W E). 
