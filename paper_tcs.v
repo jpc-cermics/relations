@@ -52,6 +52,21 @@ Section Paper.
   Proof.
     by move => x y; apply: L7.
   Qed.
+
+  (* Lemma 8 of tcs *)
+  Lemma tcs_L8_1 : forall (W' W'': set T),
+      W' `<=` W /\ W'' `<=` W /\ (forall (w' w'': T), w' \in W' /\ w'' \in W'' -> ~(Cw (w', w'')))
+      -> Clos(W' | E,W) `&` Clos(W''| E,W) = set0. 
+  Proof.
+    by move => W' W'';  apply: L8_1.
+  Qed.
+
+  Lemma tcsh_L8_2: forall (W' W'': set T),
+      (W' `<=` W) /\ (W''= W `\` W') /\ Clos(W' | E,W) `&` Clos(W'' | E,W)=set0
+      -> ~ (exists (w' w'': T), w' \in W' /\ w'' \in W'' /\ Cw (w', w'')).
+  Proof.
+    by move => W' W'';  apply: L8_2.
+  Qed.
   
 End Paper.
 

@@ -83,6 +83,7 @@ Section Tcs.
     by rewrite L9_E25a Kw_W.
   Qed.
   
+  (** * XXX c'est presque l'equivalence du Lemme 10 *)
   Lemma ClosW_Intersect : forall (w1 w2: T),
       w1 \in W /\ w2 \in W /\ w1 <> w2 ->
       Clos_(w1 | E,W) `&` Clos_(w2 | E,W) != set0 <-> 
@@ -100,12 +101,14 @@ Section Tcs.
       by rewrite -Clos_Intersect_eq in H7.
   Qed.
   
+  (** * XXXX ce devrait etre une egalité a cause de  ClosW_Intersect *) 
   Lemma Clos_Intersect_W_inc: Closure_intersectW `<=` Δ_(W) `;` Kw `;` Δ_(W).
   Proof.
     move => [x y] [H1 [H2 [H3 H4]]].
     by apply ClosW_Intersect. 
   Qed.
   
+  (** * XXXX seems unused *)
   Lemma Clos_Intersect_W_t_eq: (Closure_intersectW).+ `<=` Cw. 
   Proof.
     have H1: (Closure_intersectW).+ `<=` (Δ_(W) `;` Kw `;` Δ_(W)).+ 
@@ -425,7 +428,7 @@ Section Tcs.
   
   Section Lemma_8_part1.
 
-    Lemma L8_part1_a : forall (w1 w2: T), 
+    Lemma L8_1_a : forall (w1 w2: T), 
         w1 \in W -> w2 \in W -> w1 <> w2 ->
         Clos_(w1 | E,W) `&` Clos_(w2 | E,W)!= set0 ->
         Cw (w1,w2).
@@ -435,7 +438,7 @@ Section Tcs.
       by rewrite /Cw /DKD; left;rewrite -clos_t_decomp_rt_r; left.
     Qed.
     
-    Lemma L8_part1 : forall (W' W'': set T),
+    Lemma L8_1 : forall (W' W'': set T),
         W' `<=` W /\ W'' `<=` W /\ (forall (w' w'': T), w' \in W' /\ w'' \in W'' -> ~(Cw (w', w'')))
         -> Clos(W' | E,W) `&` Clos(W''| E,W) = set0. 
     Proof.
@@ -454,7 +457,7 @@ Section Tcs.
       have H8: ~ Cw (w1, w2) by rewrite -in_setE in H10;rewrite -in_setE in H11;apply H3.
       have H9:  w1 <> w2
         by move => H9; have H9': Cw (w1, w2) by rewrite H9;rewrite in_setE in H6;rewrite in_setE in H7;apply Cw_reflexive_W.
-      have H13: Cw (w1, w2) by apply L8_part1_a. 
+      have H13: Cw (w1, w2) by apply L8_1_a. 
       by [].
     Qed.
 
@@ -536,7 +539,7 @@ Section Tcs.
                 by rewrite -empty_iff in H7.
     Qed.
 
-    Lemma L8_part2: forall (W' W'': set T),
+    Lemma L8_2: forall (W' W'': set T),
         (W' `<=` W) /\ (W''= W `\` W') /\ Clos(W' | E,W) `&` Clos(W'' | E,W)=set0
         -> ~ (exists (w' w'': T), w' \in W' /\ w'' \in W'' /\ Cw (w', w'')).
     Proof.
@@ -651,7 +654,7 @@ Section Tcs.
         by rewrite -empty_iff  in H0.
         (* fin de H6 *)
         have H8: Cw (w, θ). 
-        apply L8_part1_a.  
+        apply L8_1_a.  
         by apply H0' in H2;rewrite in_setE.
         by apply CBK_W in H3;rewrite in_setE.
         by move => H7; symmetry in H7.
@@ -734,7 +737,7 @@ Section Tcs.
         by rewrite predeqE => x;split;[apply H21|].                               
       clear H18 H19 H20 H21.
       have H18: ~ (exists (w' w'': T), w' \in W' /\ w'' \in W'' /\ Cw (w', w''))
-        by apply L8_part2.
+        by apply L8_2.
 
       move: H15 => /notempty_exists [t H15]. rewrite in_setE in H15. move: H15 => [H15 H'15].
       
