@@ -67,6 +67,13 @@ Section Sets_facts.
   Proof.
     by move => X;rewrite -notempty_exists empty_notexists.
   Qed.
+
+  Lemma notempty_iff: forall (X: set T), ~ (X = set0) <-> X != set0.
+  Proof.
+    move => X. split. 
+    by move => /empty_notexists /contrapT /notempty_exists H1. 
+    by move => /notempty_exists H1 /empty_notexists H2.
+  Qed.
   
   Lemma W_part : forall (X Y Z: set T),
       (Y `<=` X) /\ (Z= X `\` Y) -> Y `&` Z = set0.
