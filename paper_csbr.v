@@ -596,7 +596,7 @@ Section Main_Result.
     by apply contraPP => /D_P15 H1;rewrite notP.
   Qed.
 
-  (** * This is the main result of the paper *)
+  (** * This is the main result of the paper csbr *)
 
   (* begin snippet theoremfive:: no-out *)  
   Theorem Th5: forall (x y: T), ( x [⊥d] y | W ) <-> ~ Aw (x,y).

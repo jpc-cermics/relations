@@ -750,8 +750,13 @@ Section Closure_facts.
 
   Lemma Clos_x_x : forall (x:T), Clos_(x | E,W) x.
   Proof.
-    rewrite /Fset /mkset /= => x.
-    exists x;split. apply rt_refl. by []. 
+    by move => x; exists x;split;first by apply rt_refl. 
+  Qed.
+  
+  Lemma Clos_Ew: forall (x y: T),  Clos_(x | E,W) y <-> (Δ_(W.^c) `;` E).* (y, x).
+  Proof.
+    move => x' y';split;first by move => [z [?  <-]].
+    by move => ?;exists x';split.
   Qed.
   
   Lemma Clos_to_singleton: forall (X: set T) (x:T),
