@@ -29,120 +29,73 @@ Local Open Scope classical_set_scope.
 Section Tcs.
   (** * proofs for the paper Topological conditional separation *)
 
-
   Section Closure_facts.
   (** * starting by closure properties *) 
-  Lemma Clos_Ew: forall (x y: T),  Clos_(x | E,W) y <-> Ew.* (y, x).
-  Proof.
-    move => x' y';split;first by move => [z [?  <-]].
-    by move => ?;exists x';split.
-  Qed.
 
-  (* Closure intersect as a relation *) 
-  Definition Closure_intersect := 
-    [set xy | Clos_(xy.1 | E,W) `&` Clos_(xy.2 | E,W) != set0 ]%classic.
+    Lemma Clos_Ew: forall (x y: T),  Clos_(x | E,W) y <-> Ew.* (y, x).
+    Proof.
+      move => x' y';split;first by move => [z [?  <-]].
+      by move => ?;exists x';split.
+    Qed.
 
-  Lemma Clos_Intersect : forall (x y: T), 
-      (Clos_(x | E,W) `&` Clos_(y | E,W) != set0)%classic <-> 
-        (let R:= Emw.* `;` Ew.* in R (x, y)).
-  Proof.
-    move => w1' w2'; split;rewrite -notempty_exists.
-    - move => [z /inP [[w1 [H1 <-]] [w2 [H2 <-]]]].
-      by (exists z; split;[rewrite Emw_1 |]).
-    - rewrite Emw_1 /inverse /mkset => [[z /= [H1 H2]]].
-      by (exists z);rewrite in_setE;split;rewrite Clos_Ew. 
-  Qed.
+    (* Closure intersect as a relation *) 
+    Definition Closure_intersect := 
+      [set xy | Clos_(xy.1 | E,W) `&` Clos_(xy.2 | E,W) != set0 ]%classic.
+    
+    Lemma Clos_Intersect : forall (x y: T), 
+        (Clos_(x | E,W) `&` Clos_(y | E,W) != set0)%classic <-> 
+          (let R:= Emw.* `;` Ew.* in R (x, y)).
+    Proof.
+      move => w1' w2'; split;rewrite -notempty_exists.
+      - move => [z /inP [[w1 [H1 <-]] [w2 [H2 <-]]]].
+        by (exists z; split;[rewrite Emw_1 |]).
+      - rewrite Emw_1 /inverse /mkset => [[z /= [H1 H2]]].
+        by (exists z);rewrite in_setE;split;rewrite Clos_Ew. 
+    Qed.
+    
+    (* Closure intersect as a relation, Closure_intersect, is equal to (Emw.* `;` Ew.* ) *) 
+    Lemma Clos_Intersect_eq: Closure_intersect = (Emw.* `;` Ew.* ).
+    Proof.
+      rewrite predeqE => [[x1 x2]]; split => [/Clos_Intersect H1 // | ?].
+      by rewrite /Closure_intersect /mkset Clos_Intersect.
+    Qed.
   
-  (* Closure intersect as a relation, Closure_intersect, is equal to (Emw.* `;` Ew.* ) *) 
-  Lemma Clos_Intersect_eq: Closure_intersect = (Emw.* `;` Ew.* ).
-  Proof.
-    rewrite predeqE => [[x1 x2]]; split => [/Clos_Intersect H1 // | ?].
-    by rewrite /Closure_intersect /mkset Clos_Intersect.
-  Qed.
-  
-  (* Closure intersect on W as a relation (removing reflexivity) *) 
-  Definition Closure_intersectW := 
-    [set w | w.1 \in W /\ w.2 \in W /\ w.1 <> w.2 /\ 
-                                   (Clos_(w.1 | E,W) `&` Clos_(w.2 | E,W)) != set0].
+    Lemma Kw_W : Δ_(W) `;` ('Δ `|` Δ_(W.^c) `;` Bw `|` Bmw `;` Δ_(W.^c) `|` Kw ) `;` Δ_(W)
+                 = Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W).
+    Proof.
+      rewrite composeDl composeDl composeDl composeDr composeDr composeDr.
+      have -> : Δ_(W) `;` 'Δ `;` Δ_(W) = Δ_(W)
+        by rewrite  Delta_idem_r DeltaE_inv.
+      have -> : Δ_(W) `;` (Δ_(W.^c) `;` Bw) `;` Δ_(W) = 'Δc
+        by rewrite -composeA DeltaW_Wc !DeltaC_compose_absorbl.
+      have -> : Δ_(W) `;` (Bmw `;` Δ_(W.^c)) `;` Δ_(W) = 'Δc
+        by rewrite composeA [(Bmw `;` Δ_(W.^c) `;` Δ_(W))]composeA DeltaWc_W
+             !DeltaC_compose_absorbr.
+      by rewrite !DeltaC_union_idemr.
+    Qed.
+    
+    Lemma Kw_W': Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W) =Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W).
+    Proof.
+      by rewrite L14_E38a Kw_W.
+    Qed.
 
-  Lemma Kw_W : Δ_(W) `;` ('Δ `|` Δ_(W.^c) `;` Bw `|` Bmw `;` Δ_(W.^c) `|` Kw ) `;` Δ_(W)
-               = Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W).
-  Proof.
-    rewrite composeDl composeDl composeDl composeDr composeDr composeDr.
-    have -> : Δ_(W) `;` 'Δ `;` Δ_(W) = Δ_(W)
-      by rewrite  Delta_idem_r DeltaE_inv.
-    have -> : Δ_(W) `;` (Δ_(W.^c) `;` Bw) `;` Δ_(W) = 'Δc
-      by rewrite -composeA DeltaW_Wc !DeltaC_compose_absorbl.
-    have -> : Δ_(W) `;` (Bmw `;` Δ_(W.^c)) `;` Δ_(W) = 'Δc
-      by rewrite composeA [(Bmw `;` Δ_(W.^c) `;` Δ_(W))]composeA DeltaWc_W
-           !DeltaC_compose_absorbr.
-    by rewrite !DeltaC_union_idemr.
-  Qed.
-  
-  Lemma Kw_W': Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W) =Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W).
-  Proof.
-    by rewrite L9_E25a Kw_W.
-  Qed.
-
-  Lemma ClosW_Intersect : forall (w1 w2: T),
-      w1 \in W /\ w2 \in W /\ w1 <> w2 ->
-      Clos_(w1 | E,W) `&` Clos_(w2 | E,W) != set0 <-> 
-        (let R:= Δ_(W) `;` Kw `;` Δ_(W) in R (w1, w2)).
-  Proof.
-    move => w1' w2' [H1 [H2 H3]]; split => H4.
-    - have H5: (Emw.* `;` Ew.* ) (w1', w2') by rewrite -Clos_Intersect_eq.
-      have H6: (Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W)) (w1', w2') by apply R_restrict.
-      have H7: (Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W))  (w1', w2') by rewrite -Kw_W'.
-      by move: H7 => [[z H7] | H7] //.
-    - have H5:  (Δ_(W) `|` (Δ_(W) `;` Kw `;` Δ_(W)))  (w1', w2')
-        by apply subsetUr.
-      have H6: (Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W)) (w1', w2') by rewrite Kw_W'.
-      have H7: (Emw.* `;` Ew.* ) (w1', w2') by apply R_restrict in H6.
-      by rewrite -Clos_Intersect_eq in H7.
-  Qed.
+    Lemma ClosW_Intersect : forall (w1 w2: T),
+        w1 \in W /\ w2 \in W /\ w1 <> w2 ->
+                      Clos_(w1 | E,W) `&` Clos_(w2 | E,W) != set0 <-> 
+                        (let R:= Δ_(W) `;` Kw `;` Δ_(W) in R (w1, w2)).
+    Proof.
+      move => w1' w2' [H1 [H2 H3]]; split => H4.
+      - have H5: (Emw.* `;` Ew.* ) (w1', w2') by rewrite -Clos_Intersect_eq.
+        have H6: (Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W)) (w1', w2') by apply R_restrict.
+        have H7: (Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W))  (w1', w2') by rewrite -Kw_W'.
+        by move: H7 => [[z H7] | H7] //.
+      - have H5:  (Δ_(W) `|` (Δ_(W) `;` Kw `;` Δ_(W)))  (w1', w2')
+          by apply subsetUr.
+        have H6: (Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W)) (w1', w2') by rewrite Kw_W'.
+        have H7: (Emw.* `;` Ew.* ) (w1', w2') by apply R_restrict in H6.
+        by rewrite -Clos_Intersect_eq in H7.
+    Qed.
   End Closure_facts.
-
-
-  (** * 
-  Section Lemma_15 no more used .
-    
-    Lemma L13_a: (Cw `;` Emw.* `;` Ew.* `;` (( 'Δ `|`  Cw `;` (Bmw `|` Kw)) `;` Δ_(W.^c))) =
-                   Cw `;` (Bmw `|` Kw) `;` Δ_(W.^c).
-    Proof.
-      rewrite {1}composeDr {1}composeDl Delta_idem_l L9_E25d.
-      aac_rewrite L9_E25c.
-      by aac_reflexivity. 
-    Qed.
-    
-    Lemma L13_b: (Δ_(W.^c) `;` ( 'Δ `|` (Bw `|` Kw) `;` Cw ) `;` Emw.* `;` Ew.* `;` Cw) =
-                   (Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw).
-    Proof.
-      have H: (Δ_(W.^c) `;` Emw.* `;` Ew.* `;` Cw) = (Δ_(W.^c ) `;` (Emw.* `;` Ew.* ) `;` Cw)
-        by aac_normalise.
-      rewrite {1}composeDl Delta_idem_r {1}composeDr {1}composeDr {1}composeDr H L9_E25e.
-      have H1: (Δ_(W.^c) `;` ((Bw `|` Kw) `;` Cw) `;` Emw.* `;` Ew.* `;` Cw) =
-                 (Δ_(W.^c) `;` (Bw `|` Kw) `;` (Cw `;` Emw.* `;` Ew.* `;` Cw))
-        by aac_normalise.
-      by rewrite H1 L9_E25c setUid.
-    Qed.
-
-    Lemma L13: (Δ_(W.^c) `;` ('Δ `|` (Bw `|` Kw) `;` Cw) `;` Emw.* `;` Ew.* `;` Cw `;` Emw.* `;` Ew.* 
-                `;` 
-                  ( 'Δ `|`  Cw `;` (Bmw `|` Kw)) `;` Δ_(W.^c)) =
-                 Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw `;` (Bmw `|` Kw) `;` Δ_(W.^c).
-    Proof.
-      rewrite L13_b.
-      have H1: (Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw `;` Emw.* `;` Ew.* `;` 
-                  ('Δ `|` Cw `;` (Bmw `|` Kw)) `;` Δ_(W.^c)) = 
-                 (Δ_(W.^c) `;` (Bw `|` Kw) `;` 
-                    ( Cw `;` Emw.* `;` Ew.* `;` (('Δ `|` Cw `;` (Bmw `|` Kw)) `;` Δ_(W.^c))))
-        by aac_reflexivity.
-      rewrite H1 L13_a.
-      by aac_reflexivity.
-    Qed.
-
-  End Lemma_15.
-   **)
 
   Section Lemma_16.
     (** * Lemme 16 *)
@@ -155,7 +108,7 @@ Section Tcs.
       have H2:  (Δ_(W.^c) `;` (Bmw `;` Δ_(W.^c)) `;` Δ_(W.^c))
                 = (Δ_(W.^c) `;` Bmw `;` (Δ_(W.^c) `;` Δ_(W.^c)))
         by aac_reflexivity.
-      rewrite H1 L9_E25a composeDl composeDl composeDl Delta_idem_r.
+      rewrite H1 L14_E38a composeDl composeDl composeDl Delta_idem_r.
       rewrite -[Δ_(W.^c) `;` (Δ_(W.^c) `;` Bw)]composeA DeltaE_inv.
       rewrite composeDr composeDr composeDr  DeltaE_inv.
       rewrite H2  DeltaE_inv.
@@ -170,7 +123,7 @@ Section Tcs.
       have H1 : (Δ_(W.^c) `;` ((Bw `|` Kw) `;` Cw) `;` Emw.* `;` Ew.* `;` Δ_(W.^c) )
                 = (Δ_(W.^c) `;` (Bw `|` Kw) `;` (Cw `;` Emw.* `;` Ew.* `;` Δ_(W.^c)) )
         by aac_reflexivity.
-      rewrite H1 L9_E25d.
+      rewrite H1 L14_E38d.
       by aac_reflexivity.
     Qed.
     
@@ -180,7 +133,7 @@ Section Tcs.
       have H1: (Δ_(W.^c) `;` Emw.* `;` Ew.* `;` (Cw `;` (Bmw `|` Kw)) `;` Δ_(W.^c))
                = ((Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw) `;` (Bmw `|` Kw) `;` Δ_(W.^c))
         by aac_reflexivity.
-      by rewrite H1 L9_E25e.
+      by rewrite H1 L14_E38e.
     Qed.
     
     Lemma L16_d: (Δ_(W.^c) `;` ((Bw `|` Kw) `;` Cw) `;` Emw.* `;` Ew.* `;` (Cw `;` (Bmw `|` Kw))
@@ -192,7 +145,7 @@ Section Tcs.
                   (Δ_(W.^c) `;` (Bw `|` Kw) `;` ((Cw `;` Emw.* `;` Ew.* ) `;` Cw) `;` 
                      (Bmw `|` Kw) `;` Δ_(W.^c)) 
         by aac_reflexivity.
-      by rewrite H1 L9_E25c.
+      by rewrite H1 L14_E38c.
     Qed.
     (** * C'est (40) Lemme 16 *) 
     Lemma L16: (Δ_(W.^c) `;` Smw `;`  Emw.* `;` Ew.* `;` Sw `;` Δ_(W.^c))
@@ -570,7 +523,7 @@ Section Tcs.
         ( w \in (Cw `;` (Bmw `|` Kw))#X
           <-> (exists w', Cw (w,w') /\ (exists z, z \in Clos_(w'|E,W) /\ z \in Clos(X|E,W)))).
     Proof.
-      move => w X H1;rewrite (Fset_restrict _ H1) -L9_E25d -Fset_restrict=> [|//].
+      move => w X H1;rewrite (Fset_restrict _ H1) -L14_E38d -Fset_restrict=> [|//].
       rewrite composeA; split.
       - move => H2. rewrite in_setE in H2.
         move: H2 => [x [[x' [H2 [z [H3 H'3]]]] H4] ].

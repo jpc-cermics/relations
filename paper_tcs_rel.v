@@ -30,22 +30,22 @@ Local Open Scope classical_set_scope.
 Section Tcs_Lemma7. 
 
   (** * Lemma 7 of Tcs *)
-  Lemma L9_E25a : (Emw.* `;` Ew.* ) =
+  Lemma L14_E38a : (Emw.* `;` Ew.* ) =
                     ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw).
   Proof.
-    have L9_E25a1 : Ew.+ = Δ_(W.^c) `;` Bw                            
+    have L14_E38a1 : Ew.+ = Δ_(W.^c) `;` Bw                            
       by rewrite /Bw -composeA -/Ew r_clos_rt_clos_t.
-    have L9_E25a2 : Emw.+ = Bmw `;` Δ_(W.^c)
-      by rewrite -inverse_clos_t L9_E25a1 inverse_compose -/Bmw DeltaE_inverse.
+    have L14_E38a2 : Emw.+ = Bmw `;` Δ_(W.^c)
+      by rewrite -inverse_clos_t L14_E38a1 inverse_compose -/Bmw DeltaE_inverse.
     by rewrite L1 !composeDr !composeDl !Delta_idem_r !Delta_idem_l setUA -E9e;
-    rewrite -L9_E25a2 -L9_E25a1.
+    rewrite -L14_E38a2 -L14_E38a1.
   Qed.
 
-  Lemma L9_E25b : Cw `;` (Emw.* ) `;` (Ew .* ) = Cw `;` ('Δ `|` (Bmw `;` Δ_(W.^c)) `|` Kw).
+  Lemma L14_E38b : Cw `;` (Emw.* ) `;` (Ew .* ) = Cw `;` ('Δ `|` (Bmw `;` Δ_(W.^c)) `|` Kw).
   Proof.
     have H1: ( Δ_(W) `;` (Δ_(W.^c) `;` Bw)) = 'Δc
       by rewrite -composeA DeltaW_Wc DeltaC_compose_absorbl.
-    rewrite composeA L9_E25a {1}Cw_ends composeA !composeDl H1.
+    rewrite composeA L14_E38a {1}Cw_ends composeA !composeDl H1.
     rewrite DeltaC_compose_absorbr.
     rewrite !Delta_idem_r -Cw_ends.
     rewrite -composeA -Cw_ends.
@@ -55,7 +55,7 @@ Section Tcs_Lemma7.
 
   (* Equation (E23c) *)
 
-  Lemma L9_E25c1 : (Cw `;` (Emw.* ) `;` (Ew.* )) `;` Cw  = Cw `;` ((Δ_(W) `|` Kw `;` Δ_(W)) `;` Cw).
+  Lemma L14_E38c1 : (Cw `;` (Emw.* ) `;` (Ew.* )) `;` Cw  = Cw `;` ((Δ_(W) `|` Kw `;` Δ_(W)) `;` Cw).
   Proof.
     have H1: Δ_(W.^c) `;` Cw = 'Δc
       by rewrite Cw_starts -composeA DeltaWc_W DeltaC_compose_absorbl.
@@ -63,50 +63,50 @@ Section Tcs_Lemma7.
       by rewrite composeA H1 DeltaC_compose_absorbr.
     have H3:  Δ_(W) `;` Cw `|` Kw `;` ( Δ_(W) `;` Cw) = ( Δ_(W) `|` Kw `;`  Δ_(W)) `;` Cw
       by rewrite -[(Kw) `;` (_ `;` _)]composeA -composeDr.
-    by rewrite L9_E25b composeA composeDr composeDr H2 DeltaC_union_idemr Delta_idem_l
+    by rewrite L14_E38b composeA composeDr composeDr H2 DeltaC_union_idemr Delta_idem_l
          {2 3}Cw_starts H3.
   Qed.
 
-  Lemma L9_E25c2 : forall (R: relation T), 
+  Lemma L14_E38c2 : forall (R: relation T), 
       R = R `;`  Δ_(W) -> (R.+ `;`  Δ_(W) = R.+).
   Proof.
     by move => R H1;rewrite {2}H1 [RHS]Delta_clos_trans_ends -H1. 
   Qed.
 
-  Lemma L9_E25c3 : forall (R: relation T), 
+  Lemma L14_E38c3 : forall (R: relation T), 
       R =  Δ_(W) `;` R ->  Δ_(W) `;` R.+ = R.+.
   Proof.
     by move => R H1;rewrite {2}H1 [RHS]Delta_clos_trans_starts -H1. 
   Qed.
   
-  Lemma L9_E25c4 : forall (R: relation T), 
+  Lemma L14_E38c4 : forall (R: relation T), 
       R = R `;`  Δ_(W) -> R =  Δ_(W) `;` R -> ( Δ_(W) `|` R.+) `;` ( Δ_(W) `|` R) = ( Δ_(W) `|` R.+).
   Proof. 
     move => R H1 H2.
     rewrite composeDr !composeDl DeltaE_compose_same -H2.
-    rewrite L9_E25c2 //. 
+    rewrite L14_E38c2 //. 
     rewrite -setUA [in (R `|` _)]setUA [in (R `|` _)]setUC.
     rewrite -[in (R .+ `|` R `|` R .+ `;` R)]setUA.
     rewrite clos_t_decomp_rt_r. 
     by rewrite setUid.
   Qed.
 
-  Lemma L9_E25c5 : forall (R: relation T), 
+  Lemma L14_E38c5 : forall (R: relation T), 
       R = R `;`  Δ_(W) -> R =  Δ_(W) `;` R -> ( Δ_(W) `|` R.+) `;` ( Δ_(W) `|` R.+) = ( Δ_(W) `|` R.+).
   Proof.
     move => R H1 H2.
     rewrite composeDr !composeDl DeltaE_compose_same.
-    rewrite L9_E25c2 // L9_E25c3 //.
+    rewrite L14_E38c2 // L14_E38c3 //.
     by rewrite clos_t_decomp_2 -setUA setUid.
   Qed.
   
-  Lemma L9_E25c : (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw. 
+  Lemma L14_E38c : (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw. 
   Proof.
     have H1: DKD `;`  Δ_(W) = DKD
       by rewrite /DKD composeA DeltaE_compose_same.
     have H2:  Δ_(W) `;` DKD = DKD
       by rewrite /DKD -composeA -composeA DeltaE_compose_same.
-    rewrite L9_E25c1.
+    rewrite L14_E38c1.
     rewrite {1}Cw_ends.
     rewrite composeA. 
     rewrite -{1}[in ( Δ_(W) `;` (( Δ_(W) `|` Kw `;`  Δ_(W)) `;` Cw))]composeA. 
@@ -116,14 +116,14 @@ Section Tcs_Lemma7.
     rewrite /Cw -/DKD. 
     rewrite [in (DKD .+ `|`  Δ_(W))]setUC.
     rewrite -composeA. 
-    by rewrite L9_E25c4; first by rewrite L9_E25c5. 
+    by rewrite L14_E38c4; first by rewrite L14_E38c5. 
   Qed.
   
   (* Equation (E23d) *)
   
-  Lemma L9_E25d : (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c).
+  Lemma L14_E38d : (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c).
   Proof.
-    rewrite L9_E25b. 
+    rewrite L14_E38b. 
     rewrite Cw_ends.
     rewrite composeA [in( 'Δ `|` Bmw `;` Δ_(W.^c) `|` Kw) `;` Δ_(W.^c)]composeDr.
     rewrite [in ('Δ `|` Bmw `;` Δ_(W.^c)) `;` Δ_(W.^c)]composeDr.
@@ -137,7 +137,7 @@ Section Tcs_Lemma7.
   Qed.
 
   (* Equation (E23e) *)
-  Lemma L9_E25e : Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
+  Lemma L14_E38e : Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
   Proof.
     have H0 : forall (R: relation T), 
         (Δ_(W.^c) `;` R `;` Cw).-1 = Cw `;` R.-1 `;` Δ_(W.^c)
@@ -151,10 +151,11 @@ Section Tcs_Lemma7.
       by rewrite inverse_union Kw_inverse.
     have H4 : (Δ_(W.^c) `;` ((Emw .* ) `;` (Ew .* )) `;` Cw).-1
               =  (Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw).-1
-      by rewrite [LHS]H0 [RHS]H0 H2 H3 -[RHS]L9_E25d -composeA. 
+      by rewrite [LHS]H0 [RHS]H0 H2 H3 -[RHS]L14_E38d -composeA. 
     by apply inverse_eq in H4.
   Qed.
-
+  
+  (** * C'est maintenant le Lemme 14 *)
   Lemma  L9:
     (Emw.* `;` Ew.* ) = ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw)
     /\ Cw `;` (Emw .* ) `;` (Ew .* ) = Cw `;` ('Δ `|` Bmw `;` Δ_(W.^c) `|` Kw)
@@ -162,11 +163,11 @@ Section Tcs_Lemma7.
     /\ (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c)
     /\ Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
   Proof.
-    pose proof L9_E25a.
-    pose proof L9_E25b.
-    pose proof L9_E25c.
-    pose proof L9_E25d.
-    pose proof L9_E25e.
+    pose proof L14_E38a.
+    pose proof L14_E38b.
+    pose proof L14_E38c.
+    pose proof L14_E38d.
+    pose proof L14_E38e.
     by [].
   Qed.
   
