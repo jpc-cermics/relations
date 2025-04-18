@@ -6,7 +6,7 @@ Require dpdgraph.dpdgraph.
 (* From mathcomp Require Import classical_sets. *)
 (* Set Warnings "parsing coercions". *)
 
-From RL Require paper_csbr paper_relations seq1.
+From RL Require paper_csbr paper_relations seq1 paper_tcs_facts.
 
 Set DependGraph File "graph.dpd".
 Print FileDependGraph paper_csbr. 
@@ -17,6 +17,8 @@ Print FileDependGraph paper_relations.
 Set DependGraph File "graph3.dpd".
 Print FileDependGraph seq1.
 
+Set DependGraph File "graph4.dpd".
+Print FileDependGraph paper_tcs_facts.
 
 
 

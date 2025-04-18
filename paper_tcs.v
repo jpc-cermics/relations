@@ -43,6 +43,26 @@ Section Paper.
     by move => x y Hx Hy; apply: T5.
   Qed.
   
+  (** * XXXX A remplacer par une equivalence *)
+  Proposition tcs_P6_1imp2: forall (Γ Λ: set T) (W' W'' Wt: set T),
+      (W' = (Cw `;` (Bmw `|` Kw))#Γ) /\ (W''= (Cw `;` (Bmw `|` Kw))#Λ )
+      /\ (Wt = W `\` (W'`|` W''))
+      /\ ( Γ `<=` W.^c) /\ ( Λ `<=` W.^c) /\ (Γ `&` Λ = set0)
+      /\ Clos(Λ `|` W''|E,W) `&` Clos(Γ `|` W'|E,W) = set0
+      -> ( Clos(Γ `|` (W' `|` Wt) | E,W) `&` Clos(Λ `|` W''| E,W) = set0).
+  Proof.
+    by move => Γ Λ W' W'' Wt;apply: P6_1imp2.
+  Qed.
+  
+  Proposition tcs_P6_2imp1: forall (W' W'': set T) (Γ Λ: set T),
+      ( W' `<=` W) /\ (W''= W `\` W') /\
+        ( Γ `<=` W.^c) /\ ( Λ `<=` W.^c) /\
+        (Γ `&` Λ = set0) /\ ( Clos(Λ `|` W'| E,W) `&` Clos(Γ `|` W''| E,W) = set0)
+      -> (forall (λ γ: T), λ \in Λ /\ γ \in Γ -> t_separated λ γ).
+  Proof.
+    by  move => W' W'' Γ Λ;apply: P6_2imp1.
+  Qed.
+  
   (* c'est un peu plus general que tcs_L7 car on a ici  x \in W.^c et y \in W.^c *)
   Lemma tcs_L7: forall (x y: T), 
         x \in W.^c -> y \in W.^c -> Clos_(x |E,W) `&` Clos_(y|E,W) = set0 -> Aw (x, y) -> 
@@ -61,13 +81,65 @@ Section Paper.
     by move => W' W'';  apply: L8_1.
   Qed.
 
-  Lemma tcsh_L8_2: forall (W' W'': set T),
+  Lemma tcs_L8_2: forall (W' W'': set T),
       (W' `<=` W) /\ (W''= W `\` W') /\ Clos(W' | E,W) `&` Clos(W'' | E,W)=set0
       -> ~ (exists (w' w'': T), w' \in W' /\ w'' \in W'' /\ Cw (w', w'')).
   Proof.
     by move => W' W'';  apply: L8_2.
   Qed.
+
+  Lemma tcsL9 :  forall (w : T) (X : set T),
+      X `<=` W.^c ->
+      ( w \in (Cw `;` (Bmw `|` Kw))#X
+            <-> (exists w', Cw (w,w') /\ (exists z, z \in Clos_(w'|E,W) /\ z \in Clos(X|E,W)))).
+  Proof.
+    by apply: L9.
+  Qed.
+  Lemma tcs_L10_1 : forall (w1 w2: T),
+      (w1 \in W /\ w2 \in W /\ w1 <> w2) ->
+      Clos_(w1 | E,W) `&` Clos_(w2 | E,W) != set0 <-> Kw (w1, w2).
+  Proof.
+    by apply: L10_1.
+  Qed.
+
+  Lemma tcs_L10_2 : forall (w1 w2: T),
+      (w1 \in W /\ w2 \in W /\ w1 <> w2) ->
+      Clos_(w1 | E,W) `&` Clos_(w2 | E,W) != set0 -> Cw (w1, w2).
+  Proof.
+    by apply: L10_2.
+  Qed.
   
+  Lemma tcs_L11: forall (Θ: set T) (W': set T),
+      (W' `&` (Cw `;` (Bmw `|` Kw))#Θ = set0) 
+      ->  W' `<=` W
+      ->  Θ `<=` W.^c
+      -> ( Clos(W'| E,W) `&` Clos(Θ `|` (Cw `;` (Bmw `|` Kw))#Θ| E,W)= set0).
+  Proof.
+    by apply: L11.
+  Qed.
+  
+  Lemma  tcs_L14:
+    (Emw.* `;` Ew.* ) = ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw)
+    /\ Cw `;` (Emw .* ) `;` (Ew .* ) = Cw `;` ('Δ `|` Bmw `;` Δ_(W.^c) `|` Kw)
+    /\ (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw 
+    /\ (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c)
+    /\ Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
+  Proof.
+    by apply: L14.
+  Qed. 
+  
+  Lemma tcs_L15: (Δ_(W.^c) `;` Smw `;`  Emw.* `;` Ew.* `;` Sw `;` Δ_(W.^c))
+             = Δ_(W.^c) `;` Aw `;`  Δ_(W.^c).
+  Proof.
+    by apply: L15.
+  Qed.
+  
+
+
+
+
+
+
 End Paper.
 
 

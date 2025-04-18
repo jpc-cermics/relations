@@ -171,31 +171,22 @@ Section Tcs.
     
   End Tcs_Lemma14. 
   
-  Section Closure_facts.
-  (** * starting by closure properties *) 
-
-    (* Closure intersect as a relation *) 
-    Definition Closure_intersect := 
+  Section t_separated_facts.
+  (** * starting by t_separated properties *) 
+    
+    Definition  t_separated' := 
       [set xy | Clos_(xy.1 | E,W) `&` Clos_(xy.2 | E,W) != set0 ]%classic.
     
-    Lemma Clos_Intersect : forall (x y: T), 
-        (Clos_(x | E,W) `&` Clos_(y | E,W) != set0)%classic <-> 
-          (let R:= Emw.* `;` Ew.* in R (x, y)).
+    Lemma t_separated_iff: t_separated' = (Emw.* `;` Ew.* ).
     Proof.
-      move => w1' w2'; split;rewrite -notempty_exists.
+      rewrite predeqE /t_separated' /mkset => [[x1 x2]] /=.
+      split;rewrite -notempty_exists.
       - move => [z /inP [[w1 [H1 <-]] [w2 [H2 <-]]]].
         by (exists z; split;[rewrite Emw_1 |]).
       - rewrite Emw_1 /inverse /mkset => [[z /= [H1 H2]]].
         by (exists z);rewrite in_setE;split;rewrite Clos_Ew. 
     Qed.
     
-    (* Closure intersect as a relation, Closure_intersect, is equal to (Emw.* `;` Ew.* ) *) 
-    Lemma Clos_Intersect_eq: Closure_intersect = (Emw.* `;` Ew.* ).
-    Proof.
-      rewrite predeqE => [[x1 x2]]; split => [/Clos_Intersect H1 // | ?].
-      by rewrite /Closure_intersect /mkset Clos_Intersect.
-    Qed.
-  
     Lemma Kw_W : Δ_(W) `;` ('Δ `|` Δ_(W.^c) `;` Bw `|` Bmw `;` Δ_(W.^c) `|` Kw ) `;` Δ_(W)
                  = Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W).
     Proof.
@@ -214,14 +205,14 @@ Section Tcs.
     Proof.
       by rewrite L14_E38a Kw_W.
     Qed.
-
+    
     Lemma ClosW_Intersect : forall (w1 w2: T),
         w1 \in W /\ w2 \in W /\ w1 <> w2 ->
                       Clos_(w1 | E,W) `&` Clos_(w2 | E,W) != set0 <-> 
                         (let R:= Δ_(W) `;` Kw `;` Δ_(W) in R (w1, w2)).
     Proof.
       move => w1' w2' [H1 [H2 H3]]; split => H4.
-      - have H5: (Emw.* `;` Ew.* ) (w1', w2') by rewrite -Clos_Intersect_eq.
+      - have H5: (Emw.* `;` Ew.* ) (w1', w2') by rewrite -t_separated_iff.
         have H6: (Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W)) (w1', w2') by apply R_restrict.
         have H7: (Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W))  (w1', w2') by rewrite -Kw_W'.
         by move: H7 => [[z H7] | H7] //.
@@ -229,13 +220,13 @@ Section Tcs.
           by apply subsetUr.
         have H6: (Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W)) (w1', w2') by rewrite Kw_W'.
         have H7: (Emw.* `;` Ew.* ) (w1', w2') by apply R_restrict in H6.
-        by rewrite -Clos_Intersect_eq in H7.
+        by rewrite -t_separated_iff in H7.
     Qed.
-  End Closure_facts.
-
-  Section Lemma_16.
-    (** * Lemme 16 *)
-    Lemma L16_a : (Δ_(W.^c) `;` Emw.* `;` Ew.* `;` Δ_(W.^c))
+    
+  End t_separated_facts.
+  
+  Section Lemma_15.
+    Lemma L15_a : (Δ_(W.^c) `;` Emw.* `;` Ew.* `;` Δ_(W.^c))
                   = (Δ_(W.^c) `;` ('Δ `|` Bw `|` Bmw `|` Kw) `;` Δ_(W.^c)).
     Proof.
       have H1: (Δ_(W.^c) `;` Emw.* `;` Ew.* `;` Δ_(W.^c)) =
@@ -253,7 +244,7 @@ Section Tcs.
       by [].
     Qed.
     
-    Lemma L16_b:  (Δ_(W.^c) `;` ((Bw `|` Kw) `;` Cw) `;` Emw.* `;` Ew.* `;` Δ_(W.^c))
+    Lemma L15_b:  (Δ_(W.^c) `;` ((Bw `|` Kw) `;` Cw) `;` Emw.* `;` Ew.* `;` Δ_(W.^c))
                   = (Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw `;` (Bmw `|` Kw) `;` Δ_(W.^c)).
     Proof.
       have H1 : (Δ_(W.^c) `;` ((Bw `|` Kw) `;` Cw) `;` Emw.* `;` Ew.* `;` Δ_(W.^c) )
@@ -263,7 +254,7 @@ Section Tcs.
       by aac_reflexivity.
     Qed.
     
-    Lemma L16_c: (Δ_(W.^c) `;` Emw.* `;` Ew.* `;` (Cw `;` (Bmw `|` Kw)) `;` Δ_(W.^c))
+    Lemma L15_c: (Δ_(W.^c) `;` Emw.* `;` Ew.* `;` (Cw `;` (Bmw `|` Kw)) `;` Δ_(W.^c))
                  = (Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw `;` (Bmw `|` Kw) `;` Δ_(W.^c)).
     Proof.
       have H1: (Δ_(W.^c) `;` Emw.* `;` Ew.* `;` (Cw `;` (Bmw `|` Kw)) `;` Δ_(W.^c))
@@ -272,7 +263,7 @@ Section Tcs.
       by rewrite H1 L14_E38e.
     Qed.
     
-    Lemma L16_d: (Δ_(W.^c) `;` ((Bw `|` Kw) `;` Cw) `;` Emw.* `;` Ew.* `;` (Cw `;` (Bmw `|` Kw))
+    Lemma L15_d: (Δ_(W.^c) `;` ((Bw `|` Kw) `;` Cw) `;` Emw.* `;` Ew.* `;` (Cw `;` (Bmw `|` Kw))
                                                                `;` Δ_(W.^c))
                  =Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw `;` (Bmw `|` Kw) `;` Δ_(W.^c).
     Proof.
@@ -283,14 +274,15 @@ Section Tcs.
         by aac_reflexivity.
       by rewrite H1 L14_E38c.
     Qed.
-    (** * C'est (40) Lemme 16 *) 
-    Lemma L16: (Δ_(W.^c) `;` Smw `;`  Emw.* `;` Ew.* `;` Sw `;` Δ_(W.^c))
+    (** * Lemma 15 Equation (39) *) 
+    Lemma L15: (Δ_(W.^c) `;` Smw `;`  Emw.* `;` Ew.* `;` Sw `;` Δ_(W.^c))
                = Δ_(W.^c) `;` Aw `;`  Δ_(W.^c).
+    Proof.
       rewrite /Smw /Sw composeDl composeDl !composeDr !Delta_idem_r.
       rewrite -[(Bw `;` Cw `|` Kw `;` Cw)]composeDr.
       rewrite -[(DKD.+ `;` (Bmw `|` Kw) `|` Δ_(W) `;` (Bmw `|` Kw))]composeDr -/Cw.
       (* now we have 4 terms as in the math proof *)
-      rewrite L16_d L16_b L16_c L16_a setUid -setUA setUid.
+      rewrite L15_d L15_b L15_c L15_a setUid -setUA setUid.
       rewrite -composeDr. 
       have H1: (Δ_(W.^c) `;` ('Δ `|` Bw `|` Bmw `|` Kw) `|`
                   Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw `;` (Bmw `|` Kw))
@@ -301,19 +293,17 @@ Section Tcs.
       by aac_reflexivity.
     Qed.
 
-  End Lemma_16.
+  End Lemma_15.
   
   Section Theorem_5.
-    (** `;` t-separation is equivalent to d-separation on W.^c *)
+    (** * Theorem Th5 t-separation is equivalent to d-separation on W.^c *)
+    (** * XXXX we could use Relation restriction here *)
 
     Definition d_separated (x y: T) := ~ (Aw (x,y)).
-    
+
     Definition t_separated (x y: T) :=
       Clos( Sw#_(x) | E, W) `&` Clos( Sw#_(y) | E, W) = set0.
-    
-    (* Definition not_t_separated (x y: T) :=
-        (exists z, z \in Clos( Sw#_(x) | E, W) /\ z \in Clos( Sw#_(y) | E, W)). *)
-    
+        
     Lemma T_not_t_separated : forall (x y: T),
         x \in W.^c -> y \in W.^c ->
         (Clos( Sw#_(x) | E, W) `&` Clos( Sw#_(y) | E, W) != set0 <-> Aw (x, y)).
@@ -330,7 +320,7 @@ Section Tcs.
           by apply R_restrict.
         have H5: (Δ_(W.^c) `;` Aw `;` Δ_(W.^c)) = 
                    (Δ_(W.^c) `;` ((Ew.* `;` Sw).-1 `;` (Ew.* `;` Sw)) `;` Δ_(W.^c))
-          by rewrite -L16 inverse_compose Sw_inverse Emw_1;aac_reflexivity.
+          by rewrite -L15 inverse_compose Sw_inverse Emw_1;aac_reflexivity.
         have H6: (Δ_(W.^c) `;` Aw `;` Δ_(W.^c)) (x, y)
           by rewrite H5.
         by apply R_restrict in H6.
@@ -338,7 +328,7 @@ Section Tcs.
         have H2: (Δ_(W.^c) `;` Aw `;` Δ_(W.^c)) (x, y) by apply R_restrict.
         have H3: (Δ_(W.^c) `;` Aw `;` Δ_(W.^c)) = 
                    (Δ_(W.^c) `;` ((Ew.* `;` Sw).-1 `;` (Ew.* `;` Sw)) `;` Δ_(W.^c))
-          by rewrite -L16 inverse_compose Sw_inverse Emw_1;aac_reflexivity.
+          by rewrite -L15 inverse_compose Sw_inverse Emw_1;aac_reflexivity.
         have H4: (Δ_(W.^c) `;` ((Ew.* `;` Sw).-1 `;` (Ew.* `;` Sw))  `;` Δ_(W.^c)) (x, y)
           by rewrite H3 in H2.
         apply R_restrict in H4; last by split.
@@ -355,12 +345,14 @@ Section Tcs.
     Qed.
     
     (* Theorem 5 *)
-    Theorem T5: forall (x y: T), x \in W.^c -> y \in W.^c -> (t_separated x y <-> d_separated x y).
+    Theorem T5: forall (x y: T), 
+        x \in W.^c -> y \in W.^c ->
+                       (t_separated x y <-> d_separated x y).
     Proof.
       move => x y Hx Hy.
       by rewrite /t_separated -empty_iff T_not_t_separated.
     Qed.
-
+    
   End Theorem_5.
 
   Section Lemma_10.
@@ -402,7 +394,7 @@ Section Tcs.
   End Lemma_10.
   
   Section Lemma_7.
-    
+    (** * This is Lemma 7  *)
     Local Lemma L7_1: forall (x y: T), 
         x \in W.^c -> Bw (x, y) -> Clos_( x | E,W) `&` Clos_(y | E,W) != set0.
     Proof. 
@@ -454,7 +446,7 @@ Section Tcs.
       - by apply: L7_3.
     Qed.
     
-    Lemma L7_5: forall (x y: T), 
+    Local Lemma L7_5: forall (x y: T), 
         x \in W.^c -> y \in W.^c ->
         Clos_( x | E,W) `&` Clos_(y | E,W) = set0 ->
         Aw (x, y) ->
@@ -467,17 +459,17 @@ Section Tcs.
       - by rewrite /Dw -composeA in H2.    
     Qed.
     
-    Lemma L7_6l : forall (x y : T), Cw (x, y) -> W x.
+    Local Lemma L7_6l : forall (x y : T), Cw (x, y) -> W x.
     Proof.
       by rewrite Cw_starts; move => x y [w_x [[H1 H'1] _]]. 
     Qed.
 
-    Lemma L7_6r : forall (x y : T), Cw (x, y) -> W y.
+    Local Lemma L7_6r : forall (x y : T), Cw (x, y) -> W y.
     Proof.
       by rewrite Cw_ends; move => x y [w_x [_ [H1 /= <-]]].  
     Qed.
     
-    Lemma L7_7:  forall (x w: T), 
+    Local Lemma L7_7:  forall (x w: T), 
         x \in W.^c -> 
         (let R:= (Bw `|` Kw) in R (x, w)) ->
         Clos_( x | E,W) `&` Clos_(w | E,W) != set0.
@@ -485,7 +477,7 @@ Section Tcs.
       by move => x w Hx [H1 | H1];[apply L7_1 | apply L7_3].
     Qed.
     
-    Lemma L7_8:  forall (y w: T), 
+    Local Lemma L7_8:  forall (y w: T), 
         y \in W.^c -> 
         (let R:= (Bmw `|` Kw) in R (w, y)) ->
         Clos_( y | E,W) `&` Clos_(w | E,W) != set0.
@@ -518,7 +510,7 @@ Section Tcs.
   
   Section Lemma_8_part1.
     (** * Lemma 8 part 1 *)
-    Lemma L8_1_a : forall (w1 w2: T), 
+    Local Lemma L8_1_a : forall (w1 w2: T), 
         w1 \in W -> w2 \in W -> w1 <> w2 ->
         Clos_(w1 | E,W) `&` Clos_(w2 | E,W)!= set0 ->
         Cw (w1,w2).
@@ -554,7 +546,7 @@ Section Tcs.
   End Lemma_8_part1.
 
   Section Lemma8_part2.
-    (** * Lemma 8 part 1 *)
+    (** * Lemma 8 part 2 *)
     Local Lemma clos_t_sep_n : forall (n: nat) (W' W'': set T) (w' w'': T) (R: relation T),
         (W' `<=` W) /\ (W''= W `\` W') /\ 
           w' \in W' /\ w'' \in W'' /\ (iter (Δ_(W) `;` R `;` Δ_(W))  n.+1) (w', w'')
@@ -577,7 +569,7 @@ Section Tcs.
         by (exists x2; exists y2).
     Qed.
     
-    Lemma clos_t_sep : forall (W' W'': set T) (w' w'': T) (R: relation T),
+    Local Lemma clos_t_sep : forall (W' W'': set T) (w' w'': T) (R: relation T),
         (W' `<=` W) /\ (W''= W `\` W') /\ 
           w' \in W' /\ w'' \in W'' /\ (Δ_(W) `;` R `;` Δ_(W)).+ (w', w'')
         -> let Rw := (Δ_(W) `;` R `;` Δ_(W)) in
@@ -589,7 +581,7 @@ Section Tcs.
       by apply clos_t_sep_n with n' w' w''.
     Qed.
 
-    Lemma L8_a: forall (W' W'': set T) (w' w'': T),
+    Local Lemma L8_a: forall (W' W'': set T) (w' w'': T),
         (W' `<=` W) /\ (W''= W `\` W') /\ w' \in W' /\ w'' \in W''
         /\ Cw (w', w'')
         -> let Rw := (Δ_(W) `;` Kw `;` Δ_(W)) in
@@ -606,7 +598,7 @@ Section Tcs.
       by apply clos_t_sep with w' w''.
     Qed.
 
-    Lemma L8_b: forall (W' W'': set T) (w' w'': T),
+    Local Lemma L8_b: forall (W' W'': set T) (w' w'': T),
         (W' `<=` W) /\ (W''= W `\` W') /\ w' \in W' /\ w'' \in W''
         /\ Cw (w', w'')
         -> (exists (w1' w1'': T), w1' \in W' /\ w1'' \in W'' /\
@@ -651,10 +643,8 @@ Section Tcs.
     
   End Lemma8_part2.
   
-  Section Lemma_11.
-
-    (* Une autre façon équivalente de voir ce qu'est (Cw*(Bmw `|` Kw))#X *)
-    Lemma TClos :  forall (w : T) (X : set T),
+  Section Lemma_9.
+    Lemma L9 :  forall (w : T) (X : set T),
          X `<=` W.^c ->
         ( w \in (Cw `;` (Bmw `|` Kw))#X
           <-> (exists w', Cw (w,w') /\ (exists z, z \in Clos_(w'|E,W) /\ z \in Clos(X|E,W)))).
@@ -677,8 +667,10 @@ Section Tcs.
         exists z;split; first  by rewrite Emw_1 /inverse /mkset /= -H3'.
         by [].
     Qed.
-    (** * C'est le Lemme 11 du papier *)
-    Lemma L12: forall (Θ: set T) (W': set T),
+  End Lemma_9. 
+  
+  Section Lemma_11.
+    Lemma L11: forall (Θ: set T) (W': set T),
         (W' `&` (Cw `;` (Bmw `|` Kw))#Θ = set0) 
         ->  W' `<=` W
         ->  Θ `<=` W.^c
@@ -693,7 +685,7 @@ Section Tcs.
         move: H2 => [y [H2 H4]].
         have H5: y \in (Cw `;` (Bmw `|` Kw))#Θ.
         
-          rewrite TClos. 
+          rewrite L9.
           - exists y;split. 
             + apply Cw_reflexive_W. apply H0' in H2. by [].
             + exists t. split. by rewrite in_setE. by rewrite in_setE.
@@ -736,7 +728,7 @@ Section Tcs.
         by rewrite Clos_union setIUr H1 H'1 set0U.
     Qed.
   End Lemma_11.
-
+  
   Section Proposition_6.
     (** * Proposition 6 *)
     Lemma P6_1imp2_a_contra: forall (Γ Λ: set T) (W' W'': set T),
@@ -825,18 +817,18 @@ Section Tcs.
         -> ( Clos(Γ `|` (W' `|` Wt) | E,W) `&` Clos(Λ `|` W''| E,W) = set0).
     Proof.
       move => Γ Λ W' W'' Wt [H1 [H2 [H3 [H4 [H5 [H6 H'6]]]]]].
-      have H7: (W'`|` W'') `&` Wt = set0.  apply W_part with W.
-      split.
+      have H7: (W'`|` W'') `&` Wt = set0.
+      apply W_part with W.
+      split; last by[].
       move => x [H8|H8].
       by rewrite H1 in H8;apply CBK_W in H8.
       by rewrite H2 in H8;apply CBK_W in H8.
-      by [].
-      
+            
       have [H8 H9]: (Wt `&` W' = set0) /\ (Wt `&` W'' = set0)
         by rewrite setIC setIUr Union_empty in H7.
       
       have H10: Clos(Wt | E,W) `&` Clos(Λ `|` W''| E,W) = set0.
-      rewrite H2; apply L12.
+      rewrite H2; apply L11.
       by rewrite -H2.
       by rewrite H3; apply: subDsetl.
       by [].
