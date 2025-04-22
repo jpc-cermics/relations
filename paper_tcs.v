@@ -9,7 +9,6 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 
-
 From AAC_tactics Require Import AAC.
 
 Set Warnings "-parsing -coercions".
@@ -38,32 +37,33 @@ Section Paper.
 
   (* To be done by copying results from paper_tcs_*.v *)
   
-  Theorem tcs_T5: forall (x y: T), x \in W.^c -> y \in W.^c -> (t_separated x y <-> d_separated x y).
+  Theorem tcs_T5: forall (x y: T),
+      (x \in W.^c) -> (y \in W.^c) -> (t_separated (x,y) <-> d_separated (x,y)).
   Proof.
     by move => x y Hx Hy; apply: T5.
   Qed.
-  
-  (** * XXXX A remplacer par une equivalence *)
-  Proposition tcs_P6_1imp2: forall (Γ Λ: set T) (W' W'' Wt: set T),
-      (W' = (Cw `;` (Bmw `|` Kw))#Γ) /\ (W''= (Cw `;` (Bmw `|` Kw))#Λ )
-      /\ (Wt = W `\` (W'`|` W''))
-      /\ ( Γ `<=` W.^c) /\ ( Λ `<=` W.^c) /\ (Γ `&` Λ = set0)
-      /\ Clos(Λ `|` W''|E,W) `&` Clos(Γ `|` W'|E,W) = set0
-      -> ( Clos(Γ `|` (W' `|` Wt) | E,W) `&` Clos(Λ `|` W''| E,W) = set0).
+    
+  (* Theorem 5, relation version *)
+  Theorem tcs_T5':  (Restrict t_separated W.^c) = (Restrict d_separated W.^c).
   Proof.
-    by move => Γ Λ W' W'' Wt;apply: P6_1imp2.
+    by apply: T5'.
   Qed.
   
-  Proposition tcs_P6_2imp1: forall (W' W'': set T) (Γ Λ: set T),
-      ( W' `<=` W) /\ (W''= W `\` W') /\
-        ( Γ `<=` W.^c) /\ ( Λ `<=` W.^c) /\
-        (Γ `&` Λ = set0) /\ ( Clos(Λ `|` W'| E,W) `&` Clos(Γ `|` W''| E,W) = set0)
-      -> (forall (λ γ: T), λ \in Λ /\ γ \in Γ -> t_separated λ γ).
-  Proof.
-    by  move => W' W'' Γ Λ;apply: P6_2imp1.
+  (** Proposition 6 *)
+  Proposition tcs_P6: forall (Γ Λ: set T),
+      ( Γ `<=` W.^c) /\ ( Λ `<=` W.^c) /\ (Γ `&` Λ = set0) 
+      -> (
+          (forall (λ γ: T), λ \in Λ /\ γ \in Γ -> t_separated (λ, γ))
+          <->
+            (exists (W': set T), exists (W'': set T), 
+                ( W' `<=` W) /\ (W''= W `\` W') 
+                /\ ( Clos(Λ `|` W'| E,W) `&` Clos(Γ `|` W''| E,W) = set0) )
+        ).
+  Proof. 
+    by apply: P6.
   Qed.
   
-  (* c'est un peu plus general que tcs_L7 car on a ici  x \in W.^c et y \in W.^c *)
+  (* Lemma 7 *)
   Lemma tcs_L7: forall (x y: T), 
         x \in W.^c -> y \in W.^c -> Clos_(x |E,W) `&` Clos_(y|E,W) = set0 -> Aw (x, y) -> 
         exists w_x, exists w_y, w_x \in W /\ w_y \in W /\ Cw (w_x, w_y) 
@@ -133,12 +133,6 @@ Section Paper.
   Proof.
     by apply: L15.
   Qed.
-  
-
-
-
-
-
 
 End Paper.
 
