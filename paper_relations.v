@@ -179,6 +179,18 @@ Section Kw_facts.
   
 End Kw_facts.
 
+Section DKD_facts.
+  (** * Properties of DKD *)
+  
+  Lemma DKDsubCw: DKD `<=` Cw.
+  Proof.
+    have H1: DKD.+  `<=` Cw by apply: subsetUl.
+    have H2: DKD `<=`  DKD.+ by rewrite -clos_t_decomp_rt_r; apply: subsetUl.
+    by apply: subset_trans H2 H1.
+  Qed.
+
+End  DKD_facts.
+
 Section CwCw_s_facts.
   (** * Properties of Cw and Cws *)   
   
