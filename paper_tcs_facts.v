@@ -281,6 +281,15 @@ Section Tcs.
       rewrite set_sub_splitC set_splitC [in(W' `|` W'')]setUC.
       apply: subsplit_splitr.
     Qed.
+
+    Lemma split_iff: forall (W' W'' W: set T),
+        set_split  W' W'' W <->  W `\` W' = W'' /\ W' `<=` W.
+    Proof.
+      move => W' W'' W;split => [ [<- H2] | [<- H2]].
+      - by split;[apply: setUKD;rewrite H2| apply subsetUl].
+      - by split;[apply: setDUK|apply: setDIK].
+    Qed.
+    
   End set_split.
 
 
@@ -803,7 +812,6 @@ Section Tcs.
   Section Proposition_6.
     (** * Proposition 6 *)
     
-    (** * we do not need (Γ `<=` W.^c) /\ ( Λ `<=` W.^c) /\ (Γ `&` Λ = set0) *)
     Local Lemma P6_1imp2_a_contra: forall (Γ Λ: set T) (W' W'': set T),
         (W' = (Cw `;` (Bmw `|` Kw))#Λ) -> 
         (W''= (Cw `;` (Bmw `|` Kw))#Γ ) ->
@@ -852,15 +860,11 @@ Section Tcs.
         -> set_sub_split W' W'' W.
     Proof.
       move => Γ Λ W' W'' H1 H2 H3.
-      have H6: Clos( W'| E,W) `<=` Clos(Λ `|` W'| E,W) by apply:Clos_inc_r.  
-      have H6': W' `<=` Clos( W'| E,W)  by apply:Clos_contains.
-      have H6'':  W' `<=`  Clos(Λ `|` W'| E,W) by apply: subset_trans H6' H6.
-      have H7: Clos( W''| E,W) `<=` Clos(Γ `|` W''| E,W) by apply:Clos_inc_r.  
-      have H7': W'' `<=` Clos( W''| E,W)  by apply:Clos_contains.
-      have H7'':  W'' `<=`  Clos(Γ `|` W''| E,W) by apply: subset_trans H7' H7.
-      have H8:  W'  `&`  W''  `<=`  Clos(Λ `|` W'| E,W) `&` Clos(Γ `|` W''| E,W). 
-      apply: setISS H6'' H7''.
-      by move: H8; rewrite H3 subset0 => H8.
+      have H4:  W' `<=`  Clos(Λ `|` W'| E,W) by apply: ClosU_containsr H1. 
+      have H5:  W'' `<=`  Clos(Γ `|` W''| E,W) by apply: ClosU_containsr H2. 
+      have H6:  W'  `&`  W''  `<=`  Clos(Λ `|` W'| E,W) `&` Clos(Γ `|` W''| E,W)
+        by apply: setISS H4 H5.
+      by move: H6; rewrite H3 subset0 => H8.
     Qed.
     
     Local Lemma P6_1imp2_d: forall (Γ Λ: set T) (W' W'': set T),
@@ -871,78 +875,59 @@ Section Tcs.
           /\ set_sub_split W' W'' W. 
     Proof.
       move =>  Γ Λ W' W'' H3 H4 /(P6_1imp2_a H3 H4) H5.
-      pose proof (P6_1imp2_b H3) as H6.
-      pose proof (P6_1imp2_b H4) as H7.
-      split; first by [].
-      by apply: (P6_1imp2_c H6 H7 H5).
+      move: H3 H4 => /P6_1imp2_b H3 /P6_1imp2_b H4.
+      by split;last by apply: (P6_1imp2_c H3 H4 H5).
     Qed. 
     
     Lemma P6_1imp2_e: forall (Γ Λ: set T) (W' W'' Wt: set T),
-        (W' = (Cw `;` (Bmw `|` Kw))#Γ) /\ (W''= (Cw `;` (Bmw `|` Kw))#Λ )
-        /\ (Wt = W `\` (W'`|` W''))
-        /\ ( Γ `<=` W.^c) /\ ( Λ `<=` W.^c) /\ (Γ `&` Λ = set0)
-        /\ Clos(Λ `|` W''|E,W) `&` Clos(Γ `|` W'|E,W) = set0
-        -> ( Clos(Γ `|` (W' `|` Wt) | E,W) `&` Clos(Λ `|` W''| E,W) = set0).
+        ( Γ `<=` W.^c) /\ ( Λ `<=` W.^c) /\ (Γ `&` Λ = set0)
+        -> (W' = (Cw `;` (Bmw `|` Kw))#Λ) 
+        -> (W''= (Cw `;` (Bmw `|` Kw))#Γ)
+        -> (Wt = W `\` (W'`|` W''))
+        -> Clos(Λ `|` W'|E,W) `&` Clos(Γ `|` W''|E,W) = set0
+        -> ( Clos(Λ `|` (W' `|` Wt) | E,W) `&` Clos(Γ `|` W''| E,W) = set0).
     Proof.
-      move => Γ Λ W' W'' Wt [H1 [H2 [H3 [H4 [H5 [H6 H'6]]]]]].
-      have H7: (W'`|` W'') `&` Wt = set0.
-      apply W_part with W.
-      split; last by[].
-      move => x [H8|H8].
-      by rewrite H1 in H8;apply CBK_W in H8.
-      by rewrite H2 in H8;apply CBK_W in H8.
-            
-      have [H8 H9]: (Wt `&` W' = set0) /\ (Wt `&` W'' = set0)
-        by rewrite setIC setIUr Union_empty in H7.
-      
-      have H10: Clos(Wt | E,W) `&` Clos(Λ `|` W''| E,W) = set0.
-      rewrite H2; apply L11.
-      by rewrite -H2.
-      by rewrite H3; apply: subDsetl.
-      by [].
-      by rewrite setUA Clos_union setIUl H10 setIC H'6 set0U.
+      move => Γ Λ W' W'' Wt [H1 [H2 H3]] H4 H5 H6 H7.
+      have H8: (W'`|` W'') `&` Wt = set0 by rewrite H6; apply: setDIK.
+      have [H9 H10]: (Wt `&` W' = set0) /\ (Wt `&` W'' = set0) 
+        by rewrite setIC setIUr Union_empty in H8.
+      have H11: (Wt `&` (Cw`;`(Bmw `|` Kw))#Γ = set0) by rewrite -H5.
+      have H12: Wt `<=` W by  rewrite H6;apply: subDsetl.
+      pose proof (L11 H11 H12 H1) as H13.
+      by rewrite setUA Clos_union setIUl H7 set0U H5.
+    Qed.
+
+    Lemma P6_1imp2_f: forall (Γ Λ: set T) (W' W'' Wt: set T),
+        ( Γ `<=` W.^c) /\ ( Λ `<=` W.^c) /\ (Γ `&` Λ = set0)
+        -> (W' = (Cw `;` (Bmw `|` Kw))#Λ) 
+        -> (W''= (Cw `;` (Bmw `|` Kw))#Γ)
+        -> (Wt = W `\` (W'`|` W''))
+        -> (forall (λ γ: T), λ \in Λ /\ γ \in Γ -> t_separated (λ, γ)) 
+        -> ( Clos(Λ `|` (W' `|` Wt) | E,W) `&` Clos(Γ `|` W''| E,W) = set0)
+          /\ set_split (W' `|` Wt) W'' W.
+    Proof.
+      move => Γ Λ W' W'' Wt H1 H4 H5 H6 H7.
+      pose proof (P6_1imp2_d H4 H5 H7) as [H8 H9]. 
+      split;first  by apply: P6_1imp2_e.
+      by rewrite H6; apply: subsplit_splitl.
     Qed.
     
-    (** * XXXX a reprendre avec les lemmes de set_split plus haut *) 
-    Lemma P6_1imp2_f: forall (W' W'': set T),
-         W' `&` W'' = set0 -> W' `<=` W -> W'' `<=` W -> 
-         W'' = W `\` (W' `|` W `\` (W' `|` W'')).
-    Proof.
-    Admitted.
-    
     Lemma P6_1imp2: forall (Γ Λ: set T),
-        ( Λ `<=` W.^c) /\ ( Γ `<=` W.^c) /\ (Λ `&`Γ = set0)
+        ( Γ `<=` W.^c) /\ ( Λ `<=` W.^c) /\ (Γ `&` Λ = set0)
         ->  (forall (λ γ: T), λ \in Λ /\ γ \in Γ -> t_separated (λ, γ)) 
-        ->  ( exists (W': set T), exists (W'': set T), 
-              ( W' `<=` W) /\ (W''= W `\` W') 
-              /\ ( Clos(Λ `|` W'| E,W) `&` Clos(Γ `|` W''| E,W) = set0) ).
+        ->  ( exists (W1: set T), exists (W2: set T), 
+               ( Clos(Λ `|` W1| E,W) `&` Clos(Γ `|` W2| E,W) = set0)
+               /\  set_split W1 W2 W).
     Proof.
-      move =>  Γ Λ [H1 [H2 H3]] H4.
+      move =>  Γ Λ H1 H4.
       set W' := ((Cw `;` (Bmw `|` Kw))#Λ).
       set W'' := ((Cw `;` (Bmw `|` Kw))#Γ ).
       set Wt :=  W `\` (W'`|` W'').
-      set W1' := W' `|` Wt.
-      exists W1'; exists W''.
-      have [H5 [H6 [H7 H8]]]: ( Clos(Λ `|` W'| E,W) `&` Clos(Γ `|` W''| E,W) = set0) 
-                              /\ set_sub_split W' W'' W
-        by apply P6_1imp2_d;[by rewrite /W'| by rewrite /W''|].
-      
-      have H9: Wt   `<=` W by apply: subDsetl.
-      have H10: W1'  `<=` W `|`W by rewrite /W1';apply: setUSS. rewrite setUid in H10.
-      split; first by [].
-      split. apply: (P6_1imp2_f H8 H6 H7).
-      apply:  P6_1imp2_e.
-      split; first by rewrite /W'.
-      split; first by rewrite /W''.
-      split; first by rewrite /Wt.
-      split; first by [].
-      split; first by [].
-      split; first by [].
-      rewrite setIC. by [].
+      by exists (W' `|` Wt); exists W'';apply: (P6_1imp2_f H1 _ _ _ H4);rewrite /W' /W'' /Wt.
     Qed.
     
     (* second part using Lemma 7 and Lemma 8 *)
-    Lemma P6_2imp1: forall (Γ Λ: set T),
+    Lemma P6_2imp1_a: forall (Γ Λ: set T),
         ( Γ `<=` W.^c) /\ ( Λ `<=` W.^c) /\ (Γ `&` Λ = set0) 
         -> ( exists (W': set T), exists (W'': set T), 
               ( W' `<=` W) /\ (W''= W `\` W') 
@@ -1018,24 +1003,34 @@ Section Tcs.
         by  rewrite -empty_iff  in H6.
     Qed.
 
+
+    Lemma P6_2imp1: forall (Γ Λ: set T),
+        ( Γ `<=` W.^c) /\ ( Λ `<=` W.^c) /\ (Γ `&` Λ = set0) 
+        -> ( exists (W': set T), exists (W'': set T), 
+              ( Clos(Λ `|` W'| E,W) `&` Clos(Γ `|` W''| E,W) = set0)
+              /\ set_split W' W'' W)
+        -> (forall (λ γ: T), λ \in Λ /\ γ \in Γ -> t_separated (λ, γ)).
+    Proof.
+      move => Γ Λ H1 [W1 [W2 [H2 H3]]].
+      apply: (P6_2imp1_a H1).
+      exists W1; exists W2.
+      by move: H3;rewrite H2 split_iff => [[H3 H4]].
+    Qed.
+    
     Proposition P6: forall (Γ Λ: set T),
         ( Γ `<=` W.^c) /\ ( Λ `<=` W.^c) /\ (Γ `&` Λ = set0) 
         -> (
             (forall (λ γ: T), λ \in Λ /\ γ \in Γ -> t_separated (λ, γ))
             <->
               (exists (W': set T), exists (W'': set T), 
-                  ( W' `<=` W) /\ (W''= W `\` W') 
-                  /\ ( Clos(Λ `|` W'| E,W) `&` Clos(Γ `|` W''| E,W) = set0) )
+                  ( Clos(Λ `|` W'| E,W) `&` Clos(Γ `|` W''| E,W) = set0)
+                  /\ set_split W' W'' W)
             ).
     Proof.
-      move => Γ Λ [H1 [H2 H3]].
-      split. 
-      - apply: P6_1imp2. rewrite setIC. by []. 
-      - apply: P6_2imp1. by []. 
+      by move => Γ Λ H1;split;[apply: P6_1imp2 | apply: P6_2imp1].
     Qed.
-    
-  End Proposition_6.
 
+  End Proposition_6.
 End Tcs.
 
 

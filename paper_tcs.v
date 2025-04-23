@@ -9,15 +9,13 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 
-From AAC_tactics Require Import AAC.
-
 Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_ssreflect order.
 From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
 Set Warnings "parsing coercions".
 
-From RL Require Import  ssrel rel  aacset paper_relations paper_tcs_facts.
+From RL Require Import  ssrel rel paper_relations paper_tcs_facts.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -50,14 +48,15 @@ Section Paper.
   Qed.
   
   (** Proposition 6 *)
+
   Proposition tcs_P6: forall (Γ Λ: set T),
       ( Γ `<=` W.^c) /\ ( Λ `<=` W.^c) /\ (Γ `&` Λ = set0) 
       -> (
           (forall (λ γ: T), λ \in Λ /\ γ \in Γ -> t_separated (λ, γ))
           <->
             (exists (W': set T), exists (W'': set T), 
-                ( W' `<=` W) /\ (W''= W `\` W') 
-                /\ ( Clos(Λ `|` W'| E,W) `&` Clos(Γ `|` W''| E,W) = set0) )
+                ( Clos(Λ `|` W'| E,W) `&` Clos(Γ `|` W''| E,W) = set0)
+                /\ set_split W' W'' W)
         ).
   Proof. 
     by apply: P6.

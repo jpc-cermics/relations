@@ -800,6 +800,22 @@ Section Closure_facts.
     move => X H1 x H2. 
     by rewrite /Fset /mkset;exists x;split;[apply rt_refl| ].
   Qed.    
+
+  Lemma ClosU_containsl: forall (X Y: set T),
+      X `<=` W -> X `<=` Clos(X `|` Y | E,W).
+  Proof.
+    move => X Y H0.
+    have H2: X `<=` Clos( X | E,W)  by apply:Clos_contains.
+    by apply: (subset_trans H2);apply: Clos_inc_l.
+  Qed.
+
+  Lemma ClosU_containsr: forall (X Y: set T),
+      Y `<=` W -> Y `<=` Clos(X `|` Y | E,W).
+  Proof.
+    move => X Y H0.
+    have H2: Y `<=` Clos( Y | E,W)  by apply:Clos_contains.
+    by apply: (subset_trans H2);apply: Clos_inc_r.
+  Qed.
   
 End Closure_facts.
 
