@@ -848,7 +848,7 @@ Section Clos_trans_facts.
     elim: n2 n1 => [ n1  | n1 H n0]; first by rewrite addn0 Delta_idem_r.
     by rewrite [addn n0 n1.+1]addnS /iter -/iter -[RHS]composeA H.
   Qed.
-
+  
   (* R^{+} x y => exists n s.t R^k x y.  *) 
   
   Lemma clos_t_iterk: forall (x y:T), R.+ (x,y) -> exists (n:nat), (iter R n.+1) (x,y).

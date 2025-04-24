@@ -176,9 +176,9 @@ Section Tcs.
   (** * starting by closure intersection properties *) 
     
     Definition  ClosureI := 
-      [set xy | Clos_(xy.1 | E,W) `&` Clos_(xy.2 | E,W) != set0 ]%classic.
+      [set xy | Clos_(xy.1 | E,W) `&` Clos_(xy.2 | E,W) != set0 ].
     
-    Lemma t_separated_iff: ClosureI = (Emw.* `;` Ew.* ).
+    Lemma ClosureI_iff: ClosureI = (Emw.* `;` Ew.* ).
     Proof.
       rewrite predeqE /ClosureI /mkset => [[x1 x2]] /=.
       split;rewrite -notempty_exists.
@@ -188,9 +188,9 @@ Section Tcs.
         by (exists z);rewrite in_setE;split;rewrite Clos_Ew. 
     Qed.
     
-    Lemma Kw_W : Δ_(W) `;` ('Δ `|` Δ_(W.^c) `;` Bw `|` Bmw `;` Δ_(W.^c) `|` Kw ) `;` Δ_(W)
-                 = Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W).
+    Lemma Kw_W: Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W) =Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W).
     Proof.
+      rewrite L14_E38a.
       rewrite composeDl composeDl composeDl composeDr composeDr composeDr.
       have -> : Δ_(W) `;` 'Δ `;` Δ_(W) = Δ_(W)
         by rewrite  Delta_idem_r DeltaE_inv.
@@ -202,26 +202,21 @@ Section Tcs.
       by rewrite !DeltaC_union_idemr.
     Qed.
     
-    Lemma Kw_W': Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W) =Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W).
-    Proof.
-      by rewrite L14_E38a Kw_W.
-    Qed.
-  
     Lemma WClosureI : forall (w1 w2: T),
         w1 \in W /\ w2 \in W /\ w1 <> w2 ->
                       Clos_(w1 | E,W) `&` Clos_(w2 | E,W) != set0 <-> 
                         (let R:= Δ_(W) `;` Kw `;` Δ_(W) in R (w1, w2)).
     Proof.
       move => w1' w2' [H1 [H2 H3]]; split => H4.
-      - have H5: (Emw.* `;` Ew.* ) (w1', w2') by rewrite -t_separated_iff.
+      - have H5: (Emw.* `;` Ew.* ) (w1', w2') by rewrite -ClosureI_iff.
         have H6: (Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W)) (w1', w2') by apply R_restrict.
-        have H7: (Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W))  (w1', w2') by rewrite -Kw_W'.
+        have H7: (Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W))  (w1', w2') by rewrite -Kw_W.
         by move: H7 => [[z H7] | H7] //.
       - have H5:  (Δ_(W) `|` (Δ_(W) `;` Kw `;` Δ_(W)))  (w1', w2')
           by apply subsetUr.
-        have H6: (Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W)) (w1', w2') by rewrite Kw_W'.
+        have H6: (Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W)) (w1', w2') by rewrite Kw_W.
         have H7: (Emw.* `;` Ew.* ) (w1', w2') by apply R_restrict in H6.
-        by rewrite -t_separated_iff in H7.
+        by rewrite -ClosureI_iff in H7.
     Qed.
     
   End closure_intersection_facts.
@@ -372,10 +367,8 @@ Section Tcs.
     Proof. 
       move => x y Hx Hy.
       split.
-      - rewrite -notempty_exists.
-        move=> [z H1]. rewrite in_setE in H1.  move: H1 => [H1 H2].
-        rewrite Fset_comp in H1.
-        rewrite Fset_comp in H2.
+      - rewrite -notempty_exists 2!Fset_comp.
+        move=> [z /inP [ H1 H2]]. 
         have H3: ((Ew.* `;` Sw).-1 `;` (Ew.* `;` Sw)) (x, y)
           by apply Fset_intersect; exists z;split.
         have H4: (Δ_(W.^c) `;` ((Ew.* `;` Sw).-1 `;` (Ew.* `;` Sw))  `;` Δ_(W.^c)) (x, y)
@@ -399,11 +392,9 @@ Section Tcs.
         move: H6 => [t [/= H6 H'6]].
         move: H5 => [u [/= H5 H'5]].
         rewrite -notempty_exists.
-        exists z. rewrite in_setE. split.
-        - exists t. split. by []. rewrite /Sw /Fset /mkset.
-          exists x. split. by []. by [].
-        - exists u. split. by []. rewrite /Sw /Fset /mkset.
-          exists y. split. by []. by [].
+        (exists z); rewrite in_setE; split.
+        + by rewrite /Sw /Fset /mkset; exists t; split;[ |exists x;split].
+        + by rewrite /Sw /Fset /mkset;exists u;split;[ | exists y;split].
     Qed.
 
     Definition d_separated := Aw.^c.
@@ -413,8 +404,8 @@ Section Tcs.
     
     (* Theorem 5 *)
     Theorem T5: forall (x y: T), 
-        x \in W.^c -> y \in W.^c ->
-                       (t_separated (x, y) <-> d_separated (x, y)).
+        (x \in W.^c) -> (y \in W.^c) ->
+        (t_separated (x, y) <-> d_separated (x, y)).
     Proof.
       move => x y Hx Hy.
       by rewrite /t_separated /d_separated /mkset -empty_iff T_not_t_separated /=.
@@ -456,6 +447,7 @@ Section Tcs.
       move => w1 w2 [H1 [H2 H3]] /WClosureI H4. 
       by apply: DKDsubCw ;apply: H4.
     Qed.
+    
   End Lemma_10.
   
   Section Lemma_7.
@@ -474,13 +466,9 @@ Section Tcs.
     Local Lemma L7_2: forall (x y: T), 
         y \in W.^c -> Bmw (x, y) -> Clos_( x | E,W) `&` Clos_(y | E,W) != set0.
     Proof. 
-      rewrite /Bmw. move => x y H1 H2.
+      rewrite /Bmw => x y H1 H2.
       have H3: Clos_( y | E,W) `&` Clos_(x | E,W) != set0 by apply L7_1.
-      (* intersection commutative *)
-      rewrite -notempty_exists in H3. move: H3 => [z' H3]. 
-      rewrite in_setE in H3. move :H3 =>[[z [H5 <-]] H7].
-      rewrite -notempty_exists;exists z'.
-      rewrite in_setE. split. by []. rewrite /Fset /mkset  /=. exists z. split. by []. by [].
+      by rewrite setIC.
     Qed.
     
     Local Lemma L7_3: forall (x y: T), 
@@ -488,13 +476,10 @@ Section Tcs.
     Proof. 
       have H0: Ew.+ `<=` Ew.* 
         by move => xy; rewrite -DuT_eq_Tstar; apply subsetUr.
-      
       rewrite E9e; move => x y [z [/= H1 H2]];rewrite -notempty_exists;exists z. 
       rewrite in_setE.
       rewrite -inverse_clos_t /inverse /mkset /Ew /= in H1.
-      split.
-      - exists x. split. by apply H0. by [].
-      - exists y. split. by apply H0. by [].
+      by split;[exists x;split;[apply H0 |] | exists y;split;[apply H0 |]].
     Qed.
     
     Local Lemma L7_4: forall (x y: T), 
@@ -504,8 +489,8 @@ Section Tcs.
     Proof.
       move => x y Hx Hy [[[[_ /= H1]| H2] | H3] | H4]. 
       - rewrite -notempty_exists;exists x. rewrite in_setE. split.
-        rewrite /Fset /mkset. exists x. split. by apply rt_refl. by [].
-        rewrite /Fset /mkset -H1. exists x. split. by apply rt_refl. by [].
+        by rewrite /Fset /mkset;exists x;split;[apply rt_refl|].
+        by rewrite /Fset /mkset -H1;exists x;split;[apply rt_refl|].
       - by apply: L7_1.
       - by apply: L7_2.
       - by apply: L7_3.
@@ -1001,6 +986,138 @@ Section Tcs.
     Qed.
 
   End Proposition_6.
+
+  Section test.
+
+    Variables (T2 T3 I: Type).
+    
+    Lemma setM_bigcupr: forall (F : I -> set T3) (A : set T2),
+        A `*` \bigcup_ i (F i) = \bigcup_ i (A `*` F i).
+    Proof.
+      move => F A.
+      rewrite predeqE => -[x y]; split;  first by move=> [/= Ax [n Pn Fny]]; exists n.
+      by move=> [n Pn [/= Ax Fny]]; split => //; exists n.
+    Qed.
+  
+  End test.
+  
+  Section test1.
+    (** Topologies *)
+    Variables (R : relation T) (I: Type).
+    
+    (** * Fset and bigcup *)
+    Lemma Fset_bigcup: forall (F : I -> set T),
+        R#( \bigcup_ i (F i) ) =  \bigcup_ i (R# (F i)).
+    Proof.
+      move => F.
+      rewrite /Fset predeqE => x. 
+      split. 
+      by move => [y [H1 [n Pn Fny]]]; exists n;[ | exists y].
+      move => [n Pn [y [H1 H2]]]. exists y. split. by []. by exists n.
+    Qed.
+    
+    (** * Fset and bigcap *)
+    Lemma Fset_bigcap: forall (F : I -> set T),
+        R#( \bigcap_ i (F i) ) `<=`  \bigcap_ i (R# (F i)).
+    Proof.
+      by move => F x [y [H1 H2]];exists y; split;[| apply: H2]. 
+    Qed.
+    
+    Lemma stableU: forall (F : I -> set T),
+        (forall i, R#(F i) `<=` (F i)) -> R#(\bigcup_ i (F i)) `<=` (\bigcup_ i (F i)).
+    Proof.
+      move => F H1.
+      rewrite Fset_bigcup.
+      move => x [n Pn Fn].
+      exists n. by []. by apply: H1.
+    Qed.
+
+    Lemma stableI0: forall (F : I -> set T),
+        (forall i, R#(F i) `<=` (F i)) -> (\bigcap_ i R#(F i)) `<=` (\bigcap_ i (F i)).
+    Proof.
+      by move => F H1 x H2 i /H2/H1 H3.
+    Qed.
+
+    Lemma stableI: forall (F : I -> set T),
+        (forall i, R#(F i) `<=` (F i)) -> R#(\bigcap_ i (F i)) `<=` (\bigcap_ i (F i)).
+    Proof.
+      move => F /stableI0 H1. 
+      have H2: R#( \bigcap_ i (F i) ) `<=`  \bigcap_ i (R# (F i)) by apply:Fset_bigcap.
+      by apply: (subset_trans H2 H1).
+    Qed.
+
+    Lemma Ropen1: forall (X: set T),
+        R.*#X = X <-> R.*#X `<=` X.
+    Proof.
+      move => X.
+      split => [-> | H1];first by [].
+      have H2: X `<=` R.*#X
+        by rewrite -DuT_eq_Tstar -Fset_union_rel Fset_D;apply: subsetUl.
+      by rewrite eqEsubset.
+    Qed.
+
+    Lemma Ropen2: forall (X: set T),
+        R.*#X `<=` X <-> R.+#X `<=` X.
+    Proof.
+      move => X.
+      rewrite -DuT_eq_Tstar -Fset_union_rel Fset_D.
+      split. 
+      - move => H1.
+        have H2: R.+#X `<=` X `|` R.+#X by apply: subsetUr.
+        by apply: (subset_trans H2 H1).
+      - move => H1.
+        have H2: X `<=` X by [].
+        have H3: X `|` R.+#X `<=` X `|` X by apply: setUSS.
+        by move: H3;rewrite setUid.
+    Qed.
+
+    Lemma Ropen3: forall (X: set T),
+        R#X `<=` X -> forall (n: nat), (iter R n.+1)#X `<=` X.
+    Proof.
+      move => X H1 n. 
+      elim: n => [ | n H2]; first by rewrite iter1_id.
+      have H3: R^(n.+2)#X = (R^(n.+1)  `;` R^(1))#X
+        by rewrite -iter_compose addn1.
+      rewrite H3 -Fset_comp iter1_id.
+      have H4: R^(n.+1)#(R#X) `<=` R^(n.+1)#(X) by apply: Fset_inc1.
+      by apply: (subset_trans H4 H2).
+    Qed.
+
+    Lemma Ropen4: forall (X: set T),
+        R.+#X `<=` X <-> R#X  `<=` X.
+    Proof.
+      move => X. 
+      split.
+      - move => H1.
+        have H2:  R `<=` R.+ by apply: iter1_inc_clos_trans.
+        have H3: R#X  `<=` R.+#X by apply: Fset_inc.
+        by apply: (subset_trans H3 H1).
+      - move => H1 x [y [H2 H3]].
+        have [n H4]: exists (n:nat), (iter R n.+1) (x,y)
+            by apply: clos_t_iterk.
+        have H5: (iter R n.+1)#X x by (exists y).
+        have H6: (iter R n.+1)#X `<=` X by apply: (Ropen3 H1).
+        by move: H5 => /H6 H5.
+    Qed.
+
+    Lemma Ropen5: forall (X: set T),
+        R#X  `<=` X -> (X.^c :#R ) `&` X = set0.
+    Proof.
+      move => X H1.
+      rewrite empty_notexists => -[z /inP [[w [H2 H3]] H4]].
+      by have /H1 H5: R#X w by (exists z).
+    Qed.
+
+    Lemma Ropen6: forall (X: set T),
+        R#X  `<=` X -> (X.^c :#R ) `<=` X.^c.
+    Proof.
+      move => X H1.
+      rewrite -disjoints_subset. 
+      by apply: Ropen5.
+    Qed.
+    
+  End test1.
+
 End Tcs.
 
 
