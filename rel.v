@@ -501,6 +501,11 @@ Section Foresets.
   Definition Aset (T:Type) (R: relation T) (Y: set T) : set T :=
     Fset R.-1 Y. 
 
+  (* check that is coincide with usual definition *)
+  Lemma Aset_iff  (T:Type) (R: relation T) (Y: set T) :
+    Fset R.-1 Y = [set x | exists (y: T), R (y,x) /\ Y y].
+  Proof. by rewrite /Fset. Qed.
+
 End Foresets.
 
 (* Foreset of Y for the relation R*)
@@ -684,10 +689,9 @@ Section Foreset_facts.
   
   Lemma Fset_rt_singleton: forall (x:T), R.*#_(x) x. 
   Proof.
-    move => x.  rewrite /Fset /mkset. exists x.
-    split. by apply rt_refl. by [].
+    by move => x; exists x;split;[apply rt_refl|].
   Qed.
-
+  
   Lemma Fset_restrict : X `<=` Y -> R#X = (R `;` Δ_(Y))# X.
   Proof.
     rewrite /subset /Fset /compose /DeltaE /mkset predeqE /=. 
@@ -704,42 +708,34 @@ Section Foreset_facts.
   
   Lemma Fset_t1: forall (x y:T), R (x, y) -> R.+#_(y) x. 
   Proof.
-    move => x y H1.
-    rewrite /Fset /clos_rt /mkset /=.
-    exists y. split. by apply t_step. by []. 
+    by move => x y H1;rewrite /Fset;exists y;split;[apply t_step|].
   Qed.
   
   Lemma Fset_t2: forall (x y:T), 
       (exists (x1:T), R (x, x1) /\ R.+#_(y) x1) -> R.+#_(y) x. 
   Proof.
-    move => x y' [x1 [H1 H2]].  
-    move: H2. rewrite /Fset /clos_t /mkset /=.
-    move => [y [H2 <-]].
-    exists y. split. apply t_trans with x1. by apply t_step. by [].
-    by [].
+    move => x y' [x1 [H1 [y [H2 <-]]]].  
+    by exists y;split;[apply t_trans with x1;[apply t_step|]|].
   Qed.
 
   Lemma Fset_t3: forall (x y z:T), 
       R.+#_(y) x /\ R (y, z) -> R.+#_(z) x. 
   Proof.
-    move => x y z. rewrite /Fset clos_t_tn1_iff /clos_t_n1 /mkset /=.  
-    move => [[y' [H1 <-]] H2].
+    rewrite /Fset clos_t_tn1_iff => x y z -[[y' [H1 <-]] H2].
     by (exists z); split;[apply tn1_trans with y'| ].
   Qed.
   
   Lemma Fset_t4: forall (y z:T), 
       R (y, z) -> ( (R.+)#_(y) `<=` (R.+)#_(z) ).
   Proof.
-    move => y z H1 x H2. by apply Fset_t3 with y.
+    by move => y z H1 x H2;apply Fset_t3 with y.
   Qed.
 
   Lemma Fset_t5: forall (y z:T), 
       y \in (R.+)#_(z) -> ((R.+)#_(y) `<=` (R.+)#_(z) ).
   Proof.
-    move => y z. 
-    rewrite inP -Fset_t0 => H1.
-    move => t; rewrite -2!Fset_t0 => H2. 
-    by apply t_trans with y.
+    move => y z /inP H1 t;move:H1;rewrite -3!Fset_t0 => H1 H2.
+    by apply: (t_trans H2 H1). 
   Qed.
 
 End Foreset_facts.
@@ -750,7 +746,7 @@ Section Closure_facts.
 
   Lemma Clos_x_x : forall (x:T), Clos_(x | E,W) x.
   Proof.
-    by move => x; exists x;split;first by apply rt_refl. 
+    by move => x;exists x;split;first by apply rt_refl. 
   Qed.
   
   Lemma Clos_Ew: forall (x y: T),  Clos_(x | E,W) y <-> (Δ_(W.^c) `;` E).* (y, x).
@@ -863,7 +859,7 @@ Section Clos_trans_facts.
   Proof.
     elim => [ | n H [x y] H2]. 
     by rewrite /iter Delta_idem_l /clos_t /mkset => [[x y] /= H1]; apply: t_step.
-    by move: H2 => [z [H1 H2]]; apply H in H1; apply t_trans with z; [ | apply t_step].
+    by move: H2 => [z [H1 H2]];apply H in H1;apply t_trans with z; [ | apply t_step].
   Qed.
   
   Lemma iter1_inc_clos_trans: R `<=` R.+.
@@ -903,9 +899,7 @@ Section Clos_trans_facts.
       x\in W /\ y \in W.^c /\ R.+ (x,y)
       ->  (exists (x' y': T), x'\in W /\ y' \in W.^c /\ R (x', y')).
   Proof.
-    move => x y W [H1 [H2 H3]].
-    apply clos_t_iterk in H3.
-    move: H3 => [n' H3].
+    move => x y W [H1 [H2 /clos_t_iterk [n' H3]]].
     by apply clos_t_sep_n with n' x y.
   Qed.
   

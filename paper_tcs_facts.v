@@ -1002,118 +1002,123 @@ Section Tcs.
   End test.
   
   Section test1.
-    (** Topologies *)
-    Variables (R : relation T) (I: Type).
+    (** * Topologies *)
+    Variables (I: Type).
     
     (** * Fset and bigcup *)
-    Lemma Fset_bigcup: forall (F : I -> set T),
+    Lemma Fset_bigcup: forall (R : relation T) (F : I -> set T),
         R#( \bigcup_ i (F i) ) =  \bigcup_ i (R# (F i)).
     Proof.
-      move => F.
-      rewrite /Fset predeqE => x. 
-      split. 
+      move => R F;rewrite /Fset predeqE => x;split.
       by move => [y [H1 [n Pn Fny]]]; exists n;[ | exists y].
-      move => [n Pn [y [H1 H2]]]. exists y. split. by []. by exists n.
+      by move => [n Pn [y [H1 H2]]];exists y;split;[|exists n].
     Qed.
     
     (** * Fset and bigcap *)
-    Lemma Fset_bigcap: forall (F : I -> set T),
+    Lemma Fset_bigcap: forall (R : relation T) (F : I -> set T),
         R#( \bigcap_ i (F i) ) `<=`  \bigcap_ i (R# (F i)).
     Proof.
-      by move => F x [y [H1 H2]];exists y; split;[| apply: H2]. 
+      by move => R F x [y [H1 H2]];exists y; split;[| apply: H2]. 
     Qed.
     
-    Lemma stableU: forall (F : I -> set T),
+    Lemma Fset_stableU: forall (R : relation T) (F : I -> set T),
         (forall i, R#(F i) `<=` (F i)) -> R#(\bigcup_ i (F i)) `<=` (\bigcup_ i (F i)).
     Proof.
-      move => F H1.
-      rewrite Fset_bigcup.
-      move => x [n Pn Fn].
-      exists n. by []. by apply: H1.
+      by move => R F H1;rewrite Fset_bigcup => x [n Pn Fn];exists n;[|apply: H1].
     Qed.
 
-    Lemma stableI0: forall (F : I -> set T),
-        (forall i, R#(F i) `<=` (F i)) -> (\bigcap_ i R#(F i)) `<=` (\bigcap_ i (F i)).
-    Proof.
-      by move => F H1 x H2 i /H2/H1 H3.
-    Qed.
-
-    Lemma stableI: forall (F : I -> set T),
+    Lemma Fset_stableI: forall (R : relation T) (F : I -> set T),
         (forall i, R#(F i) `<=` (F i)) -> R#(\bigcap_ i (F i)) `<=` (\bigcap_ i (F i)).
     Proof.
-      move => F /stableI0 H1. 
-      have H2: R#( \bigcap_ i (F i) ) `<=`  \bigcap_ i (R# (F i)) by apply:Fset_bigcap.
-      by apply: (subset_trans H2 H1).
+      move => R F H1. 
+      have H2: (\bigcap_ i R#(F i)) `<=` (\bigcap_ i (F i))
+        by move => x H2 i /H2/H1 H3.
+      have H3: R#( \bigcap_ i (F i) ) `<=`  \bigcap_ i (R# (F i)) by apply:Fset_bigcap.
+      by apply: (subset_trans H3 H2).
     Qed.
 
-    Lemma Ropen1: forall (X: set T),
+    Lemma Aset_bigcup: forall (R : relation T) (F : I -> set T),
+        ( \bigcup_ i (F i) ):#R =  \bigcup_ i ((F i):#R).
+    Proof.
+      by move => R F;apply: Fset_bigcup.
+    Qed.
+
+    Lemma Aset_bigcap: forall (R : relation T) (F : I -> set T),
+        (\bigcap_ i (F i)):#R `<=`  \bigcap_ i ((F i):#R).
+    Proof.
+      by move => R F;apply: Fset_bigcap.
+    Qed.
+
+    Lemma Aset_stableU: forall (R : relation T) (F : I -> set T),
+        (forall i, (F i):#R `<=` (F i)) -> (\bigcup_ i (F i)):#R `<=` (\bigcup_ i (F i)).
+    Proof.
+      by move => R F H1;apply: Fset_stableU.
+    Qed.
+
+    Lemma Aset_stableI: forall (R : relation T) (F : I -> set T),
+        (forall i, (F i):#R `<=` (F i)) -> (\bigcap_ i (F i)):#R `<=` (\bigcap_ i (F i)).
+    Proof.
+      by move => R F H1;apply: Fset_stableI.
+    Qed.
+
+    Lemma Ropen1: forall (R : relation T) (X: set T),
         R.*#X = X <-> R.*#X `<=` X.
     Proof.
-      move => X.
-      split => [-> | H1];first by [].
+      move => R X;split => [-> | H1];first by [].
       have H2: X `<=` R.*#X
         by rewrite -DuT_eq_Tstar -Fset_union_rel Fset_D;apply: subsetUl.
       by rewrite eqEsubset.
     Qed.
 
-    Lemma Ropen2: forall (X: set T),
+    Lemma Ropen2: forall (R : relation T) (X: set T),
         R.*#X `<=` X <-> R.+#X `<=` X.
     Proof.
-      move => X.
-      rewrite -DuT_eq_Tstar -Fset_union_rel Fset_D.
-      split. 
-      - move => H1.
-        have H2: R.+#X `<=` X `|` R.+#X by apply: subsetUr.
+      move => R X;rewrite -DuT_eq_Tstar -Fset_union_rel Fset_D.
+      split => [ H1 | H1].
+      - have H2: R.+#X `<=` X `|` R.+#X by apply: subsetUr.
         by apply: (subset_trans H2 H1).
-      - move => H1.
-        have H2: X `<=` X by [].
+      - have H2: X `<=` X by [].
         have H3: X `|` R.+#X `<=` X `|` X by apply: setUSS.
         by move: H3;rewrite setUid.
     Qed.
 
-    Lemma Ropen3: forall (X: set T),
+    Lemma Ropen3: forall (R : relation T) (X: set T),
         R#X `<=` X -> forall (n: nat), (iter R n.+1)#X `<=` X.
     Proof.
-      move => X H1 n. 
+      move => R X H1 n. 
       elim: n => [ | n H2]; first by rewrite iter1_id.
-      have H3: R^(n.+2)#X = (R^(n.+1)  `;` R^(1))#X
+      have H3: R^(n.+2)#X = (R^(n.+1) `;` R^(1))#X
         by rewrite -iter_compose addn1.
       rewrite H3 -Fset_comp iter1_id.
       have H4: R^(n.+1)#(R#X) `<=` R^(n.+1)#(X) by apply: Fset_inc1.
       by apply: (subset_trans H4 H2).
     Qed.
 
-    Lemma Ropen4: forall (X: set T),
+    Lemma Ropen4: forall (R : relation T) (X: set T),
         R.+#X `<=` X <-> R#X  `<=` X.
     Proof.
-      move => X. 
-      split.
-      - move => H1.
-        have H2:  R `<=` R.+ by apply: iter1_inc_clos_trans.
+      move => R X;split => [H1 | H1 x [y [H2 H3]]].
+      - have H2:  R `<=` R.+ by apply: iter1_inc_clos_trans.
         have H3: R#X  `<=` R.+#X by apply: Fset_inc.
         by apply: (subset_trans H3 H1).
-      - move => H1 x [y [H2 H3]].
-        have [n H4]: exists (n:nat), (iter R n.+1) (x,y)
-            by apply: clos_t_iterk.
+      - have [n H4]: exists (n:nat), (iter R n.+1) (x,y) by apply: clos_t_iterk.
         have H5: (iter R n.+1)#X x by (exists y).
         have H6: (iter R n.+1)#X `<=` X by apply: (Ropen3 H1).
         by move: H5 => /H6 H5.
     Qed.
 
-    Lemma Ropen5: forall (X: set T),
+    Lemma Ropen5: forall (R : relation T) (X: set T),
         R#X  `<=` X -> (X.^c :#R ) `&` X = set0.
     Proof.
-      move => X H1.
+      move => R X H1.
       rewrite empty_notexists => -[z /inP [[w [H2 H3]] H4]].
       by have /H1 H5: R#X w by (exists z).
     Qed.
 
-    Lemma Ropen6: forall (X: set T),
+    Lemma Ropen6: forall (R : relation T) (X: set T),
         R#X  `<=` X -> (X.^c :#R ) `<=` X.^c.
     Proof.
-      move => X H1.
-      rewrite -disjoints_subset. 
-      by apply: Ropen5.
+      by move => X H1;rewrite -disjoints_subset;apply: Ropen5.
     Qed.
     
   End test1.
