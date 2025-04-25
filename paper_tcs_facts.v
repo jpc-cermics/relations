@@ -987,20 +987,6 @@ Section Tcs.
 
   End Proposition_6.
 
-  Section test.
-
-    Variables (T2 T3 I: Type).
-    
-    Lemma setM_bigcupr: forall (F : I -> set T3) (A : set T2),
-        A `*` \bigcup_ i (F i) = \bigcup_ i (A `*` F i).
-    Proof.
-      move => F A.
-      rewrite predeqE => -[x y]; split;  first by move=> [/= Ax [n Pn Fny]]; exists n.
-      by move=> [n Pn [/= Ax Fny]]; split => //; exists n.
-    Qed.
-  
-  End test.
-  
   Section test1.
     (** * Topologies *)
     Variables (I: Type).
@@ -1036,6 +1022,20 @@ Section Tcs.
       have H3: R#( \bigcap_ i (F i) ) `<=`  \bigcap_ i (R# (F i)) by apply:Fset_bigcap.
       by apply: (subset_trans H3 H2).
     Qed.
+
+    Lemma Fset_0 : forall (R : relation T), R#set0 `<=` set0.
+    Proof.
+      by move => R x [y [_ H1]].
+    Qed.
+
+    Lemma Fset_T : forall (R : relation T), R#setT `<=` setT.
+    Proof.
+      by []. 
+    Qed.
+
+    Definition To (R : relation T) := 
+      [ set O | R#O `<=` O].
+    
 
     Lemma Aset_bigcup: forall (R : relation T) (F : I -> set T),
         ( \bigcup_ i (F i) ):#R =  \bigcup_ i ((F i):#R).
