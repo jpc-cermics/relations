@@ -1033,10 +1033,6 @@ Section Tcs.
       by []. 
     Qed.
 
-    Definition To (R : relation T) := 
-      [ set O | R#O `<=` O].
-    
-
     Lemma Aset_bigcup: forall (R : relation T) (F : I -> set T),
         ( \bigcup_ i (F i) ):#R =  \bigcup_ i ((F i):#R).
     Proof.
@@ -1060,7 +1056,20 @@ Section Tcs.
     Proof.
       by move => R F H1;apply: Fset_stableI.
     Qed.
+    
+    Lemma Aset_0 : forall (R : relation T), set0:#R `<=` set0.
+    Proof.
+      by move => R x [y [_ H1]].
+    Qed.
 
+    Lemma Aset_T : forall (R : relation T), setT:#R `<=` setT.
+    Proof.
+      by []. 
+    Qed.
+
+    Definition To (R : relation T) := 
+      [ set O | O:#R `<=` O].
+    
     Lemma Ropen1: forall (R : relation T) (X: set T),
         R.*#X = X <-> R.*#X `<=` X.
     Proof.
@@ -1119,6 +1128,28 @@ Section Tcs.
         R#X  `<=` X -> (X.^c :#R ) `<=` X.^c.
     Proof.
       by move => X H1;rewrite -disjoints_subset;apply: Ropen5.
+    Qed.
+    
+    (** * Closure of a set *)
+    
+    Definition T_closure (R : relation T) (Y: set T) (X: set T) 
+      := Y = R.*#Y /\ X`<=` Y /\ (forall Z, Z = R.*#Z /\ X `<=` Z -> Y `<=` Z).
+    
+    Lemma T_closure_iff: forall (R : relation T) (Y: set T) (X: set T),
+        T_closure R Y X <-> Y = R.*#X.
+    Proof.
+      move => R Y X.
+      have H4: R.*#X = R.*#(R.*#X) by rewrite Fset_comp compose_rt_rt.
+      have H5: X `<=` R.*#X by rewrite -DuT_eq_Tstar -Fset_union_rel Fset_D;apply: subsetUl.
+      split  => [ [H1 [H2 H3]] | H1].
+      - have H6: Y `<=`  R.*#X by apply: H3.
+        have H7: R.*#X `<=` Y by rewrite H1; apply: Fset_inc1 .
+        by rewrite eqEsubset.
+      - split;rewrite H1;first by[].
+        split;first by [].
+        move => Z [H2 H3].
+        have H6:  R.*#X `<=`  R.*#Z by apply: Fset_inc1 .
+        by rewrite H2.
     Qed.
     
   End test1.
