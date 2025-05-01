@@ -622,6 +622,11 @@ Section Foreset_facts.
       exists y. split. by []. by left.
       exists y. split. by []. by right.
   Qed.
+
+  Lemma FsetI : R#(X `&` Y) `<=` (R#X) `&` (R#Y).
+  Proof.
+    by move => x [y [? [? ?]]];split;exists y.
+  Qed.
   
   (* Foreset in extension *)
 

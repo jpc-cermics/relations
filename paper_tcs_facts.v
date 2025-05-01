@@ -1023,6 +1023,14 @@ Section Tcs.
       by apply: (subset_trans H3 H2).
     Qed.
 
+    Lemma Fset_stableIf: forall (R : relation T) (A B: set T),
+       R#A  `<=` A -> R#B  `<=` B -> R#(A `&` B)  `<=` A   `&` B.
+    Proof.
+      move => R A B ? ?.
+      have H1: (R#A) `&`  (R#B)  `<=`  A   `&` B by apply: setISS.
+      apply: (subset_trans _ H1); apply: FsetI.
+    Qed.
+    
     Lemma Fset_0 : forall (R : relation T), R#set0 `<=` set0.
     Proof.
       by move => R x [y [_ H1]].
@@ -1057,19 +1065,49 @@ Section Tcs.
       by move => R F H1;apply: Fset_stableI.
     Qed.
     
+    Lemma Aset_stableIf: forall (R : relation T) (A B: set T),
+        A:#R `<=` A -> B:#R `<=` B -> (A `&` B):#R  `<=` A `&` B.
+    Proof.
+      by move => R A B ? ?;apply: Fset_stableIf.
+    Qed.
+    
     Lemma Aset_0 : forall (R : relation T), set0:#R `<=` set0.
     Proof.
       by move => R x [y [_ H1]].
     Qed.
-
+    
     Lemma Aset_T : forall (R : relation T), setT:#R `<=` setT.
     Proof.
       by []. 
     Qed.
 
+    (** * topology *)
     Definition To (R : relation T) := 
       [ set O | O:#R `<=` O].
     
+    Lemma To_stableU: forall (R : relation T) (F : I -> set T),
+         (forall i, ((To R) (F i))) -> (To R) (\bigcup_ i (F i)).
+    Proof.
+      by move => R F ?;apply:Aset_stableU.
+    Qed.
+
+    Lemma To_stableI: forall (R : relation T) (F : I -> set T),
+         (forall i, ((To R) (F i))) -> (To R) (\bigcap_ i (F i)).
+    Proof.
+      by move => R F ?;apply:Aset_stableI.
+    Qed.
+    
+    Lemma To_sset0: forall (R : relation T), (To R) set0. 
+    Proof.
+      by move => R;apply:Aset_0.
+    Qed.
+
+    Lemma To_ssetT: forall (R : relation T), (To R) setT. 
+    Proof.
+      by move => R;apply:Aset_T.
+    Qed.
+    
+    (** * properties of open sets *)
     Lemma Ropen1: forall (R : relation T) (X: set T),
         R.*#X = X <-> R.*#X `<=` X.
     Proof.
@@ -1153,6 +1191,18 @@ Section Tcs.
     Qed.
     
   End test1.
+
+  Section order.
+
+    Context (disp : Order.disp_t).
+    Variable (T : porderType disp).
+    
+    Definition downset (X: set T) := [set y :T | exists x, X x /\ (y <= x)%O].
+    Definition upset (X: set T) := [set y :T | exists x, X x /\ (x <= y)%O].
+    
+
+
+  End order.
 
 End Tcs.
 
