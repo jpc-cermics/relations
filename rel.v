@@ -596,21 +596,12 @@ Section Foreset_facts.
   Qed.
   
   (* Foreset in extension *)
-
-  Definition Fset_ext := fun (x:T) => (exists y, Y y /\ R#_(y) x).
-  
   Lemma Fset_union_set : forall (x:T), (R#Y) x <-> exists y, Y y /\ R#_(y) x.
   Proof.
     move => x;rewrite /Fset /mkset /=.
     split => [[y [? ?]]|[y [? [z [? H3]]]]].
     by (exists y);split;[|exists y; split].
     by (exists z);split;[ |rewrite H3].
-  Qed.
-
-  Lemma Fset_union_ext : (R#Y) = Fset_ext. 
-  Proof.
-    rewrite /Fset_ext predeqE => x.
-    by split => H;[rewrite -Fset_union_set|rewrite  Fset_union_set].
   Qed.
 
   Lemma Union_Setminus : X `|` Y = X `|` (Y `\` X). 
