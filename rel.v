@@ -675,7 +675,101 @@ Section Foreset_facts.
     by apply: (t_trans H2 H1). 
   Qed.
 
-End Foreset_facts.
+End  Foreset_facts.
+
+Section Foreset_topology_facts.
+
+  Variables (T:Type) (R: relation T).
+
+  (** * Fset and bigcup *)
+  Lemma Fset_bigcup: forall (I: Type) (F : I -> set T),
+      R#( \bigcup_ i (F i) ) =  \bigcup_ i (R# (F i)).
+  Proof.
+    move => I F;rewrite /Fset predeqE => x;split.
+    by move => [y [H1 [n Pn Fny]]]; exists n;[ | exists y].
+    by move => [n Pn [y [H1 H2]]];exists y;split;[|exists n].
+  Qed.
+  
+  (** * Fset and bigcap *)
+  Lemma Fset_bigcap: forall (I: Type) (F : I -> set T),
+      R#( \bigcap_ i (F i) ) `<=`  \bigcap_ i (R# (F i)).
+  Proof.
+    by move => I F x [y [H1 H2]];exists y; split;[| apply: H2]. 
+  Qed.
+  
+  Lemma Fset_stableU: forall (I: Type) (F : I -> set T),
+      (forall i, R#(F i) `<=` (F i)) -> R#(\bigcup_ i (F i)) `<=` (\bigcup_ i (F i)).
+  Proof.
+    by move => I F H1;rewrite Fset_bigcup => x [n Pn Fn];exists n;[|apply: H1].
+  Qed.
+
+  Lemma Fset_stableI: forall (I: Type) (F : I -> set T),
+      (forall i, R#(F i) `<=` (F i)) -> R#(\bigcap_ i (F i)) `<=` (\bigcap_ i (F i)).
+  Proof.
+    move => I F H1. 
+    have H2: (\bigcap_ i R#(F i)) `<=` (\bigcap_ i (F i))
+      by move => x H2 i /H2/H1 H3.
+    have H3: R#( \bigcap_ i (F i) ) `<=`  \bigcap_ i (R# (F i)) by apply:Fset_bigcap.
+    by apply: (subset_trans H3 H2).
+  Qed.
+  
+  Lemma Fset_stableIf: forall (A B: set T),
+      R#A  `<=` A -> R#B  `<=` B -> R#(A `&` B)  `<=` A   `&` B.
+  Proof.
+    move => A B ? ?.
+    have H1: (R#A) `&`  (R#B)  `<=`  A   `&` B by apply: setISS.
+    apply: (subset_trans _ H1); apply: FsetI.
+  Qed.
+  
+  Lemma Fset_0 : R#set0 `<=` set0.
+  Proof. by move => x [y [_ H1]]. Qed.
+
+  Lemma Fset_T : R#setT `<=` setT.
+  Proof.  by []. Qed.
+
+End Foreset_topology_facts.
+
+Section Aset_topology_facts.
+
+  Variables (T:Type) (R: relation T).
+  
+  Lemma Aset_bigcup: forall (I: Type) (F : I -> set T),
+      ( \bigcup_ i (F i) ):#R =  \bigcup_ i ((F i):#R).
+  Proof.
+    by move => I F;apply: Fset_bigcup.
+  Qed.
+
+  Lemma Aset_bigcap: forall (I: Type) (F : I -> set T),
+      (\bigcap_ i (F i)):#R `<=`  \bigcap_ i ((F i):#R).
+  Proof.
+    by move => I F;apply: Fset_bigcap.
+  Qed.
+
+  Lemma Aset_stableU: forall (I: Type) (F : I -> set T),
+      (forall i, (F i):#R `<=` (F i)) -> (\bigcup_ i (F i)):#R `<=` (\bigcup_ i (F i)).
+  Proof.
+    by move => I F H1;apply: Fset_stableU.
+  Qed.
+
+  Lemma Aset_stableI: forall (I: Type) (F : I -> set T),
+      (forall i, (F i):#R `<=` (F i)) -> (\bigcap_ i (F i)):#R `<=` (\bigcap_ i (F i)).
+  Proof.
+    by move => I F H1;apply: Fset_stableI.
+  Qed.
+  
+  Lemma Aset_stableIf: forall (A B: set T),
+      A:#R `<=` A -> B:#R `<=` B -> (A `&` B):#R  `<=` A `&` B.
+  Proof.
+    by move => A B ? ?;apply: Fset_stableIf.
+  Qed.
+  
+  Lemma Aset_0 : set0:#R `<=` set0.
+  Proof. by move => x [y [_ H1]]. Qed.
+  
+  Lemma Aset_T : setT:#R `<=` setT.
+  Proof. by []. Qed.
+
+End Aset_topology_facts.
 
 Section Closure_facts.
 
