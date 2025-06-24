@@ -12,7 +12,7 @@
 From HB Require Import structures.
 
 Set Warnings "-parsing -coercions".
-From mathcomp Require Import all_ssreflect order.
+From mathcomp Require Import all_ssreflect order contra.
 From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets topology.
 Set Warnings "parsing coercions".
@@ -109,8 +109,7 @@ Section test1.
   
 End test1.
 
-
-Section top.
+Section Relation_Topology.
   (** * Topology associated to a relation using the After sets *)
     
   Variables (T: choiceType) (S: relation T).
@@ -135,9 +134,9 @@ Section top.
   Set Warnings "-redundant-canonical-projection".
   HB.instance Definition AsetTopology := isOpenTopological.Build W openT openI open_bigU.
 
-End top.
+End Relation_Topology.
 
-Section test.
+Section Relation_Topology_test.
   (** * Checking the AsetTopology *)
   Variables (T: choiceType) (S: relation T) (S': relation T).
 
@@ -154,10 +153,9 @@ Section test.
     by apply: H6.
   Qed.
   
-End test.
+End Relation_Topology_test.
 
-
-Section porder.
+Section Porder_Topology.
   (* Topology associted to a porder *) 
   (* We could use the topology associated to a relation 
      to compact the code here *) 
@@ -167,7 +165,7 @@ Section porder.
   
   Definition downset (X: set T) := [set y :T | exists x, X x /\ (y <= x)%O].
   Definition upset (X: set T) := [set y :T | exists x, X x /\ (x <= y)%O].
-
+  
   Definition porder_topology : Type := T.
   Notation W := porder_topology.
   
@@ -199,8 +197,63 @@ Section porder.
   HB.instance Definition PorderTopology :=
     isOpenTopological.Build W openT_porder openI_porder open_bigU_porder.
   
-End porder.
+End Porder_Topology.
 
+Section Specialization_Porder.
+  (** * specialization relation *) 
+  Variable (T: topologicalType).
+
+  Definition specialization_porder := 
+    [set xy: T*T  | (@closure T [set xy.2]) xy.1].
+
+  Lemma specialization_porder_reflexive: 
+    forall (x:T), specialization_porder (x,x).
+  Proof.
+    by move => x;rewrite /specialization_porder /=;apply: subset_closure.
+  Qed.
+
+  Lemma specialization_porder_transitive:
+    forall (x y z :T), 
+      specialization_porder (x,y) -> specialization_porder (y,z) 
+      -> specialization_porder (x,z).
+  Proof.
+    move => x y z. 
+    rewrite /specialization_porder /= => H1 H2.
+    have H3: [set y] `<=` closure [set z] by rewrite sub1set inP. 
+    have H4: closed (closure [set z]) by apply: closed_closure.
+    move: H4 => /closure_id H4.
+    have H5: closure [set y] `<=` closure (closure [set z]) by apply: closure_subset.
+    move: H5; rewrite -H4 => H5.
+    by apply: H5.
+  Qed.
+
+  Definition downset' (X: set T) := [set y :T | exists x, X x /\ specialization_porder (y,x)].
+  Definition upset' (X: set T) := [set y :T | exists x, X x /\  specialization_porder (x, y)].
+
+  Lemma closed_is_downset: forall (C: set T), 
+      closed C -> (downset' C) `<=` C.
+  Proof.
+    move => C H1 c [c' [H2 H3]].
+    have H4: [set c'] `<=` C by rewrite sub1set inP. 
+    move: H4 => /closure_subset H4.
+    have ->: C = closure C by rewrite -closure_id.
+    by apply H4.
+  Qed.
+  
+  Lemma open_is_upper: forall (O: set T), 
+      open O -> (upset' O) `<=` O.
+  Proof.
+    move => O H1 c [c' [H2 H3]]. 
+    absurd_not => H4.
+    have H5: O.^c c by [].
+    have H6: (downset' O.^c) c' by (exists c).
+    have H7: closed O.^c by apply: open_closedC.
+    have H8: (downset' O.^c) `<=` O.^c by apply: closed_is_downset.
+    have H9: O.^c c' by apply H8.
+    by [].
+  Qed.
+
+End Specialization_Porder.
 
 
 
