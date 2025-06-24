@@ -156,7 +156,7 @@ Section Relation_Topology_test.
 End Relation_Topology_test.
 
 Section Porder_Topology.
-  (* Topology associted to a porder *) 
+  (* Topology associated to a porder *) 
   (* We could use the topology associated to a relation 
      to compact the code here *) 
 
