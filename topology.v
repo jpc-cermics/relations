@@ -25,10 +25,10 @@ Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
 
-Section test1.
+Section Intermediate_results.
   Context (T: Type) (S: relation T). 
   
-  (** * properties of open sets *)
+  (** * properties of open sets in topological relation *)
   Lemma Ropen1: forall (R : relation T) (X: set T),
       R.*#X = X <-> R.*#X `<=` X.
   Proof.
@@ -75,7 +75,7 @@ Section test1.
       by move: H5 => /H6 H5.
   Qed.
 
-  (** * clopen properties *)
+  (** *  *)
   Lemma Ropen6: forall (R : relation T) (X: set T),
       R#X  `<=` X -> (X.^c :#R ) `<=` X.^c.
   Proof.
@@ -107,7 +107,7 @@ Section test1.
       by rewrite H2.
   Qed.
   
-End test1.
+End Intermediate_results.
 
 Section Relation_Topology.
   (** * Topology associated to a relation using the After sets *)
@@ -132,15 +132,15 @@ Section Relation_Topology.
   
   HB.instance Definition _ := Choice.on W.
   Set Warnings "-redundant-canonical-projection".
-  HB.instance Definition AsetTopology := isOpenTopological.Build W openT openI open_bigU.
+  HB.instance Definition _ := isOpenTopological.Build W openT openI open_bigU.
 
 End Relation_Topology.
 
 Section Relation_Topology_test.
   (** * Checking the AsetTopology *)
   Variables (T: choiceType) (S: relation T) (S': relation T).
-
-  (* recover the fact that the open sets are tau *)
+  
+  (* recover the fact that the open sets are given by tau *)
   Lemma Aset_open (O: set T) : O:#S `<=` O <-> @open (aset_topology S) O.
   Proof.
     split;first by rewrite openE /interior => H1 o H2;exists O;split.
@@ -157,12 +157,27 @@ End Relation_Topology_test.
 
 Section Porder_Topology.
   (* Topology associated to a porder *) 
-  (* We could use the topology associated to a relation 
-     to compact the code here *) 
-
+  (* we directly use the topoly associated to the after sets of porder binary relation *)
   Context (disp : Order.disp_t).
   Variable (T : porderType disp).
+
+  Definition rel_porder := [set xy : T*T| (xy.1 <= xy.2)%O].
+
+  Definition Porder_topology := (aset_topology [set xy : T*T| (xy.1  <= xy.2)%O]).
+
+  Lemma Porder_open (O: set T) : O:#(rel_porder) `<=` O <-> @open Porder_topology O.
+  Proof.
+    apply: Aset_open.
+  Qed.
+    
+End  Porder_Topology.
+
+Section Porder_Topology1.
+  (** * This is not usefull as it is simplified in previous section *)
   
+  Context (disp : Order.disp_t).
+  Variable (T : porderType disp).
+
   Definition downset (X: set T) := [set y :T | exists x, X x /\ (y <= x)%O].
   Definition upset (X: set T) := [set y :T | exists x, X x /\ (x <= y)%O].
   
@@ -197,12 +212,13 @@ Section Porder_Topology.
   HB.instance Definition PorderTopology :=
     isOpenTopological.Build W openT_porder openI_porder open_bigU_porder.
   
-End Porder_Topology.
+End Porder_Topology1.
 
 Section Specialization_Porder.
-  (** * specialization relation *) 
+  (** * specialization relation defined with a topology *) 
+  
   Variable (T: topologicalType).
-
+  
   Definition specialization_porder := 
     [set xy: T*T  | (@closure T [set xy.2]) xy.1].
 
