@@ -25,23 +25,25 @@ Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
 
-Section Intermediate_results.
-  Context (T: Type) (S: relation T). 
+Section Intermediate_results_closed.
+  Context (T: Type) (R: relation T). 
   
-  (** * properties of open sets in topological relation *)
-  Lemma Ropen1: forall (R : relation T) (X: set T),
-      R.*#X = X <-> R.*#X `<=` X.
+  (** * properties of closed sets in topological relation *)
+  Lemma Rclosed1:
+      [set X | R.*#X = X ] = [set X | R.*#X `<=` X].
   Proof.
-    move => R X;split => [-> | H1];first by [].
+    rewrite predeqE /mkset => X.
+    split => [-> // | H1].
     have H2: X `<=` R.*#X
       by rewrite -DuT_eq_Tstar -Fset_union_rel Fset_D;apply: subsetUl.
     by rewrite eqEsubset.
   Qed.
-
-  Lemma Ropen2: forall (R : relation T) (X: set T),
-      R.*#X `<=` X <-> R.+#X `<=` X.
+  
+  Lemma Rclosed2: 
+      [set X | R.*#X `<=` X] = [set X | R.+#X `<=` X].
   Proof.
-    move => R X;rewrite -DuT_eq_Tstar -Fset_union_rel Fset_D.
+    rewrite predeqE /mkset => X.
+    rewrite -DuT_eq_Tstar -Fset_union_rel Fset_D.
     split => [ H1 | H1].
     - have H2: R.+#X `<=` X `|` R.+#X by apply: subsetUr.
       by apply: (subset_trans H2 H1).
@@ -50,10 +52,10 @@ Section Intermediate_results.
       by move: H3;rewrite setUid.
   Qed.
 
-  Lemma Ropen3: forall (R : relation T) (X: set T),
+  Local Lemma Rclosed3: forall (X: set T),
       R#X `<=` X -> forall (n: nat), (iter R n.+1)#X `<=` X.
-  Proof.
-    move => R X H1 n. 
+  Proof. 
+    move =>X H1 n. 
     elim: n => [ | n H2]; first by rewrite iter1_id.
     have H3: R^(n.+2)#X = (R^(n.+1) `;` R^(1))#X
       by rewrite -iter_compose addn1.
@@ -62,21 +64,33 @@ Section Intermediate_results.
     by apply: (subset_trans H4 H2).
   Qed.
 
-  Lemma Ropen4: forall (R : relation T) (X: set T),
-      R.+#X `<=` X <-> R#X  `<=` X.
+  Lemma Rclosed4:
+      [set X | R.+#X `<=` X]= [set X | R#X  `<=` X].
   Proof.
-    move => R X;split => [H1 | H1 x [y [H2 H3]]].
+    rewrite predeqE /mkset => X.
+    split => [H1 | H1 x [y [H2 H3]]].
     - have H2:  R `<=` R.+ by apply: iter1_inc_clos_trans.
       have H3: R#X  `<=` R.+#X by apply: Fset_inc.
       by apply: (subset_trans H3 H1).
     - have [n H4]: exists (n:nat), (iter R n.+1) (x,y) by apply: clos_t_iterk.
       have H5: (iter R n.+1)#X x by (exists y).
-      have H6: (iter R n.+1)#X `<=` X by apply: (Ropen3 H1).
+      have H6: (iter R n.+1)#X `<=` X by apply: (Rclosed3 H1).
       by move: H5 => /H6 H5.
   Qed.
+  
+  Lemma Rclosed:
+      [set X | R.*#X = X] = [set X | R#X  `<=` X].
+  Proof.
+    by rewrite Rclosed1 Rclosed2 Rclosed4. 
+  Qed.
+  
+End Intermediate_results_closed.
 
-  (** *  *)
-  Lemma Ropen6: forall (R : relation T) (X: set T),
+Section Intermediate_results_closed_open.
+
+  Context (T: Type).
+
+  Lemma Rclosed6: forall (R : relation T) (X: set T),
       R#X  `<=` X -> (X.^c :#R ) `<=` X.^c.
   Proof.
     move => R X H1.
@@ -86,7 +100,20 @@ Section Intermediate_results.
     by rewrite -disjoints_subset;apply: H2.
   Qed.
   
-  (** * Closure of a set *)
+  Lemma Rclosed7: forall (R : relation T) (X: set T),
+      (X.^c :#R ) `<=` X.^c -> R#X  `<=` X. 
+  Proof.
+    by rewrite /Aset => R X /Rclosed6; rewrite setCK /Aset inverse_inverse.
+  Qed.
+  
+  (* from closed sets to open set via complement *)
+  Lemma Rclosed_complement_open:  forall (R : relation T) (X: set T),
+      R#X  `<=` X <-> (X.^c :#R ) `<=` X.^c.
+  Proof.
+    split;[apply: Rclosed6| apply: Rclosed7].
+  Qed.
+  
+  (** * Closure of a set XXXXXXXXXXX a retirer *)
   Definition T_closure (R : relation T) (Y: set T) (X: set T) 
     := Y = R.*#Y /\ X`<=` Y /\ (forall Z, Z = R.*#Z /\ X `<=` Z -> Y `<=` Z).
   
@@ -106,8 +133,37 @@ Section Intermediate_results.
       have H6:  R.*#X `<=`  R.*#Z by apply: Fset_inc1 .
       by rewrite H2.
   Qed.
+End Intermediate_results_closed_open.  
+
+Section Intermediate_results_open.
+  Context (T: Type) (S: relation T). 
   
-End Intermediate_results.
+  (** * properties of open sets in topological relation *)
+  Lemma Ropen1 (R : relation T): 
+      [set X | X:#R.* = X ] = [set X | X:#R.* `<=` X].
+  Proof.
+    by rewrite /Aset inverse_star;apply: Rclosed1.
+  Qed.
+  
+  Lemma Ropen2 (R : relation T):
+      [set X | X:#R.* `<=` X] = [set X | X:#R.+ `<=` X].
+  Proof.
+    by rewrite /Aset inverse_star inverse_clos_t;apply: Rclosed2.
+  Qed.
+
+  Lemma Ropen4 (R : relation T):
+      [set X | X:#R.+ `<=` X]= [set X | X:#R  `<=` X].
+  Proof.
+    by rewrite /Aset inverse_clos_t; apply: Rclosed4.
+  Qed.
+  
+  Lemma Ropen (R : relation T):
+      [set X | X:#R.* = X] = [set X | X:#R  `<=` X].
+  Proof.
+    by rewrite Ropen1 Ropen2 Ropen4. 
+  Qed.
+  
+End Intermediate_results_open.
 
 Section Relation_Topology.
   (** * Topology associated to a relation using the After sets *)
@@ -135,41 +191,108 @@ Section Relation_Topology.
   HB.instance Definition _ := isOpenTopological.Build W openT openI open_bigU.
 
 End Relation_Topology.
-
-Section Relation_Topology_test.
+ 
+Section Relation_Topology_props.
   (** * Checking the AsetTopology *)
-  Variables (T: choiceType) (S: relation T) (S': relation T).
+  Variables (T: choiceType) (S: relation T). 
   
   (* recover the fact that the open sets are given by tau *)
-  Lemma Aset_open (O: set T) : O:#S `<=` O <-> @open (aset_topology S) O.
+
+  Lemma Aset_open: [ set O | O:#S `<=` O] = @open (aset_topology S).
   Proof.
+    rewrite predeqE => O.
     split;first by rewrite openE /interior => H1 o H2;exists O;split.
     rewrite openE /interior /mkset => H1 o [o1 [H2 /H1 H3]].
     move: H3;rewrite nbhsE /open_nbhs /open => -[B [H3 H4]] H6.
     (** H3 gives H5 *)
-    have H5:  B:#S `<=` B by [].
+    have H5: B:#S `<=` B by [].
     have H7: B:#S o by (exists o1). 
     have H8: B o by apply: H5.
     by apply: H6.
   Qed.
+
+  Lemma Aset_open' : [ set O | O:#S.* =  O] = @open (aset_topology S).
+  Proof. by rewrite -Aset_open -Ropen. Qed.
   
-End Relation_Topology_test.
+  (** * already in topology_structure *)
+  Lemma open_closedC' (D : set T) :
+    @open (aset_topology S) D -> @closed (aset_topology S) (~` D).
+  Proof. by rewrite openE => Dop p clNDp /Dop /clNDp [? []]. Qed.
+
+  (** * could be added in topology_structure *)
+  Lemma closed_openC' (D : set T) :
+    @closed (aset_topology S) D -> @open (aset_topology S) (~` D).
+  Proof. 
+    rewrite /closed openE => /subsetC H1.
+    by move: H1;rewrite -interiorC /mkset => H1.
+  Qed.
+
+  Lemma Aset_closed: [ set O | S#O `<=` O] = @closed (aset_topology S).
+  Proof.
+    rewrite predeqE /mkset => X.
+    rewrite Rclosed_complement_open.
+    split. 
+    - move => H1. 
+      have <-: X.^c.^c = X by rewrite setCK.
+      apply: open_closedC.
+      pose proof Aset_open as H2.
+      by move: H2; rewrite predeqE /mkset => <-.
+    - move => /closed_openC' H1.
+      pose proof Aset_open as H2.
+      by move: H2; rewrite predeqE /mkset => ->.
+  Qed.
+  
+  Lemma Aset_closed': [ set O | S.*#O = O] = @closed (aset_topology S).
+  Proof.
+    by rewrite Rclosed Aset_closed.
+  Qed.
+
+  Lemma Aset_closed1 (X: set T) : forall (B: set T),
+      @closed (aset_topology S) B /\ X `<=` B -> S.*#X `<=` B.
+  Proof.
+    move => B. 
+    pose proof Aset_closed' as H1.
+    move: H1; rewrite predeqE /mkset => <-.
+    move => [H2 H3].
+    rewrite -H2.
+    by apply: Fset_inc1.
+  Qed.
+  
+  Lemma Aset_closure: forall (X: set T), 
+    @closure (aset_topology S) X = S.*#X. 
+  Proof.
+    move => X; rewrite closureE.
+    have H4: S.*#X = S.*#(S.*#X) by rewrite Fset_comp compose_rt_rt.
+    have H5: X `<=` S.*#X by rewrite -DuT_eq_Tstar -Fset_union_rel Fset_D;apply: subsetUl.
+    have H6: @closed (aset_topology S) S.*#X 
+      by pose proof Aset_closed' as H1;move: H1; rewrite predeqE /mkset => <-.
+    pose proof Aset_closed1 as H7.
+    move: H7 => /(_ X) H7.
+    
+    have H8: smallest (@closed (aset_topology S)) X `<=` S.*#X. 
+    apply: smallest_sub. by []. by [].
+    have H9:  S.*#X `<=` smallest (@closed (aset_topology S)) X. 
+    apply: sub_bigcap => Y.
+    rewrite /mkset => -[H9 H10].
+    by apply: H7.
+    by rewrite eqEsubset.
+  Qed.
+
+End Relation_Topology_props.
 
 Section Porder_Topology.
   (* Topology associated to a porder *) 
-  (* we directly use the topoly associated to the after sets of porder binary relation *)
+  (* we directly use the topology associated to the after sets of porder binary relation *)
   Context (disp : Order.disp_t).
   Variable (T : porderType disp).
 
   Definition rel_porder := [set xy : T*T| (xy.1 <= xy.2)%O].
 
-  Definition Porder_topology := (aset_topology [set xy : T*T| (xy.1  <= xy.2)%O]).
+  Definition Porder_topology := (aset_topology rel_porder). 
 
-  Lemma Porder_open (O: set T) : O:#(rel_porder) `<=` O <-> @open Porder_topology O.
-  Proof.
-    apply: Aset_open.
-  Qed.
-    
+  Lemma Porder_open (O: set T) : [set O | O:#(rel_porder) `<=` O] = @open Porder_topology.
+  Proof. by apply: Aset_open. Qed.
+  
 End  Porder_Topology.
 
 Section Porder_Topology1.
