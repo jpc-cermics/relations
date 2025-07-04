@@ -1222,3 +1222,54 @@ Section Relation_restricted.
 
 End Relation_restricted.
 
+Section clos_rt.
+  (* reflexive and transitive properties using relation equalities *)
+
+  Lemma clos_r_iff (T: Type) (R: relation T): 
+    reflexive R <-> R ='Δ  `|` R.
+  Proof.
+    split => [? | ->];last by move => ?;left.
+    by rewrite eqEsubset;split =>[[? ?]|[? ?]];[move=> ?;right | move => [/Delta_Id -> | ?]].
+  Qed.
+
+
+  Lemma clos_tn_iff (T: Type) (R: relation T): 
+    forall (n: nat), transitive R -> (iter R n.+1) `<=` R.
+  Proof.
+    move => n H1.
+    elim: n.
+    - by rewrite iter1_id.
+    - move => n H2.
+      rewrite -addn1 iter_compose iter1_id => -[x y] -[z [/H2 /= H3 /= H4]].
+      by apply: (H1 x z _). 
+  Qed.
+  
+  Lemma clos_t_iff (T: Type) (R: relation T): 
+    transitive R <-> R = R.+.
+  Proof.
+    split => [H0 | ->];last first. 
+    by move => x y z H1 H2; rewrite -clos_t_decomp_2;right;exists y. 
+    rewrite eqEsubset;split.
+    - apply: iter1_inc_clos_trans.
+    - move => [x y] H1. 
+      pose proof (clos_t_iterk H1) as [n H2].
+      by apply: (clos_tn_iff H0 H2).
+  Qed.
+
+  Lemma clos_rt_iff (T: Type) (R: relation T): 
+    (reflexive R /\  transitive R) <-> R = R.*.
+  Proof.
+    rewrite -DuT_eq_Tstar.
+    split => [ [/clos_r_iff H1 /clos_t_iff H2] | H1].
+    - by rewrite -H2 -H1.
+    - split. 
+      by rewrite H1;left;rewrite Delta_Id.
+      rewrite H1 => x y z [/Delta_Id H2 |H2] [/Delta_Id H3| H3]. 
+      by rewrite H2 -H3; left.
+      by rewrite H2; right.
+      by rewrite -H3;right.
+      by right;apply: (t_trans H2 H3).
+  Qed.
+
+End clos_rt.
+

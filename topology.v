@@ -25,9 +25,8 @@ Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
 
-
 Section Topology_adds. 
-  
+  (** * additional lemmas for topology_structure *)
   Variables (T: topologicalType).
   
   Lemma closure_if: forall (X Y: set T),
@@ -54,12 +53,54 @@ Section Topology_adds.
   
 End Topology_adds.
 
+(** * testing Alexandrov *)
+
+HB.mixin Record isAOpenTopological T of Topological T  := {
+  op_bigI : forall (I : Type) (f : I -> set T), (forall i, open (f i)) ->
+    open (\bigcap_i f i);
+}.
+
+#[short(type="atopologicalType")]
+(** * addin & at the end for default pulling of dependencies *)
+HB.structure Definition ATopological := { T of isAOpenTopological T & Topological T}.
+
+Section Alexandrov_props.
+
+  Variables (T: atopologicalType).
+  
+  Lemma closureU: forall (I : Type) (f : I -> set T),
+       \bigcup_i (closure (f i)) = closure (\bigcup_i f i).
+  Proof.
+    move => I f.
+    (** step 1: (\bigcup_i (closure (f i))) is closed *)
+    have H1: open (~` \bigcup_i (closure (f i)))
+      by rewrite setC_bigcup;apply: op_bigI => i;apply/closed_openC/closed_closure.
+    have H2: ~`(~` (\bigcup_i (closure (f i)))) = (\bigcup_i (closure (f i))) 
+      by rewrite setCK.
+    have H3: closed (\bigcup_i (closure (f i)))
+      by rewrite -H2; apply: open_closedC.
+    (** step 2: H6: \bigcup_i (closure (f i)) `<=` closure (\bigcup_i (f i)). *)
+    have H4: forall (i:I ), (f i) `<=` (\bigcup_i (f i))
+        by move => i; apply: bigcup_sup.
+    have H5: forall (i:I ), (closure (f i)) `<=` closure (\bigcup_i (f i))
+        by move => i; apply: closure_subset.
+    have H6: \bigcup_i (closure (f i)) `<=` closure (\bigcup_i (f i))
+      by move => i; apply: bigcup_sub.
+    (** step 3 *)
+    have H7: \bigcup_i (f i) `<=` (\bigcup_i (closure (f i))).
+    by apply: subset_bigcup;move => i H8;apply: subset_closure.
+    (** Conclusion *) 
+    by apply: closure_if1 H3 H7 H6.
+  Qed.
+  
+End Alexandrov_props.
+
 Section Intermediate_results_closed.
+  (** * properties of closed sets in topological relation *)
+
   Context (T: Type) (R: relation T). 
   
-  (** * properties of closed sets in topological relation *)
-  Lemma Rclosed1:
-      [set X | R.*#X = X ] = [set X | R.*#X `<=` X].
+  Lemma Rclosed1: [set X | R.*#X = X ] = [set X | R.*#X `<=` X].
   Proof.
     rewrite predeqE /mkset => X;split => [-> // | ?].
     have H1: X `<=` R.*#X
@@ -67,8 +108,7 @@ Section Intermediate_results_closed.
     by rewrite eqEsubset.
   Qed.
   
-  Lemma Rclosed2: 
-      [set X | R.*#X `<=` X] = [set X | R.+#X `<=` X].
+  Lemma Rclosed2: [set X | R.*#X `<=` X] = [set X | R.+#X `<=` X].
   Proof.
     rewrite predeqE /mkset => X.
     rewrite -DuT_eq_Tstar -Fset_union_rel Fset_D.
@@ -92,8 +132,7 @@ Section Intermediate_results_closed.
     by apply: (subset_trans H4 H2).
   Qed.
 
-  Lemma Rclosed4:
-      [set X | R.+#X `<=` X]= [set X | R#X  `<=` X].
+  Lemma Rclosed4: [set X | R.+#X `<=` X]= [set X | R#X  `<=` X].
   Proof.
     rewrite predeqE /mkset => X.
     split => [H1 | H1 x [y [H2 H3]]].
@@ -106,8 +145,7 @@ Section Intermediate_results_closed.
       by move: H5 => /H6 H5.
   Qed.
   
-  Lemma Rclosed:
-      [set X | R.*#X = X] = [set X | R#X  `<=` X].
+  Lemma Rclosed: [set X | R.*#X = X] = [set X | R#X  `<=` X].
   Proof.
     by rewrite Rclosed1 Rclosed2 Rclosed4. 
   Qed.
@@ -115,11 +153,11 @@ Section Intermediate_results_closed.
 End Intermediate_results_closed.
 
 Section Intermediate_results_closed_open.
-
+  (** * properties of closed sets in topological relation *)
   Context (T: Type).
 
   Lemma Rclosed6: forall (R : relation T) (X: set T),
-      R#X  `<=` X -> (X.^c :#R ) `<=` X.^c.
+      R#X `<=` X -> (X.^c :#R ) `<=` X.^c.
   Proof.
     move => R X H1.
     have H2:  (X.^c :#R ) `&` X = set0.
@@ -144,9 +182,10 @@ Section Intermediate_results_closed_open.
 End Intermediate_results_closed_open.  
 
 Section Intermediate_results_open.
-  Context (T: Type) (R: relation T). 
-  
   (** * properties of open sets in topological relation *)
+
+  Context (T: Type) (R: relation T). 
+
   Lemma Ropen1: [set X | X:#R.* = X ] = [set X | X:#R.* `<=` X].
   Proof.
     by rewrite /Aset inverse_star;apply: Rclosed1.
@@ -169,13 +208,15 @@ Section Intermediate_results_open.
   
 End Intermediate_results_open.
 
+
+Definition aset_topology {T : Type} (V: relation T) : Type := T.
+
 Section Relation_Topology.
   (** * Topology associated to a relation using the After sets *)
     
   Variables (T: choiceType) (S: relation T).
 
-  Definition aset_topology {T : Type} (V: relation T) : Type := T.
-  Notation W := (aset_topology S).
+  Local Notation W := (aset_topology S).
   
   Definition tau : set (set T) := [ set O | O:#S `<=` O]%O.
   
@@ -198,7 +239,7 @@ Section Relation_Topology.
   HB.instance Definition _ := Choice.on W.
   Set Warnings "-redundant-canonical-projection".
   HB.instance Definition _ := isOpenTopological.Build W openT openI open_bigU.
-
+  
 End Relation_Topology.
  
 Section Relation_Topology_props.
@@ -287,8 +328,9 @@ Section Relation_Topology_props.
 End Relation_Topology_props.
 
 Section Porder_Topology.
-  (* Topology associated to a porder *) 
-  (* we directly use the topology associated to the after sets of porder binary relation *)
+  (** * Topology associated to a porder *) 
+  (** This is the topology associated to the after sets of the binary relation
+      defined by the porder *)
   Context (disp : Order.disp_t).
   Variable (T : porderType disp).
 
@@ -301,51 +343,9 @@ Section Porder_Topology.
   
 End  Porder_Topology.
 
-Section Porder_Topology1.
-  (** * This is not usefull as it is simplified in previous section *)
-  
-  Context (disp : Order.disp_t).
-  Variable (T : porderType disp).
-
-  Definition downset (X: set T) := [set y :T | exists x, X x /\ (y <= x)%O].
-  Definition upset (X: set T) := [set y :T | exists x, X x /\ (x <= y)%O].
-  
-  Definition porder_topology : Type := T.
-  Notation W := porder_topology.
-  
-  Definition tau_porder : set (set T) := [ set O | upset O `<=` O]%O.
-  
-  Local Lemma openT_porder : tau_porder [set: W].
-  Proof. by []. Qed.
-  
-  Local Lemma openI_porder : forall A B : set W, 
-      tau_porder A -> tau_porder B -> tau_porder (A `&` B).
-  Proof. 
-    move => A B. rewrite /tau_porder /mkset => H1 H2 ab [x [[H3 H3'] H4]]. 
-    split; first by apply: H1;exists x.
-    by apply: H2;exists x.
-  Qed.
-
-  Local Lemma open_bigU_porder (I : Type) (f : I -> set W):
-    (forall (i : I), tau_porder (f i)) -> tau_porder (\bigcup_i f i).
-  Proof.
-    move => H1.
-    rewrite /tau_porder /mkset => a [x  [[j H3] H4 H5]].
-    have H6: tau_porder (f j) by [].
-    move : H6;rewrite /tau_porder /mkset => H6.
-    exists j. by []. apply: H6. by exists x.
-  Qed.
-  
-  HB.instance Definition _ := Choice.on W.
-  Set Warnings "-redundant-canonical-projection".
-  HB.instance Definition PorderTopology :=
-    isOpenTopological.Build W openT_porder openI_porder open_bigU_porder.
-  
-End Porder_Topology1.
 
 Section Specialization_Porder.
-  (** * specialization relation defined with a topology *) 
-  
+  (** * specialization relation defined from a topology *) 
   Variable (T: topologicalType).
   
   Definition specialization_porder := 
@@ -372,11 +372,11 @@ Section Specialization_Porder.
     by apply: H5.
   Qed.
 
-  Definition downset' (X: set T) := [set y :T | exists x, X x /\ specialization_porder (y,x)].
-  Definition upset' (X: set T) := [set y :T | exists x, X x /\  specialization_porder (x, y)].
-
+ Definition downset (X: set T) := specialization_porder# X. 
+ Definition upset (X: set T)  := X:#specialization_porder.
+  
   Lemma closed_is_downset: forall (C: set T), 
-      closed C -> (downset' C) `<=` C.
+      closed C -> (downset C) `<=` C.
   Proof.
     move => C H1 c [c' [H2 H3]].
     have H4: [set c'] `<=` C by rewrite sub1set inP. 
@@ -386,58 +386,62 @@ Section Specialization_Porder.
   Qed.
   
   Lemma open_is_upper: forall (O: set T), 
-      open O -> (upset' O) `<=` O.
+      open O -> (upset O) `<=` O.
   Proof.
     move => O H1 c [c' [H2 H3]]. 
     absurd_not => H4.
     have H5: O.^c c by [].
-    have H6: (downset' O.^c) c' by (exists c).
+    have H6: (downset O.^c) c' by (exists c).
     have H7: closed O.^c by apply: open_closedC.
-    have H8: (downset' O.^c) `<=` O.^c by apply: closed_is_downset.
+    have H8: (downset O.^c) `<=` O.^c by apply: closed_is_downset.
     have H9: O.^c c' by apply H8.
     by [].
   Qed.
 
 End Specialization_Porder.
 
-(** * testing Alexandrov *)
-
-HB.mixin Record isAOpenTopological T of Topological T  := {
-  op_bigI : forall (I : Type) (f : I -> set T), (forall i, open (f i)) ->
-    open (\bigcap_i f i);
-}.
-
-#[short(type="atopologicalType")]
-(** * addin & at the end for default pulling of dependencies *)
-HB.structure Definition ATopological := { T of isAOpenTopological T & Topological T}.
-
-Section Alexandrov_props.
-
-  Variables (T: atopologicalType).
+Section finer_topology. 
+  (** * If S is a preorder, the aset_topology is the finer topology among *)
+  (** * all topologies having S a a specialization_porder *)
   
-  Lemma closureU: forall (I : Type) (f : I -> set T),
-       \bigcup_i (closure (f i)) = closure (\bigcup_i f i).
+  Variable (T: choiceType) (S: relation T) (tau': Topological T). 
+
+  Definition Stopologies :=
+    [ set tau : Topological T | @specialization_porder (Topological.Pack tau) = S].
+  
+  Definition tau_S' := aset_topology S.
+  
+  Lemma St: @specialization_porder (aset_topology S) = S.*.
   Proof.
-    move => I f.
-    (** step 1: (\bigcup_i (closure (f i))) is closed *)
-    have H1: open (~` \bigcup_i (closure (f i)))
-      by rewrite setC_bigcup;apply: op_bigI => i;apply/closed_openC/closed_closure.
-    have H2: ~`(~` (\bigcup_i (closure (f i)))) = (\bigcup_i (closure (f i))) 
-      by rewrite setCK.
-    have H3: closed (\bigcup_i (closure (f i)))
-      by rewrite -H2; apply: open_closedC.
-    (** step 2: H6: \bigcup_i (closure (f i)) `<=` closure (\bigcup_i (f i)). *)
-    have H4: forall (i:I ), (f i) `<=` (\bigcup_i (f i))
-        by move => i; apply: bigcup_sup.
-    have H5: forall (i:I ), (closure (f i)) `<=` closure (\bigcup_i (f i))
-        by move => i; apply: closure_subset.
-    have H6: \bigcup_i (closure (f i)) `<=` closure (\bigcup_i (f i))
-      by move => i; apply: bigcup_sub.
-    (** step 3 *)
-    have H7: \bigcup_i (f i) `<=` (\bigcup_i (closure (f i))).
-    by apply: subset_bigcup;move => i H8;apply: subset_closure.
-    (** Conclusion *) 
-    by apply: closure_if1 H3 H7 H6.
+    rewrite /specialization_porder predeqE /mkset => -[x y] /=.
+    rewrite -Aset_closure.
+    split;first by rewrite /Fset => -[y1 [H1 /= <-]].
+    by move => H1;rewrite /Fset /mkset /=; by exists y. 
+  Qed.
+
+  Check @specialization_porder.
+  Check @specialization_porder (aset_topology S).
+  Check (aset_topology S).
+  Check tau' : Topological.axioms_ T.
+  Check (Topological.Pack tau').
+  
+
+  Lemma St':
+    (reflexive S /\ transitive S) 
+    -> @specialization_porder (aset_topology S) = S.
+  Proof.
+    by rewrite clos_rt_iff => H1;rewrite [RHS]H1; apply: St.
   Qed.
   
-End Alexandrov_props.
+  Lemma St'' (tau: Topological T) : forall (O: set T),
+    (reflexive S /\ transitive S) 
+    -> @specialization_porder (Topological.Pack tau) = S
+    -> @open (Topological.Pack tau) O
+    -> @open (aset_topology S) O.
+  Proof.
+    move => O H1 H2. 
+    rewrite -Aset_open /mkset => /open_is_upper H3.
+    by move: H3; rewrite /upset H2.
+  Qed.
+
+End finer_topology. 
