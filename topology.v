@@ -14,7 +14,7 @@ From HB Require Import structures.
 Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_ssreflect order contra.
 From mathcomp Require Import mathcomp_extra boolp.
-From mathcomp Require Import classical_sets topology.
+From mathcomp Require Import classical_sets order topology.
 Set Warnings "parsing coercions".
 
 From RL Require Import  ssrel rel.
@@ -41,19 +41,110 @@ Section Topology_adds.
     by move => X Y ? ? ?;rewrite eqEsubset;split;[ |apply: closure_if].
   Qed.
 
-  (** * already in topology_structure *)
-  Lemma open_closedC (D : set T) : open D -> closed (~` D).
-  Proof. by rewrite openE => Dop p clNDp /Dop /clNDp [? []]. Qed.
-
-  Lemma closed_openC (D : set T) : closed D -> open (~` D).
-  Proof. 
-    rewrite /closed openE => /subsetC H1.
-    by move: H1;rewrite -interiorC /mkset.
-  Qed.
-  
 End Topology_adds.
 
-(** * testing Alexandrov *)
+Section Topology_porder.
+  (** * additional lemmas for topology_structure *)
+  Variables (T: choiceType).
+  
+  Definition Topologies: Type := Topological T.
+  
+  Definition finer (tau tau': Topological T) :=
+    (@open (Topological.Pack tau')) `<=` (@open (Topological.Pack tau)).
+  
+  Lemma finer_reflexive: forall (tau: Topological T),  finer tau tau.
+  Proof. by move => tau. Qed.
+
+  Lemma finer_transitive: forall (tau tau' tau'': Topological T),
+      finer tau tau' -> finer tau' tau'' -> finer tau tau''.
+  Proof. by move => t t' t'' H1 H2;apply: subset_trans H2 H1. Qed.
+
+  Lemma finer_anti: forall (tau tau' : Topological T),
+      finer tau tau' -> finer tau' tau -> tau = tau'.
+  Proof. Admitted.
+  
+(** 
+    (** EqType requested to introduce a Poset *)
+  Fact topo_display : Order.disp_t. Proof. exact. Qed.
+  
+  Notation "x %<= y" := (finer x y)
+                          (at level 70, no associativity).
+  
+#[export]
+  HB.instance Definition _ := @Order.isPOrder.Build topo_display Topologies
+                                finer _ (fun _ _ => erefl) finer_reflexive finer_anti finer_transitive.
+HB.end.
+
+*)
+
+End Topology_porder.
+
+Section Intersection_Topology.
+
+  (** * Intersection topology *)
+  Definition inter_topology {T : Type} (I: Type) (Tc : I -> Topological T) : Type := T.
+  
+  Variables (T: choiceType) (I: Type) (Tc: I -> Topological T).
+
+  Local Notation W := (@inter_topology T I Tc).
+  
+  Definition open_sets' : set (set T) := [ set O: (set T) | forall (i:I), (@open (Topological.Pack (Tc i))) O].
+  
+  Local Lemma openT : open_sets' [set: W].
+  Proof. rewrite /mkset => i;by apply: openT. Qed.
+  
+  Local Lemma openI : forall A B : set W, 
+      open_sets' A -> open_sets' B -> open_sets' (A `&` B).
+  Proof. move => A B H1 H2. rewrite /mkset => i. by apply: openI.  Qed.
+  
+  Local Lemma open_bigU (J : Type) (f : J -> set W):
+    (forall (i : J), open_sets' (f i)) -> open_sets' (\bigcup_i f i).
+  Proof.  move => H1; rewrite /mkset => i.
+          apply: bigcup_open => i0 H2. 
+          move: H1;rewrite /open_sets' /mkset => H1.
+          by [].
+  Qed.
+  
+  HB.instance Definition _ := Choice.on W.
+  Set Warnings "-redundant-canonical-projection".
+  HB.instance Definition _ := isOpenTopological.Build W openT openI open_bigU.
+  
+End Intersection_Topology.
+
+Section Intersection_Topology_facts. 
+
+  Variables (T: choiceType) (I: Type) (Tc : I -> Topological T).
+  
+  (* recover the opensets of Tau *)
+  Lemma topologyI_opens: 
+    @open (@inter_topology T I Tc) =
+      [ set O :set T | forall (i:I), (@open (Topological.Pack (Tc i))) O].
+  Proof. by rewrite predeqE /mkset => O. Qed.
+  
+  Lemma topologyI_coarser (i:I):
+    (@open (@inter_topology T I Tc)) `<=` (@open (Topological.Pack (Tc i))).
+  Proof.
+    by rewrite topologyI_opens /mkset.    
+  Qed.
+  
+End Intersection_Topology_facts. 
+
+Section Intersection_Topology_Ex.
+  (** * using previous definition we consider  *)
+  (** * intersection topology of a set of topologies Tc*)
+
+  Variables (T: choiceType) (Tc: set (Topological T)).
+
+  Definition I := {tau: (Topological T) | tau \in Tc}.
+  
+  Definition TopologyI := (Topological.class (@inter_topology T I (fun i => val i))).
+  
+  Lemma inter_is_coarser: forall (tau: I), finer (val tau) TopologyI.
+  Proof. by move => tau;apply: topologyI_coarser. Qed.
+
+End Intersection_Topology_Ex.
+
+(** * Alexandrov Topologies *)
 
 HB.mixin Record isAOpenTopological T of Topological T  := {
   op_bigI : forall (I : Type) (f : I -> set T), (forall i, open (f i)) ->
@@ -187,58 +278,50 @@ Section Intermediate_results_open.
   Context (T: Type) (R: relation T). 
 
   Lemma Ropen1: [set X | X:#R.* = X ] = [set X | X:#R.* `<=` X].
-  Proof.
-    by rewrite /Aset inverse_star;apply: Rclosed1.
-  Qed.
+  Proof. by rewrite /Aset inverse_star;apply: Rclosed1. Qed.
   
   Lemma Ropen2: [set X | X:#R.* `<=` X] = [set X | X:#R.+ `<=` X].
-  Proof.
-    by rewrite /Aset inverse_star inverse_clos_t;apply: Rclosed2.
-  Qed.
+  Proof. by rewrite /Aset inverse_star inverse_clos_t;apply: Rclosed2. Qed.
 
   Lemma Ropen4: [set X | X:#R.+ `<=` X]= [set X | X:#R  `<=` X].
-  Proof.
-    by rewrite /Aset inverse_clos_t; apply: Rclosed4.
-  Qed.
+  Proof. by rewrite /Aset inverse_clos_t; apply: Rclosed4. Qed.
   
   Lemma Ropen: [set X | X:#R.* = X] = [set X | X:#R  `<=` X].
-  Proof.
-    by rewrite Ropen1 Ropen2 Ropen4. 
-  Qed.
+  Proof. by rewrite Ropen1 Ropen2 Ropen4. Qed.
   
 End Intermediate_results_open.
 
 
-Definition aset_topology {T : Type} (V: relation T) : Type := T.
-
 Section Relation_Topology.
-  (** * Topology associated to a relation using the After sets *)
-    
+  (** * aset_topology: Topology associated to a relation using the After sets *)
+  
+  Definition aset_topology {T : Type} (V: relation T) : Type := T.
+  
   Variables (T: choiceType) (S: relation T).
 
   Local Notation W := (aset_topology S).
   
   Definition tau : set (set T) := [ set O | O:#S `<=` O]%O.
   
-  Local Lemma openT : tau [set: W].
+  Local Lemma openT' : tau [set: W].
   Proof. by apply:Aset_T. Qed.
   
-  Local Lemma openI : forall A B : set W, 
+  Local Lemma openI' : forall A B : set W, 
       tau A -> tau B -> tau (A `&` B).
   Proof. by move => A B H1 H2;apply: (Aset_stableIf H1 H2). Qed.
   
-  Local Lemma open_bigU (I : Type) (f : I -> set W):
+  Local Lemma open_bigU' (I : Type) (f : I -> set W):
     (forall (i : I), tau (f i)) -> tau (\bigcup_i f i).
   Proof. by apply:Aset_stableU. Qed.
   
   (** * Alexandrov topology *)
-  Local Lemma open_bigI (I : Type) (f : I -> set W):
+  Local Lemma open_bigI' (I : Type) (f : I -> set W):
     (forall (i : I), tau (f i)) -> tau (\bigcap_i f i).
   Proof. by apply:Aset_stableI. Qed.
   
   HB.instance Definition _ := Choice.on W.
   Set Warnings "-redundant-canonical-projection".
-  HB.instance Definition _ := isOpenTopological.Build W openT openI open_bigU.
+  HB.instance Definition _ := isOpenTopological.Build W openT' openI' open_bigU'.
   
 End Relation_Topology.
  
@@ -249,7 +332,6 @@ Section Relation_Topology_props.
   Definition tau_S := aset_topology S.
     
   (* recover the fact that the open sets are given by tau *)
-
   Lemma Aset_open: [ set O | O:#S `<=` O] = @open tau_S.
   Proof.
     rewrite predeqE => O.
@@ -266,19 +348,6 @@ Section Relation_Topology_props.
   Lemma Aset_open' : [ set O | O:#S.* =  O] = @open tau_S.
   Proof. by rewrite -Aset_open -Ropen. Qed.
   
-  (** * already in topology_structure *)
-  Lemma open_closedC'' (D : set T) :
-    @open tau_S D -> @closed tau_S (~` D).
-  Proof. by rewrite openE => Dop p clNDp /Dop /clNDp [? []]. Qed.
-
-  (** * could be added in topology_structure *)
-  Lemma closed_openC'' (D : set T) :
-    @closed tau_S D -> @open tau_S (~` D).
-  Proof. 
-    rewrite /closed openE => /subsetC H1.
-    by move: H1;rewrite -interiorC /mkset => H1.
-  Qed.
-
   Lemma Aset_closed: [ set O | S#O `<=` O] = @closed tau_S.
   Proof.
     rewrite predeqE /mkset => X.
@@ -324,6 +393,10 @@ Section Relation_Topology_props.
     (** conclude *)
     by apply: closure_if1 H6 H5 H9.
   Qed.
+
+  (** Question: Pourquoi est-ce que tau_S est la + coarser parmi les topologies telles 
+      que closure x = S.*#{x} pour tout x
+   *)
 
 End Relation_Topology_props.
 
@@ -402,7 +475,7 @@ End Specialization_Porder.
 
 Section finer_topology. 
   (** * If S is a preorder, the aset_topology is the finer topology among *)
-  (** * all topologies having S a a specialization_porder *)
+  (** * all topologies having S as a specialization_porder *)
   
   Variable (T: choiceType) (S: relation T) (tau': Topological T). 
 
@@ -418,13 +491,6 @@ Section finer_topology.
     split;first by rewrite /Fset => -[y1 [H1 /= <-]].
     by move => H1;rewrite /Fset /mkset /=; by exists y. 
   Qed.
-
-  Check @specialization_porder.
-  Check @specialization_porder (aset_topology S).
-  Check (aset_topology S).
-  Check tau' : Topological.axioms_ T.
-  Check (Topological.Pack tau').
-  
 
   Lemma St':
     (reflexive S /\ transitive S) 
@@ -443,5 +509,14 @@ Section finer_topology.
     rewrite -Aset_open /mkset => /open_is_upper H3.
     by move: H3; rewrite /upset H2.
   Qed.
+
+  Lemma tau_S'_in :
+    (reflexive S /\ transitive S)
+    -> Stopologies (Topological.class tau_S').
+  Proof.
+    by move => H1;apply: St'.
+  Qed.
+  
+  (** * tau_S' is the finer *) 
 
 End finer_topology. 
