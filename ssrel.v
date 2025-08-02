@@ -16,7 +16,7 @@
  *)
 
 Set Warnings "-parsing -coercions".
-From mathcomp Require Import all_ssreflect order boolp classical_sets.
+From mathcomp Require Import all_ssreflect order boolp classical_sets ssrbool.
 Set Warnings "parsing coercions".
 
 Set Implicit Arguments.
@@ -25,35 +25,35 @@ Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
 
+(* begin snippet relation:: no-out *)  
+Definition relation (T: Type) := set (T * T).
+(* end snippet relation *)  
+
+(* possible Corecion of relation T to rel T *)
+Definition R2rel (T: Type) (R: relation T) : rel T := (fun x y => ((x,y) \in R)).
+Global Coercion R2rel : relation >-> rel.
+
 Section Relation_Definition.
-
-  (* begin snippet relation:: no-out *)  
-  Definition relation (T: Type) := set (T * T).
-  (* end snippet relation *)  
-
-  Variables (T : Type) (R : relation T).
-
-  Definition reflexive : Prop := forall x:T, R (x,x).
-  Definition transitive : Prop := forall x y z:T, R (x,y) -> R (y,z) -> R (x,z).
-  Definition symmetric : Prop := forall x y:T, R (x,y) -> R (y,x).
-  Definition antisymmetric : Prop := forall x y:T, R (x,y) -> R (y,x) -> x = y.
-  Definition irreflexive : Prop := forall x:T, ~ R (x,x).
   
-  Record preorder : Prop :=
-    { preord_refl : reflexive; preord_trans : transitive}.
-  
-  Record order : Prop :=
-    { ord_refl : reflexive;
-      ord_trans : transitive;
-      ord_antisym : antisymmetric}.
+  Variables (T : Type). 
 
-  Record equivalence : Prop :=
-    { equiv_refl : reflexive;
-      equiv_trans : transitive;
-      equiv_sym : symmetric}.
+  (** We could use reflexive, transitive, ... from  Coq.ssr.ssrbool 
+      using the coercion to rel T *)
   
-  Record PER : Prop :=  {per_sym : symmetric; per_trans : transitive}.
-
+  Definition reflexive (R : relation T) : Prop := forall x:T, R (x,x).
+  Definition transitive (R : relation T): Prop := forall x y z:T, R (x,y) -> R (y,z) -> R (x,z).
+  Definition symmetric (R : relation T): Prop := forall x y:T, R (x,y) -> R (y,x).
+  Definition antisymmetric (R : relation T): Prop := forall x y:T, R (x,y) -> R (y,x) -> x = y.
+  Definition irreflexive (R : relation T) : Prop := forall x:T, ~ R (x,x).
+  
+  Record preorder (R : relation T) : Prop :=
+    { preord_refl : reflexive R; preord_trans : transitive R}.
+  
+  Record equivalence (R : relation T) : Prop :=
+    { equiv_refl : reflexive R;
+      equiv_trans : transitive R;
+      equiv_sym : symmetric R}.
+  
 End Relation_Definition.
 
 Section Transitive_Closure.
@@ -76,6 +76,7 @@ Section Transitive_Closure.
     | tn1_trans (y z:T) : R (y,z) -> clos_trans_n1 x y -> clos_trans_n1 x z.
 
   (* transitive closure as set *)
+  
   Definition clos_t := [set x: T*T | clos_trans x.1 x.2].
   Definition clos_t_1n := [set x: T*T | clos_trans_1n x.1 x.2].
   Definition clos_t_n1 := [set x: T*T | clos_trans_n1 x.1 x.2].
@@ -251,7 +252,7 @@ Section Reflexive_Symmetric_Transitive_Closure.
   
   Lemma clos_rst_rstn1_iff : clos_rst = clos_rst_n1. 
   Proof.
-    have clos_rstn1_trans : transitive (clos_rst_n1)
+    have clos_rstn1_trans : transitive clos_rst_n1.
       by rewrite /transitive /clos_rst_n1 /mkset/= ;
       move => x' y' z' H1; elim => [// | x y H2 H3 H4 ]; apply rstn1_trans with x. 
 

@@ -38,26 +38,21 @@ Section Sets_facts.
 
   Variables (T:Type).
   
-  (* usefull to ease moves with views: mem_set and set_mem do the same 
-   *)
+  (* should be replaced by in_setE *)
   Lemma inP: forall (x:T) (X: set T), x \in X <-> X x. 
-  Proof.
-    by move => x X; rewrite in_setE.
-  Qed.
+  Proof. by move => x X; rewrite in_setE. Qed.
   
   Lemma notempty_exists: forall (X: set T), (exists z, z \in X) <-> (X != set0).
   Proof.
-     by move => X;rewrite set0P;split;[ move => [z /set_mem H1] | move => [z /mem_set H1] ];exists z.
+    by move => X;rewrite set0P;split;[ move => [z /set_mem ?] | move => [z /mem_set ?] ];exists z.
   Qed.
-  
+    
   (* begin snippet Sone:: no-out *)  
   Lemma empty_notexists: forall (X: set T), X = set0 <-> ~ (exists z, z \in X).
   Proof.
-    move => X.
-    split.
-    - by move => -> [z /inP ?]. 
-    - move => H1; rewrite predeqE => x.
-      by split => [/inP H2 | H2];[have H3: exists (z:T), z \in X by (exists x) |].
+    move => X;split;first by move => -> [z /inP ?]. 
+    move => H1; rewrite predeqE => x.
+    by split => [/inP H2 | H2];[have H3: exists (z:T), z \in X by (exists x) |].
   Qed.
   (* end snippet Sone *) 
   
@@ -70,7 +65,7 @@ Section Sets_facts.
 
   Lemma notempty_iff: forall (X: set T), ~ (X = set0) <-> X != set0.
   Proof.
-    move => X. split. 
+    move => X;split.
     by move => /empty_notexists /contrapT /notempty_exists H1. 
     by move => /notempty_exists H1 /empty_notexists H2.
   Qed.
@@ -82,18 +77,9 @@ Section Sets_facts.
     by move => [z /inP [? [_ ?]]].
   Qed.
 
+  (** * XXX already exists: should be replaced by setU_eq0 *)
   Lemma Union_empty : forall (X Y: set T), X `|` Y = set0 <-> (X = set0) /\ ( Y = set0).
-  Proof.
-    move => X Y; split => [H | [H1 H2]].
-    - split;rewrite empty_notexists;move => [z H1].
-      have H3:  X `|` Y != set0 
-        by rewrite -notempty_exists;exists z;rewrite in_setE;left; rewrite -in_setE.
-      by rewrite -empty_iff in H.
-      have H3:  X `|` Y != set0 
-        by rewrite -notempty_exists;exists z;rewrite in_setE;right; rewrite -in_setE.
-      by rewrite -empty_iff in H.
-    - by rewrite H1 H2 setU0.
-  Qed.
+  Proof. by move => X Y; rewrite setU_eq0. Qed.
   
 End Sets_facts. 
 
