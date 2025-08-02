@@ -17,13 +17,41 @@ From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets order topology.
 Set Warnings "parsing coercions".
 
-From RL Require Import  ssrel rel.
+From RL Require Import  ssrel rel mypreorder.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
+
+Section Preorder.
+
+  Variables (T: Type) (R: relation T).
+
+  Definition le := R2rel R.
+  Hypothesis le_trans : Coq.ssr.ssrbool.transitive R. (* using coercion *)
+  Hypothesis le_refl : Coq.ssr.ssrbool.reflexive R. (* using coercion *)
+  
+  Fact rel_display : Order.disp_t. Proof. exact. Qed.
+  
+  Definition lt (x y:T) := ((x,y) \in R) && ~~ ((y, x) \in R).
+  
+  Lemma lt_prop: forall (x y:T),lt x y = le x y  && ~~ le y x.
+  Proof. exact. Qed. 
+
+  Lemma gt_prop: forall (x y:T), lt y x = (le y x) && ~~ (le x y).
+  Proof. exact. Qed. 
+  
+  Lemma ge_trans: Coq.ssr.ssrbool.transitive  (fun x y => le y x).
+  Admitted. 
+  
+  (**           
+  HB.instance Definition _  := (@isDuallyPreorder.Build rel_display T
+                     le lt lt_prop gt_prop le_refl le_refl le_trans ge_trans).
+  *) 
+          
+End Preorder.
 
 Section Topology_adds. 
   (** * additional lemmas for topology_structure *)
@@ -47,10 +75,11 @@ Section Topology_porder.
   (** * additional lemmas for topology_structure *)
   Variables (T: choiceType).
   
-  Definition Topologies: Type := Topological T.
-  
   Definition finer (tau tau': Topological T) :=
     (@open (Topological.Pack tau')) `<=` (@open (Topological.Pack tau)).
+  
+  Definition eqTopological (tau tau': Topological T) := 
+    (@open (Topological.Pack tau')) = (@open (Topological.Pack tau)).
   
   Lemma finer_reflexive: forall (tau: Topological T),  finer tau tau.
   Proof. by move => tau. Qed.
@@ -58,25 +87,24 @@ Section Topology_porder.
   Lemma finer_transitive: forall (tau tau' tau'': Topological T),
       finer tau tau' -> finer tau' tau'' -> finer tau tau''.
   Proof. by move => t t' t'' H1 H2;apply: subset_trans H2 H1. Qed.
-
+  
   Lemma finer_anti: forall (tau tau' : Topological T),
-      finer tau tau' -> finer tau' tau -> tau = tau'.
-  Proof. Admitted.
-  
-(** 
-    (** EqType requested to introduce a Poset *)
+      finer tau tau' -> finer tau' tau -> eqTopological tau tau'.
+  Proof. 
+    by move => tau tau' ? ?;rewrite /eqTopological eqEsubset.
+  Qed.
+
+  (* 
+  Definition Topologies := Topological T.
+  HB.instance Definition _ Topologies := Equality.on (set_system Topologies).
   Fact topo_display : Order.disp_t. Proof. exact. Qed.
-  
-  Notation "x %<= y" := (finer x y)
-                          (at level 70, no associativity).
-  
-#[export]
+
+  Definition eqTopologies : eqType := Topologies.
+
   HB.instance Definition _ := @Order.isPOrder.Build topo_display Topologies
                                 finer _ (fun _ _ => erefl) finer_reflexive finer_anti finer_transitive.
-HB.end.
-
-*)
-
+  *)
+  
 End Topology_porder.
 
 Section Intersection_Topology.
