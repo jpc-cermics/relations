@@ -72,9 +72,8 @@ Section Independent_set.
   Lemma RelIndep_I: forall (V U: relation T) (S: set T),
       V `<=` U -> RelIndep U S -> RelIndep V S.
   Proof.
-    move => V U S H1; rewrite /RelIndep => H2 x y H3 H4 H5 H6.
-    pose proof (H2 x y) H3 H4 H5.
-    by have H7: U (x, y) by apply H1 in H6.
+    move => V U S H1 H2 x y H3 H4 H5 /H1 H6.
+    by pose proof (H2 x y) H3 H4 H5.
   Qed.
   
   Lemma RelIndep_set0 (U: relation T): RelIndep U set0.
@@ -97,7 +96,8 @@ Section Set_Order.
   Notation "A [<= R ] B" := (leSet R (A,B)).
   (* end snippet leset *)       
   
-  Definition leSet' (U: relation T): relation (set T) := [set AB | AB.1 `<=` ('Δ  `|` U)#AB.2]. 
+  Definition leSet' (U: relation T): relation (set T) :=
+    [set AB | AB.1 `<=` ('Δ  `|` U)#AB.2]. 
   
   Lemma lesetE (U: relation T)(A B: set T) : leSet U (A,B) <-> leSet' U (A,B).
   Proof.
@@ -125,11 +125,10 @@ Section Set_Order.
     (exists u);split;first by []. 
     by right; apply: H0 H4 H7.
   Qed.
-  
+
   Lemma le_refl (U: relation T): reflexive (leSet U).
   Proof. by move => A r H1;exists r;split;[| left]. Qed.
 
-  (* here we need the choiceType *)
   Lemma le_antisym_l1 (V U: relation T): 
     transitive U -> U `<=`V
     -> forall A B, (RelIndep V A) -> A [<= (Asym U)] B -> B  [<= (Asym U)] A -> A `<=` B.
@@ -149,7 +148,7 @@ Section Set_Order.
       have H15: V (a,c) by apply H0' in H14.
       by have: False by move: H13 H4 H8 => /eqP H13 /inP H4 /inP H8; apply: (H1 a c). 
   Qed.
-  
+    
   Lemma le_antisym (V U: relation T): 
     transitive U -> U `<=`V 
     -> forall A B, (RelIndep V A) -> (RelIndep V B) 
