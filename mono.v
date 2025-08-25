@@ -35,20 +35,28 @@ Section Asym.
   
   Definition Asym (S: relation T) :relation T := [set xy | S xy /\ ~ (S.-1 xy)].
   
-  Lemma Asym_transitive: forall (S: relation T), transitive S -> transitive (Asym S).
+  Lemma Asym_antisymmetric: forall (S: relation T), antisymmetric  (Asym S).
+  Proof. by move => S x y [_ ?] [? _]. Qed.
+
+  Lemma Asym_irreflexive: forall (S : relation T), irreflexive (Asym S).
+  Proof. by move => S x [? ?]. Qed.
+
+  Lemma Asym_preserve_transitivity: forall (S: relation T), transitive S -> transitive (Asym S).
   Proof.
     move => S H0 x y z [H1 /= H1'] [H2 /= H2'];split => [ | /= H3].
     by apply: H0 H1 H2.
     by have: S (y,x) by apply: H0 H2 H3.
   Qed.
-
-  Lemma Asym_antisymmetric: forall (S: relation T), antisymmetric  (Asym S).
-  Proof. by move => S x y [_ ?] [? _]. Qed.
-
-  Lemma Asym_irreflexive: forall (S : relation T), 
-    forall x y : T, (Asym S) (x,y) -> x = y -> False.
-  Proof. by move => S x y /[swap] -> [? ?]. Qed.
-
+  
+  Lemma AsymE (S: relation T): antisymmetric S /\ irreflexive S <-> Asym S = S.
+  Proof.
+    split; last by move => <-;split;[apply: Asym_antisymmetric | apply: Asym_irreflexive].
+    move => [H1 H2].
+    rewrite predeqE => [[x y]]; split => [[H3 _] // | H3]. 
+    split; first by [].
+    by move: H3 => /[dup] H3 /H1 H3' /H3' H4; move: H3; rewrite H4 => /H2 H3.
+  Qed.
+  
 End Asym.
 
 Section Independent_set.
@@ -60,7 +68,7 @@ Section Independent_set.
   Definition RelIndep (U: relation T) (S: set T) :=
     forall (x y:T),  x \in S -> y \in S -> ~(x = y) -> ~( U (x,y)).
   (* end snippet RelIndep *)    
-
+  
   Lemma RelIndep_I: forall (V U: relation T) (S: set T),
       V `<=` U -> RelIndep U S -> RelIndep V S.
   Proof.
@@ -81,36 +89,46 @@ Section Set_Order.
   (** * Order relation on sets based on a relation on elements *)
 
   Variables (T: choiceType).
-
-  (* begin snippet leset:: no-out *)    
-  Definition leset (U: relation T) (A B: set T):= forall (a:T),
-      (a \in A) -> exists b, b \in B /\ ( a = b \/ U (a,b)). 
   
-  Definition leSet (U: relation T): relation (set T) := (uncurry (leset U)). 
+  (* begin snippet leset:: no-out *)    
+  Definition leSet (U: relation T): relation (set T) := 
+    [set AB |forall (a:T), (a \in AB.1) -> exists b, b \in AB.2 /\ ( a = b \/ U (a,b)) ].
   
   Notation "A [<= R ] B" := (leSet R (A,B)).
   (* end snippet leset *)       
-
-  Lemma Ile: forall (U: relation T) (A B: set T), A `<=` B -> A [<= U] B.
-  Proof. by move => U A B H1 /= => [s /inP/H1 H2];exists s;split;[rewrite inP|left]. Qed.
   
-  (** (leset U) is a partial order on Independent Sets  *)
+  Definition leSet' (U: relation T): relation (set T) := [set AB | AB.1 `<=` ('Δ  `|` U)#AB.2]. 
+  
+  Lemma lesetE (U: relation T)(A B: set T) : leSet U (A,B) <-> leSet' U (A,B).
+  Proof.
+    split. 
+    - move => H1 a /inP/H1 [b [/inP H2 [->| H3]]]; first by (exists b);split;[left|].
+      by (exists b);split;[right|].
+    - rewrite /leSet' /mkset /= -Fset_union_rel Fset_D.
+      move => H1 a /inP/H1 [/inP H2 | [b [H2 /inP H3]]].
+      by (exists a); split;[ | left].
+      by exists b; split;[ | right].
+  Qed.
+  
+  Lemma Ile: forall (U: relation T) (A B: set T), A `<=` B -> A [<= U] B.
+  Proof. by move => U A B H1 /= a /inP/H1 ?;exists a;split;[rewrite inP|left]. Qed.
+  
+  (** ingredients to prove that (leset (Async U)) is a partial order on Independent Sets  *)
+  
   Lemma le_trans (U: relation T): transitive U -> transitive (leSet U).
   Proof.
-    move => H0 A B C /= => [H1 H2]. 
+    move => H0 A B C /= H1 H2. 
     move => r /= /H1 /= [s [H3 [-> | H4]]].
     by move: H3 => /H2 /= [u [H4 [-> | H5]]];(exists u);split;[| left| |right].
     move: H3 => /H2 /= [u [H6 [H7 | H7]]].
     by (exists u);split;[|right;rewrite -H7].
     (exists u);split;first by []. 
-    right. apply: H0 H4 H7.
+    by right; apply: H0 H4 H7.
   Qed.
   
   Lemma le_refl (U: relation T): reflexive (leSet U).
-  Proof.
-    by move => A;rewrite /leset /mkset /= => r /= H1;exists r;split;[| left].
-  Qed.
-  
+  Proof. by move => A r H1;exists r;split;[| left]. Qed.
+
   (* here we need the choiceType *)
   Lemma le_antisym_l1 (V U: relation T): 
     transitive U -> U `<=`V
@@ -140,12 +158,61 @@ Section Set_Order.
     move => H0 H0' A B H1 H2 H3 H4.
     by move: (le_antisym_l1 H0 H0' H1 H3 H4)
             (le_antisym_l1 H0 H0' H2 H4 H3);rewrite eqEsubset.
-  Defined.
+  Qed.
   
 End Set_Order.
 
 (** Notation for the set order we use *)
 Notation "A [<= R ] B" := (leSet R (A,B)).
+
+Section Infinite_paths.
+
+  Variables (T:Type) (Eb Er: relation T).
+
+  (* total (or left total)  *) 
+  Definition total_rel (S: relation T) := forall x, exists y, S (x,y).
+  (** infinite sequence *)
+  Definition iic (U: relation T) := exists f : nat -> T, forall n, U ((f n),(f (S n))).  
+  (** * axiom of dependent choice *) 
+  Axiom DC: forall (S: relation T),  total_rel S -> iic S. 
+
+  (* begin snippet Rloop:: no-out *)    
+  Definition Rloop (S: relation T) := exists v, forall w,  S (v,w) -> S (w,v).
+  (* end snippet Rloop *)
+  
+  Lemma test (S: relation T): (antisymmetric S /\ irreflexive S /\ Rloop S) -> (~ (total_rel S)).
+  Proof.
+    move => [H1 [H1' [v H2]]].
+    rewrite -existsNP; exists v; rewrite -forallNE => x /[dup] H3 /H2 H4.
+    have H5: x = v by apply: H1.
+    by move: H3; rewrite H5 => /H1'.
+  Qed.
+  
+  Lemma test1 (S: relation T): (~ (total_rel S)) -> exists v, (forall x : T, ~ S (v, x)).
+  Proof. by rewrite -existsNP => -[v H1];exists v;move: H1; rewrite -forallNE. Qed. 
+
+  Lemma test2 (S: relation T): (exists v, (forall x : T, ~ S (v, x)))-> Rloop S.
+  Proof. by move => -[v H1];exists v => y /H1 H2. Qed. 
+
+  Lemma test3 (S: relation T): ~ (Rloop S) -> total_rel (Asym S).
+  Proof. 
+    by rewrite -forallNE => H1 v;move: H1 => /(_ v)/existsNP [w /not_implyP H1];exists w.
+  Qed.
+
+  Lemma test4 (S: relation T): (Rloop S) -> Rloop (Asym S).
+  Proof.
+    by move => [v H1];exists v => w [H2 H3];split;[apply: H1| move: H2 => /H1 H2].
+  Qed.
+
+  Lemma test5 (S: relation T):
+    (Rloop S) -> let Sa:= (Asym S) in exists v, (forall x : T, ~ (Sa (v, x))).
+  Proof. by move => [v H1];exists v => w [/H1 H2 H3]. Qed.
+  
+  Lemma notiic_rloop: forall (S: relation T), ~ (iic (Asym S)) -> (Rloop S).
+  Proof. by move => S; apply contraPP => /test3/DC H1.  Qed.
+  
+End Infinite_paths.
+
 
 Section Paper.
   (** Proofs of the results of the paper 
@@ -182,35 +249,13 @@ Section Paper.
       end. 
   
   End Paper_Notations. 
-
-  (* begin snippet Rloop:: no-out *)    
-  Definition Rloop (S: relation T) := exists v, forall w,  S (v,w) -> S (w,v).
-  (* end snippet Rloop *)
-  (* total (or left total)  *) 
-  Definition total_rel (S: relation T) := forall x, exists y, S (x,y).
-  (** infinite sequence *)
-  Definition iic (U: relation T) := exists f : nat -> T, forall n, U ((f n),(f (S n))).  
   
-  (** * axiom of dependent choice *) 
-  Axiom DC: forall (S: relation T),  total_rel S -> iic S. 
-  
-  (** * The Assumptions we use: weaker than the paper assumptions 
-   *  ~ (iic Er.+) and ~ (iic Eb.+)
-   *)
-  
+  (** * The Assumptions we use: weaker than the paper assumptions *)
   (* begin snippet Assumptions:: no-out *)    
   Hypothesis A1: (exists (v0:T), (v0 \in setT)).
   Hypothesis A3: ~ (iic (Asym Er.+)). 
   Hypothesis A4: ~ (iic (Asym Eb.+)). 
   (* end snippet Assumptions *)    
-  
-  Lemma notiic_rloop: forall (S: relation T), ~ (iic (Asym S)) -> (Rloop S).
-  Proof.
-    move => S; apply contraPP => H1.
-    have H2:  total_rel (Asym S)
-      by move: H1;rewrite -forallNE => H1 v;move: H1 => /(_ v)/existsNP [w /not_implyP H1];exists w.
-    by move: H2 => /DC H2.
-  Qed.
   
   (* begin snippet RloopErp:: no-out *) 
   Lemma A2: Rloop Er.+.
@@ -243,13 +288,13 @@ Section Paper.
   Lemma Scal_not_empty: exists v, Scal [set v].
   (* end snippet Scalnotempty *)
   Proof.
-    have H2': Er.+ `<=` Mono by apply:  subsetUr.
+    have H2': Er.+ `<=` Mono by apply: subsetUr.
     move: A2 => [v H1]; exists v.
     split;first by rewrite /RelIndep;move => x y /inP /= -> /inP /= ->.
     split;first by move => t [y [/= H3 H4]];move: H3; rewrite H4 /= => /H1/H2' H3;exists v.
     by rewrite -notempty_exists;(exists v);rewrite inP.
   Qed.
-    
+  
   Lemma SType_not_empty: (@setT SType) != set0.
   Proof.
     rewrite -notempty_exists;move: Scal_not_empty => [v H2].
@@ -257,10 +302,11 @@ Section Paper.
   Qed.
   
   Definition leSet1 (AB: SType*SType) :=
-    leset (Asym Eb.+) (proj1_sig AB.1) (proj1_sig AB.2).
+    leSet (Asym Eb.+) ((proj1_sig AB.1), (proj1_sig AB.2)).
     
   Lemma leSet1_transitive: @transitive SType leSet1.
-  Proof. by move => [A ?] [B ?] [C ?]; apply/le_trans/Asym_transitive/t_trans. Qed.
+  Proof. by move => [A ?] [B ?] [C ?]; 
+                   apply/le_trans/Asym_preserve_transitivity/t_trans. Qed.
   
   Lemma leSet1_reflexive: @reflexive SType leSet1.
   Proof. by move => [A ?];apply: le_refl. Qed.
@@ -422,7 +468,7 @@ Section Paper.
         have H5: ~((sval (IterCh f n.+1 s)) \in Sinf) by apply H3;apply ltnSn.
         have H6: (Asym Eb.+) ((sval (IterCh f n.+1 s),(sval (IterCh f n.+2 s))))
           by move: ChooseRC_fact1 => /(_ f) H6;apply: H6. 
-        have H7: transitive (Asym Eb.+) by apply/Asym_transitive/t_trans.
+        have H7: transitive (Asym Eb.+) by apply/Asym_preserve_transitivity/t_trans.
         by apply: H7 H4 H6.
     Qed.
     
