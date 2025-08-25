@@ -487,10 +487,10 @@ Section Foresets.
   Definition Aset (T:Type) (R: relation T) (Y: set T) : set T :=
     Fset R.-1 Y. 
 
-  (* check that is coincide with usual definition *)
-  Lemma Aset_iff  (T:Type) (R: relation T) (Y: set T) :
-    Fset R.-1 Y = [set x | exists (y: T), R (y,x) /\ Y y].
-  Proof. by rewrite /Fset. Qed.
+  (* check that it coincide with usual definition *)
+  Lemma AsetE  (T:Type) (R: relation T) (Y: set T):
+    (Aset R Y) = [set x | exists (y: T), R (y,x) /\ Y y].
+  Proof. by rewrite /Aset/Fset.  Qed.
 
 End Foresets.
 
