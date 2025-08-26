@@ -31,24 +31,24 @@ Reserved Notation "A [<= R ] S" (at level 4, no associativity).
 Section Asym. 
   (** * Antisymmetric part of a relation *) 
     
-  Variables (T:Type).
+  Variables (T: Type).
   
-  Definition Asym (S: relation T) :relation T := [set xy | S xy /\ ~ (S.-1 xy)].
+  Definition Asym (R: relation T): relation T := [set xy | R xy /\ ~ (R.-1 xy)].
   
-  Lemma Asym_antisymmetric: forall (S: relation T), antisymmetric  (Asym S).
-  Proof. by move => S x y [_ ?] [? _]. Qed.
+  Lemma Asym_antisymmetric: forall (R: relation T), antisymmetric  (Asym R).
+  Proof. by move => R x y [_ ?] [? _]. Qed.
 
-  Lemma Asym_irreflexive: forall (S : relation T), irreflexive (Asym S).
-  Proof. by move => S x [? ?]. Qed.
+  Lemma Asym_irreflexive: forall (R : relation T), irreflexive (Asym R).
+  Proof. by move => R x [? ?]. Qed.
 
-  Lemma Asym_preserve_transitivity: forall (S: relation T), transitive S -> transitive (Asym S).
+  Lemma Asym_preserve_transitivity: forall (R: relation T), transitive R -> transitive (Asym R).
   Proof.
-    move => S H0 x y z [H1 /= H1'] [H2 /= H2'];split => [ | /= H3].
+    move => R H0 x y z [H1 /= H1'] [H2 /= H2'];split => [ | /= H3].
     by apply: H0 H1 H2.
-    by have: S (y,x) by apply: H0 H2 H3.
+    by have: R (y,x) by apply: H0 H2 H3.
   Qed.
   
-  Lemma AsymE (S: relation T): antisymmetric S /\ irreflexive S <-> Asym S = S.
+  Lemma AsymE (R: relation T): antisymmetric R /\ irreflexive R <-> Asym R = R.
   Proof.
     split; last by move => <-;split;[apply: Asym_antisymmetric | apply: Asym_irreflexive].
     move => [H1 H2].
@@ -56,7 +56,21 @@ Section Asym.
     split; first by [].
     by move: H3 => /[dup] H3 /H1 H3' /H3' H4; move: H3; rewrite H4 => /H2 H3.
   Qed.
-  
+
+  Lemma AsymI (R: relation T): Asym R `<=` R.
+  Proof. by move => [a b] [? _]. Qed.
+
+  Lemma Asym2 (R: relation T): Asym (Asym R) = (Asym R).
+  Proof.
+    rewrite predeqE => [[a b]];split; first by move => [? _].
+    move => H1.
+    split. by [].
+    move => H2.
+    move: Asym_antisymmetric => /(_ R a b) H3.
+    move: (H1) (H2) => /H3 H1' /H1' H2'.
+    move: H1; rewrite H2'. apply: Asym_irreflexive. 
+  Qed.
+
 End Asym.
 
 Section Independent_set.
@@ -84,10 +98,10 @@ Section Independent_set.
   
 End Independent_set.
 
-Section Set_Order. 
-  (** * Order relation on sets based on a relation on elements *)
+Section Set_relation. 
+  (** * A relation on sets induced by a relation on elements *)
 
-  Variables (T: choiceType).
+  Variables (T: eqType).
   
   (* begin snippet leset:: no-out *)    
   Definition leSet (U: relation T): relation (set T) := 
@@ -99,8 +113,9 @@ Section Set_Order.
   Definition leSet' (U: relation T): relation (set T) :=
     [set AB | AB.1 `<=` ('Δ  `|` U)#AB.2]. 
   
-  Lemma lesetE (U: relation T)(A B: set T) : leSet U (A,B) <-> leSet' U (A,B).
+  Lemma lesetE (U: relation T) : leSet U = leSet' U. 
   Proof.
+    rewrite predeqE => -[A B].
     split. 
     - move => H1 a /inP/H1 [b [/inP H2 [->| H3]]]; first by (exists b);split;[left|].
       by (exists b);split;[right|].
@@ -112,57 +127,89 @@ Section Set_Order.
   
   Lemma Ile: forall (U: relation T) (A B: set T), A `<=` B -> A [<= U] B.
   Proof. by move => U A B H1 /= a /inP/H1 ?;exists a;split;[rewrite inP|left]. Qed.
-  
-  (** ingredients to prove that (leset (Async U)) is a partial order on Independent Sets  *)
-  
-  Lemma le_trans (U: relation T): transitive U -> transitive (leSet U).
-  Proof.
-    move => H0 A B C /= H1 H2. 
-    move => r /= /H1 /= [s [H3 [-> | H4]]].
-    by move: H3 => /H2 /= [u [H4 [-> | H5]]];(exists u);split;[| left| |right].
-    move: H3 => /H2 /= [u [H6 [H7 | H7]]].
-    by (exists u);split;[|right;rewrite -H7].
-    (exists u);split;first by []. 
-    by right; apply: H0 H4 H7.
-  Qed.
 
-  Lemma le_refl (U: relation T): reflexive (leSet U).
-  Proof. by move => A r H1;exists r;split;[| left]. Qed.
-
-  Lemma le_antisym_l1 (V U: relation T): 
-    transitive U -> U `<=`V
-    -> forall A B, (RelIndep V A) -> A [<= (Asym U)] B -> B  [<= (Asym U)] A -> A `<=` B.
+  Lemma leI: forall (U V: relation T), U `<=` V -> (leSet U)  `<=` (leSet V).
   Proof.
-    move => H0 H0' A B H1 H2 H3 a H4.
-    move: (H4) => /inP /H2 [b [/inP H5 [-> // | [H6 H6']]]]. 
-    move: (H5) => /inP /H3 /= [c [/inP H8 H9]].
-    case H10: (a == b ); first by move: H10 => /eqP ->.
-    move: H10 => /eqP H10.
-    case H12: (b == c).
-    - move: H12 H8 => /eqP <- H8.
-      have H11: V (a,b) by apply H0' in H6.
-      by have: False by move: H4 H8 => /inP H4 /inP H8;apply: (H1 a b). 
-    - move: H12 H9 => /eqP H12 [H9 // | [H9 H9']].
-      case H13: (a == c); first by move: H13 H9' => /eqP <- H9'.
-      have H14: U (a,c) by apply: H0 H6 H9.
-      have H15: V (a,c) by apply H0' in H14.
-      by have: False by move: H13 H4 H8 => /eqP H13 /inP H4 /inP H8; apply: (H1 a c). 
+    move => U V H1;rewrite lesetE lesetE => [[A B]] H2.
+    have H3: ('Δ  `|` U)#B `<=` ('Δ  `|` V)#B by apply: Fset_inc; apply: setUS.
+    by apply: subset_trans H2 H3.
   Qed.
-    
-  Lemma le_antisym (V U: relation T): 
-    transitive U -> U `<=`V 
-    -> forall A B, (RelIndep V A) -> (RelIndep V B) 
-             -> A [<= (Asym U)] B -> B  [<= (Asym U)] A -> A = B.
-  Proof.
-    move => H0 H0' A B H1 H2 H3 H4.
-    by move: (le_antisym_l1 H0 H0' H1 H3 H4)
-            (le_antisym_l1 H0 H0' H2 H4 H3);rewrite eqEsubset.
-  Qed.
-  
-End Set_Order.
+   
+End Set_relation.
 
 (** Notation for the set order we use *)
 Notation "A [<= R ] B" := (leSet R (A,B)).
+
+Section Set_order. 
+  (** * an order relation on independent sets *)
+  
+  Variables (T: eqType) (R: relation T). 
+
+  Axiom proof_irrelevance: forall (P : Prop) (p q : P), p = q.
+  
+  Definition isetType := {S: set T| RelIndep R S}.
+  
+  Definition leSet2 (AB: isetType* isetType) := (sval AB.1) [<= R] (sval AB.2).
+
+  Section Util.
+    (** ingredients *)
+    Lemma le_trans (U: relation T): transitive U -> transitive (leSet U).
+    Proof.
+      rewrite lesetE => /clos_t_iff H0 A B C /= H1 H2.
+      have : ('Δ  `|` U)#B `<=` ('Δ  `|` U)#(('Δ  `|` U)#C) by apply: Fset_inc1.
+      rewrite Fset_comp H0 DuT_eq_Tstar compose_rt_rt -DuT_eq_Tstar -H0 => H3.
+      by apply: subset_trans H1 H3.
+    Qed.
+
+    Lemma le_refl (U: relation T): reflexive (leSet U).
+    Proof. by move => A r H1;exists r;split;[| left]. Qed.
+ 
+    Lemma le_antisym_l1' (U: relation T): 
+      transitive U -> Asym U = U ->
+      forall A B, (RelIndep U A) -> A [<= U] B -> B  [<= U] A -> A `<=` B.
+    Proof.
+      move => H0 H0' A B H1 H2 H3 a H4.
+      move: H2 H3; rewrite -H0' => H2 H3.
+      move: (H4) => /inP /H2 [b [/inP /= H5 [-> // | [H6 H6']]]]. 
+      move: (H5) => /inP /H3 /= [c [/inP H8 H9]].
+      case H10: (a == b ); first by move: H10 => /eqP ->.
+      move: H10 => /eqP H10.
+      case H12: (b == c).
+      - move: H12 H8 => /eqP <- H8.
+        by have: False by move: H4 H8 => /inP H4 /inP H8;apply: (H1 a b). 
+      - move: H12 H9 => /eqP H12 [H9 // | [H9 H9']].
+        case H13: (a == c); first by move: H13 H9' => /eqP <- H9'.
+        have H14: U (a,c) by apply: H0 H6 H9.
+        by have: False by move: H13 H4 H8 => /eqP H13 /inP H4 /inP H8; apply: (H1 a c). 
+    Qed.
+  
+    Lemma le_antisym' (U: relation T): 
+      transitive U -> Asym U = U -> 
+      forall A B, (RelIndep U A) -> (RelIndep U B) 
+             -> A [<= U] B -> B  [<= U] A -> A = B.
+    Proof.
+      move => H0 H0' A B H1 H2 H3 H4.
+      by move: (le_antisym_l1' H0 H0' H1 H3 H4)
+                 (le_antisym_l1' H0 H0' H2 H4 H3);rewrite eqEsubset.
+    Qed.
+  
+  End Util.
+
+  Lemma leSet2_transitive: transitive R -> @transitive isetType leSet2.
+  Proof. by move => ? [A ?] [B ?] [C ?]; apply/le_trans. Qed.
+  
+  Lemma leSet2_reflexive: @reflexive isetType leSet2.
+  Proof. by move => [A ?];apply: le_refl. Qed.
+
+  Lemma leSet2_antisymmetric:
+    transitive R -> Asym R = R ->  @antisymmetric isetType leSet2.
+  Proof. 
+    move => H_T H_As [A Ha] [B Hb] H1 H2.
+    move: (le_antisym' H_T H_As Ha Hb H1 H2) => H5.
+    subst A;apply: f_equal;apply: proof_irrelevance.
+  Qed.
+  
+End Set_order. 
 
 Section Infinite_paths.
 
@@ -212,42 +259,85 @@ Section Infinite_paths.
   
 End Infinite_paths.
 
-
-Section Paper.
-  (** Proofs of the results of the paper 
-   *  On Monochromatic Paths in Edge-Coulured Digraphs *)
+Section Paper. 
+  (*  On Monochromatic Paths in Edge-Coulured Digraphs *)
   Variables (T:choiceType) (Eb Er: relation T).
 
-  Section Paper_Notations. 
-    (** Mono (x,y): there exists a monochromatic oriented path from x to y *)
-    (* begin snippet Mono:: no-out *)   
-    Definition Mono :=  Eb.+ `|` Er.+.
-    (* end snippet Mono *) 
+  (** Mono (x,y): there exists a monochromatic oriented path from x to y *)
+  (* begin snippet Mono:: no-out *)   
+  Definition Mono :=  Eb.+ `|` Er.+.
+  (* end snippet Mono *) 
 
-    (** The after set of S (for the red-path relation) is included in the forset of S 
-     *  for the monochromatic path relation *)
+  (** The after set of S (for the red-path relation) is included in the forset of S 
+   *  for the monochromatic path relation *)
 
-    (* begin snippet ScalP:: no-out *)    
-    Definition ScalP (S: set T) := S:#(Er.+) `<=` Mono#S.
-    (* end snippet ScalP *)    
+  (* begin snippet ScalP:: no-out *)    
+  Definition ScalP (S: set T) := S:#(Er.+) `<=` Mono#S.
+  (* end snippet ScalP *)    
 
-    (* The set Scal as a subset of T *)
-    (* begin snippet Scal:: no-out *) 
-    Definition Scal := [ set S | RelIndep Mono S /\ ScalP S /\  S != set0 ].
-    (* end snippet Scal *) 
+  (* The set Scal as a subset of T *)
+  (* begin snippet Scal:: no-out *) 
+  Definition Scal := [ set S | RelIndep Mono S /\ ScalP S /\  S != set0 ].
+  (* end snippet Scal *) 
     
-    (* The set Scal as a Type *)
-    Definition SType := {S: set T| RelIndep Mono S /\ ScalP S /\ S != set0}.
+  (* The set Scal as a Type *)
+  Definition SType := {S: set T| RelIndep Mono S /\ ScalP S /\ S != set0}.
+  
+  Lemma S2Scal: forall (S: SType), (sval S) \in Scal.
+  Proof. by move => [S [H1 [H2 H3]]];rewrite inP. Qed.
+
+  Lemma Scal2S: forall S, S \in Scal -> exists (S': SType), (proj1_sig S') = S.
+  Proof. by move => S /inP H1; exists (exist _ S H1). Qed.
+  
+  Definition leSet1 (AB: SType*SType) :=
+    leSet (Asym Eb.+) ((proj1_sig AB.1), (proj1_sig AB.2)).
+
+  (** * The relation on sets restricted to Stype subsets *)
+  Notation "A [<=] B" := (leSet1 (A,B)).
+  
+  Section Scal_order. 
+
+    Lemma leSet1_transitive: @transitive SType leSet1.
+    Proof. by move => [A ?] [B ?] [C ?]; 
+                     apply/le_trans/Asym_preserve_transitivity/t_trans. Qed.
     
-    Definition Elt (C: set SType) := {x : T |exists (S: SType), S \in C /\ x \in (sval S)}.
+    Lemma leSet1_reflexive: @reflexive SType leSet1.
+    Proof. by move => [A ?];apply: le_refl. Qed.
+    
+    Lemma le_antisym_l1: forall A B, 
+        (RelIndep Mono A) -> (RelIndep Mono B)
+        -> A [<= (Asym Eb.+)] B -> B  [<= (Asym Eb.+)] A -> A = B.
+    Proof.
+      move => A B H1 H2 H1' H2'. 
+      pose proof @AsymI T (Eb.+) as H3.
+      have H4: Eb.+ `<=` Mono by apply: subsetUl.
+      have H5: Asym Eb.+ `<=` Mono by apply: subset_trans H3 H4.
+      have H6: (RelIndep (Asym Eb.+) A) by apply: RelIndep_I H5 H1. 
+      have H7: (RelIndep (Asym Eb.+) B) by apply: RelIndep_I H5 H2. 
+      have H8: transitive (Asym Eb.+) 
+        by apply: Asym_preserve_transitivity;apply: t_trans.
+      have H9: (Asym (Asym Eb.+)) = (Asym Eb.+) by apply: Asym2.
+      by move : (le_antisym' H8 H9 H6 H7 H1' H2').
+    Qed.
+    
+    Lemma leSet1_antisymmetric: @antisymmetric SType leSet1.
+    Proof. 
+      move => [A Ha] [B Hb] H1 H2.
+      move: (Ha) (Hb) => [Ha' Ha''] [Hb' Hb''].
+      move: (le_antisym_l1 Ha' Hb' H1 H2) => H5.
+      subst A. (** why I cannot use rewrite *)
+      apply: f_equal.
+      apply: proof_irrelevance.
+    Qed.
+  End Scal_order.
   
-    Fixpoint IterCh (C: set SType) (f: Elt C -> Elt C) k (x: Elt C) := 
-      match k with 
-      | 0 => x 
-      | S m => f (IterCh f m x)
-      end. 
+  Definition Elt (C: set SType) := {x : T |exists (S: SType), S \in C /\ x \in (sval S)}.
   
-  End Paper_Notations. 
+  Fixpoint IterCh (C: set SType) (f: Elt C -> Elt C) k (x: Elt C) := 
+    match k with 
+    | 0 => x 
+    | S m => f (IterCh f m x)
+    end. 
   
   (** * The Assumptions we use: weaker than the paper assumptions *)
   (* begin snippet Assumptions:: no-out *)    
@@ -277,11 +367,6 @@ Section Paper.
       ~ ( forall n, (Asym Eb.+) (sval (IterCh f n s),sval (IterCh f n.+1 s))).
   Proof. by apply: notiic_noinf. Qed.
   
-  Lemma S2Scal: forall (S: SType), (proj1_sig S) \in Scal.
-  Proof. by move => [S [H1 [H2 H3]]];rewrite inP. Qed.
-
-  Lemma Scal2S: forall S, S \in Scal -> exists (S': SType), (proj1_sig S') = S.
-  Proof. by move => S /inP H1; exists (exist _ S H1). Qed.
   
   (* begin snippet Scalnotempty:: no-out *) 
   Lemma Scal_not_empty: exists v, Scal [set v].
@@ -299,33 +384,6 @@ Section Paper.
     rewrite -notempty_exists;move: Scal_not_empty => [v H2].
     by exists (exist _ [set v] H2);rewrite inP.
   Qed.
-  
-  Definition leSet1 (AB: SType*SType) :=
-    leSet (Asym Eb.+) ((proj1_sig AB.1), (proj1_sig AB.2)).
-    
-  Lemma leSet1_transitive: @transitive SType leSet1.
-  Proof. by move => [A ?] [B ?] [C ?]; 
-                   apply/le_trans/Asym_preserve_transitivity/t_trans. Qed.
-  
-  Lemma leSet1_reflexive: @reflexive SType leSet1.
-  Proof. by move => [A ?];apply: le_refl. Qed.
-
-  Axiom proof_irrelevance: forall (P : Prop) (p q : P), p = q.
-  
-  Lemma leSet1_antisymmetric: @antisymmetric SType leSet1.
-  Proof. 
-    move => [A Ha] [B Hb] H1 H2.
-    move: (Ha) (Hb) => [Ha' Ha''] [Hb' Hb''].
-    have H3: Eb.+ `<=` Mono by apply: subsetUl.
-    have H4: transitive Eb.+ by apply: t_trans. 
-    move: (le_antisym H4 H3 Ha' Hb' H1 H2) => H5.
-    subst A. (** why I cannot use rewrite *)
-    apply: f_equal.
-    apply: proof_irrelevance.
-  Qed.
-  
-  (** * The relation on sets restricted to Stype subsets *)
-  Notation "A [<=] B" := (leSet1 (A,B)).
   
   (** * Chains in Stype *)
   Definition Chains := [set C: set SType| forall (c1 c2: SType),
@@ -633,21 +691,6 @@ Section Paper.
     exists Sm. move => S.
     move: H1 => /(_ S) H1. by rewrite asboolE in H1.
   Qed.
-  
-  (** 
-  Lemma SmaxZ: exists Sm, forall S, (fun x y => `[< (curry leSet1) x y >]) Sm S -> S = Sm.
-  Proof.
-    apply: Zorn.
-    move => t; rewrite asboolE; by apply leSet1_reflexive.
-    move => r s t; rewrite 3!asboolE; by apply leSet1_transitive.
-    move => s t;rewrite 2!asboolE; by apply leSet1_antisymmetric.
-    move => A.
-    case H1: (A != set0); first by move => /Chains_is_total H2;apply: Sinf_final.
-    move: H1 => /negP/contrapT/eqP -> => H2. 
-    move: SType_not_empty => /notempty_exists [Sm Ht].
-    by exists Sm; move => S; rewrite -inP in_set0. 
-  Qed.
-  *)
   
   (** * back to set T *)
   Lemma Exists_Smax: exists Sm, Sm \in Scal /\ forall T, T \in Scal -> Sm [<= (Asym Eb.+)] T -> T = Sm.
