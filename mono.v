@@ -63,12 +63,11 @@ Section Asym.
   Lemma Asym2 (R: relation T): Asym (Asym R) = (Asym R).
   Proof.
     rewrite predeqE => [[a b]];split; first by move => [? _].
-    move => H1.
-    split. by [].
-    move => H2.
+    move => H1;split; first by [].
+    move => H2. 
     move: Asym_antisymmetric => /(_ R a b) H3.
     move: (H1) (H2) => /H3 H1' /H1' H2'.
-    move: H1; rewrite H2'. apply: Asym_irreflexive. 
+    by move: H1; rewrite H2'; apply: Asym_irreflexive. 
   Qed.
 
 End Asym.
@@ -115,8 +114,7 @@ Section Set_relation.
   
   Lemma lesetE (U: relation T) : leSet U = leSet' U. 
   Proof.
-    rewrite predeqE => -[A B].
-    split. 
+    rewrite predeqE => -[A B];split. 
     - move => H1 a /inP/H1 [b [/inP H2 [->| H3]]]; first by (exists b);split;[left|].
       by (exists b);split;[right|].
     - rewrite /leSet' /mkset /= -Fset_union_rel Fset_D.
@@ -183,7 +181,7 @@ Section Set_order.
         by have: False by move: H13 H4 H8 => /eqP H13 /inP H4 /inP H8; apply: (H1 a c). 
     Qed.
   
-    Lemma le_antisym' (U: relation T): 
+    Lemma le_antisym (U: relation T): 
       transitive U -> Asym U = U -> 
       forall A B, (RelIndep U A) -> (RelIndep U B) 
              -> A [<= U] B -> B  [<= U] A -> A = B.
@@ -205,7 +203,7 @@ Section Set_order.
     transitive R -> Asym R = R ->  @antisymmetric isetType leSet2.
   Proof. 
     move => H_T H_As [A Ha] [B Hb] H1 H2.
-    move: (le_antisym' H_T H_As Ha Hb H1 H2) => H5.
+    move: (le_antisym H_T H_As Ha Hb H1 H2) => H5.
     subst A;apply: f_equal;apply: proof_irrelevance.
   Qed.
   
@@ -317,7 +315,7 @@ Section Paper.
       have H8: transitive (Asym Eb.+) 
         by apply: Asym_preserve_transitivity;apply: t_trans.
       have H9: (Asym (Asym Eb.+)) = (Asym Eb.+) by apply: Asym2.
-      by move : (le_antisym' H8 H9 H6 H7 H1' H2').
+      by move : (le_antisym H8 H9 H6 H7 H1' H2').
     Qed.
     
     Lemma leSet1_antisymmetric: @antisymmetric SType leSet1.
@@ -1239,17 +1237,16 @@ Section allL_uniq.
   Lemma allL_drop: forall (st:seq T) (x y z:T),
       z \in st -> allL R st x y -> allL R (drop ((index z st).+1) st) z y.
   Proof.
-    elim => [x y z H1 H2 // | t st Hr x y z H1 H2].
+    elim => [x y z ? ? // | t st Hr x y z H1 H2].
     case H3: (t == z). 
     + rewrite /drop //= H3 -/drop drop0.
       move: H3 => /eqP H3.
       by move: H2;rewrite H3 allL_c => /andP [_ H2'].
     + rewrite /drop //= H3 -/drop.
       apply Hr with t.
-      - move: H1; rewrite in_cons => /orP [/eqP H1| H1].
-        by move: H3; rewrite H1 => /eqP H3.
-        by [].
-      - by move: H2; rewrite allL_c => /andP [_ H2]. 
+      ++ move: H1; rewrite in_cons => /orP [/eqP H1| H1 //].
+         by move: H3; rewrite H1 => /eqP H3.
+      ++ by move: H2; rewrite allL_c => /andP [_ H2]. 
   Qed.
   
   Lemma drop_cons': forall (st: seq T) (x:T),
@@ -1364,11 +1361,8 @@ Section allL_uniq.
   Lemma in_subseq: forall (st1 st2: seq T) (x:T),
       subseq st1 st2 -> ~ (x \in st2) -> ~ (x \in st1).
   Proof.
-    move => st1 st2 x H1.
-    apply contraPP.
-    move => /contrapT H2 H3.
-    have H4:  x \in st2. by apply in_subseq' with st1.  
-    by [].
+    move => st1 st2 x ?; apply contraPP => /contrapT ? ?.
+    by have:  x \in st2 by apply in_subseq' with st1.  
   Qed.
   
   Lemma allL_uniq: forall (st: seq T) (x y: T),
