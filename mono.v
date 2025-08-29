@@ -103,16 +103,16 @@ Section Set_relation.
   Variables (T: eqType).
   
   (* begin snippet leset:: no-out *)    
-  Definition leSet (U: relation T): relation (set T) := 
-    [set AB |forall (a:T), (a \in AB.1) -> exists b, b \in AB.2 /\ ( a = b \/ U (a,b)) ].
+  Definition leSet (R: relation T): relation (set T) := 
+    [set AB |forall (a:T), (a \in AB.1) -> exists b, b \in AB.2 /\ ( a = b \/ R (a,b)) ].
   
   Notation "A [<= R ] B" := (leSet R (A,B)).
   (* end snippet leset *)       
   
-  Definition leSet' (U: relation T): relation (set T) :=
-    [set AB | AB.1 `<=` ('Δ  `|` U)#AB.2]. 
+  Definition leSet' (R: relation T): relation (set T) :=
+    [set AB | AB.1 `<=` ('Δ  `|` R)#AB.2]. 
   
-  Lemma lesetE (U: relation T) : leSet U = leSet' U. 
+  Lemma lesetE (R: relation T) : leSet R = leSet' R. 
   Proof.
     rewrite predeqE => -[A B];split. 
     - move => H1 a /inP/H1 [b [/inP H2 [->| H3]]]; first by (exists b);split;[left|].
@@ -123,13 +123,13 @@ Section Set_relation.
       by exists b; split;[ | right].
   Qed.
   
-  Lemma Ile: forall (U: relation T) (A B: set T), A `<=` B -> A [<= U] B.
-  Proof. by move => U A B H1 /= a /inP/H1 ?;exists a;split;[rewrite inP|left]. Qed.
+  Lemma Ile: forall (R: relation T) (A B: set T), A `<=` B -> A [<= R] B.
+  Proof. by move => R A B H1 /= a /inP/H1 ?;exists a;split;[rewrite inP|left]. Qed.
 
-  Lemma leI: forall (U V: relation T), U `<=` V -> (leSet U)  `<=` (leSet V).
+  Lemma leI: forall (R V: relation T), R `<=` V -> (leSet R)  `<=` (leSet V).
   Proof.
-    move => U V H1;rewrite lesetE lesetE => [[A B]] H2.
-    have H3: ('Δ  `|` U)#B `<=` ('Δ  `|` V)#B by apply: Fset_inc; apply: setUS.
+    move => R V H1;rewrite lesetE lesetE => [[A B]] H2.
+    have H3: ('Δ  `|` R)#B `<=` ('Δ  `|` V)#B by apply: Fset_inc; apply: setUS.
     by apply: subset_trans H2 H3.
   Qed.
    
@@ -139,7 +139,7 @@ End Set_relation.
 Notation "A [<= R ] B" := (leSet R (A,B)).
 
 Section Set_order. 
-  (** * an order relation on independent sets *)
+  (** * the previous relation [<= R] is an order relation on R-independent sets *)
   
   Variables (T: eqType) (R: relation T). 
 
@@ -210,7 +210,7 @@ Section Set_order.
 End Set_order. 
 
 Section Infinite_paths.
-
+  (** * Assumptions on infinite paths *)
   Variables (T:Type) (Eb Er: relation T).
 
   (* total (or left total)  *) 
@@ -281,6 +281,8 @@ Section Paper.
   (* The set Scal as a Type *)
   Definition SType := {S: set T| RelIndep Mono S /\ ScalP S /\ S != set0}.
   
+  Definition Elt (C: set SType) := {x : T |exists (S: SType), S \in C /\ x \in (sval S)}.
+  
   Lemma S2Scal: forall (S: SType), (sval S) \in Scal.
   Proof. by move => [S [H1 [H2 H3]]];rewrite inP. Qed.
 
@@ -328,8 +330,6 @@ Section Paper.
       apply: proof_irrelevance.
     Qed.
   End Scal_order.
-  
-  Definition Elt (C: set SType) := {x : T |exists (S: SType), S \in C /\ x \in (sval S)}.
   
   Fixpoint IterCh (C: set SType) (f: Elt C -> Elt C) k (x: Elt C) := 
     match k with 
