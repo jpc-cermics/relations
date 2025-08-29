@@ -209,12 +209,13 @@ End Set_order.
 
 Section Infinite_paths.
   (** * Assumptions on infinite paths *)
-  Variables (T:Type) (Eb Er: relation T).
+  Variables (T:Type).
 
   (* total (or left total)  *) 
-  Definition total_rel (S: relation T) := forall x, exists y, S (x,y).
+  Definition total_rel (R: relation T) := forall x, exists y, R (x,y).
   (** infinite sequence *)
-  Definition iic (U: relation T) := exists f : nat -> T, forall n, U ((f n),(f (S n))).  
+
+  Definition iic (R: relation T) := exists f : nat -> T, forall n, R ((f n),(f (S n))).  
   
   (** * axiom of dependent choice *) 
   Axiom DC: forall (S: relation T),  total_rel S -> iic S. 
@@ -233,13 +234,12 @@ Section Infinite_paths.
   Proof. by elim. Qed.
   
   Lemma iicE (R: relation T):
-    (exists f : T -> T, forall x, R (x, f x) )
-    -> (forall x, exists f : nat -> T, f 0 = x /\ forall n, R ((f n),(f (S n)))).
+    iic' R -> (forall x, exists f : nat -> T, f 0 = x /\ forall n, R ((f n),(f (S n)))).
   Proof. by move => [f H1] x;exists (iter f x). Qed.
-  
+
   (* choice from boolp for S: relation T *)
-  Lemma choice': forall (S: relation T), 
-      total_rel S -> (exists f : T -> T, forall x, S (x, f x)).
+  Lemma choice': forall (R: relation T), 
+      total_rel R -> iic' R.
   Proof.
     move => S H1.
     have H2: forall x : T, exists y : T, (relation_toP S) x y
