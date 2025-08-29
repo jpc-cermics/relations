@@ -10,14 +10,12 @@
 (************************************************************************)
 
 Set Warnings "-parsing -coercions".
-From mathcomp Require Import all_ssreflect seq order.
-From mathcomp Require Import mathcomp_extra boolp.
-From mathcomp Require Import classical_sets order.
+From mathcomp Require Import all_ssreflect seq order boolp classical_sets. 
 Set Warnings "parsing coercions".
 
 From RL Require Import  seq1 ssrel rel.
 
-Require Import ClassicalChoice.
+(* Require Import ClassicalChoice. *)
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -217,9 +215,39 @@ Section Infinite_paths.
   Definition total_rel (S: relation T) := forall x, exists y, S (x,y).
   (** infinite sequence *)
   Definition iic (U: relation T) := exists f : nat -> T, forall n, U ((f n),(f (S n))).  
+  
   (** * axiom of dependent choice *) 
   Axiom DC: forall (S: relation T),  total_rel S -> iic S. 
 
+  Definition relation_toP (R: relation T) : T-> T-> Prop := (fun x => (fun y => R (x,y))).
+  
+  Definition iic' (U: relation T) := exists f : T -> T, forall x, U (x, f x). 
+  
+  Fixpoint iter (f: T -> T) (x: T) k := 
+    match k with 
+    | 0 => x 
+    | S m => f (iter f x m)
+    end. 
+  
+  Lemma iterP: forall k f x, iter f x k.+1 = f (iter f x k).
+  Proof. by elim. Qed.
+  
+  Lemma iicE (R: relation T):
+    (exists f : T -> T, forall x, R (x, f x) )
+    -> (forall x, exists f : nat -> T, f 0 = x /\ forall n, R ((f n),(f (S n)))).
+  Proof. by move => [f H1] x;exists (iter f x). Qed.
+  
+  (* choice from boolp for S: relation T *)
+  Lemma choice': forall (S: relation T), 
+      total_rel S -> (exists f : T -> T, forall x, S (x, f x)).
+  Proof.
+    move => S H1.
+    have H2: forall x : T, exists y : T, (relation_toP S) x y
+        by move => x;move: H1 => /(_ x) [y H1];exists y.
+    move: H2 => /choice [f H2].
+    by exists f => x; move: H2 => /(_ x).
+  Qed.
+  
   (* begin snippet Rloop:: no-out *)    
   Definition Rloop (S: relation T) := exists v, forall w,  S (v,w) -> S (w,v).
   (* end snippet Rloop *)
@@ -253,7 +281,9 @@ Section Infinite_paths.
   Proof. by move => [v H1];exists v => w [/H1 H2 H3]. Qed.
   
   Lemma notiic_rloop: forall (S: relation T), ~ (iic (Asym S)) -> (Rloop S).
-  Proof. by move => S; apply contraPP => /test3/DC H1.  Qed.
+  Proof. 
+    by move => S; apply contraPP => /test3/DC H1.
+  Qed.
   
 End Infinite_paths.
 
@@ -402,21 +432,16 @@ Section Paper.
     Qed.
     
     Section Ec_seq. 
-      (* the main result here is 
-         Ec_seq: forall (s: Ec), exists (s1: Ec), RC (s, s1) *)
-      
+      (* the main result here is total_RC *) 
+
       Lemma Ec_seq1: forall (S: SType) (s:T), 
           (S \in C) -> (s \in (sval S)) -> ( ~ (s \in Sinf)) 
           -> exists S1, S1 \in C /\ S [<=] S1 /\ ~ (s \in (sval S1)).
       Proof.
         move: Hc => H1 S s H2 H3. 
-        apply contraPP;rewrite not_existsP 2!notE => H4.
-        rewrite inP /Sinf; exists S.
-        have H5: forall x: SType, x \in C -> S [<=] x -> s \in (sval x)
-                by move => x H5 H6;
-                          move: (H4 x) => /not_andP [H7 //|/not_andP [// | H7]];
-                                         rewrite notE in H7.
-        exact.
+        apply contraPP;rewrite not_existsP 2!notE inP /Sinf => H4;exists S.
+        split => [// | ];split => [// |A ? ?].
+        by move: H4 => /(_ A) /not_andP [? //|/not_andP [// | /contrapT ?]].
       Qed.
       
       Lemma Ec_seq2: forall (S: SType) (s:T), 
@@ -448,12 +473,6 @@ Section Paper.
       
     End Ec_seq.
     
-    Fixpoint IterCh (C: set SType) (f: Elt C -> Elt C) k (x: Elt C) := 
-      match k with 
-      | 0 => x 
-      | S m => f (IterCh f m x)
-      end. 
-    
     Lemma ChooseRC_fact1: forall f s,
         ~ ((sval s) \in Sinf) -> RC (s, f s) -> (Asym Eb.+) (sval s, sval (f s)).
     Proof. by move => f s H2 [[H3 _]// | [_ H3]].  Qed.
@@ -462,26 +481,24 @@ Section Paper.
         ~ ((sval (f s)) \in Sinf) -> RC (s,f s) -> ~ ((sval s) \in Sinf).
     Proof. by move => f s H2 [/=[H3 H4]|/= [H3 [H4 H5]]];[rewrite -H4 in H3 |]. Qed.
     
-    Lemma IterChP: forall k f (x:Ec), IterCh f k.+1 x = f (IterCh f k x).
-    Proof. by elim. Qed.
     
     Lemma ChooseRC_fact3: forall f s, 
         (forall s, RC (s,f s)) 
         ->forall n,
-          (forall k, k < n.+1 -> ~((sval (IterCh f k s)) \in Sinf))
-          -> (Asym Eb.+) (sval (IterCh f 0 s),sval (IterCh f n.+1 s)).
+          (forall k, k < n.+1 -> ~((sval (iter f s k)) \in Sinf))
+          -> (Asym Eb.+) (sval (iter f s 0 ),sval (iter f s n.+1 )).
     Proof. 
       move => f s H2.
       elim => [H3 |n Hr H3]. 
-      + have H4: ~((sval (IterCh f 0 s)) \in Sinf) by apply H3.
-        by move: H2 H4 => /(_ (IterCh f 0 s)) [/= [-> _] // | /= [H2 [H5 H6]]].
-      + have: forall k : nat, k < n.+1 -> ~ ((sval (IterCh f k s)) \in Sinf )
+      + have H4: ~((sval (iter f s 0)) \in Sinf) by apply H3.
+        by move: H2 H4 => /(_ (iter f s 0)) [/= [-> _] // | /= [H2 [H5 H6]]].
+      + have: forall k : nat, k < n.+1 -> ~ ((sval (iter f s k)) \in Sinf )
             by move => k H5;apply: H3;(have H6: k < k.+1 by apply ltnSn);
                       apply: ltn_trans H6 _;
                       rewrite -addn1 addnC -[n.+2]addn1 [n.+1 + 1]addnC (ltn_add2l 1). 
         move => /Hr H4.
-        have H5: ~((sval (IterCh f n.+1 s)) \in Sinf) by apply H3;apply ltnSn.
-        have H6: (Asym Eb.+) ((sval (IterCh f n.+1 s),(sval (IterCh f n.+2 s))))
+        have H5: ~((sval (iter f s n.+1)) \in Sinf) by apply H3;apply ltnSn.
+        have H6: (Asym Eb.+) ((sval (iter f s n.+1),(sval (iter f s n.+2))))
           by move: ChooseRC_fact1 => /(_ f) H6;apply: H6. 
         have H7: transitive (Asym Eb.+) by apply/Asym_preserve_transitivity/t_trans.
         by apply: H7 H4 H6.
@@ -490,8 +507,8 @@ Section Paper.
     Lemma ChooseRC_fact4: forall f s,
         (forall (s:Ec), RC (s,f s))
         ->forall n,
-          ~((sval (IterCh f n s)) \in Sinf)
-          -> (forall k, k < n.+1 -> ~ sval (IterCh f k s) \in Sinf).
+          ~((sval (iter f s n)) \in Sinf)
+          -> (forall k, k < n.+1 -> ~ sval (iter f s k) \in Sinf).
     Proof.
       move => f s H2.
       elim => [H3 k H4| n Hn H3 k H4].
@@ -500,40 +517,40 @@ Section Paper.
         by move: H4 => /ltnSE H4; move: H4; rewrite leqn0 => /eqP H4.
       + case H5: (k == n.+1);first by move: H5 => /eqP ->.
         have H6: k < n.+1 by move: H4 => /ltnSE H4;rewrite leq_eqVlt H5 /= in H4.
-        have H7: ~ sval (IterCh f n s) \in Sinf
-            by move: H3; rewrite IterChP => /ChooseRC_fact2 H3;apply H3.
+        have H7: ~ sval (iter f s n) \in Sinf
+            by move: H3; rewrite iterP => /ChooseRC_fact2 H3;apply H3.
         by apply Hn.
     Qed.
     
     Lemma ChooseRC: forall f, 
         (forall s, RC (s,f s))
         -> (forall (s:Ec),
-              (forall n, ~((sval (IterCh f n s)) \in Sinf))
-              -> forall n, (Asym Eb.+) (sval (IterCh f n s),sval (IterCh f n.+1 s))).
+              (forall n, ~((sval (iter f s n)) \in Sinf))
+              -> forall n, (Asym Eb.+) (sval (iter f s n),sval (iter f s n.+1))).
     Proof.
-      by move => f H2 s H3 n;rewrite IterChP;apply: ChooseRC_fact1.
+      by move => f H2 s H3 n;rewrite iterP;apply: ChooseRC_fact1.
     Qed.
 
     Lemma notiic_noinf: ~ (iic (Asym Eb.+)) ->
                         forall (C: set SType) (f: Elt C -> Elt C ) (s: Elt C), 
-                          ~ ( forall n, (Asym Eb.+) (sval (IterCh f n s),sval (IterCh f n.+1 s))). 
+                          ~ ( forall n, (Asym Eb.+) (sval (iter f s n),sval (iter f s n.+1))). 
     Proof.
       apply: contra_notP.
       rewrite -existsNP => [[C' H1]].
       move: H1; rewrite -existsNP => [[f H1]].
       move: H1; rewrite -existsNP => [[s H1]].
       move: H1 => /contrapT H1.
-      by exists (fun n => (sval (IterCh f n s))).
+      by exists (fun n => (sval (iter f s n))).
     Qed.
     
     Lemma ChooseRC2:~ (iic (Asym Eb.+))
-          -> (forall f, (forall s, RC (s,f s)) -> (forall (s:Ec), ~ (forall n, ~((sval (IterCh f n s)) \in Sinf)))).
+          -> (forall f, (forall s, RC (s,f s)) -> (forall (s:Ec), ~ (forall n, ~((sval (iter f s n)) \in Sinf)))).
     Proof.
       by move => /notiic_noinf H1 f H2 s H3;move: (ChooseRC H2 H3);apply: H1.
     Qed.
     
     Lemma ChooseRC3:~ (iic (Asym Eb.+)) 
-          -> (forall f, (forall s, RC (s,f s)) -> (forall (s:Ec), exists n, ((sval (IterCh f n s)) \in Sinf))).
+          -> (forall f, (forall s, RC (s,f s)) -> (forall (s:Ec), exists n, ((sval (iter f s n)) \in Sinf))).
     Proof.
       by move => H1 f H2 s;move: (ChooseRC2 H1 H2) => /(_ s) /existsNP [k /contrapT H3];exists k.
     Qed.
@@ -541,13 +558,13 @@ Section Paper.
     Lemma ChooseRC4:~ (iic (Asym Eb.+))
           -> forall f, (forall s, RC (s,f s))
                  -> (forall (s:Ec), 
-                     exists n, ((sval (IterCh f n s)) \in Sinf)
-                          /\ (forall k, k < n -> ~((sval (IterCh f k s)) \in Sinf))).
+                     exists n, ((sval (iter f s n)) \in Sinf)
+                          /\ (forall k, k < n -> ~((sval (iter f s k)) \in Sinf))).
     Proof.
       move => H1 f H2 s.
       move: (ChooseRC3 H1 H2) => /(_ s) [k H3].
       elim: k H3 => [H3|n Hn H3]; first by (exists 0).
-      case H4: (sval (IterCh f n s) \in Sinf );
+      case H4: (sval (iter f s n) \in Sinf );
         first by move: H4 => /Hn [n1 H4];exists n1.
       by exists n.+1;split;[ | apply: ChooseRC_fact4;[| rewrite H4]].
     Qed.
@@ -557,7 +574,7 @@ Section Paper.
         (sval s \in Sinf) \/ exists s',  s' \in Sinf /\ (Asym Eb.+) (sval s, s').
     Proof. 
       have [f H2]:exists f: Ec -> Ec, forall (s:Ec), (curry RC) s (f s) 
-          by pose proof total_RC;apply: choice.
+          by pose proof total_RC;apply: choice'.
       move => H1 s.
       move: ((ChooseRC4 H1 H2) s) => [n [H3 H4]]. 
       case H5: (n == 0); first by move: H5 H3 => /eqP ->;left.
@@ -566,7 +583,7 @@ Section Paper.
       have H6: n.-1.+1 = n by apply: (ltn_predK H5).
       move: (((@ChooseRC_fact3 f s) H2) n.-1); rewrite H6 => H7.
       move: H4 => /H7 /= H4.
-      by exists (sval (IterCh f n s)).
+      by exists (sval (iter f s n)).
     Qed.
     
     Lemma ChooseRC6:~ (iic (Asym Eb.+)) -> forall (S: SType), (S \in C) -> (sval S) [<= (Asym Eb.+)] Sinf.
