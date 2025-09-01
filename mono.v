@@ -513,31 +513,46 @@ Section Paper.
         exists f;split;[ exact| exists n; exact].
       Qed.
 
-      (** * On veut prendre le plus petit n solution 
-            pour avoir exists n, ((sval (f n)) \in Sinf)
-                                   /\ (forall k, k < n -> ~((sval (f k)) \in Sinf)).
-       **)
-      
-      Lemma test_xx : forall f, forall n, forall p, (p <= n) -> (f p) \in Sinf ->
-                                                       exists q, (q <= p) -> (f q) \in Sinf /\ (forall q', q' < q -> ~ (f q') \in Sinf).
+      Lemma test_xx : forall f : nat -> Ec, forall n, 
+        forall p, (p <= n) -> (sval (f p)) \in Sinf ->
+             exists q, (q <= p) /\ (sval (f q)) \in Sinf 
+                  /\ (forall q', q' < q -> ~ ((sval (f q')) \in Sinf)).
+      Proof.
         move => f n. 
         elim : n.
-        move => p. 
-        rewrite leqn0 => /eqP -> H1. exists 0 => _. split. by []. by move => q' H2.
-        move => n Hn p H1 H2.
-        case H3: (p <= n);first by apply: Hn.
-        have H4: (p == n.+1) || (p < n.+1) by rewrite -leq_eqVlt.
-        move: H4 => /orP [/eqP H5 | H5].
-        (** regader deux cas *)
-        have [H6 | H6] : (forall q', q' < n.+1 -> ~ (f q') \in Sinf) \/ ~(forall q', q' < n.+1 -> ~ (f q') \in Sinf) by apply: EM.
-        exists n.+1 => _. split. by rewrite -H5. by [].
-        move: H6 => /existsPNP [r H6 H7].
-        move: Hn => /(_ r) Hn.
-        move: H6; rewrite ltnS => /[dup] H6' /Hn H6.
-        move: H7 =>  /contrapT/[dup] H7' /H6 [s H7].
-        exists r.
-        move => H8.
-      Admitted.
+        - move => p. 
+          rewrite leqn0 => /eqP -> H1. exists 0. split. by []. split. by []. by move => q' H2.
+        - move => n Hn p H1 H2.
+          case H3: (p <= n);first by apply: Hn.
+          have H4: (p == n.+1) || (p < n.+1) by rewrite -leq_eqVlt.
+          move: H4 => /orP [/eqP H5 | H5].
+          (** regader deux cas *)
+          + have [H6 | H6] : (forall q', q' < n.+1 -> ~ (sval (f q')) \in Sinf)
+                             \/ ~(forall q', q' < n.+1 -> ~ (sval (f q')) \in Sinf) by apply: EM.
+            ++ exists n.+1. split. by rewrite H5. split. by rewrite -H5. by [].
+            ++ move: H6 => /existsPNP [r H6 H7].
+               move: H6; rewrite ltnS => H6. 
+               move: H7 =>  /contrapT H7. 
+               move: Hn => /(_ r H6 H7) [q [H8 H9]].
+               exists q. split; last exact.
+               rewrite H5.
+               have H10: q <= n by apply: (leq_trans H8 H6).
+               have H11: n <= n.+1 by apply: leqnSn.
+               by apply: (leq_trans H10 H11).
+            ++ apply: Hn. by rewrite -ltnS. by [].
+      Qed.
+
+      Lemma test5_RC: ~ (iic (Asym Eb.+)) ->
+                      exists f,  (forall n, RC ((f n),(f (S n)))) /\
+                              (exists n, (sval (f n)) \in Sinf 
+                                    /\ forall q, q < n -> ~ (sval (f q)) \in Sinf).
+      Proof.
+        move => H1; move: (test4_RC H1) => [f [H2 [n H3]]].
+        exists f. split. by [].
+        have H4: n <= n by apply: leqnn.
+        move: (test_xx H4 H3) => [q [H5 H6]].
+        by exists q.
+      Qed.
       
       
     End Ec_seq.
