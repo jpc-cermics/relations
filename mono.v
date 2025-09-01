@@ -213,16 +213,26 @@ Section Infinite_paths.
 
   (* total (or left total)  *) 
   Definition total_rel (R: relation T) := forall x, exists y, R (x,y).
-  (** infinite sequence *)
-
-  Definition iic (R: relation T) := exists f : nat -> T, forall n, R ((f n),(f (S n))).  
   
-  (** * axiom of dependent choice *) 
-  Axiom DC: forall (S: relation T),  total_rel S -> iic S. 
-
-  Definition relation_toP (R: relation T) : T-> T-> Prop := (fun x => (fun y => R (x,y))).
+  Definition total_rel' (R: relation T) := exists f : T -> T, forall x, R (x, f x). 
   
-  Definition iic' (U: relation T) := exists f : T -> T, forall x, U (x, f x). 
+  (* choice from boolp for S: relation T *)
+  Lemma choice': forall (R: relation T), total_rel R -> total_rel' R.
+  Proof.
+    move => S H1.
+    have H2: forall x : T, exists y : T, (curry S) x y
+        by move => x;move: H1 => /(_ x) [y H1];exists y.
+    move: H2 => /choice [f H2].
+    by exists f => x; move: H2 => /(_ x).
+  Qed.
+  
+  Lemma total_rel_iff: forall (R: relation T),  total_rel R <-> total_rel' R.
+  Proof.
+    by move => R; split =>[| [f H1] x];[apply: choice' | exists (f x)].
+  Qed.
+  
+  Definition total_rel'' (R: relation T) := 
+    (forall x, exists f : nat -> T, f 0 = x /\ forall n, R ((f n),(f (S n)))).
   
   Fixpoint iter (f: T -> T) (x: T) k := 
     match k with 
@@ -233,26 +243,30 @@ Section Infinite_paths.
   Lemma iterP: forall k f x, iter f x k.+1 = f (iter f x k).
   Proof. by elim. Qed.
   
-  Lemma iicE (R: relation T):
-    iic' R -> (forall x, exists f : nat -> T, f 0 = x /\ forall n, R ((f n),(f (S n)))).
+  Lemma total_rel'_to_total_rel'' (R: relation T):
+    total_rel' R -> total_rel'' R.
   Proof. by move => [f H1] x;exists (iter f x). Qed.
-
-  (* choice from boolp for S: relation T *)
-  Lemma choice': forall (R: relation T), 
-      total_rel R -> iic' R.
+  
+  Definition iic (R: relation T) := exists f : nat -> T, forall n, R ((f n),(f (S n))).  
+  
+  Lemma total_rel''_to_iic (R: relation T): 
+    (exists (v0:T), (v0 \in setT)) ->  total_rel'' R -> iic R. 
   Proof.
-    move => S H1.
-    have H2: forall x : T, exists y : T, (relation_toP S) x y
-        by move => x;move: H1 => /(_ x) [y H1];exists y.
-    move: H2 => /choice [f H2].
-    by exists f => x; move: H2 => /(_ x).
+    by move => -[v0 H1] /(_ v0) [f [H2 H3]]; exists f.
+  Qed.
+  
+  Lemma DC: forall (R: relation T),
+      (exists (v0:T), (v0 \in setT)) ->  total_rel R -> iic R. 
+  Proof.
+    by move => R H0 /total_rel_iff/total_rel'_to_total_rel''/(total_rel''_to_iic H0) H1.
   Qed.
   
   (* begin snippet Rloop:: no-out *)    
   Definition Rloop (S: relation T) := exists v, forall w,  S (v,w) -> S (w,v).
   (* end snippet Rloop *)
   
-  Lemma test (S: relation T): (antisymmetric S /\ irreflexive S /\ Rloop S) -> (~ (total_rel S)).
+  Lemma test (S: relation T):
+    (antisymmetric S /\ irreflexive S /\ Rloop S) -> (~ (total_rel S)).
   Proof.
     move => [H1 [H1' [v H2]]].
     rewrite -existsNP; exists v; rewrite -forallNE => x /[dup] H3 /H2 H4.
@@ -280,9 +294,10 @@ Section Infinite_paths.
     (Rloop S) -> let Sa:= (Asym S) in exists v, (forall x : T, ~ (Sa (v, x))).
   Proof. by move => [v H1];exists v => w [/H1 H2 H3]. Qed.
   
-  Lemma notiic_rloop: forall (S: relation T), ~ (iic (Asym S)) -> (Rloop S).
+  Lemma notiic_rloop: forall (S: relation T),
+      (exists (v0:T), (v0 \in setT)) -> ~ (iic (Asym S)) -> (Rloop S).
   Proof. 
-    by move => S; apply contraPP => /test3/DC H1.
+    by move => S H0; apply contraPP => /test3/(DC H0) H1.
   Qed.
   
 End Infinite_paths.
@@ -379,7 +394,7 @@ Section Paper.
   
     Lemma Elt_not_empty: forall (C: set SType), 
         C \in Chains -> C != set0 -> exists (S: SType), (S \in C /\ (exists x, x \in (sval S))).
-    Proof. 
+    Proof.
       move => C H1 /notempty_exists [S H2];exists S;split;first by []. 
       by move: S H2 => [S' [H3 [H4 /notempty_exists H5]] /=] _.
     Qed.
@@ -387,7 +402,7 @@ Section Paper.
   End SType_chains.
 
   Section Sinf_set.
-    (** * Sinf C for a nonempty Chain C *)
+    (** * Sinf C for a non empty Chain *)
     
     Variables  (C: set SType).
     Hypothesis Hc: C \in Chains. 
@@ -470,6 +485,33 @@ Section Paper.
         move: (Ec_seq3 H4) => [s1 H5].
         by exists s1; right.
       Qed.
+
+      Lemma test0_iic_RC: exists f : nat -> Ec, forall n, RC ((f n),(f (S n))).  
+      Proof. 
+        apply: DC.
+        by pose proof ChnotE_witness;exists X ;rewrite inP.
+        by apply: total_RC.
+      Qed.
+      
+      Lemma test1_RC: forall f,  (forall n, RC ((f n),(f (S n)))) -> (forall n, ~ (sval (f n)) \in Sinf)
+                            -> (forall n, (Asym Eb.+) (sval (f n), sval(f (S n)))).
+      Proof. 
+        by move => f + + n => /(_ n) [/=[H1 H1'] | /= [H1 H1']] /(_ n) H2.
+      Qed.
+      
+      Lemma test3_RC: ~ (iic (Asym Eb.+)) ->
+                      exists f,  (forall n, RC ((f n),(f (S n)))) /\ ~ (forall n, ~ (sval (f n)) \in Sinf).
+      Proof.
+        move => H1; move: test0_iic_RC => [f H2];exists f; split => [// | H3]. 
+        by have H4:  iic (Asym Eb.+) by exists (fun n => (sval (f n)));apply: test1_RC.
+      Qed.
+      
+      Lemma test4_RC: ~ (iic (Asym Eb.+)) ->
+                      exists f,  (forall n, RC ((f n),(f (S n)))) /\ exists k, (sval (f k)) \in Sinf.
+      Proof.
+        move => H1; move: (test3_RC H1) => [f [H2 /not_existsP [n H3]]].
+        exists f;split;[ exact| exists n; exact].
+      Qed.
       
     End Ec_seq.
     
@@ -480,7 +522,6 @@ Section Paper.
     Lemma ChooseRC_fact2: forall f s, 
         ~ ((sval (f s)) \in Sinf) -> RC (s,f s) -> ~ ((sval s) \in Sinf).
     Proof. by move => f s H2 [/=[H3 H4]|/= [H3 [H4 H5]]];[rewrite -H4 in H3 |]. Qed.
-    
     
     Lemma ChooseRC_fact3: forall f s, 
         (forall s, RC (s,f s)) 
@@ -505,7 +546,7 @@ Section Paper.
     Qed.
     
     Lemma ChooseRC_fact4: forall f s,
-        (forall (s:Ec), RC (s,f s))
+        (forall s, RC (s,f s))
         ->forall n,
           ~((sval (iter f s n)) \in Sinf)
           -> (forall k, k < n.+1 -> ~ sval (iter f s k) \in Sinf).
@@ -701,7 +742,7 @@ Section Paper.
     by [].
     by [].
     move: H1 => /negP/contrapT/eqP H1. 
-    move: (SType_not_empty A3) => /notempty_exists [Sm Ht].
+    move: (SType_not_empty A1 A3) => /notempty_exists [Sm Ht].
     by exists Sm; move => S; rewrite H1 -inP in_set0. 
   Qed.
   
