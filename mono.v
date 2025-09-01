@@ -507,11 +507,38 @@ Section Paper.
       Qed.
       
       Lemma test4_RC: ~ (iic (Asym Eb.+)) ->
-                      exists f,  (forall n, RC ((f n),(f (S n)))) /\ exists k, (sval (f k)) \in Sinf.
+                      exists f,  (forall n, RC ((f n),(f (S n)))) /\ exists n, (sval (f n)) \in Sinf.
       Proof.
         move => H1; move: (test3_RC H1) => [f [H2 /not_existsP [n H3]]].
         exists f;split;[ exact| exists n; exact].
       Qed.
+
+      (** * On veut prendre le plus petit n solution 
+            pour avoir exists n, ((sval (f n)) \in Sinf)
+                                   /\ (forall k, k < n -> ~((sval (f k)) \in Sinf)).
+       **)
+      
+      Lemma test_xx : forall f, forall n, forall p, (p <= n) -> (f p) \in Sinf ->
+                                                       exists q, (q <= p) -> (f q) \in Sinf /\ (forall q', q' < q -> ~ (f q') \in Sinf).
+        move => f n. 
+        elim : n.
+        move => p. 
+        rewrite leqn0 => /eqP -> H1. exists 0 => _. split. by []. by move => q' H2.
+        move => n Hn p H1 H2.
+        case H3: (p <= n);first by apply: Hn.
+        have H4: (p == n.+1) || (p < n.+1) by rewrite -leq_eqVlt.
+        move: H4 => /orP [/eqP H5 | H5].
+        (** regader deux cas *)
+        have [H6 | H6] : (forall q', q' < n.+1 -> ~ (f q') \in Sinf) \/ ~(forall q', q' < n.+1 -> ~ (f q') \in Sinf) by apply: EM.
+        exists n.+1 => _. split. by rewrite -H5. by [].
+        move: H6 => /existsPNP [r H6 H7].
+        move: Hn => /(_ r) Hn.
+        move: H6; rewrite ltnS => /[dup] H6' /Hn H6.
+        move: H7 =>  /contrapT/[dup] H7' /H6 [s H7].
+        exists r.
+        move => H8.
+      Admitted.
+      
       
     End Ec_seq.
     
