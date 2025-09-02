@@ -421,6 +421,13 @@ Section Paper.
                       ((sval xy.1) \in Sinf /\ xy.2 = xy.1)
                       \/ (~ ((sval xy.1) \in Sinf) /\ (Asym Eb.+) (sval xy.1, sval xy.2))].
     
+    Lemma transitive_RC: transitive RC. 
+    Proof.
+      have H3: transitive (Asym Eb.+) by apply/Asym_preserve_transitivity/t_trans.
+      by move => x y z [/= [H0 ->]| [H1 H1']] [ /= [H0' /= ->]| /= [H2 H2']]; 
+                [left | right | right |right;split;[ | apply H3 with (sval y)]].
+    Qed.
+    
     Lemma ChnotE: exists _ : Elt C, True.
     Proof.
       move: (Elt_not_empty Hc Hne) => [S [H2 [x H3]]].
@@ -506,7 +513,7 @@ Section Paper.
         exists f; split => [// | H4]. 
         have H5:  iic (Asym Eb.+)
           by exists (fun n => (sval (f n)));move: test1_RC => /(_ s f) H6;apply: H6. 
-        exact.
+               exact.
       Qed.
       
       Lemma test4_RC: ~ (iic (Asym Eb.+)) ->
@@ -516,171 +523,71 @@ Section Paper.
         move => H1; move: (test3_RC H1) => + s => /(_ s) [f [H2 /not_existsP [n H3]]].
         exists f;split;[ exact| exists n; exact].
       Qed.
-      
-      Lemma test_xx : forall f : nat -> Ec, forall n, 
-        forall p, (p <= n) -> (sval (f p)) \in Sinf ->
-             exists q, (q <= p) /\ (sval (f q)) \in Sinf 
-                  /\ (forall q', q' < q -> ~ ((sval (f q')) \in Sinf)).
+
+      Lemma transitiveN_RC: forall f, 
+          (forall n, RC ((f n),(f (S n)))) -> (forall n, n > 1 -> RC (f 0, f n)).
       Proof.
-        move => f n. 
-        elim : n.
-        - move => p. 
-          rewrite leqn0 => /eqP -> H1. exists 0. split. by []. split. by []. by move => q' H2.
-        - move => n Hn p H1 H2.
-          case H3: (p <= n);first by apply: Hn.
-          have H4: (p == n.+1) || (p < n.+1) by rewrite -leq_eqVlt.
-          move: H4 => /orP [/eqP H5 | H5].
-          (** regader deux cas *)
-          + have [H6 | H6] : (forall q', q' < n.+1 -> ~ (sval (f q')) \in Sinf)
-                             \/ ~(forall q', q' < n.+1 -> ~ (sval (f q')) \in Sinf) by apply: EM.
-            ++ exists n.+1. split. by rewrite H5. split. by rewrite -H5. by [].
-            ++ move: H6 => /existsPNP [r H6 H7].
-               move: H6; rewrite ltnS => H6. 
-               move: H7 =>  /contrapT H7. 
-               move: Hn => /(_ r H6 H7) [q [H8 H9]].
-               exists q. split; last exact.
-               rewrite H5.
-               have H10: q <= n by apply: (leq_trans H8 H6).
-               have H11: n <= n.+1 by apply: leqnSn.
-               by apply: (leq_trans H10 H11).
-            ++ apply: Hn. by rewrite -ltnS. by [].
+        move => f H1;elim => [// | n Hn H2 ].
+        case H3: (1 < n). 
+        + have H4: RC (f 0, f n) by apply: Hn;rewrite H3.
+          by move : (transitive_RC H4 (H1 n)).
+        + case H5: (n == 0); first by move: H5 => /eqP ->; apply: H1.
+          case H6: (n == 1); first by move: H6 => /eqP ->;move: (transitive_RC (H1 0) (H1 1)).
+          have H7: ~ (n <= 1) by rewrite leq_eqVlt H6 ltnS leqn0 H5.  
+          by rewrite leqNgt H3 in H7.
+      Qed.
+      
+      Lemma Util: forall n, ~ (n = 0) /\ ~ (n = 1) ->  n > 1. 
+      Proof.
+        move => n [/eqP H1 /eqP H2]. 
+        have: n >= 0 by [].
+        rewrite  leq_eqVlt => /orP [/eqP H3 // | H3].
+        by move: H3 H1 => H3; rewrite -H3. 
+        move: H3;rewrite leq_eqVlt => /orP [/eqP H4 | H4 //].
+        by move: H2; by rewrite -H4.
+      Qed.
+      
+      Lemma test_yy: ~ (iic (Asym Eb.+)) ->
+                     forall s, exists f, f 0=s /\ (exists n, (sval (f n)) \in Sinf /\ RC ((f 0), (f n))).
+      Proof.
+        move => H1; move: (test4_RC H1) => + s => /(_ s) [f [[H2 H3] [n H4]]].
+        exists f. split;first by [].
+        case H5: (sval (f 0) \in Sinf).
+        + exists 0. split.  by []. left. by [].
+        + have H6: ~ (n = 0). move => H6. rewrite H6 in H4. by rewrite H5 in H4.
+          case H7: (sval (f 1) \in Sinf).
+          ++ by (exists 1).
+          ++ exists n. 
+             have H8: ~ (n = 1). move => H8. rewrite H8 in H4. by rewrite H7 in H4.
+             have H9: n > 1 by apply Util.
+             move: (transitiveN_RC H3) => /(_ n) H10.
+             split. by []. by apply: H10.           
       Qed.
 
-      Lemma test5_RC: ~ (iic (Asym Eb.+)) ->
-                      forall s, exists f, ( f 0 = s /\ (forall n, RC ((f n),(f (S n)))))
-                                /\(exists n, (sval (f n)) \in Sinf 
-                                       /\ forall q, q < n -> ~ (sval (f q)) \in Sinf).
-      Proof.
-        move => H1; move: (test4_RC H1) => + s => /(_ s) [f [H2 [n H3]]].
-        exists f. split. by [].
-        have H4: n <= n by apply: leqnn.
-        move: (test_xx H4 H3) => [q [H5 H6]].
-        by exists q.
+
+      Lemma ChooseRC5:~ (iic (Asym Eb.+))
+            -> forall (s:Ec), (sval s \in Sinf) \/ exists s',  s' \in Sinf /\ (Asym Eb.+) (sval s, s').
+      Proof. 
+        move => H1; move: (test_yy H1) => + s => /(_ s) [f [H2 [n [H3 H3']]]].
+        case H4: (sval (f 0) \in Sinf ). by left; rewrite -H2 H4.
+        right. exists (sval (f n)). split. by []. 
+        rewrite -H2. 
+        move: H3' => [/= [H3' _] | /= [H5 H6]].
+        by rewrite H4 in H3'.
+        by [].
+      Qed.
+
+      Lemma ChooseRC6:~ (iic (Asym Eb.+)) -> forall (S: SType), (S \in C) -> (sval S) [<= (Asym Eb.+)] Sinf.
+      Proof. 
+        move => H1 S H2 s /= H3.
+        have H4: exists (S: SType), S \in C /\ s \in (sval S) by (exists S).
+        move: (ChooseRC5 H1 (exist _ s H4)) => /= [H5 | [s' [H5 H6]]].
+        by (exists s);split;[|left].
+        by (exists s');split;[|right].
       Qed.
       
     End Ec_seq.
     
-    Lemma ChooseRC_fact1: forall f s,
-        ~ ((sval s) \in Sinf) -> RC (s, f s) -> (Asym Eb.+) (sval s, sval (f s)).
-    Proof. by move => f s H2 [[H3 _]// | [_ H3]].  Qed.
-    
-    Lemma ChooseRC_fact2: forall f s, 
-        ~ ((sval (f s)) \in Sinf) -> RC (s,f s) -> ~ ((sval s) \in Sinf).
-    Proof. by move => f s H2 [/=[H3 H4]|/= [H3 [H4 H5]]];[rewrite -H4 in H3 |]. Qed.
-    
-    Lemma ChooseRC_fact3: forall f s, 
-        (forall s, RC (s,f s)) 
-        ->forall n,
-          (forall k, k < n.+1 -> ~((sval (iter f s k)) \in Sinf))
-          -> (Asym Eb.+) (sval (iter f s 0 ),sval (iter f s n.+1 )).
-    Proof. 
-      move => f s H2.
-      elim => [H3 |n Hr H3]. 
-      + have H4: ~((sval (iter f s 0)) \in Sinf) by apply H3.
-        by move: H2 H4 => /(_ (iter f s 0)) [/= [-> _] // | /= [H2 [H5 H6]]].
-      + have: forall k : nat, k < n.+1 -> ~ ((sval (iter f s k)) \in Sinf )
-            by move => k H5;apply: H3;(have H6: k < k.+1 by apply ltnSn);
-                      apply: ltn_trans H6 _;
-                      rewrite -addn1 addnC -[n.+2]addn1 [n.+1 + 1]addnC (ltn_add2l 1). 
-        move => /Hr H4.
-        have H5: ~((sval (iter f s n.+1)) \in Sinf) by apply H3;apply ltnSn.
-        have H6: (Asym Eb.+) ((sval (iter f s n.+1),(sval (iter f s n.+2))))
-          by move: ChooseRC_fact1 => /(_ f) H6;apply: H6. 
-        have H7: transitive (Asym Eb.+) by apply/Asym_preserve_transitivity/t_trans.
-        by apply: H7 H4 H6.
-    Qed.
-    
-    Lemma ChooseRC_fact4: forall f s,
-        (forall s, RC (s,f s))
-        ->forall n,
-          ~((sval (iter f s n)) \in Sinf)
-          -> (forall k, k < n.+1 -> ~ sval (iter f s k) \in Sinf).
-    Proof.
-      move => f s H2.
-      elim => [H3 k H4| n Hn H3 k H4].
-      + case H5: (k == 0); first by move: H5 => /eqP ->.
-        move: H5 => /eqP H5.
-        by move: H4 => /ltnSE H4; move: H4; rewrite leqn0 => /eqP H4.
-      + case H5: (k == n.+1);first by move: H5 => /eqP ->.
-        have H6: k < n.+1 by move: H4 => /ltnSE H4;rewrite leq_eqVlt H5 /= in H4.
-        have H7: ~ sval (iter f s n) \in Sinf
-            by move: H3; rewrite iterP => /ChooseRC_fact2 H3;apply H3.
-        by apply Hn.
-    Qed.
-    
-    Lemma ChooseRC: forall f, 
-        (forall s, RC (s,f s))
-        -> (forall (s:Ec),
-              (forall n, ~((sval (iter f s n)) \in Sinf))
-              -> forall n, (Asym Eb.+) (sval (iter f s n),sval (iter f s n.+1))).
-    Proof.
-      by move => f H2 s H3 n;rewrite iterP;apply: ChooseRC_fact1.
-    Qed.
-
-    Lemma notiic_noinf: ~ (iic (Asym Eb.+)) ->
-                        forall (C: set SType) (f: Elt C -> Elt C ) (s: Elt C), 
-                          ~ ( forall n, (Asym Eb.+) (sval (iter f s n),sval (iter f s n.+1))). 
-    Proof.
-      apply: contra_notP.
-      rewrite -existsNP => [[C' H1]].
-      move: H1; rewrite -existsNP => [[f H1]].
-      move: H1; rewrite -existsNP => [[s H1]].
-      move: H1 => /contrapT H1.
-      by exists (fun n => (sval (iter f s n))).
-    Qed.
-    
-    Lemma ChooseRC2:~ (iic (Asym Eb.+))
-          -> (forall f, (forall s, RC (s,f s)) -> (forall (s:Ec), ~ (forall n, ~((sval (iter f s n)) \in Sinf)))).
-    Proof.
-      by move => /notiic_noinf H1 f H2 s H3;move: (ChooseRC H2 H3);apply: H1.
-    Qed.
-    
-    Lemma ChooseRC3:~ (iic (Asym Eb.+)) 
-          -> (forall f, (forall s, RC (s,f s)) -> (forall (s:Ec), exists n, ((sval (iter f s n)) \in Sinf))).
-    Proof.
-      by move => H1 f H2 s;move: (ChooseRC2 H1 H2) => /(_ s) /existsNP [k /contrapT H3];exists k.
-    Qed.
-    
-    Lemma ChooseRC4:~ (iic (Asym Eb.+))
-          -> forall f, (forall s, RC (s,f s))
-                 -> (forall (s:Ec), 
-                     exists n, ((sval (iter f s n)) \in Sinf)
-                          /\ (forall k, k < n -> ~((sval (iter f s k)) \in Sinf))).
-    Proof.
-      move => H1 f H2 s.
-      move: (ChooseRC3 H1 H2) => /(_ s) [k H3].
-      elim: k H3 => [H3|n Hn H3]; first by (exists 0).
-      case H4: (sval (iter f s n) \in Sinf );
-        first by move: H4 => /Hn [n1 H4];exists n1.
-      by exists n.+1;split;[ | apply: ChooseRC_fact4;[| rewrite H4]].
-    Qed.
-    
-    Lemma ChooseRC5:~ (iic (Asym Eb.+))
-          -> forall (s:Ec),
-        (sval s \in Sinf) \/ exists s',  s' \in Sinf /\ (Asym Eb.+) (sval s, s').
-    Proof. 
-      have [f H2]:exists f: Ec -> Ec, forall (s:Ec), (curry RC) s (f s) 
-          by pose proof total_RC;apply: choice'.
-      move => H1 s.
-      move: ((ChooseRC4 H1 H2) s) => [n [H3 H4]]. 
-      case H5: (n == 0); first by move: H5 H3 => /eqP ->;left.
-      right. 
-      move: H5;rewrite eqn0Ngt => /negP/contrapT H5.
-      have H6: n.-1.+1 = n by apply: (ltn_predK H5).
-      move: (((@ChooseRC_fact3 f s) H2) n.-1); rewrite H6 => H7.
-      move: H4 => /H7 /= H4.
-      by exists (sval (iter f s n)).
-    Qed.
-    
-    Lemma ChooseRC6:~ (iic (Asym Eb.+)) -> forall (S: SType), (S \in C) -> (sval S) [<= (Asym Eb.+)] Sinf.
-    Proof. 
-      move => H1 S H2 s /= H3.
-      have H4: exists (S: SType), S \in C /\ s \in (sval S) by (exists S).
-      move: (ChooseRC5 H1 (exist _ s H4)) => /= [H5 | [s' [H5 H6]]].
-      by (exists s);split;[|left].
-      by (exists s');split;[|right].
-    Qed.
-      
     (** * The Assumptions we use: weaker than the paper assumptions *)
     (* begin snippet Assumptions:: no-out *)    
     Hypothesis A1: (exists (v0:T), (v0 \in setT)).
@@ -754,6 +661,7 @@ Section Paper.
       move: Sinf_Scal => /inP H2;exists (exist _ Sinf H2);move => S /inP H3. 
       by apply: ChooseRC6.
     Qed.
+
   End Sinf_set.
 
   Hypothesis A1: (exists (v0:T), (v0 \in setT)).
