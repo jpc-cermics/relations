@@ -485,34 +485,38 @@ Section Paper.
         move: (Ec_seq3 H4) => [s1 H5].
         by exists s1; right.
       Qed.
-
-      Lemma test0_iic_RC: exists f : nat -> Ec, forall n, RC ((f n),(f (S n))).  
+      
+      Lemma test0_iic_RC: forall s, exists f : nat -> Ec, f 0 = s /\ forall n, RC ((f n),(f (S n))).  
       Proof. 
-        apply: DC.
-        by pose proof ChnotE_witness;exists X ;rewrite inP.
-        by apply: total_RC.
+        by move: total_RC => /total_rel_iff H1;apply: total_rel'_to_total_rel''. 
       Qed.
       
-      Lemma test1_RC: forall f,  (forall n, RC ((f n),(f (S n)))) -> (forall n, ~ (sval (f n)) \in Sinf)
-                            -> (forall n, (Asym Eb.+) (sval (f n), sval(f (S n)))).
+      Lemma test1_RC:forall s, forall f, f 0=s /\ (forall n, RC ((f n),(f (S n)))) 
+                               -> (forall n, ~ (sval (f n)) \in Sinf)
+                               -> (forall n, (Asym Eb.+) (sval (f n), sval(f (S n)))).
       Proof. 
-        by move => f + + n => /(_ n) [/=[H1 H1'] | /= [H1 H1']] /(_ n) H2.
+        by move => s f + + n => [[H0 /(_ n) [/=[H1 H1'] | /= [H1 H1']]]] /(_ n) H2.
       Qed.
       
-      Lemma test3_RC: ~ (iic (Asym Eb.+)) ->
-                      exists f,  (forall n, RC ((f n),(f (S n)))) /\ ~ (forall n, ~ (sval (f n)) \in Sinf).
+      Lemma test3_RC: ~ (iic (Asym Eb.+)) -> 
+                      forall s, exists f, (f 0=s /\ (forall n, RC ((f n),(f (S n)))))
+                                /\ ~ (forall n, ~ (sval (f n)) \in Sinf).
       Proof.
-        move => H1; move: test0_iic_RC => [f H2];exists f; split => [// | H3]. 
-        by have H4:  iic (Asym Eb.+) by exists (fun n => (sval (f n)));apply: test1_RC.
+        move => H1; move: test0_iic_RC => + s => /(_ s) [f H2].
+        exists f; split => [// | H4]. 
+        have H5:  iic (Asym Eb.+)
+          by exists (fun n => (sval (f n)));move: test1_RC => /(_ s f) H6;apply: H6. 
+        exact.
       Qed.
       
       Lemma test4_RC: ~ (iic (Asym Eb.+)) ->
-                      exists f,  (forall n, RC ((f n),(f (S n)))) /\ exists n, (sval (f n)) \in Sinf.
+                      forall s, exists f, (f 0=s /\ (forall n, RC ((f n),(f (S n)))))
+                                /\ exists n, (sval (f n)) \in Sinf.
       Proof.
-        move => H1; move: (test3_RC H1) => [f [H2 /not_existsP [n H3]]].
+        move => H1; move: (test3_RC H1) => + s => /(_ s) [f [H2 /not_existsP [n H3]]].
         exists f;split;[ exact| exists n; exact].
       Qed.
-
+      
       Lemma test_xx : forall f : nat -> Ec, forall n, 
         forall p, (p <= n) -> (sval (f p)) \in Sinf ->
              exists q, (q <= p) /\ (sval (f q)) \in Sinf 
@@ -543,17 +547,16 @@ Section Paper.
       Qed.
 
       Lemma test5_RC: ~ (iic (Asym Eb.+)) ->
-                      exists f,  (forall n, RC ((f n),(f (S n)))) /\
-                              (exists n, (sval (f n)) \in Sinf 
-                                    /\ forall q, q < n -> ~ (sval (f q)) \in Sinf).
+                      forall s, exists f, ( f 0 = s /\ (forall n, RC ((f n),(f (S n)))))
+                                /\(exists n, (sval (f n)) \in Sinf 
+                                       /\ forall q, q < n -> ~ (sval (f q)) \in Sinf).
       Proof.
-        move => H1; move: (test4_RC H1) => [f [H2 [n H3]]].
+        move => H1; move: (test4_RC H1) => + s => /(_ s) [f [H2 [n H3]]].
         exists f. split. by [].
         have H4: n <= n by apply: leqnn.
         move: (test_xx H4 H3) => [q [H5 H6]].
         by exists q.
       Qed.
-      
       
     End Ec_seq.
     
