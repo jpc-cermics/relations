@@ -255,6 +255,7 @@ Section Infinite_paths.
     by move => -[v0 H1] /(_ v0) [f [H2 H3]]; exists f.
   Qed.
   
+  (** * DC as a lemma deduced from choice *)
   Lemma DC: forall (R: relation T),
       (exists (v0:T), (v0 \in setT)) ->  total_rel R -> iic R. 
   Proof.
@@ -493,6 +494,10 @@ Section Paper.
         by exists s1; right.
       Qed.
       
+    End Ec_seq.
+    
+    Section XXX.
+
       Lemma test0_iic_RC: forall s, exists f : nat -> Ec, f 0 = s /\ forall n, RC ((f n),(f (S n))).  
       Proof. 
         by move: total_RC => /total_rel_iff H1;apply: total_rel'_to_total_rel''. 
@@ -586,27 +591,22 @@ Section Paper.
         by (exists s');split;[|right].
       Qed.
       
-    End Ec_seq.
+    End XXX.
     
     (** * The Assumptions we use: weaker than the paper assumptions *)
     (* begin snippet Assumptions:: no-out *)    
     Hypothesis A1: (exists (v0:T), (v0 \in setT)).
     Hypothesis A3: ~ (iic (Asym Er.+)).
     Hypothesis A4: ~ (iic (Asym Eb.+)).
-    
     (* end snippet Assumptions *)    
-    
-    (* begin snippet RloopErp:: no-out *) 
-    Lemma A2: Rloop Er.+.
-    Proof. by apply: notiic_rloop. Qed.
-    (* end snippet RloopErp *)    
     
     (* begin snippet Scalnotempty:: no-out *) 
     Lemma Scal_not_empty: exists v, Scal [set v].
     (* end snippet Scalnotempty *)
     Proof.
+      have: Rloop Er.+ by apply: notiic_rloop.
+      move => [v H1]; exists v.
       have H2': Er.+ `<=` Mono by apply: subsetUr.
-      move: A2 => [v H1]; exists v.
       split;first by rewrite /RelIndep;move => x y /inP /= -> /inP /= ->.
       split;first by move => t [y [/= H3 H4]];move: H3; rewrite H4 /= => /H1/H2' H3;exists v.
       by rewrite -notempty_exists;(exists v);rewrite inP.
@@ -618,7 +618,7 @@ Section Paper.
       by exists (exist _ [set v] H2);rewrite inP.
     Qed.
     
-    Lemma Sinf_ne: Sinf != set0.
+    Lemma Sinf_not_empty: Sinf != set0.
     Proof.
       move: ChnotE => [s _];rewrite -notempty_exists.
       by move: (ChooseRC5 A4 s) => [H1 | [s' [H1 _]]];[exists (sval s) | exists s'].
@@ -653,7 +653,7 @@ Section Paper.
     
     Lemma Sinf_Scal: Sinf \in Scal. 
     Proof.
-      rewrite inP;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_ne]].
+      rewrite inP;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
     Qed.
     
     Lemma Sinf_final: exists Si, forall (S: SType), C S -> S [<=] Si.
@@ -701,9 +701,8 @@ Section Paper.
   
   Lemma SmaxZ: exists Sm, forall S, (curry leSet1) Sm S -> S = Sm.
   Proof.
-    move: SmaxZ_new => [Sm H1]. 
-    exists Sm. move => S.
-    move: H1 => /(_ S) H1. by rewrite asboolE in H1.
+    move: SmaxZ_new => [Sm H1];exists Sm. move => S.
+    move: H1 => /(_ S) H1; by rewrite asboolE in H1.
   Qed.
   
   (** * back to set T *)
@@ -839,9 +838,9 @@ Section Paper.
     Lemma FsetUO: forall x X Y (R: relation T), 
         x \in R#(X `|` Y) -> x \in R#X \/ x \in R#Y.
     Proof.
-      by move => x X Y R /inP [y [H2 [H3| H3]]];[left | right];rewrite inP;exists y.
+      by move => x X Y R;rewrite Fset_union => /inP [ /inP H1 | /inP H1];[left | right].
     Qed.
-
+    
     Lemma FsetDI: forall x X Y (R: relation T), 
         x \in R#(X `\` Y) -> x \in R#X.
     Proof.
@@ -1096,7 +1095,7 @@ Section Seq1_plus.
   (** * extensions of results from seq1 and rel using eqType *)
 
   Variables (T:eqType) (R: relation T).
-
+  
   (** * utilities for uniq *)
   Lemma uniq_subseq: forall (st st': seq T) (x:T),
       uniq (x :: st) -> subseq st' st -> uniq (x:: st').
@@ -1426,7 +1425,7 @@ Section allL_uniq.
          => /orP [ H9 | /eqP H9].
     have H10: uniq (x :: rcons st y) by rewrite /uniq -/uniq;
       move: H9 => /negP H9;rewrite H8 andbT.
-
+    
     by exists st.
   Qed.
 
