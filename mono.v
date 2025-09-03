@@ -58,7 +58,7 @@ Section Asym.
   Lemma AsymI (R: relation T): Asym R `<=` R.
   Proof. by move => [a b] [? _]. Qed.
 
-  Lemma Asym2 (R: relation T): Asym (Asym R) = (Asym R).
+  Lemma AsymInvol (R: relation T): Asym (Asym R) = (Asym R).
   Proof.
     rewrite predeqE => [[a b]];split; first by move => [? _].
     move => H1;split; first by [].
@@ -68,6 +68,26 @@ Section Asym.
     by move: H1; rewrite H2'; apply: Asym_irreflexive. 
   Qed.
 
+  Lemma AsymIncl (R: relation T): R.+ `;` Asym(R.+) `<=`  Asym(R.+).
+  Proof.
+    move: AsymI => /(_ R.+) H3.
+    move => [x y] [z /= [H1 H2]].
+    move: H2 => /[dup] H2 /H3 H4.
+    split =>[| H5]; first by apply: (t_trans H1 H4).
+    have H6: R.+ (y,z) by apply: (t_trans H5 H1).
+    by move: H2 => [_ H2].
+  Qed.
+    
+  Lemma AsymIncr (R: relation T): Asym(R.+) `;` R.+ `<=`  Asym(R.+).
+  Proof.
+    move: AsymI => /(_ R.+) H3.
+    move => [x y] [z /= [H2 H1]].
+    move: H2 => /[dup] H2 /H3 H4.
+    split =>[| H5]; first by apply: (t_trans H4 H1).
+    have H6: R.+ (z,x) by apply: (t_trans H1 H5).
+    by move: H2 => [_ H2 ].
+  Qed.
+  
 End Asym.
 
 Section Independent_set.
@@ -362,7 +382,7 @@ Section Paper.
       have H7: (RelIndep (Asym Eb.+) B) by apply: RelIndep_I H5 H2. 
       have H8: transitive (Asym Eb.+) 
         by apply: Asym_preserve_transitivity;apply: t_trans.
-      have H9: (Asym (Asym Eb.+)) = (Asym Eb.+) by apply: Asym2.
+      have H9: (Asym (Asym Eb.+)) = (Asym Eb.+) by apply: AsymInvol.
       by move : (le_antisym H8 H9 H6 H7 H1' H2').
     Qed.
     
