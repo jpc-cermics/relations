@@ -27,7 +27,7 @@ Reserved Notation "A [<=] B" (at level 4, no associativity).
 Reserved Notation "A [<= R ] S" (at level 4, no associativity). 
 
 Section Asym. 
-  (** * Antisymmetric part of a relation *) 
+  (** * XXXX  Attention Asymmetric not Antisymmetric part of a relation *) 
     
   Variables (T: Type).
   
@@ -565,10 +565,9 @@ Section Paper.
       Lemma Util: forall n, ~ (n = 0) /\ ~ (n = 1) ->  n > 1. 
       Proof.
         move => n [/eqP H1 /eqP H2]. 
-        have: n >= 0 by [].
-        rewrite  leq_eqVlt => /orP [/eqP H3 // | H3].
+        have: n >= 0 by []; rewrite  leq_eqVlt => /orP [/eqP H3 // | ].
         by move: H3 H1 => H3; rewrite -H3. 
-        move: H3;rewrite leq_eqVlt => /orP [/eqP H4 | H4 //].
+        rewrite leq_eqVlt => /orP [/eqP H4 | H4 //].
         by move: H2; by rewrite -H4.
       Qed.
       
@@ -664,11 +663,7 @@ Section Paper.
       have H19: (sval S) [<= (Asym Eb.+)] Sinf by apply: ChooseRC6. 
       move: H14 => /inP/H19 [tinf [/= H20 [H21 | [H21 H22]]]].
       + by rewrite -H21 in H20;rewrite H20 in H15. 
-      + exists tinf. 
-        split. 
-        left.
-        apply: (t_trans H18 H21).
-        by rewrite -inP.
+      + by exists tinf;split;[ left;apply: (t_trans H18 H21) | rewrite -inP].
     Qed.
     
     Lemma Sinf_Scal: Sinf \in Scal. 
@@ -736,9 +731,9 @@ Section Paper.
     (** * We show that A maximal set is a solution *)
     
     Variable (Sm: set T).
-
+  
     Definition IsMaximal (S: set T):= S \in Scal /\ forall T, T \in Scal -> S [<= (Asym Eb.+)] T -> S = T.
-    
+  
     Definition Sx:= [set y | ~ (y \in Sm) /\ ~ (y \in Mono#Sm)].
   
     Definition Tm x:= [set y | y \in Sm /\ ~ (Eb.+ (y,x))].
@@ -1074,10 +1069,10 @@ Section Paper.
             right;rewrite -Fset_t0.
           by [].
     Qed.
-    
+
     (** * an other version of no infinite paths *)
     Definition ZNoInf1:= forall x, x \in Sx -> Sxm x. 
-      
+    
     Lemma fact13: IsMaximal Sm -> ZNoInf1 -> ~ (exists x, x \in Sx).
     Proof.
       move => Smax NoInf1 [x H1].
@@ -1101,9 +1096,8 @@ Section Paper.
   Theorem Paper: exists Sm, forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
     Proof.
       move: Exists_Smax => [Sm [H1 H2]]. 
-      have H3: IsMaximal Sm. 
-      split => [// |U H3 H4].
-      by have ->: U = Sm by apply: H2 H3 H4.
+      have H3: IsMaximal Sm 
+        by split => [// |U H3 H4];have ->: U = Sm by apply: H2 H3 H4.
       exists Sm. move => x; apply: fact14.
       by [].
       apply: NoInf1.
