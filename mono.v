@@ -27,7 +27,7 @@ Reserved Notation "A [<=] B" (at level 4, no associativity).
 Reserved Notation "A [<= R ] S" (at level 4, no associativity). 
 
 Section Asym. 
-  (** * XXXX  Attention Asymmetric not Antisymmetric part of a relation *) 
+  (** * Asymmetric part of a relation *) 
     
   Variables (T: Type).
   
@@ -70,9 +70,7 @@ Section Asym.
 
   Lemma AsymIncl (R: relation T): R.+ `;` Asym(R.+) `<=`  Asym(R.+).
   Proof.
-    move: AsymI => /(_ R.+) H3.
-    move => [x y] [z /= [H1 H2]].
-    move: H2 => /[dup] H2 /H3 H4.
+    move: AsymI => /(_ R.+) H3 => [[x y] [z /= [H1 /[dup] H2 /H3 H4]]].
     split =>[| H5]; first by apply: (t_trans H1 H4).
     have H6: R.+ (y,z) by apply: (t_trans H5 H1).
     by move: H2 => [_ H2].
@@ -80,9 +78,7 @@ Section Asym.
     
   Lemma AsymIncr (R: relation T): Asym(R.+) `;` R.+ `<=`  Asym(R.+).
   Proof.
-    move: AsymI => /(_ R.+) H3.
-    move => [x y] [z /= [H2 H1]].
-    move: H2 => /[dup] H2 /H3 H4.
+    move: AsymI => /(_ R.+) H3 => [[x y] [z /= [/[dup] H2 /H3 H4 H1]]].
     split =>[| H5]; first by apply: (t_trans H4 H1).
     have H6: R.+ (z,x) by apply: (t_trans H1 H5).
     by move: H2 => [_ H2 ].
@@ -236,7 +232,7 @@ Section Infinite_paths.
   
   Definition total_rel' (R: relation T) := exists f : T -> T, forall x, R (x, f x). 
   
-  (* choice from boolp for S: relation T *)
+  (* choice from boolp version for relation T *)
   Lemma choice': forall (R: relation T), total_rel R -> total_rel' R.
   Proof.
     move => S H1.
@@ -320,8 +316,49 @@ Section Infinite_paths.
   Proof. 
     by move => S H0; apply contraPP => /test3/(DC H0) H1.
   Qed.
-  
+
 End Infinite_paths.
+
+Section Infinite_paths_X.
+  (** * Assumptions on infinite paths *)
+  Variables (T:Type).
+
+  Lemma XtoT (X: set T): forall x, x \in X -> exists (x': X), (sval x') = x.
+  Proof. by move => x H1;exists (exist _ x H1). Qed.
+
+  Lemma test89 (X: set T):
+      (exists (v:T), (v \in X)) -> exists v : X, v \in [set: X].
+  Proof. move => -[v /[dup] H0 /XtoT [v1 H1]];exists v1;rewrite -H1 in H0.
+         by rewrite inP /=.  
+  Qed.
+
+  Lemma notiic_rloop_sub: forall (X: set T) (S: relation X),
+      (exists (v0:T), (v0 \in X)) -> ~ (iic (Asym S)) -> (Rloop S).
+  Proof. 
+    move => X S /test89 H0. by apply: notiic_rloop.
+  Qed. 
+
+  Definition Restrict (T:Type) (R: relation T) (X: set T) : relation X := 
+    [set xy : X*X | R ((sval xy.1),(sval xy.2))].
+  
+  Lemma test67 : forall (X: set T) (R: relation T),
+      (iic (@Restrict T (Asym R) X)) -> (iic (Asym R)).
+  Proof.
+    by move => X R [f // H1];exists (fun n => (sval (f n))).
+  Qed.
+
+  Lemma test68: forall (X: set T) (R: relation T),
+      (exists (v0:T), (v0 \in X)) -> ~ (iic (Asym R))
+      -> (Rloop (@Restrict T R X)).
+  Proof.
+    move => X R H0 H1.
+    have H2:  ~ (iic (Asym R)) -> ~ (iic (@Restrict T (Asym R) X))
+      by apply contraPP;rewrite notE notE; apply: test67.
+    move: H1 => /H2 H1.
+    by apply: (notiic_rloop_sub H0 H1).
+  Qed.
+  
+End Infinite_paths_X.
 
 Section Paper. 
   (*  On Monochromatic Paths in Edge-Coulured Digraphs *)
@@ -353,7 +390,7 @@ Section Paper.
   Proof. by move => [S [H1 [H2 H3]]];rewrite inP. Qed.
 
   Lemma Scal2S: forall S, S \in Scal -> exists (S': SType), (proj1_sig S') = S.
-  Proof. by move => S /inP H1; exists (exist _ S H1). Qed.
+  Proof.  by move => S /inP H1; exists (exist _ S H1). Qed.
   
   Definition leSet1 (AB: SType*SType) :=
     leSet (Asym Eb.+) ((proj1_sig AB.1), (proj1_sig AB.2)).
