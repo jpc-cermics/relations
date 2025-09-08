@@ -109,6 +109,19 @@ Section Independent_set.
   Lemma RelIndep_set1 (U: relation T): forall (x: T), RelIndep U [set x].
   Proof. by move => x x1 x2 /inP -> /inP -> H4. Qed.
   
+  Lemma RelIndep_U (U: relation T): forall X x,
+      RelIndep U X -> ~(x \in U#X) -> ~(x \in (X:#U)) -> RelIndep U (X `|` [set x]).
+  Proof.
+    move => X x H2 H3 H4 x1 x2 /inP [/inP H5 | /inP H5] /inP [/inP H6 |/inP H6] H7 H8.
+    rewrite /RelIndep in H2.
+    + by apply: ((H2 x1 x2) H5 H6 H7 H8).
+    + move: H6 H4 => /inP <- H4. 
+      by have H9: x2 \in X:#U by rewrite inP;exists x1; rewrite inP in H5.
+    + move: H5 H3 => /inP <- H3. 
+      by have H9: x1 \in U#X by rewrite inP;exists x2;rewrite inP in H6.
+    + by move: H5 H6 H7 => /inP -> /inP ->. 
+  Qed.
+  
 End Independent_set.
 
 Section Set_relation. 
@@ -323,12 +336,19 @@ Section Infinite_paths_X.
   (** * Assumptions on infinite paths *)
   Variables (T:Type).
 
+  (** * this is mem_setT *)
+  Lemma test90 (X: set T): forall (x: X), x\in [set: X].
+  Proof. by move => x; apply: mem_setT. Qed.
+  
+  Lemma test91 (X: set T): forall (x: X), (sval x) \in X. 
+  Proof. by move => x; rewrite inP; apply: set_valP.  Qed.
+  
   Lemma XtoT (X: set T): forall x, x \in X -> exists (x': X), (sval x') = x.
   Proof. by move => x H1;exists (exist _ x H1). Qed.
 
   Lemma test89 (X: set T):
       (exists (v:T), (v \in X)) -> exists v : X, v \in [set: X].
-  Proof. move => -[v /[dup] H0 /XtoT [v1 H1]];exists v1;rewrite -H1 in H0.
+  Proof. move => -[v /[dup] H0 /XtoT [v1 H1]]. exists v1. rewrite -H1 in H0.
          by rewrite inP /=.  
   Qed.
 
@@ -769,7 +789,8 @@ Section Paper.
     
     Variable (Sm: set T).
   
-    Definition IsMaximal (S: set T):= S \in Scal /\ forall T, T \in Scal -> S [<= (Asym Eb.+)] T -> S = T.
+    Definition IsMaximal (S: set T):= 
+      S \in Scal /\ forall T, T \in Scal -> S [<= (Asym Eb.+)] T -> S = T.
   
     Definition Sx:= [set y | ~ (y \in Sm) /\ ~ (y \in Mono#Sm)].
   
@@ -777,29 +798,20 @@ Section Paper.
 
     Lemma TmI: forall x, Tm x `<=` Sm.
     Proof. by move => x y [/inP H2 _]. Qed.
-  
-    Lemma Sb: forall x z, x \in Sx -> z \in Sm -> ~ (z \in (Tm x)) -> Eb.+ (z,x).
-    Proof.
-      move => x z /inP [H2 H2'] H3 H4.
-      have H5: z \in (Tm x) <-> z \in Sm /\ ~ (Eb.+ (z,x)) by rewrite inP. 
-      move: H4; rewrite H5 not_andP => [[H4 // | /contrapT H4 //]].
-    Qed.
-    
-    Lemma Sb1: forall x, x \in Sx -> forall z, z \in Sm `\` (Tm x) -> Eb.+ (z,x).
-    Proof.
-      by move => x H2 z /inP [/inP H3 H4];apply: Sb;[ | | move=> /inP H5].
-    Qed.
 
+    Lemma fact1: forall x y, y \in Sm -> ~(y \in (Tm x)) -> Eb.+ (y,x).
+    Proof. by move => x y H3;rewrite inP not_andE => [[? // | /contrapT ? //]]. Qed.
+    
+    Lemma Sb1': forall x z, z \in Sm `\` (Tm x) -> Eb.+ (z,x).
+    Proof. by move => x z /inP [/inP H3 /inP H4]; apply: (fact1 H3 H4). Qed.
+    
     Definition Sxm x := forall y, y \in Sx -> Er.+(x,y) -> Er.+(y,x).
     
     Lemma fact: IsMaximal Sm -> (forall t, t\in Sm:#(Er.+) -> t \in Mono#Sm).
     Proof. by move => Smax t H3;move: Smax H3 => [/inP [_ [H8 _]] _] /inP/H8 H3;rewrite inP. Qed.
     
-    Lemma fact0: IsMaximal Sm -> (forall x, x \in Sx -> ~ (x \in (Sm:#(Er.+)))).
+    Lemma Unused_fact0: IsMaximal Sm -> (forall x, x \in Sx -> ~ (x \in (Sm:#(Er.+)))).
     Proof. by move => Smax x /inP [_ ?] /(fact Smax) ?. Qed.
-    
-    Lemma fact1: forall x y, y \in Sm -> ~(y \in (Tm x)) -> Eb.+ (y,x).
-    Proof. by move => x y H3;rewrite inP not_andE => [[? // | /contrapT ? //]]. Qed.
     
     Lemma fact2: IsMaximal Sm -> (forall x, RelIndep Mono (Tm x)).
     Proof.
@@ -822,22 +834,9 @@ Section Paper.
       by move: H7 => /inP/H6 -/inP H7.
     Qed.
 
-    Lemma fact5_1: forall X x, RelIndep Mono X -> ~(x \in Mono#X) -> ~(x \in (X:#Mono))
-                          -> RelIndep Mono (X `|` [set x]).
-    Proof.
-      move => X x H2 H3 H4 x1 x2 /inP [/inP H5 | /inP H5] /inP [/inP H6 |/inP H6] H7 H8.
-      rewrite /RelIndep in H2.
-      + by apply: ((H2 x1 x2) H5 H6 H7 H8).
-      + move: H6 H4 => /inP <- H4. 
-        by have H9: x2 \in X:#Mono by rewrite inP;exists x1; rewrite inP in H5.
-      + move: H5 H3 => /inP <- H3. 
-        by have H9: x1 \in Mono#X by rewrite inP;exists x2;rewrite inP in H6.
-      + by move: H5 H6 H7 => /inP -> /inP ->. 
-    Qed.
-    
     Lemma fact5: IsMaximal Sm -> (forall x, x \in Sx -> RelIndep Mono ((Tm x) `|` [set x])).
     Proof.
-      by move => Smax x H2;apply: fact5_1;[apply: fact2|apply: fact3|apply: fact4].
+      by move => Smax x H2;apply:  RelIndep_U;[apply: fact2|apply: fact3|apply: fact4].
     Qed.
     
     Lemma fact6: forall x, x \in Sx -> Sm [<= (Asym Eb.+)] ((Tm x) `|` [set x]).
@@ -847,6 +846,7 @@ Section Paper.
       exists x;split; first by rewrite inP;right. 
       right. 
       move: H2 H4 => /inP [_ H2'] /negP H4.
+      
       move: (fact1 H3 H4) => H5.
       split => [// | H6].
       by have: x \in Mono#Sm by rewrite inP;(exists x1);split;[left|rewrite -inP].
@@ -960,7 +960,7 @@ Section Paper.
         by have H13:  y \in Mono#(Tm x `|` [set x]) by apply: FsetlU.
         move: H9;rewrite -Fset_union_rel inP => [[H9 | H9]].
         + move: H9 => [t [H13 /inP H14]].
-          move: H14 => /(Sb1 H2) H14.
+          move: H14 => /Sb1' H14.
           have H15: Eb.+ (y,x) by apply: (t_trans H13 H14).
           have H16: y \in Mono#_(x)
               by rewrite -Fset_union_rel inP;left;rewrite -Fset_t0.
@@ -996,7 +996,7 @@ Section Paper.
           by have H11: y \in Mono#(Tm x `|` [set x])
               by apply: FsetlU;rewrite -Fset_union_rel inP;left;rewrite -inP.
           move: H9; rewrite inP => [[z1 [H10 /inP H11]]].
-          move: (((Sb1 H2) z1) H11) => H12.
+          move: (Sb1' H11) => H12.
           have H13: Eb.+ (y,x) by apply: (t_trans H10 H12).
           have H14: y \in Mono#(Tm x `|` [set x])
               by rewrite setUC;apply: FsetlU;rewrite -Fset_union_rel inP;
@@ -1041,7 +1041,7 @@ Section Paper.
         by have H13:  y \in Mono#(Tm x `|` [set x]) by apply: FsetlU.
         move: H9;rewrite -Fset_union_rel inP => [[H9 | H9]].
         + move: H9 => [t [H13 /inP H14]].
-          move: H14 => /(Sb1 H2) H14.
+          move: H14 => /Sb1' H14.
           have H15: Eb.+ (y,x) by apply: (t_trans H13 H14).
           have H16: y \in Mono#_(x)
               by rewrite -Fset_union_rel inP;left;rewrite -Fset_t0.
@@ -1077,7 +1077,7 @@ Section Paper.
           by have H11: y \in Mono#(Tm x `|` [set x])
               by apply: FsetlU;rewrite -Fset_union_rel inP;left;rewrite -inP.
           move: H9; rewrite inP => [[z1 [H10 /inP H11]]].
-          move: (((Sb1 H2) z1) H11) => H12.
+          move: (Sb1' H11) => H12.
           have H13: Eb.+ (y,x) by apply: (t_trans H10 H12).
           have H14: y \in Mono#(Tm x `|` [set x])
               by rewrite setUC;apply: FsetlU;rewrite -Fset_union_rel inP;
@@ -1126,6 +1126,29 @@ Section Paper.
     Qed.
       
   End Maximal. 
+  
+  Lemma test69: forall (X: set T), 
+      (exists (v0:T), (v0 \in X)) -> (Rloop (@Restrict T Er.+ X)).
+  Proof.  by move => X H0;apply: test68. Qed.
+  
+  Lemma test70: forall (S: set T),
+    (exists (v0:T), (v0 \in (Sx S))) -> (Rloop (@Restrict T Er.+ (Sx S))).
+  Proof. by move => S H0;apply: test69. Qed.
+  
+  Lemma test71: forall (S: set T),
+      (exists (v0:T), (v0 \in (Sx S))) -> 
+      (exists (v:T), v \in (Sx S) /\ forall w, w \in (Sx S) -> Er.+ (v,w) -> Er.+ (w,v)).
+  Proof.
+    move => S H0. 
+    move: (test70 H0) => [v H1].
+    exists (sval v).
+    split. 
+    by rewrite inP; apply: set_valP.
+    move => w H2.
+    have [w' <-]: exists (w': Sx S), (sval w') = w by apply: XtoT.
+    move => H3.
+    by apply: H1.
+  Qed.
   
   (** XXX A justifier: doit se déduire des autres hypothèses *)
   Hypothesis NoInf1: forall S x, x \in (Sx S) -> (Sxm S) x. 
