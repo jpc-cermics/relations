@@ -29,46 +29,47 @@ Reserved Notation "A [<= R ] S" (at level 4, no associativity).
 Section Asym. 
   (** * Asymmetric part of a relation *) 
     
-  Variables (T: Type).
+  Variables (T: Type) (R: relation T).
   
   Definition Asym (R: relation T): relation T := [set xy | R xy /\ ~ (R.-1 xy)].
   
-  Lemma Asym_antisymmetric: forall (R: relation T), antisymmetric  (Asym R).
-  Proof. by move => R x y [_ ?] [? _]. Qed.
+  Lemma Asym_antisymmetric: antisymmetric  (Asym R).
+  Proof. by move => x y [_ ?] [? _]. Qed.
 
-  Lemma Asym_irreflexive: forall (R : relation T), irreflexive (Asym R).
-  Proof. by move => R x [? ?]. Qed.
+  Lemma Asym_irreflexive: irreflexive (Asym R).
+  Proof. by move => x [? ?]. Qed.
 
-  Lemma Asym_preserve_transitivity: forall (R: relation T), transitive R -> transitive (Asym R).
+  Lemma Asym_preserve_transitivity: transitive R -> transitive (Asym R).
   Proof.
-    move => R H0 x y z [H1 /= H1'] [H2 /= H2'];split => [ | /= H3].
+    move => H0 x y z [H1 /= H1'] [H2 /= H2'];split => [ | /= H3].
     by apply: H0 H1 H2.
     by have: R (y,x) by apply: H0 H2 H3.
   Qed.
   
-  Lemma AsymE (R: relation T): antisymmetric R /\ irreflexive R <-> Asym R = R.
+  Lemma AsymE: antisymmetric R /\ irreflexive R <-> Asym R = R.
   Proof.
-    split; last by move => <-;split;[apply: Asym_antisymmetric | apply: Asym_irreflexive].
+    split; last by move => <-;split;
+                          [apply: Asym_antisymmetric | apply: Asym_irreflexive].
     move => [H1 H2].
     rewrite predeqE => [[x y]]; split => [[H3 _] // | H3]. 
     split; first by [].
     by move: H3 => /[dup] H3 /H1 H3' /H3' H4; move: H3; rewrite H4 => /H2 H3.
   Qed.
 
-  Lemma AsymI (R: relation T): Asym R `<=` R.
-  Proof. by move => [a b] [? _]. Qed.
+  Lemma AsymI: forall (R: relation T), Asym R `<=` R.
+  Proof. by move => R' [a b] [? _]. Qed.
 
-  Lemma AsymInvol (R: relation T): Asym (Asym R) = (Asym R).
+  Lemma AsymInvol: Asym (Asym R) = (Asym R).
   Proof.
     rewrite predeqE => [[a b]];split; first by move => [? _].
     move => H1;split; first by [].
     move => H2. 
-    move: Asym_antisymmetric => /(_ R a b) H3.
+    move: Asym_antisymmetric => /(_  a b) H3.
     move: (H1) (H2) => /H3 H1' /H1' H2'.
     by move: H1; rewrite H2'; apply: Asym_irreflexive. 
   Qed.
-
-  Lemma AsymIncl (R: relation T): R.+ `;` Asym(R.+) `<=`  Asym(R.+).
+  
+  Lemma AsymIncl: R.+ `;` Asym(R.+) `<=`  Asym(R.+).
   Proof.
     move: AsymI => /(_ R.+) H3 => [[x y] [z /= [H1 /[dup] H2 /H3 H4]]].
     split =>[| H5]; first by apply: (t_trans H1 H4).
@@ -76,7 +77,7 @@ Section Asym.
     by move: H2 => [_ H2].
   Qed.
     
-  Lemma AsymIncr (R: relation T): Asym(R.+) `;` R.+ `<=`  Asym(R.+).
+  Lemma AsymIncr: Asym(R.+) `;` R.+ `<=`  Asym(R.+).
   Proof.
     move: AsymI => /(_ R.+) H3 => [[x y] [z /= [/[dup] H2 /H3 H4 H1]]].
     split =>[| H5]; first by apply: (t_trans H4 H1).
@@ -89,36 +90,37 @@ End Asym.
 Section Independent_set.
   (** * Independence of sets with respect to a relation *)
   
-  Variables (T: Type).
+  Variables (T: Type) (R: relation T).
 
   (* begin snippet RelIndep:: no-out *)    
-  Definition RelIndep (U: relation T) (S: set T) :=
-    forall (x y:T),  x \in S -> y \in S -> ~(x = y) -> ~( U (x,y)).
+  Definition RelIndep (R: relation T) (S: set T) :=
+    forall (x y:T),  x \in S -> y \in S -> ~(x = y) -> ~( R (x,y)).
   (* end snippet RelIndep *)    
   
-  Lemma RelIndep_I: forall (V U: relation T) (S: set T),
-      V `<=` U -> RelIndep U S -> RelIndep V S.
+  Lemma RelIndep_I: forall (Q R: relation T) (S: set T),
+      Q `<=` R -> RelIndep R S -> RelIndep Q S.
   Proof.
-    move => V U S H1 H2 x y H3 H4 H5 /H1 H6.
+    move => Q R' S H1 H2 x y H3 H4 H5 /H1 H6.
     by pose proof (H2 x y) H3 H4 H5.
   Qed.
   
-  Lemma RelIndep_set0 (U: relation T): RelIndep U set0.
+  Lemma RelIndep_set0: RelIndep R set0.
   Proof. by move => x y /inP H3 _ _ _. Qed.
   
-  Lemma RelIndep_set1 (U: relation T): forall (x: T), RelIndep U [set x].
+  Lemma RelIndep_set1: forall (x: T), RelIndep R [set x].
   Proof. by move => x x1 x2 /inP -> /inP -> H4. Qed.
   
-  Lemma RelIndep_U (U: relation T): forall X x,
-      RelIndep U X -> ~(x \in U#X) -> ~(x \in (X:#U)) -> RelIndep U (X `|` [set x]).
+  Lemma RelIndep_U: forall X x,
+      RelIndep R X -> ~(x \in R#X) -> ~(x \in (X:#R)) -> RelIndep R (X `|` [set x]).
   Proof.
-    move => X x H2 H3 H4 x1 x2 /inP [/inP H5 | /inP H5] /inP [/inP H6 |/inP H6] H7 H8.
+    move => X x H2 H3 H4 x1 x2 /inP 
+             [/inP H5 | /inP H5] /inP [/inP H6 |/inP H6] H7 H8.
     rewrite /RelIndep in H2.
     + by apply: ((H2 x1 x2) H5 H6 H7 H8).
     + move: H6 H4 => /inP <- H4. 
-      by have H9: x2 \in X:#U by rewrite inP;exists x1; rewrite inP in H5.
+      by have H9: x2 \in X:#R by rewrite inP;exists x1; rewrite inP in H5.
     + move: H5 H3 => /inP <- H3. 
-      by have H9: x1 \in U#X by rewrite inP;exists x2;rewrite inP in H6.
+      by have H9: x1 \in R#X by rewrite inP;exists x2;rewrite inP in H6.
     + by move: H5 H6 H7 => /inP -> /inP ->. 
   Qed.
   
@@ -127,7 +129,7 @@ End Independent_set.
 Section Set_relation. 
   (** * A relation on sets induced by a relation on elements *)
 
-  Variables (T: eqType).
+  Variables (T: eqType) (R: relation T).
   
   (* begin snippet leset:: no-out *)    
   Definition leSet (R: relation T): relation (set T) := 
@@ -139,9 +141,9 @@ Section Set_relation.
   Definition leSet' (R: relation T): relation (set T) :=
     [set AB | AB.1 `<=` ('Δ  `|` R)#AB.2]. 
   
-  Lemma lesetE (R: relation T) : leSet R = leSet' R. 
+  Lemma lesetE : forall (R: relation T), leSet R = leSet' R. 
   Proof.
-    rewrite predeqE => -[A B];split. 
+    move => R';rewrite predeqE => -[A B];split. 
     - move => H1 a /inP/H1 [b [/inP H2 [->| H3]]]; first by (exists b);split;[left|].
       by (exists b);split;[right|].
     - rewrite /leSet' /mkset /= -Fset_union_rel Fset_D.
@@ -150,13 +152,13 @@ Section Set_relation.
       by exists b; split;[ | right].
   Qed.
   
-  Lemma Ile: forall (R: relation T) (A B: set T), A `<=` B -> A [<= R] B.
-  Proof. by move => R A B H1 /= a /inP/H1 ?;exists a;split;[rewrite inP|left]. Qed.
+  Lemma Ile: forall (A B: set T), A `<=` B -> A [<= R] B.
+  Proof. by move => A B H1 /= a /inP/H1 ?;exists a;split;[rewrite inP|left]. Qed.
 
-  Lemma leI: forall (R V: relation T), R `<=` V -> (leSet R)  `<=` (leSet V).
+  Lemma leI: forall (Q R: relation T), Q `<=` R -> (leSet Q)  `<=` (leSet R).
   Proof.
-    move => R V H1;rewrite lesetE lesetE => [[A B]] H2.
-    have H3: ('Δ  `|` R)#B `<=` ('Δ  `|` V)#B by apply: Fset_inc; apply: setUS.
+    move => R' V H1;rewrite lesetE lesetE => [[A B]] H2.
+    have H3: ('Δ  `|` R')#B `<=` ('Δ  `|` V)#B by apply: Fset_inc; apply: setUS.
     by apply: subset_trans H2 H3.
   Qed.
    
