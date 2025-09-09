@@ -368,16 +368,31 @@ Section Infinite_paths_X.
   Qed.
 
   Lemma test68: forall (X: set T) (R: relation T),
-      (exists (v0:T), (v0 \in X)) -> ~ (iic (Asym R))
+      ~ (iic (Asym R)) -> (exists (v0:T), (v0 \in X))
       -> (Rloop (@Restrict T R X)).
   Proof.
-    move => X R H0 H1.
+    move => X R H1 H0.
     have H2:  ~ (iic (Asym R)) -> ~ (iic (@Restrict T (Asym R) X))
       by apply contraPP;rewrite notE notE; apply: test67.
     move: H1 => /H2 H1.
     by apply: (notiic_rloop_sub H0 H1).
   Qed.
-  
+    
+  Lemma test68': forall (X: set T) (R: relation T),
+       ~ (iic (Asym R)) ->(exists (v0:T), (v0 \in X))
+      -> (exists (v:T), v \in X /\ forall w, w \in X -> R (v,w) -> R (w,v)).
+  Proof.
+    move => X R Ninf H0.
+    move: (test68 Ninf H0) => [v H1].
+    exists (sval v).
+    split. 
+    by rewrite inP; apply: set_valP.
+    move => w H2.
+    have [w' <-]: exists (w': X), (sval w') = w by apply: XtoT.
+    move => H3.
+    by apply: H1.
+  Qed.
+
 End Infinite_paths_X.
 
 Section Paper. 
@@ -793,7 +808,7 @@ Section Paper.
       S \in Scal /\ forall T, T \in Scal -> S [<= (Asym Eb.+)] T -> S = T.
   
     Definition Sx:= [set y | ~ (y \in Sm) /\ ~ (y \in Mono#Sm)].
-  
+
     Definition Tm x:= [set y | y \in Sm /\ ~ (Eb.+ (y,x))].
 
     Lemma TmI: forall x, Tm x `<=` Sm.
@@ -807,11 +822,14 @@ Section Paper.
     
     Definition Sxm x := forall y, y \in Sx -> Er.+(x,y) -> Er.+(y,x).
     
+    (* A consequence of A3 *)
+    Lemma Sx_1: (exists (x:T), (x \in Sx)) -> (exists (x:T), x \in Sx /\ Sxm x).
+    Proof.
+      by move => H1; move: (test68' A3 H1) => H2.
+    Qed.
+    
     Lemma fact: IsMaximal Sm -> (forall t, t\in Sm:#(Er.+) -> t \in Mono#Sm).
     Proof. by move => Smax t H3;move: Smax H3 => [/inP [_ [H8 _]] _] /inP/H8 H3;rewrite inP. Qed.
-    
-    Lemma Unused_fact0: IsMaximal Sm -> (forall x, x \in Sx -> ~ (x \in (Sm:#(Er.+)))).
-    Proof. by move => Smax x /inP [_ ?] /(fact Smax) ?. Qed.
     
     Lemma fact2: IsMaximal Sm -> (forall x, RelIndep Mono (Tm x)).
     Proof.
@@ -1107,60 +1125,27 @@ Section Paper.
           by [].
     Qed.
 
-    (** * an other version of no infinite paths *)
-    Definition ZNoInf1:= forall x, x \in Sx -> Sxm x. 
-    
-    Lemma fact13: IsMaximal Sm -> ZNoInf1 -> ~ (exists x, x \in Sx).
+    Lemma fact13: IsMaximal Sm -> ~(exists x, x \in Sx).
     Proof.
-      move => Smax NoInf1 [x H1].
-      move: (H1) => /NoInf1 H2.
-      by apply: (fact12' Smax H1).
+      by move => H0 /Sx_1 [v [H1 H2]];apply: (fact12' H0 H1 H2).
     Qed.
-    
-    Lemma fact14: IsMaximal Sm -> ZNoInf1 -> (forall x, ~ (x\in Sm) -> (x \in Mono#Sm)).
+
+    Lemma fact14: IsMaximal Sm -> (forall x, ~ (x\in Sm) -> (x \in Mono#Sm)).
     Proof.
-      move => Smax NoInf1 x H1. 
-      move: (fact13 Smax NoInf1) => /forallNP /(_ x) H2.
+      move => Smax x H1. 
+      move: (fact13 Smax) => /forallNP /(_ x) H2.
       have H3: ~ (x \in Sx) <-> (x \in Sm) \/ (x \in Mono#Sm) by rewrite inP not_andE 2!notP.
       by move: H2 => /H3 [H2 | H2].
     Qed.
-      
+    
   End Maximal. 
   
-  Lemma test69: forall (X: set T), 
-      (exists (v0:T), (v0 \in X)) -> (Rloop (@Restrict T Er.+ X)).
-  Proof.  by move => X H0;apply: test68. Qed.
-  
-  Lemma test70: forall (S: set T),
-    (exists (v0:T), (v0 \in (Sx S))) -> (Rloop (@Restrict T Er.+ (Sx S))).
-  Proof. by move => S H0;apply: test69. Qed.
-  
-  Lemma test71: forall (S: set T),
-      (exists (v0:T), (v0 \in (Sx S))) -> 
-      (exists (v:T), v \in (Sx S) /\ forall w, w \in (Sx S) -> Er.+ (v,w) -> Er.+ (w,v)).
-  Proof.
-    move => S H0. 
-    move: (test70 H0) => [v H1].
-    exists (sval v).
-    split. 
-    by rewrite inP; apply: set_valP.
-    move => w H2.
-    have [w' <-]: exists (w': Sx S), (sval w') = w by apply: XtoT.
-    move => H3.
-    by apply: H1.
-  Qed.
-  
-  (** XXX A justifier: doit se déduire des autres hypothèses *)
-  Hypothesis NoInf1: forall S x, x \in (Sx S) -> (Sxm S) x. 
-  
-  Theorem Paper: exists Sm, forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
+  Theorem Final: exists Sm, forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
     Proof.
       move: Exists_Smax => [Sm [H1 H2]]. 
       have H3: IsMaximal Sm 
         by split => [// |U H3 H4];have ->: U = Sm by apply: H2 H3 H4.
-      exists Sm. move => x; apply: fact14.
-      by [].
-      apply: NoInf1.
+      by exists Sm; move => x; apply: fact14.
     Qed.
     
 End Paper.
