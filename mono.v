@@ -338,28 +338,29 @@ Section Infinite_paths_X.
   (** * Assumptions on infinite paths *)
   Variables (T:Type).
 
-  (** * this is mem_setT *)
+  (** (* this is mem_setT *)
   Lemma test90 (X: set T): forall (x: X), x\in [set: X].
   Proof. by move => x; apply: mem_setT. Qed.
-  
+      (* this is set_valP *)
   Lemma test91 (X: set T): forall (x: X), (sval x) \in X. 
   Proof. by move => x; rewrite inP; apply: set_valP.  Qed.
   
   Lemma XtoT (X: set T): forall x, x \in X -> exists (x': X), (sval x') = x.
   Proof. by move => x H1;exists (exist _ x H1). Qed.
-
-  Lemma test89 (X: set T):
-      (exists (v:T), (v \in X)) -> exists v : X, v \in [set: X].
-  Proof. move => -[v /[dup] H0 /XtoT [v1 H1]]. exists v1. rewrite -H1 in H0.
-         by rewrite inP /=.  
+  *)
+  
+  Lemma setTypeP (X: set T):
+    (exists v : X, v \in [set: X]) <-> (exists (v:T), (v \in X)).
+  Proof.
+    split => [[v H0] |[v H0]].
+    by (exists (sval v));rewrite inP; apply: set_valP. 
+    by (exists (exist _ v H0));rewrite inP.
   Qed.
-
+  
   Lemma notiic_rloop_sub: forall (X: set T) (S: relation X),
       (exists (v0:T), (v0 \in X)) -> ~ (iic (Asym S)) -> (Rloop S).
-  Proof. 
-    move => X S /test89 H0. by apply: notiic_rloop.
-  Qed. 
-
+  Proof. by move => X S /setTypeP H0; apply: notiic_rloop. Qed. 
+  
   Definition Restrict (T:Type) (R: relation T) (X: set T) : relation X := 
     [set xy : X*X | R ((sval xy.1),(sval xy.2))].
   
@@ -390,11 +391,11 @@ Section Infinite_paths_X.
     split. 
     by rewrite inP; apply: set_valP.
     move => w H2.
-    have [w' <-]: exists (w': X), (sval w') = w by apply: XtoT.
+    have [w' <-]: exists (w': X), (sval w') = w by exists (exist _ w H2). 
     move => H3.
     by apply: H1.
   Qed.
-
+  
 End Infinite_paths_X.
 
 Section Paper. 
