@@ -530,7 +530,7 @@ End allset2.
 
 Section Lift_in. 
   (** * properties of [L\in] *)
-
+  
   Variables (T: Type) (R R': relation T).
 
   Lemma Lift_in_F: forall (S: relation T) (st: seq T) (y: T),
@@ -553,7 +553,7 @@ Section Lift_in.
   Proof.
     by move => st;rewrite allset_rev allset_inv Lift_rev.
   Qed.
-
+  
   Lemma Lift_in_A: forall (st: seq T) (x: T),
       (x::st) [L\in] R -> st [\in] (R.+.-1)#_(x).
   Proof.
@@ -591,7 +591,7 @@ Section allset_Lifted.
   Proof.
     by move => x y;rewrite allL0;split=> [/set_mem H1 // | /inP H1]. 
   Qed.
-  
+
   Lemma allL_c: forall (st: seq T) (x y z: T),
       allL E (z::st) x y <-> ((x, z) \in E) && allL E st z y.
   Proof.
@@ -605,7 +605,23 @@ Section allset_Lifted.
     by rewrite /allL -rcons_cons Lift_rcc allset_rcons last_rcons;move => [-> /inP ->].
     by move => /andP [/inP ? ?];rewrite /allL -rcons_cons Lift_rcc allset_rcons last_rcons. 
   Qed.
-  
+
+  Lemma allL_split: forall (st: seq T) (x y: T),
+     allL E st x y <-> (x::st) [L\in] E /\ E ((last x st), y).
+  Proof.
+    move => st x y.
+    split. 
+    - elim: st x;first by move=> x;rewrite allL0 inP.
+      move => x' st /(_ x') Hn x.
+      rewrite allL_c => /andP [H1 /Hn [H2 H3]].
+      by rewrite Lift_c allset_consb H1 H2 last_cons; split.
+    - elim: st x; first by move => x [_ ?];rewrite allL0 inP.
+      move => x' st /(_ x') Hn x [H1 H2].
+      move: H1; rewrite Lift_c allset_consb => /andP [H1 H1']. 
+      move: H2. rewrite last_cons => H2.
+      rewrite allL_c H1 /=. apply: Hn. by split. 
+  Qed.
+    
   Lemma allL_cat: forall (st st': seq T) (x y z: T),
       allL E ((rcons st y) ++ st') x z <-> allL E st x y && allL E st' y z.
   Proof.

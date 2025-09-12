@@ -427,7 +427,7 @@ Section Paper.
   Lemma S2Scal: forall (S: SType), (sval S) \in Scal.
   Proof. by move => [S [H1 [H2 H3]]];rewrite inP. Qed.
 
-  Lemma Scal2S: forall S, S \in Scal -> exists (S': SType), (proj1_sig S') = S.
+  Lemma Scal2S: forall S, S \in Scal -> exists (S': SType), (sval S') = S.
   Proof.  by move => S /inP H1; exists (exist _ S H1). Qed.
   
   Definition leSet1 (AB: SType*SType) :=
@@ -550,7 +550,7 @@ Section Paper.
     Qed.
     
     Section Ec_seq. 
-      (* the main result here is total_RC *) 
+      (** *  the main result here is total_RC *) 
 
       Lemma Ec_seq1: forall (S: SType) (s:T), 
           (S \in C) -> (s \in (sval S)) -> ( ~ (s \in Sinf)) 
@@ -687,7 +687,7 @@ Section Paper.
       
     End XXX.
     
-    (** * The Assumptions we use: weaker than the paper assumptions *)
+    (** * The Assumptions we use: weaker than the original paper assumptions *)
     (* begin snippet Assumptions:: no-out *)    
     Hypothesis A1: (exists (v0:T), (v0 \in setT)).
     Hypothesis A3: ~ (iic (Asym Er.+)).
@@ -1497,15 +1497,46 @@ Section Hn.
   (** * some Lemmata around infinite outward R-path *) 
   
   Variables (T:choiceType) (R: relation T).
+  
+  Definition Sym (R: relation T): relation T := (R `&` R.-1).
+
+  Definition R0 := (Sym R).+.
+
+  Definition R0' := [set xy | exists st, 
+                      ~ xy.1 \in st /\ ~ xy.2 \in st /\ uniq st
+                                       /\ (xy.1::(rcons st xy.2)) [L\in] R
+                                       /\ (xy.1::(rcons st xy.2)) [L\in] R.-1 ].
+  
+  Lemma R0E: R0 = R0'.
+  Proof. 
+    rewrite predeqE => -[x y]; split.
+    by move => /TCP_uniq [st [H0 [H1 [H2 /Lift_inI [H3 H4]]]]];exists st. 
+    by move => -[st H0];rewrite /R0 TCP_uniq;exists st;rewrite -Lift_inI.
+  Qed.
+  
+  Definition R0'' := [set xy | exists st,
+                       ~ xy.1 \in st /\ ~ xy.2 \in st /\ uniq st
+                                              /\ (xy.1::(rcons st xy.2)) [L\in] R
+                                              /\ st [\in] R.+#_(xy.1) /\ R (xy.2 ,(last xy.1 st))].
+  
+  
+  Definition R1 := [set xy | exists st, 
+                     st [\in] R.+#_(xy.1) /\ uniq (xy.1::(rcons st xy.2)) 
+                     /\ (xy.1::(rcons st xy.2)) [L\in] R /\ ~ (R.+ (xy.2,(last xy.1 st)))].
+  
+  Definition R4 := [set xyz: (T*T)*T | 
+                     Asym R.+ (xyz.1.1, xyz.1.2) /\ R1 (xyz.1.1, xyz.2) 
+                     /\ (xyz.1.2= xyz.2\/ R.+(xyz.2, xyz.1.2)) ].
+  
+  Definition R5:= [set xyz: (T*T)*T| ~ (Asym R.+ (xyz.1.1, xyz.1.2)) \/ ( R4 xyz)].
     
-  Definition Rp1 (x y:T) := 
-    exists st, st [\in] R.+#_(x) /\ uniq (x::(rcons st y)) 
-          /\ (x::(rcons st y)) [L\in] R /\ ~ (R.+ (y,(last x st))).
-  
-  Definition R1 := [set xy | Rp1 (fst xy) (snd xy)].
-  
-  Definition R3' := [set xy | R.+ xy /\ ~ (R.+ (xy.2,xy.1))].
-  
+  Lemma RedBack0: forall (st:seq T) (x:T), 
+      ( (x:: st) [L\in] R.-1 -> st [\in] R.+#_(x)). 
+  Proof.
+    move => st x H1; move: (Lift_in_A H1).
+    by rewrite inverse_clos_t inverse_inverse.
+  Qed.
+    
   (* utility lemma *)
   Lemma RedBack: forall (st:seq T) (x y:T),
       (x::(rcons st y)) [L\in] R
@@ -1553,11 +1584,7 @@ Section Hn.
       by [].
   Qed.
 
-  Definition R4 := [set xyz: (T*T)*T | 
-                     R3' (xyz.1.1, xyz.1.2) /\ R1 (xyz.1.1, xyz.2) 
-                     /\ (xyz.1.2= xyz.2\/ R.+(xyz.2, xyz.1.2)) ].
-  
-  Lemma RedBackF: forall (x y:T), R3' (x,y) -> exists z, R4 ((x,y),z).
+  Lemma RedBackF: forall (x y:T), Asym R.+ (x,y) -> exists z, R4 ((x,y),z).
   Proof.
     move => x y [H1 /= H2].
     pose proof TCP_uniq' H1 H2 as [st [H3 H4]]. 
@@ -1565,12 +1592,10 @@ Section Hn.
     by exists y';split;[ | split;[exists st' |]].
   Qed.
   
-  Definition R5:= [set  xyz: (T*T)*T| ~ (R3' (xyz.1.1, xyz.1.2)) \/ ( R4 xyz)].
-  
   Lemma RedBackF1:  forall (x y:T), exists z, z \in [set u| R5 ((x,y),u)].
   Proof. 
     move => x y.
-    case H1: ((x,y) \in R3').
+    case H1: ((x,y) \in Asym R.+).
     by move: H1=> /inP H1;move: (RedBackF H1) => [z H2];exists z;rewrite inP /R5; right.
     exists x; rewrite inP /R5; left => /inP H2.
     by rewrite H2 in H1.
@@ -1581,7 +1606,7 @@ Section Hn.
   Lemma gP: forall x y, (g x y) \in [set u| R5 ((x,y),u)].
   Proof. by move => x y; apply: xchooseP. Qed.
   
-  Lemma gP1: forall y z t, R3'(y,z) -> R3' (z,t) -> R3' (g y z, t).
+  Lemma gP1: forall y z t, Asym R.+(y,z) -> Asym R.+ (z,t) -> Asym R.+ (g y z, t).
   Proof.
     move => y z t H2 H3.
     move: (gP y z) => /inP [/= H4 // | [/= _ [H4 [H5 | H5]]]].
@@ -1614,10 +1639,10 @@ Section Hn.
   Lemma IterfP: forall k x, Iterf k.+1 x = f (Iterf k x). 
   Proof. by []. Qed.
   
-  Axiom IR: forall k, R3' (Iterf k x0, Iterf k.+1 x0).
+  Axiom IR: forall k, Asym R.+ (Iterf k x0, Iterf k.+1 x0).
   
   Lemma IR1: forall k, let xy := (Iterh k (x0,f x0)) in 
-                  R.+ xy /\ R3' (g xy.1 xy.2, f xy.2).
+                  R.+ xy /\ Asym R.+ (g xy.1 xy.2, f xy.2).
   Proof.
     elim. 
     rewrite /Iterh /h /=; move: (IR 0) => /= [ H1 _].
@@ -1625,9 +1650,9 @@ Section Hn.
     move: (gP x0 (f x0)) => /inP [/=  H2 | H2].
     move: H2; rewrite not_andE => [[H2 | /=/contrapT H2]].
     by [].
-    rewrite /R3' /mkset /=.
+    rewrite /(Asym R.+) /mkset /=.
   Admitted.
-
+  
   (*
 
   Lemma RedBackG: forall (x y z:T) (n:nat), 
@@ -1691,7 +1716,7 @@ Section Hn.
   
 
   Definition Rp4 (x y:T) (n:nat) := 
-    exists st,  size(st) = n /\ (x::(rcons st y)) [L\in] R3'.
+    exists st,  size(st) = n /\ (x::(rcons st y)) [L\in] (Asym R.+).
 
   Definition R4 (n:nat):= [set xy | Rp4 xy.1 xy.2 n].
 
@@ -1702,7 +1727,7 @@ Section Hn.
     elim. 
     + move => x y.
       rewrite /R4 /Rp4 /mkset => [[st [/size0nil -> H2]]].
-      move: H2; rewrite /= andbT /R3' inP /mkset /= => [[H3 H4]].
+      move: H2; rewrite /= andbT /(Asym R.+) inP /mkset /= => [[H3 H4]].
       pose proof RedBackF H3 H4 as [y' [H5 H6]].
       by (exists y');split;[apply: RedBackF0 |].
     + move => n Hr x y [st' [/seq_rcn [st1 [z [-> H2]]] H3]].
@@ -1722,7 +1747,7 @@ Section Hn.
     move => [v0 _] H1. 
     elim. 
     + pose proof H1 v0 as [v1 H2].
-      by exists v0,v1;exists [::]; split;[| rewrite /= andbT inP /R3'].
+      by exists v0,v1;exists [::]; split;[| rewrite /= andbT inP /(Asym R.+)].
     + move => n [vn [vn' [st [H3 H3']]]].
       pose proof H1 vn' as [vnp1 [H4 H5]].
       (exists vn, vnp1);exists (rcons st vn').
