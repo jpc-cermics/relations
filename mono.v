@@ -1223,6 +1223,17 @@ Section Seq1_plus.
     by apply allset_subset with R.+#_(y). 
   Qed.
   
+  Lemma Lift_in_AA: forall (st: seq T) (x y: T),
+      (y::st) [L\in] R -> y \in (x)_:#R.+ -> st [\in] (x)_:#R.+.
+  Proof.
+    move => st x y H1 H2.
+    pose proof Lift_in_A H1 as H3.
+    have H4: (y)_:#R.+ `<=` (x)_:#R.+. 
+    rewrite /Aset inverse_clos_t. apply: Fset_t5.
+    by rewrite inP -inverse_clos_t -inP.
+    by apply allset_subset with (y)_:#R.+.
+  Qed.
+
   Lemma Lxx: forall (st: seq T) (y z: T),
       y \in st -> (rcons st z) [L\in] R -> R.+ (y, z).
   Proof.
@@ -1236,9 +1247,9 @@ Section Seq1_plus.
   Proof.
     move => st' y z /[dup] /in_non0/seq_c [st [x ->]] H2.
     move => /(@Lift_in_A T) H4.
-    by move: (allset_in H2 H4);rewrite inP -Fset_t0. 
+    by move: (allset_in H2 H4); rewrite inP /Aset -Fset_t0. 
   Qed.
-    
+  
   Lemma Lxx3: forall (st: seq T) (x y z: T),
       (y \in st) -> (rcons (rcons st x) z) [L\in] R -> R.+ (y,x).
   Proof.
@@ -1612,13 +1623,6 @@ Section Hn.
   
   Definition R5:= [set xyz: (T*T)*T| ~ (Asym R.+ (xyz.1.1, xyz.1.2)) \/ ( R4 xyz)].
     
-  Lemma RedBack0: forall (st:seq T) (x:T), 
-      ( (x:: st) [L\in] R.-1 -> st [\in] R.+#_(x)). 
-  Proof.
-    move => st x H1; move: (Lift_in_A H1).
-    by rewrite inverse_clos_t inverse_inverse.
-  Qed.
-    
   (* utility lemma *)
   Lemma RedBack: forall (st:seq T) (x y:T),
       (x::(rcons st y)) [L\in] R
@@ -1665,6 +1669,58 @@ Section Hn.
       have H14: uniq (x :: rcons st z) by apply: (uniq_subseq H1' H13).
       by [].
   Qed.
+
+  (* utility lemma *)
+  Lemma RedBackL: forall (st:seq T) (x y:T),
+      (x::(rcons st y)) [L\in] R
+      -> uniq (x::(rcons st y)) 
+      -> ~ ( R.+ (y,x))
+      -> exists st', exists x',
+          subseq (x'::st') (x::st) 
+          /\ uniq (x'::(rcons st' y))       
+          /\ st' [\in] (y)_:#R.+ 
+          /\ (x'::(rcons st' y)) [L\in] R 
+          /\ ~ (R.+ (y,x))
+          /\ (x = x' \/ R.+ (x,x'))
+          /\ ~ (R.+ ((head y st'),x)).
+  Proof.
+    have H0: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim.
+    elim => [x y H1 H2| z st Hr x y H1 H1' H2];
+             first by (exists [::], x);have H3: x = x \/ R.+ (x, x) by left.
+    case H3: ((y,z) \in R.+).
+    - exists (z::st); exists x.
+      have H4: (z::st) [\in] (y)_:#R.+.
+      move: H1. rewrite Lift_crc Lift_rcc allset_cons allset_rcons => [[_ [H1 _]]].
+      rewrite allset_cons.
+      split. 
+      by rewrite  /Aset -Fset_t0 /inverse /= -inP H3.
+      apply Lift_in_AA with z. by [].
+  Admitted.
+  (* 
+  by rewrite inP -Fset_t0 -inP H3.
+      by rewrite -Fset_t0 -inP H3.
+      (* end of H4 *)
+      have H5: y = y \/ R.+ (y, y) by left.
+      move: H3 => /inP H3.
+      have H6: ~ R.+ (y, last x (rcons st z))
+        by rewrite last_rcons; move => H7;have H8: R.+ (y,x) by apply: t_trans H7 H3.
+      by [].
+    - rewrite Lift_crc Lift_rcrc allset_cons allset_rcons in H1.
+      move: (H1); rewrite H0 => [[H10 [H10' H10'']]].
+      have H5: (x :: rcons st z) [L\in] R by rewrite Lift_crc allset_cons.
+      apply Hr in H5; last by move => /inP H6; rewrite H6 in H3.
+      move: H5 => [st' [y' [H5 [H5' [H6 [H7 [H8 [H9 H9']]]]]]]].
+      have H11: subseq (rcons st' y') (rcons (rcons st z) y) 
+        by apply subseq_trans with (rcons st z);[ | apply subseq_rcons].
+      (exists st', y'); move: H9 => [H9 | H9].
+      by have H12: (y = y' \/ R.+ (y', y)) by right;rewrite -H9;apply: t_step.
+      by have H12: (y = y' \/ R.+ (y', y)) by right;apply t_trans with z;[ |apply: t_step].
+      have H13: subseq (rcons st z) (rcons (rcons st z) y) by apply: subseq_rcons. 
+      have H14: uniq (x :: rcons st z) by apply: (uniq_subseq H1' H13).
+      by [].
+  Qed.
+
+  *) 
 
   Lemma RedBackF: forall (x y:T), Asym R.+ (x,y) -> exists z, R4 ((x,y),z).
   Proof.
