@@ -1316,7 +1316,6 @@ Section Seq1_plus.
   
 End Seq1_plus. 
 
-
 Section allL_uniq.
   (** * The aim of this section is to prove allL_uniq *)
 
@@ -1347,6 +1346,18 @@ Section allL_uniq.
     move: H1 H2; rewrite in_cons => /orP [/eqP -> H2 | H1 _].
     by rewrite eq_refl in H2. 
     by pose proof (Hr x) H1. 
+  Qed.
+  
+  Lemma drop_notin: forall (st: seq T) (x:T),
+      x \in st -> uniq st -> x \notin (drop (index x st).+1 st).
+  Proof.
+    elim => [// | y st Hr x H1].
+    case H2: (y == x);
+      first by move: H2 => /eqP ->;rewrite /= eq_refl drop0 => /andP [H3 _].
+    rewrite /drop /= H2 -/drop.
+    move: H1 H2; rewrite in_cons => /orP [/eqP -> H2 | H1 _].
+    by rewrite eq_refl in H2. 
+    move => /andP [H2 H3]; by pose proof (Hr x) H1 H3. 
   Qed.
   
   Lemma allL_uniq_tail: forall (U: relation T) (st: seq T) (x y: T),
@@ -1624,7 +1635,7 @@ Section Hn.
   Definition R5:= [set xyz: (T*T)*T| ~ (Asym R.+ (xyz.1.1, xyz.1.2)) \/ ( R4 xyz)].
     
   (* utility lemma *)
-  Lemma RedBack: forall (st:seq T) (x y:T),
+  Lemma RedBackL: forall (st:seq T) (x y:T),
       (x::(rcons st y)) [L\in] R
       -> uniq (x::(rcons st y)) 
       -> ~ ( R.+ (y,x))
@@ -1671,56 +1682,149 @@ Section Hn.
   Qed.
 
   (* utility lemma *)
-  Lemma RedBackL: forall (st:seq T) (x y:T),
-      (x::(rcons st y)) [L\in] R
-      -> uniq (x::(rcons st y)) 
-      -> ~ ( R.+ (y,x))
-      -> exists st', exists x',
-          subseq (x'::st') (x::st) 
-          /\ uniq (x'::(rcons st' y))       
-          /\ st' [\in] (y)_:#R.+ 
-          /\ (x'::(rcons st' y)) [L\in] R 
-          /\ ~ (R.+ (y,x))
-          /\ (x = x' \/ R.+ (x,x'))
-          /\ ~ (R.+ ((head y st'),x')).
+  Lemma RedBackR: forall (st:seq T) (y z:T),
+      (y::(rcons st z)) [L\in] R
+      -> uniq (y::(rcons st z)) 
+      -> ~ ( R.+ (z,y))
+      -> exists st', exists y',
+          subseq (y'::st') (y::st) 
+          /\ uniq (y'::(rcons st' z))       
+          /\ st' [\in] (z)_:#R.+ 
+          /\ (y'::(rcons st' z)) [L\in] R 
+          /\ ~ (R.+ (z,y'))
+          /\ (y = y' \/ R.+ (y,y'))
+          /\ ~ (R.+ ((head z st'),y')).
   Proof.
-    have H0: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim.
-    elim => [x y H1 H2| z st Hr x y H1 H1' H2];
-             first by (exists [::], x);have H3: x = x \/ R.+ (x, x) by left.
-    case H3: ((y,z) \in R.+).
-    - exists (z::st); exists x.
-      have H4: (z::st) [\in] (y)_:#R.+.
+    elim => [y z H1 H2| y1 st Hr y z H1 H1' H2];
+             first by (exists [::], y);have H3: y = y \/ R.+ (y, y) by left.
+    case H3: ((z,y1) \in R.+).
+    - exists (y1::st); exists y.
+      have H4: (y1::st) [\in] (z)_:#R.+.
       move: H1. rewrite Lift_crc Lift_rcc allset_cons allset_rcons => [[_ [H1 _]]].
       rewrite allset_cons.
       split. 
       by rewrite  /Aset -Fset_t0 /inverse /= -inP H3.
-      apply Lift_in_AA with z. by [].
+      apply Lift_in_AA with y1. by [].
       by rewrite inP /Aset -Fset_t0 /inverse /= -inP H3.
       (* end of H4 *)
-      have H5: x = x \/ R.+ (x, x) by left.
+      have H5: y = y \/ R.+ (y, y) by left.
       move: H3 => /inP H3.
-      have H6: ~ R.+ (head y (z :: st), x)
-        by move => /= H7;have H8: R.+ (y,x) by apply: t_trans H3 H7.
+      have H6: ~ R.+ (head z (y1 :: st), y)
+        by move => /= H7;have H8: R.+ (z,y) by apply: t_trans H3 H7.
       by [].
     - rewrite Lift_crc Lift_rcc allset_cons allset_rcons in H1.
       move: (H1) => [H10 [H10' H10'']].
-      have H5: (z :: rcons st y) [L\in] R 
+      have H5: (y1 :: rcons st z) [L\in] R 
         by rewrite -rcons_cons Lift_rcc allset_rcons.
       apply Hr in H5; last by move => /inP H6; rewrite H6 in H3.
-      move: H5 => [st' [y' [H5 [H5' [H6 [H7 [H8 [H9 H9']]]]]]]].
-      have H11: subseq (y'::st') (x::(z::st)).
-      by apply subseq_trans with (z::st);[| apply subseq_cons].
-      (exists st', y'); move: H9 => [H9 | H9].
-      by have H12: (x = y' \/ R.+ (x, y')) by right; rewrite -H9; apply: t_step.
-      by have H12: (x = y' \/ R.+ (x, y')) by right;apply t_trans with z;[apply: t_step|].
+      move: H5 => [st' [z' [H5 [H5' [H6 [H7 [H8 [H9 H9']]]]]]]].
+      have H11: subseq (z'::st') (y::(y1::st)).
+      by apply subseq_trans with (y1::st);[| apply subseq_cons].
+      (exists st', z'); move: H9 => [H9 | H9].
+      by have H12: (y = z' \/ R.+ (y, z')) by right; rewrite -H9; apply: t_step.
+      by have H12: (y = z' \/ R.+ (y, z')) by right;apply t_trans with y1;[apply: t_step|].
       by move: H1'; rewrite cons_uniq rcons_cons => /andP [_ H1'].
   Qed.
+  
+  Lemma RedBackLR: forall (stl str:seq T) (x y z:T),
+      (x::(rcons stl y)) [L\in] R -> uniq (x::(rcons stl y)) -> ~ ( R.+ (y,x))
+      -> (y::(rcons str z)) [L\in] R -> uniq (y::(rcons str z)) -> ~ ( R.+ (z,y))
+      -> exists stl', exists yl, exists str', exists yr,
+          (subseq (rcons stl' yl) (rcons stl y) 
+          /\ uniq (x::(rcons stl' yl))       
+          /\ stl' [\in] R.+#_(x) 
+          /\ (x::(rcons stl' yl)) [L\in] R 
+          /\ ~ (R.+ (yl,x))
+          /\ (y = yl \/ R.+ (yl,y))
+          /\ ~ (R.+ (yl,(last x stl'))))
+          /\
+            ( subseq (yr::str') (y::str) 
+              /\ uniq (yr::(rcons str' z))       
+              /\ str' [\in] (z)_:#R.+ 
+              /\ (yr::(rcons str' z)) [L\in] R 
+              /\ ~ (R.+ (z,yr))
+              /\ (y = yr \/ R.+ (y,yr))
+              /\ ~ (R.+ ((head z str'),yr))).
+  Proof.
+    move => strl str x y z H1 H2 H3 H4 H5 H6.
+    pose proof (RedBackL H1 H2 H3) as [stl' [yl H7]].
+    pose proof (RedBackR H4 H5 H6) as [str' [yr H8]].
+    by exists stl';exists yl;exists str';exists yr.
+  Qed.
+
+  Lemma RedBackLR0: forall (yl y yr:T),
+    (R.+ (yl,y)) -> (R.+ (y,yr))
+    -> exists stl, exists str, exists y',
+        ~( yl \in stl) /\ ~(yr \in str) 
+        /\ @uniq T ( stl ++ (y'::str)) 
+        /\ (yl = y' \/ (allL R stl yl y'))
+        /\ (yr = y' \/ (allL R str y' yr)).
+   Proof.
+     move => yl y yr /TCP_uniq [stl [H1 [H2 [H3 H4]]]]
+              /TCP_uniq [str [H6 [H7 [H8 H9]]]].
+     move: stl H1 H2 H3 H4.
+     elim. 
+     + move => H1 H2 H3 H4.
+       rewrite allL0 in H4.
+       case H5: (yl \in str). 
+       ++ exists [::]; exists (drop ((index yl str).+1) str); exists yl.
+          have H10: subseq (drop (index yl str).+1 str) str by apply: drop_subseq.
+          have H11: ~ yr \in drop (index yl str).+1 str by apply: in_subseq H10 H7.
+          have H12: uniq (drop (index yl str).+1 str) by apply: subseq_uniq H10 H8.
+          have H13: uniq ([::] ++ yl :: drop (index yl str).+1 str)
+            by rewrite cons_uniq H12 andbT;apply: drop_notin;[rewrite H5|].
+          have H14: (yl = yl \/ allL R [::] yl yl) by left.
+          have H15: (yr = yl \/ allL R (drop (index yl str).+1 str) yl yr) 
+                      by right;apply: (allL_drop H5 H9).
+          exact.
+       ++ exists [::];exists str;exists y.
+          have H10: uniq ([::] ++ y :: str)
+            by rewrite cons_uniq H8 andbT;case H11: (y \in str);[rewrite H11 in H6|].
+          have H11: (yl = y \/ allL R [::] yl y) by right; rewrite allL0. 
+          have H12: yr = y \/ allL R str y yr by right. 
+          exact. 
+     + move => t strl Hr H1 H2 H3 H4.
+   Admitted.
+   
+   Lemma RedBackLR1: forall (yl y yr:T),
+    (y = yl \/ R.+ (yl,y)) /\ (y = yr \/ R.+ (y,yr))
+    -> exists stl, exists str, exists y',
+        ~( yl \in stl) /\ ~(yr \in str) 
+        /\ @uniq T ( stl ++ (y'::str)) 
+        /\ (yl = y' \/ allL R stl yl y') 
+        /\ (yr = y' \/ allL R str y' yr).
+  Proof.
+    move => yl y yr [[ H1 | /[dup] H0 /TCP_uniq [stl [H1 [H2 [H3 H4]]]]]  
+                      [H5 | /[dup] H0' /TCP_uniq [str [H6 [H7 [H8 H9]]]]]].
+    + exists [::]; exists [::]; exists y. rewrite -H1 -H5. 
+      by have H6: (y = y \/ allL R [::] y y) by left.
+    + exists [::];exists str;exists y.
+      rewrite -H1.
+      have H10: (y = y \/ allL R [::] y y) by left.
+      have H11: (yr = y \/ allL R str y yr) by right.
+      have H12:  uniq ([::] ++ y :: str)
+        by rewrite /=; rewrite H8 andbT; case H13: (y \in str).
+      exact. 
+    + exists stl; exists [::];exists y.
+      rewrite -H5.
+      have H10: (yl = y \/ allL R stl yl y) by right. 
+      have H11: (y = y \/ allL R [::] y y) by left.
+      have H12: uniq (stl ++ [:: y])
+        by rewrite cats1 rcons_uniq H3 andbT;case H13: (y \in stl).
+      exact. 
+    + pose proof RedBackLR0 H0 H0' as [stl' [str' [y' HH]]].
+      move: HH => [H10[H11 [H12 [H13 H14]]]].
+      exists stl';exists str';exists y'. 
+      by [].
+  Qed.
+  
+  (** * what follows is unused *)
   
   Lemma RedBackF: forall (x y:T), Asym R.+ (x,y) -> exists z, R4 ((x,y),z).
   Proof.
     move => x y [H1 /= H2].
     pose proof TCP_uniq' H1 H2 as [st [H3 H4]]. 
-    pose proof RedBack H4 H3 H2 as [st' [y' [H6 [H7 [H8 [H9 [H10 [H11 H12]]]]]]]].
+    pose proof RedBackL H4 H3 H2 as [st' [y' [H6 [H7 [H8 [H9 [H10 [H11 H12]]]]]]]].
     by exists y';split;[ | split;[exists st' |]].
   Qed.
   
