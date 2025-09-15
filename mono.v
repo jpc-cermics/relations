@@ -1660,7 +1660,7 @@ Section Hn.
       have H5: (x :: rcons st z) [L\in] R by rewrite Lift_crc allset_cons.
       apply Hr in H5; last by move => /inP H6; rewrite H6 in H3.
       move: H5 => [st' [y' [H5 [H5' [H6 [H7 [H8 [H9 H9']]]]]]]].
-      have H11: subseq (rcons st' y') (rcons (rcons st z) y) 
+      have H11: subseq (rcons st' y') (rcons (rcons st z) y)
         by apply subseq_trans with (rcons st z);[ | apply subseq_rcons].
       (exists st', y'); move: H9 => [H9 | H9].
       by have H12: (y = y' \/ R.+ (y', y)) by right;rewrite -H9;apply: t_step.
@@ -1682,7 +1682,7 @@ Section Hn.
           /\ (x'::(rcons st' y)) [L\in] R 
           /\ ~ (R.+ (y,x))
           /\ (x = x' \/ R.+ (x,x'))
-          /\ ~ (R.+ ((head y st'),x)).
+          /\ ~ (R.+ ((head y st'),x')).
   Proof.
     have H0: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim.
     elim => [x y H1 H2| z st Hr x y H1 H1' H2];
@@ -1695,33 +1695,27 @@ Section Hn.
       split. 
       by rewrite  /Aset -Fset_t0 /inverse /= -inP H3.
       apply Lift_in_AA with z. by [].
-  Admitted.
-  (* 
-  by rewrite inP -Fset_t0 -inP H3.
-      by rewrite -Fset_t0 -inP H3.
+      by rewrite inP /Aset -Fset_t0 /inverse /= -inP H3.
       (* end of H4 *)
-      have H5: y = y \/ R.+ (y, y) by left.
+      have H5: x = x \/ R.+ (x, x) by left.
       move: H3 => /inP H3.
-      have H6: ~ R.+ (y, last x (rcons st z))
-        by rewrite last_rcons; move => H7;have H8: R.+ (y,x) by apply: t_trans H7 H3.
+      have H6: ~ R.+ (head y (z :: st), x)
+        by move => /= H7;have H8: R.+ (y,x) by apply: t_trans H3 H7.
       by [].
-    - rewrite Lift_crc Lift_rcrc allset_cons allset_rcons in H1.
-      move: (H1); rewrite H0 => [[H10 [H10' H10'']]].
-      have H5: (x :: rcons st z) [L\in] R by rewrite Lift_crc allset_cons.
+    - rewrite Lift_crc Lift_rcc allset_cons allset_rcons in H1.
+      move: (H1) => [H10 [H10' H10'']].
+      have H5: (z :: rcons st y) [L\in] R 
+        by rewrite -rcons_cons Lift_rcc allset_rcons.
       apply Hr in H5; last by move => /inP H6; rewrite H6 in H3.
       move: H5 => [st' [y' [H5 [H5' [H6 [H7 [H8 [H9 H9']]]]]]]].
-      have H11: subseq (rcons st' y') (rcons (rcons st z) y) 
-        by apply subseq_trans with (rcons st z);[ | apply subseq_rcons].
+      have H11: subseq (y'::st') (x::(z::st)).
+      by apply subseq_trans with (z::st);[| apply subseq_cons].
       (exists st', y'); move: H9 => [H9 | H9].
-      by have H12: (y = y' \/ R.+ (y', y)) by right;rewrite -H9;apply: t_step.
-      by have H12: (y = y' \/ R.+ (y', y)) by right;apply t_trans with z;[ |apply: t_step].
-      have H13: subseq (rcons st z) (rcons (rcons st z) y) by apply: subseq_rcons. 
-      have H14: uniq (x :: rcons st z) by apply: (uniq_subseq H1' H13).
-      by [].
+      by have H12: (x = y' \/ R.+ (x, y')) by right; rewrite -H9; apply: t_step.
+      by have H12: (x = y' \/ R.+ (x, y')) by right;apply t_trans with z;[apply: t_step|].
+      by move: H1'; rewrite cons_uniq rcons_cons => /andP [_ H1'].
   Qed.
-
-  *) 
-
+  
   Lemma RedBackF: forall (x y:T), Asym R.+ (x,y) -> exists z, R4 ((x,y),z).
   Proof.
     move => x y [H1 /= H2].
