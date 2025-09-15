@@ -1762,9 +1762,9 @@ Section Hn.
    Proof.
      move => yl y yr /TCP_uniq [stl [H1 [H2 [H3 H4]]]]
               /TCP_uniq [str [H6 [H7 [H8 H9]]]].
-     move: stl H1 H2 H3 H4.
+     move: stl y yl H1 H2 H3 H4 H6 H9.
      elim. 
-     + move => H1 H2 H3 H4.
+     + move => y yl H1 H2 H3 H4 H6 H9.
        rewrite allL0 in H4.
        case H5: (yl \in str). 
        ++ exists [::]; exists (drop ((index yl str).+1) str); exists yl.
@@ -1783,7 +1783,20 @@ Section Hn.
           have H11: (yl = y \/ allL R [::] yl y) by right; rewrite allL0. 
           have H12: yr = y \/ allL R str y yr by right. 
           exact. 
-     + move => t strl Hr H1 H2 H3 H4.
+     + move => t strl Hr y yl H1 H2 H3 H4 H6 H9.
+       case H5: (yl == t);
+         first by move: H1; rewrite in_cons H5 orTb => H1.
+       move: H1; rewrite in_cons H5 orFb => H1.
+       case H10: (y == t);
+         first by move: H2; rewrite in_cons H10 orTb => H2.
+       move: H2; rewrite in_cons H10 orFb => H2.
+       move: H3; rewrite cons_uniq => /andP [H11 H12].
+       move: H4; rewrite allL_c => /andP [H13 H14].
+       have H15: ~ t \in strl.
+       move => H16;case H17: (t \in strl); first by rewrite H17 in H11.
+       by rewrite H17 in H16.
+       pose proof (Hr y t) H15 H2 H12 H14 H6 H9 as [stl [str' [y' HHH]]].
+       exists stl. exists str'. exists y'.
    Admitted.
    
    Lemma RedBackLR1: forall (yl y yr:T),

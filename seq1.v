@@ -555,13 +555,13 @@ Section Lift_in.
   Qed.
   
   Lemma Lift_in_A: forall (st: seq T) (x: T),
-      (x::st) [L\in] R -> st [\in] (R.+.-1)#_(x).
+      (x::st) [L\in] R -> st [\in] (x)_:#R.+.
   Proof.
     move => st x. 
     rewrite Lift_in_rev rev_cons => /Lift_in_F H1.
-    by rewrite allset_rev inverse_clos_t.
+    by rewrite allset_rev /Aset inverse_clos_t.
   Qed.
-
+  
   Lemma Lift_inI: forall (st: seq T),
       st [L\in] R /\ st [L\in] R' <-> st [L\in] (R `&` R').
   Proof.
