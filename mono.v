@@ -1321,20 +1321,6 @@ Section allL_uniq.
 
   Variables (T:eqType) (R: relation T).
   
-
-  Lemma allL_asym: forall x s st y,
-      s \in st -> (x :: rcons st y) [L\in] R -> ~ R.+ (y, last x st) 
-           -> (Asym R.+) (s, y).
-  Proof.
-    move => x s st y H1 H2 H3.
-    move: (H2) => /allL_split [H4 H5].
-    have H6: (x::st) [\in] (R.+)#_(y) by apply: allL_All.
-    have H7: R.+ (last x st, y) by apply: t_step.
-    have H8: Asym R.+ (last x st, y). by []. 
-    case H9: (s == last x st); first by move: H9 => /eqP ->.
-    have H10: R.+ (s, last x st). 
-  Admitted.
-  
   Lemma allL_drop: forall (st:seq T) (x y z:T),
       z \in st -> allL R st x y -> allL R (drop ((index z st).+1) st) z y.
   Proof.
@@ -1364,6 +1350,38 @@ Section allL_uniq.
       move: H1; rewrite in_cons => /orP [/eqP H4 | H4].
       by move: H3; rewrite H4 => /eqP H3.
       by move: (Hr t y z H4 H2').
+  Qed.
+
+  Lemma last0: forall(st:seq T) t, ((last t st) \in st ) = false -> st = [::].
+  Proof.
+    elim => [t // | t' st Hr t1 /=].
+    rewrite in_cons => /orP H1. 
+    move: H1. rewrite not_orE => -[H1 H2].
+    have H3: st = [::]. apply: (Hr t'). case H3: (last t' st \in st).
+    by rewrite H3 in H2. by [].
+    by move: H1; rewrite H3 /=.
+  Qed.
+  
+  Lemma allL_asym: forall st x s y,
+      s \in st -> (x :: rcons st y) [L\in] R -> ~ R.+ (y, last x st) 
+           -> (Asym R.+) (s, y).
+  Proof.
+    elim => [x y z ? ? // | t st Hr x y z ].
+    rewrite in_cons  allL_c => /orP [/eqP -> | H1] /andP [H2 H3] /= H4.
+    + case H5: ((last t st) \in st).
+      ++ move: (Hr t (last t st) z H5 H3 H4) => [H6 H7].
+         have H8: R.+ (t,z) by rewrite TCP';(exists st).
+         have H9: R.+ (t, (last t st))
+           by move: (allL_take H5 H3);rewrite TCP';
+           exists (take (index (last t st) st) st).
+         split. by [].
+         move => H10.
+         have H11: R.+ (z,  last t st) by apply: (t_trans H10 H9). 
+         exact.
+      ++ move: H4 (last0 H5) => + H6. rewrite H6 /=.
+         have: R.+ (t,z) by rewrite TCP';(exists st).
+         exact.
+    + by apply: (Hr t y z).
   Qed.
   
   Lemma drop_cons': forall (st: seq T) (x:T),
