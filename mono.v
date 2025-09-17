@@ -1162,13 +1162,11 @@ Section Seq1_plus.
   Lemma uniq_subseq: forall (st st': seq T) (x:T),
       uniq (x :: st) -> subseq st' st -> uniq (x:: st').
   Proof.
-    move => st st' x;rewrite /uniq -/uniq => /andP [H2 H3] H4.
-    have -> : uniq st' by apply subseq_uniq with st.
-    rewrite andbT.
+    move => st st' x; rewrite cons_uniq => /andP [H2 H3] H4.
+    rewrite cons_uniq;move: (subseq_uniq H4 H3) => ->;rewrite andbT.
     move: H4 => /subseqP [m H4 H5].
-    have H6: x \in st' -> x \in st by rewrite H5; apply: mem_mask.
-    move: H6 => /contra H6.
-    by apply: H6. 
+    have /contra H6: x \in st' -> x \in st by rewrite H5;apply: mem_mask.
+    by apply: H6.
   Qed.
   
   (** * properties of \in for eqType *)
@@ -1336,6 +1334,15 @@ Section allL_uniq.
       ++ by move: H2; rewrite allL_c => /andP [_ H2]. 
   Qed.
  
+  Lemma allL_clos_tail: forall (st:seq T) (x y z:T),
+      z \in (x::st) -> allL R st x y -> R.+ (z,y).
+  Proof.
+    move => st x y z. 
+    rewrite in_cons => /orP [/eqP ->|H1] H2;first by rewrite TCP';exists st.
+    move: (allL_drop H1 H2) => H3.
+    by rewrite TCP';exists (drop (index z st).+1 st).
+  Qed.
+  
   Lemma allL_take: forall (st:seq T) (x y z:T),
       z \in st -> allL R st x y -> allL R (take (index z st) st) x z.
   Proof.
@@ -1352,6 +1359,15 @@ Section allL_uniq.
       by move: (Hr t y z H4 H2').
   Qed.
 
+  Lemma allL_clos_head: forall (st:seq T) (x y z:T),
+      z \in (rcons st y) -> allL R st x y -> R.+ (x,z).
+  Proof.
+    move => st x y z. 
+    rewrite in_rcons => /orP [H1 | /eqP ->] H2;last by rewrite TCP';exists st.
+    move: (allL_take H1 H2) => H3.
+    by rewrite TCP';exists (take (index z st) st).
+  Qed.
+  
   Lemma last0: forall(st:seq T) t, ((last t st) \in st ) = false -> st = [::].
   Proof.
     elim => [t // | t' st Hr t1 /=].
@@ -1361,7 +1377,7 @@ Section allL_uniq.
     by rewrite H3 in H2. by [].
     by move: H1; rewrite H3 /=.
   Qed.
-  
+
   Lemma allL_asym: forall st x s y,
       s \in st -> (x :: rcons st y) [L\in] R -> ~ R.+ (y, last x st) 
            -> (Asym R.+) (s, y).
@@ -1383,6 +1399,18 @@ Section allL_uniq.
          exact.
     + by apply: (Hr t y z).
   Qed.
+
+  Lemma allL_asym': forall st x y,
+      (x :: rcons st y) [L\in] R -> ~ R.+ (y, last x st) 
+      -> (Asym R.+) (x, y).
+  Proof.
+    move => st x y H1 H2.
+    case H3: ((last x st) \in st).
+    + move: (allL_asym H3 H1 H2) => H4.
+      split. by rewrite TCP';(exists st).
+      move => H5.
+  Admitted.
+  
   
   Lemma drop_cons': forall (st: seq T) (x:T),
       x \in st -> x::(drop (index x st).+1 st) = (drop (index x st) st).
@@ -1838,6 +1866,7 @@ Section Hn4.
       -> uniq (y :: rcons str1 z) -> ~ R.+ (head z str1, y)
       -> uniq (x :: stl1 ++ y :: rcons str1 z).
   Proof.
+    move => x stl1 y str1 z H1 H2 H3 H4.
   Admitted.
   
   Lemma uniq_util0': forall x stl1 y str1 z,
@@ -1845,10 +1874,15 @@ Section Hn4.
       uniq (x :: rcons stl1 y) -> ~ R.+ (y, last x stl1)
       -> (y :: rcons str1 z) [L\in] R
       -> uniq (y :: rcons str1 z) -> ~ R.+ (head z str1, y)
-      -> uniq (x :: stl1 ++ y :: rcons str1 z).
+      -> uniq ((x :: stl1) ++ (y :: rcons str1 z)).
   Proof.
     move => x stl1 y str1 z H1 H2 H3 H4 H5 H6.
-    have H7: forall x' y', x' \in stl1 -> y' \in str1 -> Asym R.+ (x',y').
+    have H7: uniq (x :: stl1)
+      by move: H2; rewrite -rcons_cons rcons_uniq => /andP [_ ?].
+    rewrite cat_uniq H5 H7 andbT andTb.
+    (* XXXX apply negbT. pose proof (contra_notF False).*) 
+    have: has (in_mem^~ (mem (x :: stl1))) (y :: rcons str1 z) -> False.
+    move => /hasP.
   Admitted.
     
   Lemma uniq_util3: forall x stl1 yl stlr yr str1 z,
