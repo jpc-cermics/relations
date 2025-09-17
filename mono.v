@@ -1378,6 +1378,43 @@ Section allL_uniq.
     by move: H1; rewrite H3 /=.
   Qed.
 
+  Lemma drop_last : forall (st: seq T)  x, 
+    ~( st = [::]) -> drop (index (last x st) st) st = [:: last x st].
+  Proof.
+    elim => [x // | x' st Hr x _ // ]. 
+    rewrite last_cons. 
+    case H1: ((last x' st) \in st); last first. 
+    + move: (H1) => /last0 H2.
+      move: H1 => /eqP H1.
+      by rewrite H2 /= eq_refl drop0. 
+    + 
+  Admitted.
+  
+  Lemma allL_clos_last: forall (st:seq T) (x y z:T),
+      uniq st -> z \in st -> ~ (z = (last x st))-> allL R st x y 
+      -> R.+ (z,last x st).
+  Proof.
+    move => st x y z H1 H2 H3 H4.
+    case H5: ((last x st) \in st).
+    + move: (allL_take H5 H4) => H6. 
+      have H8: drop (last x st) st = [:: last x st].
+      have H7: (take (index (last x st) st) st) ++ [:: last x st] = st.
+
+Lemma cat_take_drop s : take n0 s ++ drop n0 s = s.
+Proof. by elim: s n0 => [|x s IHs] [|n] //=; rewrite IHs. Qed.
+
+
+      z \in st -> allL R st x y -> allL R (take (index z st) st) x z.
+
+ZZZ
+    ZZZZ
+    rewrite in_cons => /orP [/eqP ->|H1] H2;first by rewrite TCP';exists st.
+    move: (allL_drop H1 H2) => H3.
+    by rewrite TCP';exists (drop (index z st).+1 st).
+  Qed.
+  
+
+
   Lemma allL_asym: forall st x s y,
       s \in st -> (x :: rcons st y) [L\in] R -> ~ R.+ (y, last x st) 
            -> (Asym R.+) (s, y).
