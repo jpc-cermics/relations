@@ -1368,86 +1368,110 @@ Section allL_uniq.
     by rewrite TCP';exists (take (index z st) st).
   Qed.
   
-  Lemma last0: forall(st:seq T) t, ((last t st) \in st ) = false -> st = [::].
+  Lemma last0: forall(st:seq T) t,
+      ((last t st) \in st ) = false <-> st = [::].
   Proof.
-    elim => [t // | t' st Hr t1 /=].
-    rewrite in_cons => /orP H1. 
-    move: H1. rewrite not_orE => -[H1 H2].
-    have H3: st = [::]. apply: (Hr t'). case H3: (last t' st \in st).
-    by rewrite H3 in H2. by [].
-    by move: H1; rewrite H3 /=.
+    split.
+    elim: st t => [t // | t' st Hr t1 /=].
+    + rewrite in_cons => /orP H1. 
+      move: H1; rewrite not_orE => -[H1 H2].
+      have H3: st = [::] by apply: (Hr t'); case H3: (last t' st \in st).
+      by rewrite H3 in H1.
+    + by move => -> /=.
   Qed.
 
+  
   Lemma drop_last : forall (st: seq T)  x, 
-    ~( st = [::]) -> drop (index (last x st) st) st = [:: last x st].
+      ~(st = [::]) -> drop (index (last x st) st) st = [:: last x st].
   Proof.
-    elim => [x // | x' st Hr x _ // ]. 
+  Admitted.
+  (* 
+    elim => [x H1 //| x' st Hr x _ // H1]. 
+    rewrite last_cons.
+    have H2: (index (last x' st) (x' :: st)) = size(st)
+      by apply: index_last;move: H1;rewrite cons_uniq => /andP [_ H1].
+    rewrite H2.
+    case H3: (size st == 0). 
+    - by move : H3 => /eqP/size0nil -> /=.
+      move: H3 => /neq0_lt0n H3.
+      pose proof (ltn_predK H3) as H4. 
+      rewrite -H4. 
+      rewrite drop_cons. 
+
+    have H2: subseq (x'::st) [:: x, x' & st] by apply: subseq_cons.
+    have H3: uniq (x'::st). apply: (uniq_subseq H1 H2).
+    pose proof index_last  H1.
+    case H2: (st == [::]).
+    + by move: H2 => /eqP ->;rewrite /= eq_refl drop0. 
+    + have H3:  st <> [::]. by move => H3;rewrite H3 eq_refl in H2.
+      move: (Hr x' H3) => H4.
+      rewrite last_cons. 
+      rewrite index_cons drop_cons. 
+      
+      elim => [x // | x' st Hr x _ // ]. 
     rewrite last_cons. 
     case H1: ((last x' st) \in st); last first. 
-    + move: (H1) => /last0 H2.
-      move: H1 => /eqP H1.
+    + move: H1 => /[dup] /last0 H2 /eqP H1.
       by rewrite H2 /= eq_refl drop0. 
-    + 
-  Admitted.
-  
-  Lemma allL_clos_last: forall (st:seq T) (x y z:T),
-      uniq st -> z \in st -> ~ (z = (last x st))-> allL R st x y 
-      -> R.+ (z,last x st).
+    + case H2: (st == [::]).
+      move: H2 => /eqP ->. by rewrite /= eq_refl drop0. 
+      have H3:  st <> [::]. by move => H3;rewrite H3 eq_refl in H2.
+      move: (Hr x H3).
+   *)
+
+  Lemma allL_last: forall (st:seq T) (x y:T),
+      allL R st x y ->  (rcons (belast x st) (last x st)) [L\in] R.
   Proof.
-    move => st x y z H1 H2 H3 H4.
-    case H5: ((last x st) \in st).
-    + move: (allL_take H5 H4) => H6. 
-      have H8: drop (last x st) st = [:: last x st].
-      have H7: (take (index (last x st) st) st) ++ [:: last x st] = st.
-
-Lemma cat_take_drop s : take n0 s ++ drop n0 s = s.
-Proof. by elim: s n0 => [|x s IHs] [|n] //=; rewrite IHs. Qed.
-
-
-      z \in st -> allL R st x y -> allL R (take (index z st) st) x z.
-
-ZZZ
-    ZZZZ
-    rewrite in_cons => /orP [/eqP ->|H1] H2;first by rewrite TCP';exists st.
-    move: (allL_drop H1 H2) => H3.
-    by rewrite TCP';exists (drop (index z st).+1 st).
+    elim/last_ind => [ // | st z _ x y H2].
+    rewrite belast_rcons rcons_cons. 
+    by move: H2; rewrite allL_rc last_rcons => /andP [_ H2].
   Qed.
   
+  Lemma in_belast: forall (st:seq T) (x z:T),
+      z \in st -> ~ (z = (last x st)) -> z \in (belast x st).
+  Proof.
+    elim/last_ind => [x z // | st y Hr x z H1 H2].
+    move: H1; rewrite in_rcons => /orP [ H1 | /eqP H1].
+    by rewrite belast_rcons in_cons H1 orbT.
+    by move: H2; rewrite H1 last_rcons.
+  Qed.
 
+  Lemma belast_head: forall (st:seq T) x,
+    ~(st = [::]) -> (belast x st) = x::(drop 1 (belast x st)).
+  Proof.
+    elim/last_ind => [x // | st y Hr x _].
+    by rewrite belast_rcons drop1 /behead.
+  Qed.
+  
+  Lemma allL_belast: forall (st:seq T) (x s y:T),
+      s \in st -> ~(s = x) -> ~ (s = (last x st)) -> allL R st x y
+      -> R.+ (s, (last x st)).
+  Proof.
+    move => st x s y H1 H2 H3 H4.
+    move: (in_belast H1 H3) => H5.
+    move: (allL_last H4) => H6.
+    have H7:  ~(st = [::]). by move => H8; rewrite H8 in H1.
+    have H8:  (belast x st) = x::(drop 1 (belast x st)) 
+      by apply: belast_head.
+    move: H5; rewrite H8 in_cons => /orP [/eqP H9 // | H9].
+    move: H6; rewrite H8 rcons_cons => H6.
+    pose proof (allL_drop H9 H6).
+    rewrite TCP'.
+    by exists (drop (index s (drop 1 (belast x st))).+1 (drop 1 (belast x st))).
+  Qed.
 
   Lemma allL_asym: forall st x s y,
-      s \in st -> (x :: rcons st y) [L\in] R -> ~ R.+ (y, last x st) 
-           -> (Asym R.+) (s, y).
+      s \in st -> ~(s = x) -> allL R st x y -> ~ R.+ (y, last x st) 
+      -> (Asym R.+) (s, y).
   Proof.
-    elim => [x y z ? ? // | t st Hr x y z ].
-    rewrite in_cons  allL_c => /orP [/eqP -> | H1] /andP [H2 H3] /= H4.
-    + case H5: ((last t st) \in st).
-      ++ move: (Hr t (last t st) z H5 H3 H4) => [H6 H7].
-         have H8: R.+ (t,z) by rewrite TCP';(exists st).
-         have H9: R.+ (t, (last t st))
-           by move: (allL_take H5 H3);rewrite TCP';
-           exists (take (index (last t st) st) st).
-         split. by [].
-         move => H10.
-         have H11: R.+ (z,  last t st) by apply: (t_trans H10 H9). 
-         exact.
-      ++ move: H4 (last0 H5) => + H6. rewrite H6 /=.
-         have: R.+ (t,z) by rewrite TCP';(exists st).
-         exact.
-    + by apply: (Hr t y z).
+    move => st x s y H1 H2 H4 H5.
+    split; first by pose proof (allL_drop H1 H4) as H6;
+      rewrite TCP';exists (drop (index s st).+1 st).
+    case H3: (s == (last x st)); first by move: H3 => /eqP ->.
+    have H6: ~ ( s = (last x st)). by move => H7; rewrite -H7 eq_refl in H3.
+    pose proof (allL_belast H1 H2 H6 H4) as H7.
+    by move => H8;have H9: R.+ (y, last x st) by apply: (t_trans H8 H7).
   Qed.
-
-  Lemma allL_asym': forall st x y,
-      (x :: rcons st y) [L\in] R -> ~ R.+ (y, last x st) 
-      -> (Asym R.+) (x, y).
-  Proof.
-    move => st x y H1 H2.
-    case H3: ((last x st) \in st).
-    + move: (allL_asym H3 H1 H2) => H4.
-      split. by rewrite TCP';(exists st).
-      move => H5.
-  Admitted.
-  
   
   Lemma drop_cons': forall (st: seq T) (x:T),
       x \in st -> x::(drop (index x st).+1 st) = (drop (index x st) st).
