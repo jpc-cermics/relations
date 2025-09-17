@@ -667,10 +667,17 @@ Section allset_Lifted.
     by move => st x y;rewrite Lift_in_rev rev_cons rev_rcons. 
   Qed.
   
-  Lemma allL_All: forall (st: seq T) (x y: T),
-      allL E st x y -> (x::st) [\in] (E.+)#_(y).
+  Lemma allL_All (R: relation T) : forall (st: seq T) (x y: T),
+      allL R st x y -> (x::st) [\in] (R.+)#_(y).
   Proof.
     by move => st x y;rewrite /allL -rcons_cons; apply: Lift_in_F.
+  Qed.
+
+  Lemma allL_AllA: forall (st: seq T) (x y: T),
+      allL E st x y -> (rcons st y) [\in] (x)_:#(E.+).
+  Proof.
+    move => st x y;rewrite allL_rev => /allL_All.
+    by rewrite /Aset inverse_clos_t -all_rev rev_cons revK.
   Qed.
   
 End allset_Lifted.
