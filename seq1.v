@@ -540,12 +540,22 @@ Section Lift_in.
     elim => [ // | x st Hr y].
     rewrite rcons_cons. 
     elim: st Hr.
-    - by move => _;rewrite /= => /andP [/inP H1 _];rewrite andbT inP;apply Fset_t1 in H1.
+    - by move => _;rewrite /= => /andP [/inP H1 _];
+                               rewrite andbT inP;apply Fset_t1 in H1.
     - move => z st Hr' H1. 
       rewrite Lift_crc 2!allset_cons => [[H2 /H1 H3]].
       split; last by [].
       move: H3; rewrite allset_cons => [[H3 /inP H4]].
       by apply Fset_t2;exists z.
+  Qed.
+  
+  Lemma Lift_in_FF: forall (st: seq T) (x y: T),
+      (rcons st y) [L\in] R -> y \in R.+#_(x) -> st [\in] R.+#_(x).
+  Proof.
+    move => st x y H1 H2.
+    pose proof Lift_in_F H1 as H3.
+    have H4:  R.+#_(y) `<=` R.+#_(x) by apply Fset_t5. 
+    by apply allset_subset with R.+#_(y). 
   Qed.
   
   Lemma Lift_in_rev: forall (st: seq T),
@@ -560,6 +570,17 @@ Section Lift_in.
     move => st x. 
     rewrite Lift_in_rev rev_cons => /Lift_in_F H1.
     by rewrite allset_rev /Aset inverse_clos_t.
+  Qed.
+  
+  Lemma Lift_in_AA: forall (st: seq T) (x y: T),
+      (y::st) [L\in] R -> y \in (x)_:#R.+ -> st [\in] (x)_:#R.+.
+  Proof.
+    move => st x y H1 H2.
+    pose proof Lift_in_A H1 as H3.
+    have H4: (y)_:#R.+ `<=` (x)_:#R.+. 
+    rewrite /Aset inverse_clos_t. apply: Fset_t5.
+    by rewrite inP -inverse_clos_t -inP.
+    by apply allset_subset with (y)_:#R.+.
   Qed.
   
   Lemma Lift_inI: forall (st: seq T),
@@ -679,7 +700,21 @@ Section allset_Lifted.
     move => st x y;rewrite allL_rev => /allL_All.
     by rewrite /Aset inverse_clos_t -all_rev rev_cons revK.
   Qed.
-  
+
+  Lemma allL_Lift_in_rc: forall (st: seq T) (x y: T),
+      allL E st x y -> (rcons st y) [L\in] E.
+  Proof.
+    elim => [x y // | x' st _ x y].
+    by rewrite allL_c rcons_cons => /andP [_ ?].
+  Qed.
+
+  Lemma allL_Lift_in_c: forall (st: seq T) (x y: T),
+      allL E st x y -> (x:: st) [L\in] E.
+  Proof.
+    elim/last_ind => [x y // | st x' Hr x y].
+    by rewrite allL_rc => /andP [_ H1].
+  Qed.
+
 End allset_Lifted.
 
 Section seq_subsets.

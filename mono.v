@@ -1190,73 +1190,57 @@ Section Seq1_plus.
   Proof.
     move => st1 x. 
     have H1: forall st, (x \in st) -> (x \in (rev st)).
-    move => st.
-    elim: st x =>  [ x // | z st' H1 x ].
-    rewrite in_cons rev_cons -cats1 mem_cat.
-    move => /orP [ /eqP H2 | H2].
+    move => st;elim: st x =>  [ x // | z st' H1 x ].
+    rewrite in_cons rev_cons -cats1 mem_cat => /orP [ /eqP H2 | H2].
     by rewrite -H2 mem_seq1;have /eqP -> : x = x by [];rewrite orbT.
     by apply H1 in H2;rewrite H2 orbC orbT.
-    (* main *)
+    (* end H1 *)
     by split;[ apply H1 | move => /H1 H2; rewrite revK in H2].
   Qed.
   
   Lemma head_in: forall (st:seq T) (x y:T), size(st) > 0 -> head x (rcons st y) \in st.
   Proof.
-    elim => [x y // | z st Hr x y _ /=].
-    by rewrite in_cons eq_refl orbC orbT.
+    by elim => [x y //| z st Hr x y _ /=];rewrite in_cons eq_refl orbC orbT.
   Qed.
   
-  Lemma in_rcons: forall (st:seq T) (x y:T), (x \in rcons st y) = (x \in st) || (x == y).
+  Lemma in_rcons: forall (st:seq T) (x y:T), 
+      (x \in rcons st y) = (x \in st) || (x == y).
   Proof.
     elim => [x y /= | z st Hr x y]; first by rewrite mem_seq1.
     by rewrite rcons_cons 2!in_cons Hr /= orbA.
   Qed.
- 
-  Lemma Lift_in_FF: forall (st: seq T) (x y: T),
-      (rcons st y) [L\in] R -> y \in R.+#_(x) -> st [\in] R.+#_(x).
-  Proof.
-    move => st x y H1 H2.
-    pose proof Lift_in_F H1 as H3.
-    have H4:  R.+#_(y) `<=` R.+#_(x) by apply Fset_t5. 
-    by apply allset_subset with R.+#_(y). 
-  Qed.
   
-  Lemma Lift_in_AA: forall (st: seq T) (x y: T),
-      (y::st) [L\in] R -> y \in (x)_:#R.+ -> st [\in] (x)_:#R.+.
-  Proof.
-    move => st x y H1 H2.
-    pose proof Lift_in_A H1 as H3.
-    have H4: (y)_:#R.+ `<=` (x)_:#R.+. 
-    rewrite /Aset inverse_clos_t. apply: Fset_t5.
-    by rewrite inP -inverse_clos_t -inP.
-    by apply allset_subset with (y)_:#R.+.
-  Qed.
-
   Lemma Lxx: forall (st: seq T) (y z: T),
       y \in st -> (rcons st z) [L\in] R -> R.+ (y, z).
   Proof.
-    move => st' y z /[dup] /in_non0/seq_c [st [x ->]] H2.
-    move => /(@Lift_in_F T) H4.
-    by move: (allset_in H2 H4);rewrite inP -Fset_t0. 
+    move => st y z H1 H2;move: (Lift_in_F H2) => H3. 
+    by move: (allset_in H1 H3);rewrite inP Fset_t0.
   Qed.
   
-  Lemma Lxx8: forall (st: seq T) (x y: T),
+  Lemma Lxx'': forall (st: seq T) (x y z: T),
+      y \in (x::st) -> (x::(rcons st z)) [L\in] R -> R.+ (y, z).
+  Proof.
+    move => st x y z. rewrite in_cons => /orP [/eqP ->| H1 H2].
+    by rewrite TCP';exists st.
+    by move: (Lxx H1 (allL_Lift_in_rc H2)). 
+  Qed.
+  
+  Lemma Unused_Lxx8: forall (st: seq T) (x y: T),
       y \in st -> (x::st) [L\in] R -> R.+ (x, y).
   Proof.
-    move => st' y z /[dup] /in_non0/seq_c [st [x ->]] H2.
-    move => /(@Lift_in_A T) H4.
-    by move: (allset_in H2 H4); rewrite inP /Aset -Fset_t0. 
+    move => st y z H1 H2;move: (Lift_in_A H2) => H3. 
+    by move: (allset_in H1 H3);rewrite inP /Aset -Fset_t0.
   Qed.
-  
-  Lemma Lxx3: forall (st: seq T) (x y z: T),
+
+  Lemma Unused_Lxx3: forall (st: seq T) (x y z: T),
       (y \in st) -> (rcons (rcons st x) z) [L\in] R -> R.+ (y,x).
   Proof.
     move => st x y z;rewrite Lift_rcrc allset_rcons => [H1 [H2 _]].
-    by pose proof Lxx H1 H2.
+    by pose proof (Lxx H1 H2).
   Qed.
-
-  Lemma Lxx10: forall (st: seq T) (x y:T),
-      y \in rcons st x -> (rcons st x)  [L\in] R -> R (x,y) -> x \in [set y]:#(R.+).
+  
+  Lemma Unused_Lxx10: forall (st: seq T) (x y:T),
+      y \in rcons st x -> (rcons st x)  [L\in] R -> R (x,y) -> x \in (y)_:#(R.+).
   Proof.
     move => st x y.
     rewrite in_rcons => /orP [H1 | /eqP ->] H2 H3.
@@ -1264,7 +1248,7 @@ Section Seq1_plus.
     by rewrite inP /mkset /=;(exists x);split;[apply t_step|].
   Qed.
 
-  Lemma Lxx9: forall (st: seq T) (t x y:T),
+  Lemma Unused_Lxx9: forall (st: seq T) (t x y:T),
       (t \in x :: st) -> (x :: rcons st y) [L\in] R -> 
       t= (last y st) \/  R.+ (t, last y st).
   Proof.
@@ -1282,34 +1266,46 @@ Section Seq1_plus.
         ++ move => [H5 H6].
            have H7: size st' > 0 by rewrite H4.
            have H8: head y (rcons st' u) \in st' by apply head_in. 
-           pose proof Lxx3 H8 H6 as H9.
+           pose proof Unused_Lxx3 H8 H6 as H9.
            rewrite last_rcons. 
            by right;apply t_trans with (head y (rcons st' u));[ apply t_step|].
     - pose proof in_non0 H1 as H2.
       pose proof seq_rc H2 as [st' [u ->]].
       rewrite last_rcons.
       move: H1;rewrite in_rcons => /orP [H1 | /eqP H1].
-      by rewrite Lift_crc allset_cons => [[H3 H4]];pose proof Lxx3 H1 H4;right.
+      by rewrite Lift_crc allset_cons => [[H3 H4]];pose proof Unused_Lxx3 H1 H4;right.
       by move => H3;left.
   Qed.
   
-  Lemma Lyy: forall (st st': seq T) (v0 vn vnp1 t:T),
+  Lemma Unused_Lyy: forall (st st': seq T) (v0 vn vnp1 t:T),
       (t \in v0 :: st) -> (t \in rcons st' vnp1) ->
       (v0 :: rcons st vn) [L\in] R 
       ->  (vn :: rcons st' vnp1) [L\in] R
       -> R.+ (vn, last v0 st).
   Proof.
     move => st st' v0 vn vnp1 t H1 H2 H3 H4. 
-    pose proof Lxx8 H2 H4 as H5. 
+    pose proof Unused_Lxx8 H2 H4 as H5. 
     case H21: (size st).
     + move: H21 => /size0nil H21.
       by move: H1; rewrite H21 mem_seq1 /= => /eqP <-.
     + have H23: size st > 0 by rewrite H21.
       pose proof seq_rc H23 as [st1 [zz H24]].
-      pose proof Lxx9 H1 H3 as [H22 | H22];
+      pose proof Unused_Lxx9 H1 H3 as [H22 | H22];
         rewrite H24 /= last_rcons in H22 *.
       by rewrite last_rcons -H22. 
       by rewrite last_rcons;apply t_trans with t.
+  Qed.
+  
+  Lemma uniq_crc: forall (st: seq T) x y,
+      uniq (x::(rcons st y)) 
+      <-> ~ x \in st /\ ~ y \in st /\ uniq st /\ ~ (x = y).
+  Proof.
+    move => st x y;split => [ | [H1 [H2 [H3 H4]]]].
+    + by rewrite cons_uniq in_rcons rcons_uniq =>
+        /andP [/orP/not_orP [H1 /negP/eqP  H3] /andP [/negP H4 H5]].
+    + rewrite cons_uniq;apply/andP; split. 
+      by rewrite in_rcons;apply/orP/not_orP;split;[| apply/negP/eqP].
+      by rewrite rcons_uniq;apply/andP;split;[apply/negP |].
   Qed.
   
 End Seq1_plus. 
@@ -1334,6 +1330,7 @@ Section allL_uniq.
       ++ by move: H2; rewrite allL_c => /andP [_ H2]. 
   Qed.
  
+  (** XXXX preuve plus courte avec Lxx *)
   Lemma allL_clos_tail: forall (st:seq T) (x y z:T),
       z \in (x::st) -> allL R st x y -> R.+ (z,y).
   Proof.
@@ -1943,7 +1940,9 @@ Section Hn4.
     rewrite cat_uniq H5 H7 andbT andTb.
     (* XXXX apply negbT. pose proof (contra_notF False).*) 
     have: has (in_mem^~ (mem (x :: stl1))) (y :: rcons str1 z) -> False.
-    move => /hasP.
+    move => /hasP [x1 H8 H9].
+    
+
   Admitted.
     
   Lemma uniq_util3: forall x stl1 yl stlr yr str1 z,
