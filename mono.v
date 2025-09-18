@@ -1446,8 +1446,6 @@ Section allL_uniq.
       -> uniq (stl1 ++ str1).
   Proof.
     move => x stl1 y str1 z H1 H2 H3 H4 H5 H6.
-    have H7: uniq (x :: stl1)
-      by move: H2; rewrite -rcons_cons rcons_uniq => /andP [_ ?].
     move: H2 => /uniq_crc [[K1 [K2 K3]] K4].
     move: H5 => /uniq_crc [[J1 [J2 J3]] J4].
     
@@ -1457,12 +1455,11 @@ Section allL_uniq.
     pose proof allL_asym'' H10 H11 H1 H3 H9 H4 as H12. 
     by pose proof Asym_irreflexive H12.
 
-    rewrite cat_uniq K3 J3 andbT andTb.
-    apply: negbT.
+    rewrite cat_uniq K3 J3 andbT andTb; apply: negbT.
     
     have: has (in_mem^~ (mem stl1)) str1 -> False
       by move => /hasP [s H9 H10];apply: (H8 s). 
-
+    
     by apply: contra_notF.
   Qed.
   
@@ -1471,20 +1468,61 @@ Section allL_uniq.
   (** s \in y :: rcons str1 z /\ s \in x :: stl1 -> False. *)
   
   Lemma uniq_asym3: forall x stl1 y str1 z,
+      ~ (x = z) -> (Asym R.+) (x,y) -> (Asym R.+) (y,z) ->
       (x :: rcons stl1 y) [L\in] R ->
       uniq (x :: rcons stl1 y) -> ~ R.+ (y, last x stl1)
       -> (y :: rcons str1 z) [L\in] R
       -> uniq (y :: rcons str1 z) -> ~ R.+ (head z str1, y)
       -> (forall s, s \in y :: rcons str1 z /\ s \in x :: stl1 -> False).
   Proof.
-    move => x stl1 y str1 z H1 H2 H3 H4 H5 H6.
+    move => x stl1 y str1 z H0 H0' H0'' H1 H2 H3 H4 H5 H6.
     move => s [J1 J2].
     move: J2; rewrite in_cons => /orP [/eqP J2 | J2].
-    move: J1; rewrite in_cons => /orP [/eqP J1 | J1].
-    + by move: H2 => /uniq_crc [_ H2]; rewrite -J1 -J2 in H2.
-  Admitted.
+    + move: J1; rewrite in_cons => /orP [/eqP J1 | J1].
+      ++ by move: H2 => /uniq_crc [_ H2]; rewrite -J1 -J2 in H2.
+      ++ move: J1; rewrite in_rcons => /orP [ J1 | /eqP J1].
+         +++ have H7: ~ ( s = z) by rewrite J2.
+             pose proof allL_asym_r J1 H7 H4 H6 as H8.
+             by move: H8 H0';rewrite J2 => -[_ H8 ] [H9 _].
+         +++ have H8: transitive (Asym R.+) 
+               by apply: Asym_preserve_transitivity;apply: t_trans.
+             have H7: (Asym R.+) (x,z). 
+             rewrite /transitive in H8. apply: H8. apply: H0'. apply: H0''.
+             by move: H7;rewrite -J2 -J1 => -[ H7 H9].
+    + move: J1; rewrite in_cons => /orP [/eqP J1 | J1].
+      ++ by move: H2 => /uniq_crc -[[_ [H2 _]] _]; rewrite J1 in J2.
+      ++ move: J1; rewrite in_rcons => /orP [ J1 | /eqP J1].  
+         +++ move: H2 => /uniq_crc [[H7 _] _]. 
+             have H8: ~ (s = x) by move => H9; rewrite H9 in J2.
+             pose proof (allL_asym'' J2 H8 H1 H3 J1 H4) as H9.
+             by move: H9 => [H9 H10].
+         +++ have H7: s \in (x::stl1). by rewrite in_cons J2 orbT. 
+             move: (Lxx'' H7 H1); rewrite J1 => H8.
+             by move: H0'' => [H0'' H9].
+  Qed.
 
 
+  Lemma uniq_asym4: forall x stl1 y str1 z,
+      ~ (x = z) -> (Asym R.+) (x,y) -> (Asym R.+) (y,z) ->
+      (x :: rcons stl1 y) [L\in] R ->
+      uniq (x :: rcons stl1 y) -> ~ R.+ (y, last x stl1)
+      -> (y :: rcons str1 z) [L\in] R
+      -> uniq (y :: rcons str1 z) -> ~ R.+ (head z str1, y)
+      -> uniq ((x :: stl1) ++ (y :: rcons str1 z)).
+  Proof.
+    move => x stl1 y str1 z H0 H0' H0'' H1 H2 H3 H4 H5 H6.
+    pose proof uniq_asym3 H0 H0' H0'' H1 H2 H3 H4 H5 H6 as R1.
+    pose proof uniq_asym2 H1 H2 H3 H4 H5 H6 as R2.
+    have H7: uniq (x :: stl1)
+      by move: H2; rewrite -rcons_cons rcons_uniq => /andP [_ ?].
+    
+    rewrite cat_uniq H7 H5 andbT andTb; apply: negbT.
+    
+    have: has (in_mem^~ (mem (x :: stl1))) (y :: rcons str1 z) -> False
+      by move => /hasP [s H9 H10];apply: R1;split;[apply H9|apply H10].
+    by apply: contra_notF.
+  Qed.
+  
   Lemma drop_cons': forall (st: seq T) (x:T),
       x \in st -> x::(drop (index x st).+1 st) = (drop (index x st) st).
   Proof.
@@ -2025,7 +2063,6 @@ Section Hn4.
   Qed.
 
 End Hn4.
-
 
 Section Unused_Seq1_plus. 
   (** * Unused *) 
