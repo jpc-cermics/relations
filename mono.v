@@ -1158,6 +1158,8 @@ Section Seq1_plus.
 
   Variables (T:eqType) (R: relation T).
   
+  Definition uniq_path (st: seq T) x y := (~ x \in st /\ ~ y \in st /\ uniq st).
+
   (** * utilities for uniq *)
   Lemma uniq_subseq: forall (st st': seq T) (x:T),
       uniq (x :: st) -> subseq st' st -> uniq (x:: st').
@@ -1225,6 +1227,21 @@ Section Seq1_plus.
     by move: (Lxx H1 (allL_Lift_in_rc H2)). 
   Qed.
   
+  Lemma Lxx_head: forall (st: seq T) (x y: T),
+      y \in st -> (x::st) [L\in] R -> R.+ (x, y).
+  Proof.
+    move => st y z H1 H2;move: (Lift_in_A H2) => H3. 
+    by move: (allset_in H1 H3);rewrite inP /Aset -Fset_t0.
+  Qed.
+  
+  Lemma Lxx_head': forall (st: seq T) (x y z: T),
+      y \in (rcons st z) -> (x::(rcons st z)) [L\in] R -> R.+ (x, y).
+  Proof.
+    move => st x y z. rewrite in_rcons => /orP [ H1 H2 | /eqP <-].
+    by move: (Lxx_head H1 (allL_Lift_in_c H2)).     
+    by rewrite TCP';exists st.
+  Qed.
+    
   Lemma Unused_Lxx8: forall (st: seq T) (x y: T),
       y \in st -> (x::st) [L\in] R -> R.+ (x, y).
   Proof.
@@ -1297,10 +1314,9 @@ Section Seq1_plus.
   Qed.
   
   Lemma uniq_crc: forall (st: seq T) x y,
-      uniq (x::(rcons st y)) 
-      <-> ~ x \in st /\ ~ y \in st /\ uniq st /\ ~ (x = y).
+      uniq (x::(rcons st y)) <-> uniq_path st x y /\ ~ (x = y).
   Proof.
-    move => st x y;split => [ | [H1 [H2 [H3 H4]]]].
+    move => st x y;split => [ | [[H1 [H2 H3]] H4]].
     + by rewrite cons_uniq in_rcons rcons_uniq =>
         /andP [/orP/not_orP [H1 /negP/eqP  H3] /andP [/negP H4 H5]].
     + rewrite cons_uniq;apply/andP; split. 
@@ -1314,6 +1330,22 @@ Section allL_uniq.
   (** * The aim of this section is to prove allL_uniq *)
 
   Variables (T:eqType) (R: relation T).
+
+  Reserved Notation "s [L!\in] R" (at level 4, no associativity).
+  Notation "s [L!\in] R" := (uniq(s) /\ s [L\in] R).
+
+  Notation "R .!p+" := [set z | (z.2.1::(rcons z.1 z.2.2)) [L!\in] R]
+                         (at level 2, left associativity, format "R .!p+").
+
+  Notation "R .!+" := [set xy | exists st, R.!p+ (st, xy)]
+                        (at level 2, left associativity, format "R .!+").
+  
+  Notation "R .up+" :=
+    [set z | uniq_path z.1 z.2.1 z.2.2 /\ allL R z.1 z.2.1 z.2.2]
+      (at level 2, left associativity, format "R .up+").
+
+  Notation "R .u+" := [set xy: (T*T)| exists (st: seq T), R.up+ (st, xy)]
+                        (at level 2, left associativity, format "R .u+").
   
   Lemma allL_drop: forall (st:seq T) (x y z:T),
       z \in st -> allL R st x y -> allL R (drop ((index z st).+1) st) z y.
@@ -1330,14 +1362,11 @@ Section allL_uniq.
       ++ by move: H2; rewrite allL_c => /andP [_ H2]. 
   Qed.
  
-  (** XXXX preuve plus courte avec Lxx *)
-  Lemma allL_clos_tail: forall (st:seq T) (x y z:T),
+  (** C'est plus court avec Lxx'' *)
+  Lemma Unused_allL_clos_tail: forall (st:seq T) (x y z:T),
       z \in (x::st) -> allL R st x y -> R.+ (z,y).
   Proof.
-    move => st x y z. 
-    rewrite in_cons => /orP [/eqP ->|H1] H2;first by rewrite TCP';exists st.
-    move: (allL_drop H1 H2) => H3.
-    by rewrite TCP';exists (drop (index z st).+1 st).
+    move => st x y z. apply: Lxx''.
   Qed.
   
   Lemma allL_take: forall (st:seq T) (x y z:T),
@@ -1356,13 +1385,11 @@ Section allL_uniq.
       by move: (Hr t y z H4 H2').
   Qed.
 
-  Lemma allL_clos_head: forall (st:seq T) (x y z:T),
+  (** C'est plus court avec Lxx_head' *)
+  Lemma Unused_allL_clos_head: forall (st:seq T) (x y z:T),
       z \in (rcons st y) -> allL R st x y -> R.+ (x,z).
   Proof.
-    move => st x y z. 
-    rewrite in_rcons => /orP [H1 | /eqP ->] H2;last by rewrite TCP';exists st.
-    move: (allL_take H1 H2) => H3.
-    by rewrite TCP';exists (take (index z st) st).
+    move => st x y z. apply: Lxx_head'.
   Qed.
   
   Lemma last0: forall(st:seq T) t,
@@ -1376,45 +1403,6 @@ Section allL_uniq.
       by rewrite H3 in H1.
     + by move => -> /=.
   Qed.
-
-  
-  Lemma drop_last : forall (st: seq T)  x, 
-      ~(st = [::]) -> drop (index (last x st) st) st = [:: last x st].
-  Proof.
-  Admitted.
-  (* 
-    elim => [x H1 //| x' st Hr x _ // H1]. 
-    rewrite last_cons.
-    have H2: (index (last x' st) (x' :: st)) = size(st)
-      by apply: index_last;move: H1;rewrite cons_uniq => /andP [_ H1].
-    rewrite H2.
-    case H3: (size st == 0). 
-    - by move : H3 => /eqP/size0nil -> /=.
-      move: H3 => /neq0_lt0n H3.
-      pose proof (ltn_predK H3) as H4. 
-      rewrite -H4. 
-      rewrite drop_cons. 
-
-    have H2: subseq (x'::st) [:: x, x' & st] by apply: subseq_cons.
-    have H3: uniq (x'::st). apply: (uniq_subseq H1 H2).
-    pose proof index_last  H1.
-    case H2: (st == [::]).
-    + by move: H2 => /eqP ->;rewrite /= eq_refl drop0. 
-    + have H3:  st <> [::]. by move => H3;rewrite H3 eq_refl in H2.
-      move: (Hr x' H3) => H4.
-      rewrite last_cons. 
-      rewrite index_cons drop_cons. 
-      
-      elim => [x // | x' st Hr x _ // ]. 
-    rewrite last_cons. 
-    case H1: ((last x' st) \in st); last first. 
-    + move: H1 => /[dup] /last0 H2 /eqP H1.
-      by rewrite H2 /= eq_refl drop0. 
-    + case H2: (st == [::]).
-      move: H2 => /eqP ->. by rewrite /= eq_refl drop0. 
-      have H3:  st <> [::]. by move => H3;rewrite H3 eq_refl in H2.
-      move: (Hr x H3).
-   *)
 
   Lemma allL_last: forall (st:seq T) (x y:T),
       allL R st x y ->  (rcons (belast x st) (last x st)) [L\in] R.
@@ -1618,44 +1606,47 @@ Section allL_uniq.
   Qed.
 
   Lemma TCP_uniq: forall (x y:T), 
-      R.+ (x,y)
-      <-> exists st, ~( x \in st) /\ ~(y \in st) /\ @uniq T st /\ allL R st x y. 
+      R.+ (x,y) <-> exists st, uniq_path st x y /\ allL R st x y. 
   Proof.
     move => x y;split. 
     - rewrite TCP' /mkset => [[st H1]].
       apply allL_uniq in H1.
       by move: H1 => [st' [H1 [H2 [H3 [H4 /= H5]]]]];(exists st').
-    - by move => [st [_ [_ [_ H1]]]];rewrite TCP' /mkset; exists st.
+    - by move => [st [_ H1]];rewrite TCP' /mkset; exists st.
   Qed.
-
+  
+  Lemma TCP_uniq1: R.+ = R.u+.
+  Proof. by rewrite predeqE => -[x y]; apply:TCP_uniq. Qed.
+  
   Lemma TCP_uniq'': forall (x y:T), 
-      R.+ (x,y) ->  ~ (x = y) 
-      ->  exists st, uniq (x::(rcons st y)) /\ (x::(rcons st y)) [L\in] R.
+      R.+ (x,y) /\ ~ (x = y) 
+      <-> exists st, uniq (x::(rcons st y)) /\ (x::(rcons st y)) [L\in] R.
   Proof.
-    move => x y H1 H7. 
-    move: (H1) => /TCP_uniq [st [H3 [H4 [H5 H6]]]].
-    have H8: uniq (rcons st y)
-      by move: H4 => /negP H4;rewrite rcons_uniq H4 H5. 
-    have H9: x \in (rcons st y) -> False
-        by rewrite -[rcons st y]cats0 cat_rcons mem_cat mem_seq1
-         => /orP [ H9 | /eqP H9].
-    have H10: uniq (x :: rcons st y) by rewrite /uniq -/uniq;
-      move: H9 => /negP H9;rewrite H8 andbT.
-    
-    by exists st.
+    move => x y.
+    split => [[H1 H7] |].
+    + move: (H1) => /TCP_uniq [st [[H3 [H4 H5]] H6]].
+      by (exists st);rewrite uniq_crc.
+    + move => [st [/uniq_crc [_ H1] H2]].
+      by rewrite TCP'; split;[exists st |].
   Qed.
 
+  Lemma TCP_uniq1'': R.+ `&` 'Δ.^c = R.!+ .
+  Proof.
+    rewrite predeqE => -[x y]. 
+    have: (R.+ `&` 'Δ.^c) (x, y) <-> R.+ (x,y) /\ ~ (x = y).
+    split => [[H1 /Delta_Id H2] // | [H1 H2]].
+    split. by[]. by move => /Delta_Id H3.
+  Admitted.
+  
   Lemma TCP_uniq': forall (x y:T), 
-      R.+ (x,y) 
-      -> ~ ( R.+ (y,x))
+      (Asym R.+)(x,y) 
       -> exists st, uniq (x::(rcons st y)) /\ (x::(rcons st y)) [L\in] R.
   Proof.
-    move => x y H1 H2. 
-    move: (H1) => /TCP_uniq [st [H3 [H4 [H5 H6]]]].
-    have H7: ~ (x = y) by move => H7;rewrite H7 in H1 H2.
-    by move: (TCP_uniq'' H1 H7).
+    move => x y /[dup] H0 [H1 H2]. 
+    have H3: ~ (x = y) by move => H7;rewrite H7 in H1 H2.
+    by rewrite -TCP_uniq''.
   Qed.
-
+  
 End allL_uniq.
 
 Section Hn1.
@@ -1704,7 +1695,7 @@ Section Hn2.
   
   Lemma Au1: forall (xy:T*T), (Asym R.+) xy -> exists z, R' (xy,z).
   Proof. 
-    by move => [x y] [H1 H2];move: (TCP_uniq' H1 H2) => [st H3];exists st. Qed.
+    by move => [x y] H1;move: (TCP_uniq' H1) => [st H3];exists st. Qed.
   
   Lemma choose_Rseq: exists (g: T*T -> seq T), forall xy, (Asym R.+) xy -> R' (xy,g(xy)).
   Proof. by move: (Au1_G Au0 Au1) => [g H1]; exists g. Qed.
@@ -1898,8 +1889,8 @@ Section Hn4.
            by left; move: H16 => /eqP H16.
          by [].
       ++ move: H16 => /eqP H16.
-         move: (TCP_uniq'' H15 H16) => [strl H17].
-         exists strl.
+         have: R.+ (yl, yr) /\  yl <> yr by exact.
+         rewrite TCP_uniq'' => -[strl H17];exists strl.
          have H18: (yl = yr \/ uniq (yl :: rcons strl yr) /\ (yl :: rcons strl yr) [L\in] R) by right.
          by [].
   Qed.
@@ -1998,8 +1989,8 @@ Section Hn4.
           /\ (y'::(rcons str z)) [L\in] R /\ uniq (y'::(rcons str z))
           /\ uniq (x :: stl ++ y' :: rcons str z). 
   Proof.
-    move => x y z [H1 H2] [H3 H4].
-    move: (TCP_uniq' H1 H2) (TCP_uniq' H3 H4) => [stl [H5 H6]] [str [H7 H8]].
+    move => x y z /[dup] H0 [H1 H2] /[dup] H0' [H3 H4].
+    move: (TCP_uniq' H0) (TCP_uniq' H0') => [stl [H5 H6]] [str [H7 H8]].
     move: (RedBackLR2 H6 H5 H2 H8 H7 H4) 
         => [stl' [str' [y' [H9 [H10 [H11 [H12 [H13 [H14 H15]]]]]]]]].
     exists stl'; exists str'; exists y'.
@@ -2018,14 +2009,14 @@ Section Unused.
   Definition R0 := (Sym R).+.
 
   Definition R0' := [set xy | exists st, 
-                      ~ xy.1 \in st /\ ~ xy.2 \in st /\ uniq st
-                                       /\ (xy.1::(rcons st xy.2)) [L\in] R
-                                       /\ (xy.1::(rcons st xy.2)) [L\in] R.-1 ].
+                      uniq_path st xy.1 xy.2 
+                      /\ (xy.1::(rcons st xy.2)) [L\in] R
+                      /\ (xy.1::(rcons st xy.2)) [L\in] R.-1 ].
   
   Lemma R0E: R0 = R0'.
   Proof. 
     rewrite predeqE => -[x y]; split.
-    by move => /TCP_uniq [st [H0 [H1 [H2 /Lift_inI [H3 H4]]]]];exists st. 
+    by move => /TCP_uniq [st [[H0 [H1 H2]] /Lift_inI [H3 H4]]];exists st. 
     by move => -[st H0];rewrite /R0 TCP_uniq;exists st;rewrite -Lift_inI.
   Qed.
   
@@ -2054,8 +2045,8 @@ Section Unused.
         /\ (yl = y' \/ (allL R stl yl y'))
         /\ (yr = y' \/ (allL R str y' yr)).
    Proof.
-     move => yl y yr /TCP_uniq [stl [H1 [H2 [H3 H4]]]]
-              /TCP_uniq [str [H6 [H7 [H8 H9]]]].
+     move => yl y yr /TCP_uniq [stl [[H1 [H2 H3] H4]]]
+              /TCP_uniq [str [[H6 [H7 H8]] H9]].
      move: stl y yl H1 H2 H3 H4 H6 H9.
      elim. 
      + move => y yl H1 H2 H3 H4 H6 H9.
@@ -2101,8 +2092,8 @@ Section Unused.
         /\ (yl = y' \/ allL R stl yl y') 
         /\ (yr = y' \/ allL R str y' yr).
   Proof.
-    move => yl y yr [[ H1 | /[dup] H0 /TCP_uniq [stl [H1 [H2 [H3 H4]]]]]  
-                      [H5 | /[dup] H0' /TCP_uniq [str [H6 [H7 [H8 H9]]]]]].
+    move => yl y yr [[ H1 | /[dup] H0 /TCP_uniq [stl [[H1 [H2 H3]] H4]]]
+                      [H5 | /[dup] H0' /TCP_uniq [str [[H6 [H7 H8]] H9]]]].
     + exists [::]; exists [::]; exists y. rewrite -H1 -H5. 
       by have H6: (y = y \/ allL R [::] y y) by left.
     + exists [::];exists str;exists y.
@@ -2129,8 +2120,8 @@ Section Unused.
   
   Lemma RedBackF: forall (x y:T), Asym R.+ (x,y) -> exists z, R4 ((x,y),z).
   Proof.
-    move => x y [H1 /= H2].
-    pose proof TCP_uniq' H1 H2 as [st [H3 H4]]. 
+    move => x y /[dup] H0 [H1 /= H2].
+    pose proof TCP_uniq' H0 as [st [H3 H4]]. 
     pose proof RedBackL H4 H3 H2 as [st' [y' [H6 [H7 [H8 [H9 [H10 [H11 H12]]]]]]]].
     by exists y';split;[ | split;[exists st' |]].
   Qed.
