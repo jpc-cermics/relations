@@ -305,7 +305,7 @@ Section Delta_facts.
     rewrite /DeltaE /mkset /=.
     by move => x y; split;first by move => [H1 ->].
   Qed.
-
+  
   Lemma DeltaEP : forall (x y:T), Δ_(X) (x,y) <-> X x /\ x = y.
   Proof.
     by move=> x y;rewrite /DeltaE /mkset /=.
