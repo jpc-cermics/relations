@@ -1716,18 +1716,19 @@ Section Hn4.
     by move: H10 => /AsymIncr H10.
   Qed.
  
-  Lemma uniq_asym2: forall x stl1 y str1 z,
-      (x :: rcons stl1 y) [L\in] R ->
-      uniq (x :: rcons stl1 y) -> ~ R.+ (y, last x stl1)
-      -> (y :: rcons str1 z) [L\in] R
-      -> uniq (y :: rcons str1 z) -> ~ R.+ (head z str1, y)
-      -> uniq (stl1 ++ str1).
+  Definition allLu (R: relation T) st x y :=
+    (x::(rcons st y)) [L\in] R /\ uniq (x :: rcons st y).
+  
+  Lemma uniq_asym2: forall x stl y str z,
+      allLu R stl x y -> ~ R.+ (y, last x stl)
+      -> allLu R str y z -> ~ R.+ (head z str, y)
+      -> uniq (stl ++ str).
   Proof.
-    move => x stl1 y str1 z H1 H2 H3 H4 H5 H6.
+    move => x stl y str z [H1 H2] H3 [H4 H5] H6.
     move: H2 => /uniq_crc [[K1 [K2 K3]] K4].
     move: H5 => /uniq_crc [[J1 [J2 J3]] J4].
     
-    have H8: forall s, s \in str1 -> s \in stl1 -> False. 
+    have H8: forall s, s \in str -> s \in stl -> False. 
     move => s H9 H10.
     have H11: ~(s = x) by move => H12; rewrite H12 in H10.
     pose proof allL_asym'' H10 H11 H1 H3 H9 H4 as H12. 
@@ -1735,25 +1736,19 @@ Section Hn4.
 
     rewrite cat_uniq K3 J3 andbT andTb; apply: negbT.
     
-    have: has (in_mem^~ (mem stl1)) str1 -> False
+    have: has (in_mem^~ (mem stl)) str -> False
       by move => /hasP [s H9 H10];apply: (H8 s). 
     
     by apply: contra_notF.
   Qed.
   
-  (** uniq (x :: stl1) *)
-  (** uniq (y :: rcons str1 z) *)
-  (** s \in y :: rcons str1 z /\ s \in x :: stl1 -> False. *)
-  
-  Lemma uniq_asym3: forall x stl1 y str1 z,
-      ~ (x = z) -> (Asym R.+) (x,y) -> (Asym R.+) (y,z) ->
-      (x :: rcons stl1 y) [L\in] R ->
-      uniq (x :: rcons stl1 y) -> ~ R.+ (y, last x stl1)
-      -> (y :: rcons str1 z) [L\in] R
-      -> uniq (y :: rcons str1 z) -> ~ R.+ (head z str1, y)
-      -> (forall s, s \in y :: rcons str1 z /\ s \in x :: stl1 -> False).
+  Lemma uniq_asym3: forall x stl y str z,
+      ~ (x = z) -> (Asym R.+) (x,y) -> (Asym R.+) (y,z)
+      -> allLu R stl x y -> ~ R.+ (y, last x stl)
+      -> allLu R str y z -> ~ R.+ (head z str, y)
+      -> (forall s, s \in y :: rcons str z /\ s \in x :: stl -> False).
   Proof.
-    move => x stl1 y str1 z H0 H0' H0'' H1 H2 H3 H4 H5 H6.
+    move => x stl y str z H0 H0' H0'' [H1 H2] H3 [H4 H5] H6.
     move => s [J1 J2].
     move: J2; rewrite in_cons => /orP [/eqP J2 | J2].
     + move: J1; rewrite in_cons => /orP [/eqP J1 | J1].
@@ -1774,29 +1769,28 @@ Section Hn4.
              have H8: ~ (s = x) by move => H9; rewrite H9 in J2.
              pose proof (allL_asym'' J2 H8 H1 H3 J1 H4) as H9.
              by move: H9 => [H9 H10].
-         +++ have H7: s \in (x::stl1). by rewrite in_cons J2 orbT. 
+         +++ have H7: s \in (x::stl). by rewrite in_cons J2 orbT. 
              move: (Lxx'' H7 H1); rewrite J1 => H8.
              by move: H0'' => [H0'' H9].
   Qed.
 
   (** * C'est util0 mais avec le bon paquet d'hypothèses *)
-  Lemma uniq_asym4: forall x stl1 y str1 z,
-      ~ (x = z) -> (Asym R.+) (x,y) -> (Asym R.+) (y,z) ->
-      (x :: rcons stl1 y) [L\in] R ->
-      uniq (x :: rcons stl1 y) -> ~ R.+ (y, last x stl1)
-      -> (y :: rcons str1 z) [L\in] R
-      -> uniq (y :: rcons str1 z) -> ~ R.+ (head z str1, y)
-      -> uniq ((x :: stl1) ++ (y :: rcons str1 z)).
+  Lemma uniq_asym4: forall x stl y str z,
+      ~ (x = z) -> (Asym R.+) (x,y) -> (Asym R.+) (y,z)
+      -> allLu R stl x y -> ~ R.+ (y, last x stl)
+      -> allLu R str y z -> ~ R.+ (head z str, y)
+      -> uniq ((x :: stl) ++ (y :: rcons str z)).
   Proof.
-    move => x stl1 y str1 z H0 H0' H0'' H1 H2 H3 H4 H5 H6.
-    pose proof uniq_asym3 H0 H0' H0'' H1 H2 H3 H4 H5 H6 as R1.
-    pose proof uniq_asym2 H1 H2 H3 H4 H5 H6 as R2.
-    have H7: uniq (x :: stl1)
+    move => x stl y str z H0 H0' H0'' H12 H3 H45 H6.
+    pose proof uniq_asym3 H0 H0' H0'' H12 H3 H45 H6 as R1.
+    pose proof uniq_asym2 H12 H3 H45 H6 as R2.
+    move: H12 H45 => [H1 H2] [H4 H5].
+    have H7: uniq (x :: stl)
       by move: H2; rewrite -rcons_cons rcons_uniq => /andP [_ ?].
     
     rewrite cat_uniq H7 H5 andbT andTb; apply: negbT.
     
-    have: has (in_mem^~ (mem (x :: stl1))) (y :: rcons str1 z) -> False
+    have: has (in_mem^~ (mem (x :: stl))) (y :: rcons str z) -> False
       by move => /hasP [s H9 H10];apply: R1;split;[apply H9|apply H10].
     by apply: contra_notF.
   Qed.
