@@ -1689,7 +1689,7 @@ Section Hn4.
     pose proof (allL_belast H1 H2 H6 H4) as H7.
     by move => H8;have H9: R.+ (y, last x st) by apply: (t_trans H8 H7).
   Qed.
-
+  
   Lemma allL_asym_r: forall st x s y,
       s \in st -> ~(s = y) -> allL R st x y -> ~ R.+ (head y st, x) 
       -> (Asym R.+) (x, s).
