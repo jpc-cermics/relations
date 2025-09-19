@@ -1222,8 +1222,8 @@ Section Seq1_plus.
   Lemma Lxx'': forall (st: seq T) (x y z: T),
       y \in (x::st) -> (x::(rcons st z)) [L\in] R -> R.+ (y, z).
   Proof.
-    move => st x y z. rewrite in_cons => /orP [/eqP ->| H1 H2].
-    by rewrite TCP';exists st.
+    move => st x y z;rewrite in_cons => /orP [/eqP -> H1| H1 H2].
+    by move: (allL_to_clos_t H1).
     by move: (Lxx H1 (allL_Lift_in_rc H2)). 
   Qed.
   
@@ -1239,7 +1239,7 @@ Section Seq1_plus.
   Proof.
     move => st x y z. rewrite in_rcons => /orP [ H1 H2 | /eqP <-].
     by move: (Lxx_head H1 (allL_Lift_in_c H2)).     
-    by rewrite TCP';exists st.
+    by apply:allL_to_clos_t.
   Qed.
 
   Lemma uniq_crc: forall (st: seq T) x y,
@@ -1291,13 +1291,6 @@ Section allL_uniq.
       ++ by move: H2; rewrite allL_c => /andP [_ H2]. 
   Qed.
  
-  (** C'est plus court avec Lxx'' *)
-  Lemma Unused_allL_clos_tail: forall (st:seq T) (x y z:T),
-      z \in (x::st) -> allL R st x y -> R.+ (z,y).
-  Proof.
-    move => st x y z. apply: Lxx''.
-  Qed.
-  
   Lemma allL_take: forall (st:seq T) (x y z:T),
       z \in st -> allL R st x y -> allL R (take (index z st) st) x z.
   Proof.
@@ -1312,13 +1305,6 @@ Section allL_uniq.
       move: H1; rewrite in_cons => /orP [/eqP H4 | H4].
       by move: H3; rewrite H4 => /eqP H3.
       by move: (Hr t y z H4 H2').
-  Qed.
-
-  (** C'est plus court avec Lxx_head' *)
-  Lemma Unused_allL_clos_head: forall (st:seq T) (x y z:T),
-      z \in (rcons st y) -> allL R st x y -> R.+ (x,z).
-  Proof.
-    move => st x y z. apply: Lxx_head'.
   Qed.
   
   Lemma last0: forall(st:seq T) t,
@@ -1369,11 +1355,9 @@ Section allL_uniq.
       by apply: belast_head.
     move: H5; rewrite H8 in_cons => /orP [/eqP H9 // | H9].
     move: H6; rewrite H8 rcons_cons => H6.
-    pose proof (allL_drop H9 H6).
-    rewrite TCP'.
-    by exists (drop (index s (drop 1 (belast x st))).+1 (drop 1 (belast x st))).
+    by pose proof (allL_to_clos_t (allL_drop H9 H6)).
   Qed.
-  
+
   Lemma in_behead: forall (st:seq T) (x z:T),
       z \in st -> ~ (z = (head x st)) -> z \in (behead st).
   Proof.
@@ -1394,9 +1378,7 @@ Section allL_uniq.
     have H7: ~(st = [::]) by move => H8; rewrite H8 in H1.
     have H8: st = (head y st)::(behead st) by apply: behead_head;exact.
     move: H4; rewrite H8 allL_c => /andP [_ H4].
-    pose proof (allL_take H5 H4) as H9.
-    rewrite TCP'.
-    by exists (take (index s (behead st)) (behead st)).
+    by pose proof (allL_to_clos_t (allL_take H5 H4)).
   Qed.
   
   Lemma drop_cons': forall (st: seq T) (x:T),
@@ -1550,15 +1532,14 @@ Section allL_uniq.
       R.+ (x,y) <-> exists st, uniq_path st x y /\ allL R st x y. 
   Proof.
     move => x y;split. 
-    - rewrite TCP' /mkset => [[st H1]].
-      apply allL_uniq in H1.
+    - rewrite TCP' /mkset => -[st /allL_uniq H1].
       by move: H1 => [st' [H1 [H2 [H3 [H4 /= H5]]]]];(exists st').
-    - by move => [st [_ H1]];rewrite TCP' /mkset; exists st.
+    - by move => [st [_ H1]]; move: H1;apply: allL_to_clos_t. 
   Qed.
   
   Lemma TCP_uniq1: R.+ = R.u+.
   Proof. by rewrite predeqE => -[x y]; apply:TCP_uniq. Qed.
-  
+
   Lemma TCP_uniq'': forall (x y:T), 
       R.+ (x,y) /\ ~ (x = y) 
       <-> exists st, uniq (x::(rcons st y)) /\ (x::(rcons st y)) [L\in] R.
@@ -1567,10 +1548,9 @@ Section allL_uniq.
     split => [[H1 H7] |].
     + move: (H1) => /TCP_uniq [st [[H3 [H4 H5]] H6]].
       by (exists st);rewrite uniq_crc.
-    + move => [st [/uniq_crc [_ H1] H2]].
-      by rewrite TCP'; split;[exists st |].
+    + by move => [st [/uniq_crc [_ H1] /(@allL_to_clos_t T)  H2]].
   Qed.
-
+  
   Lemma TCP_uniq1'': R.+ `&` 'Δ.^c = R.!+ .
   Proof.
     rewrite predeqE => -[x y]. 
@@ -1682,8 +1662,7 @@ Section Hn4.
       -> (Asym R.+) (s, y).
   Proof.
     move => st x s y H1 H2 H4 H5.
-    split; first by pose proof (allL_drop H1 H4) as H6;
-      rewrite TCP';exists (drop (index s st).+1 st).
+    split; first by move: (allL_to_clos_t (allL_drop H1 H4)) => H6.
     case H3: (s == (last x st)); first by move: H3 => /eqP ->.
     have H6: ~ ( s = (last x st)). by move => H7; rewrite -H7 eq_refl in H3.
     pose proof (allL_belast H1 H2 H6 H4) as H7.
@@ -1695,8 +1674,7 @@ Section Hn4.
       -> (Asym R.+) (x, s).
   Proof.
     move => st x s y H1 H2 H4 H5.
-    split;first by pose proof (allL_take H1 H4) as H6;
-      rewrite TCP'; exists (take (index s st) st).
+    split;first by move: (allL_to_clos_t (allL_take H1 H4)). 
     case H3: (s == (head y st)); first by move: H3 => /eqP ->.
     have H6: ~ ( s = (head y st)). by move => H7; rewrite -H7 eq_refl in H3.
     pose proof (allL_behead H1 H2 H6 H4) as H7.
@@ -2008,11 +1986,8 @@ Section Hn4.
         by move: (uniq_util2 H7 H10 H15 H11 H14).
       have H18: (yl :: rcons (rcons stlr yr ++ str1) z) [L\in] R
         by move: (uniq_util3 H16 H12).
-      have H19: ~ R.+ (z, yl).
-      move => H20; have H21: R.+ (yl,yr) by rewrite TCP' /mkset;exists stlr.
-      have H22: R.+ (z,yr) by apply: (t_trans H20 H21).
-      by [].
-      (** end H19 *)
+      move: H16 => /(@allL_to_clos_t T) H16. 
+      have H19: ~ R.+ (z, yl) by move => H20;move: (t_trans H20 H16).
       by move: (uniq_util1 H7 H10 H15 H11 H14) => H20.
   Qed.
   
