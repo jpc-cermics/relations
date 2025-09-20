@@ -1098,14 +1098,14 @@ Section PathRel.
    * is the relation E.+ the transitive closure of E 
    *)
 
-  Variables (T: Type) (ptv: T*T) (E: relation T).
+  Variables (T: Type) (ptv: T*T).
   
   (* relation based on paths: take care that the path p depends on (x,y) *)
-  Definition PathRel_n (E: relation T) (n:nat) :=
-    [set x | (exists (p: seq T), size(p)=n /\ allL E p x.1 x.2)].
+  Definition PathRel_n (R: relation T) (n:nat) :=
+    [set x | (exists (p: seq T), size(p)=n /\ allL R p x.1 x.2)].
 
   (* composition and existence of paths coincide *)
-  Lemma Itern_iff_PathReln : forall (n:nat), E^(n.+1) =  PathRel_n E n.
+  Lemma Itern_iff_PathReln  (R: relation T) : forall (n:nat), R^(n.+1) =  PathRel_n R n.
   Proof.
     elim => [ | n' H].
     - rewrite /iter /PathRel_n Delta_idem_l /mkset predeqE => [[x y]].
@@ -1123,7 +1123,7 @@ Section PathRel.
   
   (* R.+ =  PathRel R *)
   (* begin snippet TCP':: no-out *)  
-  Lemma TCP': E.+ = [set vp | exists p, (Lift (vp.1::(rcons p vp.2))) [\in] E].
+  Lemma TCP' (R: relation T) : R.+ = [set vp | exists p, (Lift (vp.1::(rcons p vp.2))) [\in] R].
   (* end snippet TCP' *)  
   Proof.
     rewrite /mkset predeqE => [[x y]].
@@ -1133,13 +1133,13 @@ Section PathRel.
       rewrite  Itern_iff_PathReln /PathRel_n in H1.
       move: H1 => [p [H1 H2]].
       by (exists p).
-    - have H2:  PathRel_n E (size p) (x, y) by (exists p).
+    - have H2:  PathRel_n R (size p) (x, y) by (exists p).
       rewrite -Itern_iff_PathReln in H2.
       by apply iterk_inc_clos_trans in H2.
   Qed.
 
   (* begin snippet TCP:: no-out *) 
-  Lemma TCP: E.+ = [set vp| exists p, size(p) > 1 /\ Pe ptv p = vp /\ p [L\in] E].
+  Lemma TCP (R: relation T) : R.+ = [set vp| exists p, size(p) > 1 /\ Pe ptv p = vp /\ p [L\in] R].
   (* end snippet TCP *)  
   Proof.
     rewrite /mkset /Pe predeqE => [[x y]].
@@ -1152,11 +1152,14 @@ Section PathRel.
       by split;[rewrite /= size_rcons|split;[rewrite /= last_rcons |]].
     - pose proof seq_crc H1 as [q [x' [y' H4]]].
       move: H2; rewrite H4 /= last_rcons => [[<- <-]].
-      have H5:  PathRel_n E (size q) (x', y') by (exists q);rewrite /allL -H4. 
+      have H5:  PathRel_n R (size q) (x', y') by (exists q);rewrite /allL -H4. 
       rewrite -Itern_iff_PathReln in H5.
       by apply iterk_inc_clos_trans in H5.
   Qed.
-
+  
+  Lemma allL_to_clos_t  (R: relation T) : forall (st: seq T) x y, allL R st x y -> R.+ (x,y).
+  Proof. by move => st x y; rewrite TCP'; exists st. Qed.
+  
 End PathRel.
 
 Section pair. 
