@@ -1658,13 +1658,16 @@ Section Hn4.
 
   Lemma last0': forall(st:seq T) t,
       ~ ( st = [::]) -> (last t st) \in st.
-  Proof.
-  Admitted.
-
+  Proof. elim/last_ind => [// | st x Hr t _ /=].
+         by rewrite last_rcons in_rcons;apply/orP;right;apply:eq_refl.
+  Qed.
+  
   Lemma head0: forall(st:seq T) t,
       ~ ( st = [::]) -> (head t st) \in st.
   Proof.
-  Admitted.
+    elim => [// | x st Hr t _ /=].
+    by rewrite in_cons;apply/orP;left;apply:eq_refl.
+  Qed.
   
   Lemma allL_asym_l1: forall st x y,
       allL R st x y -> ~ R.+ (y, last x st) -> (Asym R.+) (x, y).
