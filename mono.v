@@ -1746,6 +1746,11 @@ Section Hn4.
     by move: H10 => /AsymIncl H10.
   Qed.
   
+  Lemma allL_asym_xx: forall st x s z,
+      s \in st -> allL R st x z -> ~ (z = s) -> (Asym R.+) (x,z).
+  Admitted.
+  
+
   Definition allLu (R: relation T) st x y :=
     (x::(rcons st y)) [L\in] R /\ uniq (x :: rcons st y).
   
@@ -2057,9 +2062,12 @@ Section Hn4.
             /\ allLu R stl' x yl /\ ~ (R.+ (yl,(last x stl')))
             /\ allLu R str' yr z /\ ~ (R.+ ((head z str'),yr)))
            \/
-             ( allLu R ((rcons stlr yr) ++ str') yl z
-               /\ allLu R stl' x yl /\ ~ (R.+ (yl,(last x stl'))))
-          ).
+             ( 
+               allLu R stl' x yl /\ ~ (R.+ (yl,(last x stl')))
+               /\ allLu R ((rcons stlr yr) ++ str') yl z
+               /\ (exists s, s \in (rcons stlr yr ++ str') /\ ~ R.+ (z,s))
+             )
+           ).
   Proof.
     move => stl str x y z H1 H2 H3 H4 H5 H6.
     move: (RedBackLR1 H1 H2 H3 H4 H5 H6) => [stl1 [yl [str1 [yr [stlr H7]]]]].
@@ -2095,13 +2103,21 @@ Section Hn4.
       by [].
       (* end of P1 *)
 
-      have H20: uniq (yl::(rcons ((rcons stlr yr) ++ str1) z)).
-      by move: P1; rewrite cat_cons -rcons_cons -rcons_cat -cat_rcons. 
+      have H20: uniq (yl::(rcons ((rcons stlr yr) ++ str1) z))
+        by move: P1; rewrite cat_cons -rcons_cons -rcons_cat -cat_rcons. 
 
-      have H22: allLu R ((rcons stlr yr) ++ str1) yl z. 
-      by split. 
+      have H22: allLu R ((rcons stlr yr) ++ str1) yl z
+        by split.
 
+      have H23: exists s, s \in (rcons stlr yr ++ str1) /\ ~ R.+ (z,s).
+      exists yr. split; last by [].
+      rewrite mem_cat. apply/orP. left. rewrite in_rcons. apply/orP. right. 
+      by apply/eqP.
+      
       right.
+      split. by[].
+      split. by[].
+      split. by[].
       by [].
   Qed.
   
@@ -2109,11 +2125,13 @@ Section Hn4.
       (x::(rcons stl y)) [L\in] R -> uniq (x::(rcons stl y)) -> ~ ( R.+ (y,x))
       -> (y::(rcons str z)) [L\in] R -> uniq (y::(rcons str z)) -> ~ ( R.+ (z,y))
       -> exists stl', exists y', exists str',
-          allLu R stl' x y' /\ allLu R str' y' z /\ uniq (stl' ++ str').
+          allLu R stl' x y' /\  ~ (R.+ (y',(last x stl'))) 
+          /\ allLu R str' y' z /\ ~ R.+ (z, y')
+          /\ uniq (stl' ++ str').
   Proof.
     move => stl str x y z H1 H2 H3 H4 H5 H6.
     move: (RedBackLR2 H1 H2 H3 H4 H5 H6) => [stl1 [yl [str1 [yr [stlr H7]]]]].
-    move: H7 => [[H7 [H8 [H9 [H10 [H11 H12]]]]] | [H7 [H9 ] H11]].
+    move: H7 => [[H7 [H8 [H9 [H10 [H11 H12]]]]] | [H7 [H9 ] [H11 H11']]].
     + exists stl1;exists yl;exists stlr.
       have H13:  uniq (stl1 ++ stlr). 
       move: H9 H11 => [_ /uniq_crc [[K1 [K2 K3]] K4]] [_ /uniq_crc [[J1 [J2 J3]] J4]].
@@ -2121,14 +2139,23 @@ Section Hn4.
       have: has (in_mem^~ (mem stl1)) stlr -> False
         by move => /hasP [s H15 H16];move:H8 => /(_ s) H8;apply: H8.
       by apply: contra_notF.
+      have: (~ R.+ (head z stlr, yl) \/ (exists s : T, s \in stlr /\ ~ R.+ (z, s)))
+        by left;rewrite H7.
+      
+      have H14: (Asym R.+) (x, yl)
+        by move: H9 => [H9 _];move: (allL_asym_l1 H9 H10).
+      
+      have H16: ~ R.+ (z, yl) 
+        by move: H11 => [H11 H11'];
+                       pose proof allL_asym_r1 H11 H12 as [H17 H18];rewrite H7.
       by rewrite -H7 in H11.
     + exists stl1;exists yl;exists(rcons str1 yr ++ stlr).
-      move: (H7) (H9) => [H7' H8] [H9' H10].
+      move: (H7) (H11)  => [H7' H8] [H9' H10].
       have H12: forall s, s \in stl1 -> s \in (rcons str1 yr ++ stlr) -> False.
       move => s H13 H14. 
-      have H15: ~(s = x)
-        by move: H10 => /uniq_crc [[K1 _] _] H16;rewrite -H16 in K1.
-      by move: (allL_asym_lr H13 H15 H9' H11 H14 H7') => [H notH].
+      have H15: ~(s = x) 
+        by move: H8 => /uniq_crc   [[K1 _] _] H16;rewrite -H16 in K1.
+      by move: (allL_asym_lr H13 H15 H7' H9 H14 H9') => [H notH].
       
       move: H8 => /uniq_crc [[_ [_ H8]] _].
       move: H10 => /uniq_crc [[_ [_ H10]] _].
@@ -2137,83 +2164,19 @@ Section Hn4.
       have: has (in_mem^~ (mem stl1)) (rcons str1 yr ++ stlr) -> False
         by move => /hasP [s H15 H16];move: H12 => /(_ s) H12;move: (H12 H16 H15).
       by apply: contra_notF.
+
+      have H16: ~ R.+ (z, yl).
+      move: H11' => [s [K1 K2]].
+      move: H11 => [H11 H11''].
+      move: H11'' => /uniq_crc [[_ [J2 _]] _].
+      have H14: ~ (z = s) by move => H15; rewrite H15 in J2.
+      pose proof allL_asym_xx K1 H11 H14 as [_ H16]. 
+      exact.
+      
+      have H15: (~ R.+ (head z (rcons str1 yr ++ stlr), yl) \/
+                   (exists s : T, s \in rcons str1 yr ++ stlr /\ ~ R.+ (z, s)))
+        by right.
       by move => H14.
-  Qed.
-
-  Lemma uniq_util0: forall x stl1 y str1 z,
-      uniq (x :: rcons stl1 y) -> ~ R.+ (y, last x stl1)
-      -> uniq (y :: rcons str1 z) -> ~ R.+ (head z str1, y)
-      -> uniq (x :: stl1 ++ y :: rcons str1 z).
-  Proof.
-    move => x stl1 y str1 z H1 H2 H3 H4.
-  Admitted.
-  
-  Lemma uniq_util1: forall x stl1 yl stlr yr str1 z,
-    uniq (x :: rcons stl1 yl) -> ~ R.+ (yl, last x stl1)
-    ->  uniq (yl :: rcons stlr yr) 
-    ->  uniq (yr :: rcons str1 z) ->  ~ R.+ (head z str1, yr)
-    ->  uniq (x :: stl1 ++ yl :: rcons (rcons stlr yr ++ str1) z).
-  Admitted.
-    
-  Lemma uniq_util2: forall x stl1 yl stlr yr str1 z,
-      uniq (x :: rcons stl1 yl) -> ~ R.+ (yl, last x stl1)
-      ->  uniq (yl :: rcons stlr yr) 
-    ->  uniq (yr :: rcons str1 z) ->  ~ R.+ (head z str1, yr)
-    ->  uniq (yl :: rcons (rcons stlr yr ++ str1) z).
-  (* implique par celui au dessus *)
-  Admitted.
-  
-  (** XX This is allL_cat *)
-  Lemma uniq_util3: forall x stl y str z,
-      (x :: rcons stl y) [L\in] R               
-      -> (y :: rcons str z) [L\in] R
-      -> (x :: rcons ((rcons stl y) ++ str) z) [L\in] R.
-  Proof.
-    by move => x stl y str z H1 H2;rewrite allL_cat;apply/andP. 
-  Qed.
-  
-  Lemma RedBackLR2': forall (stl str:seq T) (x y z:T),
-      (x::(rcons stl y)) [L\in] R -> uniq (x::(rcons stl y)) -> ~ ( R.+ (y,x))
-      -> (y::(rcons str z)) [L\in] R -> uniq (y::(rcons str z)) -> ~ ( R.+ (z,y))
-      -> exists stl', exists str', exists y',
-          uniq (x::(rcons stl' y')) /\ (x::(rcons stl' y')) [L\in] R /\ ~ (R.+ (y',x))
-          /\ uniq (y'::(rcons str' z)) /\ (y'::(rcons str' z)) [L\in] R /\ ~ (R.+ (z,y'))
-          /\ uniq (x :: (stl' ++ (y' :: rcons str' z))).
-  Proof.
-  Admitted.
-  (* 
-    move => stl str x y z H1 H2 H3 H4 H5 H6.
-    move: (RedBackLR1 H1 H2 H3 H4 H5 H6) => [stl1 [yl [str1 [yr [stlr H7]]]]].
-    move: H7=> [H7 [H8 [H9 [H10 [H11 [H12 [H13 [H14 [H15 | [H15 H16]]]]]]]]]].
-    + exists stl1; exists str1; exists yr.
-      rewrite H15 in H10 H9 H8 H7.
-      have H17: uniq (x :: (stl1 ++ (yr :: rcons str1 z)))
-        by move: (uniq_util0 H7 H10 H11 H14).
-      exact. 
-    + exists stl1;exists (rcons stlr yr ++ str1); exists yl.
-      have H17: uniq (yl :: rcons (rcons stlr yr ++ str1) z)
-        by move: (uniq_util2 H7 H10 H15 H11 H14).
-      have H18: (yl :: rcons (rcons stlr yr ++ str1) z) [L\in] R
-        by move: (uniq_util3 H16 H12).
-      move: H16 => /(@allL_to_clos_t T) H16. 
-      have H19: ~ R.+ (z, yl) by move => H20;move: (t_trans H20 H16).
-      by move: (uniq_util1 H7 H10 H15 H11 H14) => H20.
-  Qed.
-  *)
-
-  Lemma Asym_uniq : forall x y z, 
-      Asym R.+ (x,y) -> Asym R.+ (y,z)
-      ->exists stl, exists str, exists y',
-          (x::(rcons stl y')) [L\in] R /\ uniq (x::(rcons stl y'))
-          /\ (y'::(rcons str z)) [L\in] R /\ uniq (y'::(rcons str z))
-          /\ uniq (x :: stl ++ y' :: rcons str z). 
-  Proof.
-    move => x y z /[dup] H0 [H1 H2] /[dup] H0' [H3 H4].
-    move: (TCP_uniq' H0) (TCP_uniq' H0') => [stl [H5 H6]] [str [H7 H8]].
-    move: (RedBackLR2' H6 H5 H2 H8 H7 H4) 
-        => [stl' [str' [y' [H9 [H10 [H11 [H12 [H13 [H14 H15]]]]]]]]].
-    exists stl'; exists str'; exists y'.
-    exact. 
   Qed.
 
 End Hn4.
