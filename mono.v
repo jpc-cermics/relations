@@ -1537,9 +1537,6 @@ Section allL_uniq.
     - by move => [st [_ H1]]; move: H1;apply: allL_to_clos_t. 
   Qed.
   
-  Lemma TCP_uniq1: R.+ = R.u+.
-  Proof. by rewrite predeqE => -[x y]; apply:TCP_uniq. Qed.
-
   Lemma TCP_uniq'': forall (x y:T), 
       R.+ (x,y) /\ ~ (x = y) 
       <-> exists st, uniq (x::(rcons st y)) /\ (x::(rcons st y)) [L\in] R.
@@ -1551,14 +1548,6 @@ Section allL_uniq.
     + by move => [st [/uniq_crc [_ H1] /(@allL_to_clos_t T)  H2]].
   Qed.
   
-  Lemma TCP_uniq1'': R.+ `&` 'Δ.^c = R.!+ .
-  Proof.
-    rewrite predeqE => -[x y]. 
-    have: (R.+ `&` 'Δ.^c) (x, y) <-> R.+ (x,y) /\ ~ (x = y).
-    split => [[H1 /Delta_Id H2] // | [H1 H2]].
-    split. by[]. by move => /Delta_Id H3.
-  Admitted.
-  
   Lemma TCP_uniq': forall (x y:T), 
       (Asym R.+)(x,y) 
       -> exists st, uniq (x::(rcons st y)) /\ (x::(rcons st y)) [L\in] R.
@@ -1567,7 +1556,16 @@ Section allL_uniq.
     have H3: ~ (x = y) by move => H7;rewrite H7 in H1 H2.
     by rewrite -TCP_uniq''.
   Qed.
+
+  Definition allLu (R: relation T) st x y :=
+    (x::(rcons st y)) [L\in] R /\ uniq (x :: rcons st y).
   
+  Lemma TCP_uniq1 (x y:T):
+      (Asym R.+)(x,y) <-> (exists st, allLu R st x y) /\ ~ R.+ (y,x).
+  Proof. split. 
+    by move => /[dup] /TCP_uniq' [st [H1 H2]] [_ H4];split;[exists st;split |].
+    by move => [[st [H1 H2]] H3];split;[apply: allL_to_clos_t; apply: H1|].
+  Qed.
 
 End allL_uniq.
 
@@ -1751,8 +1749,6 @@ Section Hn4.
   Admitted.
   
 
-  Definition allLu (R: relation T) st x y :=
-    (x::(rcons st y)) [L\in] R /\ uniq (x :: rcons st y).
   
   Lemma uniq_asym2: forall x stl y str z,
       allLu R stl x y -> ~ R.+ (y, last x stl) -> allLu R str y z 
@@ -1933,35 +1929,31 @@ Section Hn4.
       by move: H1'; rewrite cons_uniq rcons_cons => /andP [_ H1'].
   Qed.
   
-  Lemma RedBackLR: forall (stl str:seq T) (x y z:T),
-      (x::(rcons stl y)) [L\in] R -> uniq (x::(rcons stl y)) -> ~ ( R.+ (y,x))
-      -> (y::(rcons str z)) [L\in] R -> uniq (y::(rcons str z)) -> ~ ( R.+ (z,y))
+  Lemma RedBackLR: forall (x y z:T),
+      (Asym R.+)(x,y) -> (Asym R.+) (y,z) 
       -> exists stl', exists yl, exists str', exists yr,
-          (subseq (rcons stl' yl) (rcons stl y) 
-          /\ uniq (x::(rcons stl' yl))       
+          (uniq (x::(rcons stl' yl))       
           /\ stl' [\in] R.+#_(x) 
           /\ (x::(rcons stl' yl)) [L\in] R 
           /\ ~ (R.+ (yl,x))
           /\ (y = yl \/ R.+ (yl,y))
           /\ ~ (R.+ (yl,(last x stl'))))
           /\
-            ( subseq (yr::str') (y::str) 
-              /\ uniq (yr::(rcons str' z))       
+            ( uniq (yr::(rcons str' z))       
               /\ str' [\in] (z)_:#R.+ 
               /\ (yr::(rcons str' z)) [L\in] R 
               /\ ~ (R.+ (z,yr))
               /\ (y = yr \/ R.+ (y,yr))
               /\ ~ (R.+ ((head z str'),yr))).
   Proof.
-    move => strl str x y z H1 H2 H3 H4 H5 H6.
-    pose proof (RedBackL H1 H2 H3) as [stl' [yl H7]].
-    pose proof (RedBackR H4 H5 H6) as [str' [yr H8]].
+    move => x y z /TCP_uniq1 [[stl [H1 H2]] H3] /TCP_uniq1 [[str [H4 H5]] H6].
+    pose proof (RedBackL H1 H2 H3) as [stl' [yl [_ H7]]].
+    pose proof (RedBackR H4 H5 H6) as [str' [yr [_ H8]]].
     by exists stl';exists yl;exists str';exists yr.
   Qed.
-
-  Lemma RedBackLR1: forall (stl str:seq T) (x y z:T),
-      (x::(rcons stl y)) [L\in] R -> uniq (x::(rcons stl y)) -> ~ ( R.+ (y,x))
-      -> (y::(rcons str z)) [L\in] R -> uniq (y::(rcons str z)) -> ~ ( R.+ (z,y))
+  
+  Lemma RedBackLR1: forall (x y z:T),
+      (Asym R.+)(x,y) -> (Asym R.+) (y,z) 
       -> exists stl', exists yl, exists str', exists yr, exists stlr,
           ((yl = yr) \/ (allLu R stlr yl yr))
           /\ allLu R stl' x yl 
@@ -1971,10 +1963,10 @@ Section Hn4.
           /\ ~ (R.+ (z,yr))
           /\ ~ (R.+ ((head z str'),yr)).
   Proof.
-    move => stl str x y z H1 H2 H3 H4 H5 H6.
-    pose proof (RedBackLR H1 H2 H3 H4 H5 H6) as [stl' [yl [str' [yr H7]]]].
-    move: H7 => [H7 [H8 [H9 [H10 [H11 [H12 [H13 H14]]]]]]].
-    move: H7 => [H7' [H8' [H9' [H10' [H11' [H12' H13']]]]]].
+    move => x y z H1 H2.
+    pose proof (RedBackLR H1 H2) as [stl' [yl [str' [yr H7]]]].
+    move: H7 => [H8 [H9 [H10 [H11 [H12 [H13 H14]]]]]].
+    move: H8 => [H8' [H9' [H10' [H11' [H12' H13']]]]].
     exists stl';exists yl;exists str';exists yr.
 
     have H15: (yl = yr) \/  R.+ (yl, yr).
@@ -2054,9 +2046,8 @@ Section Hn4.
       *)
   Admitted.
   
-  Lemma RedBackLR2: forall (stl str:seq T) (x y z:T),
-      (x::(rcons stl y)) [L\in] R -> uniq (x::(rcons stl y)) -> ~ ( R.+ (y,x))
-      -> (y::(rcons str z)) [L\in] R -> uniq (y::(rcons str z)) -> ~ ( R.+ (z,y))
+  Lemma RedBackLR2:  forall (x y z:T),
+      (Asym R.+)(x,y) -> (Asym R.+) (y,z) 
       -> exists stl', exists yl, exists (stlr: seq T), exists yr, exists str',
           ((yl = yr /\ (forall s, s \in stl' -> s \in str' -> False)
             /\ allLu R stl' x yl /\ ~ (R.+ (yl,(last x stl')))
@@ -2069,8 +2060,8 @@ Section Hn4.
              )
            ).
   Proof.
-    move => stl str x y z H1 H2 H3 H4 H5 H6.
-    move: (RedBackLR1 H1 H2 H3 H4 H5 H6) => [stl1 [yl [str1 [yr [stlr H7]]]]].
+    move => x y z H1 H2.
+    move: (RedBackLR1 H1 H2) => [stl1 [yl [str1 [yr [stlr H7]]]]].
     
     move: H7=> [[H15 | [H15 H16]] [H7 [H8 [H10 [H11 [H13 H14]]]]]].
     + exists stl1; exists yl; exists stlr; exists yr; exists str1. 
@@ -2121,16 +2112,15 @@ Section Hn4.
       by [].
   Qed.
   
-  Lemma RedBackLR3: forall (stl str:seq T) (x y z:T),
-      (x::(rcons stl y)) [L\in] R -> uniq (x::(rcons stl y)) -> ~ ( R.+ (y,x))
-      -> (y::(rcons str z)) [L\in] R -> uniq (y::(rcons str z)) -> ~ ( R.+ (z,y))
+  Lemma RedBackLR3: forall (x y z:T),
+      (Asym R.+)(x,y) -> (Asym R.+) (y,z) 
       -> exists stl', exists y', exists str',
-          allLu R stl' x y' /\  ~ (R.+ (y',(last x stl'))) 
+          allLu R stl' x y' /\ ~ R.+ (y',x)
           /\ allLu R str' y' z /\ ~ R.+ (z, y')
           /\ uniq (stl' ++ str').
   Proof.
-    move => stl str x y z H1 H2 H3 H4 H5 H6.
-    move: (RedBackLR2 H1 H2 H3 H4 H5 H6) => [stl1 [yl [str1 [yr [stlr H7]]]]].
+    move => x y z H1 H2.
+    move: (RedBackLR2 H1 H2) => [stl1 [yl [str1 [yr [stlr H7]]]]].
     move: H7 => [[H7 [H8 [H9 [H10 [H11 H12]]]]] | [H7 [H9 ] [H11 H11']]].
     + exists stl1;exists yl;exists stlr.
       have H13:  uniq (stl1 ++ stlr). 
@@ -2148,6 +2138,10 @@ Section Hn4.
       have H16: ~ R.+ (z, yl) 
         by move: H11 => [H11 H11'];
                        pose proof allL_asym_r1 H11 H12 as [H17 H18];rewrite H7.
+      
+      have H17: ~ R.+ (yl,x)
+        by move: H9 => [H9 _];pose proof allL_asym_l1 H9 H10 as [H18 H19].
+      
       by rewrite -H7 in H11.
     + exists stl1;exists yl;exists(rcons str1 yr ++ stlr).
       move: (H7) (H11)  => [H7' H8] [H9' H10].
@@ -2176,9 +2170,13 @@ Section Hn4.
       have H15: (~ R.+ (head z (rcons str1 yr ++ stlr), yl) \/
                    (exists s : T, s \in rcons str1 yr ++ stlr /\ ~ R.+ (z, s)))
         by right.
+
+      have H17: ~ R.+ (yl,x)
+        by pose proof allL_asym_l1 H7' H9 as [H18 H19].
+
       by move => H14.
   Qed.
-
+  
 End Hn4.
 
 Section Unused_Seq1_plus. 
