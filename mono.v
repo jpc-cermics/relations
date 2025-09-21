@@ -1748,10 +1748,30 @@ Section Hn4.
   Qed.
   
   Lemma allL_asym_xx: forall st x s z,
-      s \in st -> allL R st x z -> ~ (z = s) -> (Asym R.+) (x,z).
-  Admitted.
-  
-
+      s \in st -> ~ (z = s) -> allL R st x z -> ~ R.+ (z, s)
+      -> (Asym R.+) (x,z).
+  Proof.
+    elim => [// | y st Hr x s z].
+    rewrite in_cons => /orP [/eqP -> | H1] H2.
+    + rewrite allL_c => /andP [/inP H3 H4] H5. 
+      split.
+      ++ pose proof (allL_to_clos_t H4) as H6.
+         have H7: R.+ (x, y) by apply: iter1_inc_clos_trans.
+         by pose proof t_trans H7 H6.
+      ++ move => H6.
+         have H7: R.+ (x, y) by apply: iter1_inc_clos_trans.
+         by pose proof t_trans H6 H7.
+    + rewrite allL_c => /andP [/inP H3 H4] H5. 
+      split.
+      ++ pose proof (allL_to_clos_t H4) as H6.
+         have H7: R.+ (x, y) by apply: iter1_inc_clos_trans.
+         by pose proof t_trans H7 H6.      
+      ++ pose proof (Hr y s z) H1 H2 H4 H5 as [H8 H9].
+         move => H10.
+         have H7: R.+ (x, y) by apply: iter1_inc_clos_trans.
+         have H11: R.+ (z,y) by apply: t_trans H10 H7.
+         exact.
+  Qed.
   
   Lemma uniq_asym2: forall x stl y str z,
       allLu R stl x y -> ~ R.+ (y, last x stl) -> allLu R str y z 
@@ -2034,6 +2054,12 @@ Section Hn4.
       -> ~ R.+ (z, yr) -> ~ R.+ (head z str, yr)
       -> ~ ( z \in stlr)  /\ ~ (yl = z) /\  ~ (yl \in str).
   Proof.
+    move => yl stlr yr str z H1 H2 H3 H4.
+    
+    have H5: ~ z \in stlr. 
+    move => H6. 
+    move: H1 => [H1 /uniq_crc [[J1 [J2 J3]] J4]].
+    have H7:  ~(z = yl) by move => H8;rewrite H8 in H6.
     (** XXXX 
         have H21: forall s, s \in str1 -> ~(s = z).
       have H22: forall s, s \in str1 ->  R.+ (yr, s).
@@ -2074,6 +2100,7 @@ Section Hn4.
       exact. 
     + exists stl1; exists yl; exists stlr; exists yr; exists str1. 
       have K1: (allLu R stlr yl yr) by split.
+      
       pose proof RedBackLR1' K1 H11 H13 H14 as [K2 [K3 K4]].
       
       have H21: forall s : T, s <> z -> s \in stlr -> s \in str1 -> False.
@@ -2167,7 +2194,8 @@ Section Hn4.
       move: H11 => [H11 H11''].
       move: H11'' => /uniq_crc [[_ [J2 _]] _].
       have H14: ~ (z = s) by move => H15; rewrite H15 in J2.
-      pose proof allL_asym_xx K1 H11 H14 as [_ H16]. 
+
+      pose proof allL_asym_xx K1 H14 H11 K2 as [_ H16]. 
       exact.
       
       have H15: (~ R.+ (head z (rcons str1 yr ++ stlr), yl) \/
