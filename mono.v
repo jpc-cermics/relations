@@ -2055,24 +2055,25 @@ Section Hn4.
       -> ~ ( z \in stlr)  /\ ~ (yl = z) /\  ~ (yl \in str).
   Proof.
     move => yl stlr yr str z H1 H2 H3 H4.
-    
-    have H5: ~ z \in stlr. 
-    move => H6. 
-    move: H1 => [H1 /uniq_crc [[J1 [J2 J3]] J4]].
-    have H7:  ~(z = yl) by move => H8;rewrite H8 in H6.
-    (** XXXX 
-        have H21: forall s, s \in str1 -> ~(s = z).
-      have H22: forall s, s \in str1 ->  R.+ (yr, s).
-      Lemma allL_asym_r: forall st x s y,
-          s \in st -> ~(s = y) -> allL R st x y -> ~ R.+ (head y st, x) 
-          -> (Asym R.+) (x, s).
-      Proof.
-      have H23: R.+ (yl,yr).
-      have H21: ~ (yl \in str1).
-      en combinant 
-      have H22: ~ (z \in stlr). 
-      have H23: ~ (yl = z).
-      *)
+    move: H1 => [H1 /uniq_crc  [[J1 [J2 J3]] J4]].
+    move: H2 => [H2 /uniq_crc  [[K1 [K2 K3]] K4]].
+    have H5: forall s, s \in stlr -> ~(s = yr)
+        by move => s H6 H7; rewrite H7 in H6.
+    split. 
+    + move => /[dup] H6 /H5 H7.
+      have H8: R.+ (z, yr). 
+      pose proof (Lift_in_F (allL_Lift_in_rc H1)) as H8.
+      pose proof (allset_in H6 H8) as H9. 
+      by rewrite Fset_t0 -inP.
+      exact. 
+    + split. 
+      (* par composition des Asym *)
+      move => H6. 
+      move: H1 => /(@allL_to_clos_t T) H1.
+      by  rewrite H6 in H1.
+    + move => H6.
+      pose proof (Lxx_head H6 (allL_Lift_in_c H2)) as H7.
+      
   Admitted.
   
   Lemma RedBackLR2:  forall (x y z:T),
@@ -2100,6 +2101,11 @@ Section Hn4.
       exact. 
     + exists stl1; exists yl; exists stlr; exists yr; exists str1. 
       have K1: (allLu R stlr yl yr) by split.
+      
+      (* ici il faut distingeur deux cas 
+         si yl \in str1 on raccourci 
+         sinon on peut conclure avec RedBackLR1'
+       *)
       
       pose proof RedBackLR1' K1 H11 H13 H14 as [K2 [K3 K4]].
       
