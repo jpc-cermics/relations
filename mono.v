@@ -1477,43 +1477,36 @@ Section allL_uniq.
       by [].
       by rewrite -H8 allL_c H3 H7.
   Qed.
-
-  Lemma in_subseq_1: forall (st1 st2: seq T) (x:T),
+  
+  Lemma in_subseq_1: forall (st2 st1: seq T) (x:T),
       subseq [::x & st1] st2 -> x \in st2.
   Proof.
-    elim => [st2 x | y st1 Hr st2 x H1]; first by rewrite sub1seq. 
-    elim: st2 H1 Hr => [// H1 _ |  z st2 Hr' H1 H2].
-    case H3: (x == z).
-    - move: (H3) => /eqP <-.
-      by rewrite in_cons //= eq_refl orbC orbT.
-    - rewrite /subseq H3 -/subseq in H1.
-      apply Hr' in H1.
-      by rewrite in_cons H1 orbT.
-      by [].
+    elim => [st x //| y st Hr st1 x H1].
+    case H2: (x == y);first by rewrite in_cons H2 orTb.
+    move: H1;rewrite /subseq H2 -/subseq => /Hr H1.
+    by rewrite in_cons H1 orbT.
   Qed.
-  
+
   Lemma in_subseq': forall (st2 st1: seq T) (x:T),
       subseq st1 st2 -> (x \in st1) -> (x \in st2).
   Proof.
     elim => [st1 x | y st1 Hr st2 x H1 H2].  
     by rewrite subseq0 => /eqP -> H2.
     elim: st2 H1 H2 Hr => [// |  z st2 Hr' H1 H2 H3].
-    case H4: (z == y).
-    - move: H1; rewrite /subseq H4 -/subseq => H1.
-      move: (H4) => /eqP <-.
+    case H4: (z == y);move: H1; rewrite /subseq H4 -/subseq => H1.
+    - move: (H4) => /eqP <-.
       rewrite in_cons. 
       move: H2; rewrite in_cons => /orP [H2 | H2].
       by rewrite H2 orbC orbT.
       by (have ->:  x \in st1 by apply H3 with st2); rewrite orbT.
-    - move: H1; rewrite /subseq H4 -/subseq => H1.
-      move: H2; rewrite in_cons => /orP [/eqP H2 | H2].
+    - move: H2; rewrite in_cons => /orP [/eqP H2 | H2].
       apply in_subseq_1 in H1.
       by rewrite in_cons H2 H1 orbT.
       apply cons_subseq in H1. 
-      have H5: x \in st1. by apply: (H3 st2 x).
+      have H5: x \in st1 by apply: (H3 st2 x).
       by rewrite in_cons H5 orbT. 
   Qed.
-
+  
   Lemma in_subseq: forall (st1 st2: seq T) (x:T),
       subseq st1 st2 -> ~ (x \in st2) -> ~ (x \in st1).
   Proof.
@@ -1522,8 +1515,9 @@ Section allL_uniq.
   Qed.
   
   Lemma allL_uniq: forall (st: seq T) (x y: T),
-      allL R st x y -> exists st', subseq st' st /\ ~( x \in st') /\  ~(y \in st') /\
-                               @uniq T st' /\ allL R st' x y. 
+      allL R st x y -> 
+      exists st', subseq st' st /\ ~( x \in st') /\  ~(y \in st')
+             /\  @uniq T st' /\ allL R st' x y. 
   Proof.
     move => st x y H1.
     pose proof allL_uniq_tail H1 as [st2 [S2 [I2 H2]]].
@@ -1532,14 +1526,9 @@ Section allL_uniq.
     pose proof allL_uniq_internals H3 as [st4 [S4 [K4 H4]]].
     have J4: ~ (y \in st4) by apply in_subseq with st3.
     have I4: ~ (x \in st4) by apply in_subseq with st3.
-    exists st4. 
-    split.
-    have HH1: subseq st4 st2 by apply subseq_trans with st3.
-    have HH2: subseq st4 st by apply subseq_trans with st2.
-    by [].
-    by [].
+    by exists st4;pose proof (subseq_trans (subseq_trans S4 S3) S2).
   Qed.
-
+  
   Lemma TCP_uniq: forall (x y:T), 
       R.+ (x,y) <-> exists st, uniq_path st x y /\ allL R st x y. 
   Proof.
