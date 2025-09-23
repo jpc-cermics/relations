@@ -1898,17 +1898,21 @@ Section Hn4.
       allLu R stl x y -> ~ R.+ (y,x) -> (Asym R.+) (y,z) 
       -> exists stl', exists yl, exists (stlr: seq T), exists yr, exists str',
           ((yl = yr /\ (forall s, s \in stl' -> s \in str' -> False)
+            /\ subseq (rcons stl' yl) (rcons stl y) 
             /\ allLu R stl' x yl /\ ~ (R.+ (yl,(last x stl')))
-            /\ allLu R str' yr z /\ ~ (R.+ ((head z str'),yr)))
+            /\ allLu R str' yr z /\ ~ (R.+ ((head z str'),yr))
+           )
            \/
              ( 
-               allLu R stl' x yl /\ ~ (R.+ (yl,(last x stl')))
+               subseq (rcons stl' yl) (rcons stl y) 
+               /\allLu R stl' x yl /\ ~ (R.+ (yl,(last x stl')))
                /\ allLu R ((rcons stlr yr) ++ str') yl z
                /\ (exists s, s \in (rcons stlr yr ++ str') /\ ~ R.+ (z,s))
              )
            \/ 
              (
-               allLu R stl' x yl /\ ~ (R.+ (yl,(last x stl')))
+               subseq (rcons stl' yl) (rcons stl y) 
+               /\ allLu R stl' x yl /\ ~ (R.+ (yl,(last x stl')))
                /\ allLu R (drop (index yl str').+1 str') yl z
                /\  ~ R.+ (z, yl)
                /\ uniq (stl' ++ drop (index yl str').+1 str')
@@ -1920,115 +1924,106 @@ Section Hn4.
     
     move: H7=> [[H15 | [H15 H16]] [H7' [H7 [H8 [H10 [H11 [H13 H14]]]]]]].
     + exists stl1; exists yl; exists stlr; exists yr; exists str1. 
-      move:  H7 H8 H10; rewrite H15 => H7 H8 H10.
-      left. split. by []. 
-      split. by move => s H17 H18;apply/(uniq_asym2 H7 H10 H11);[apply/H18|apply/H17].
-      exact. 
+      move: H7' H7 H8 H10; rewrite H15 => H7' H7 H8 H10.
+      have H16: (forall s : T, s \in stl1 -> s \in str1 -> False) 
+        by move => s H17 H18;apply/(uniq_asym2 H7 H10 H11);[apply/H18|apply/H17].
+      by left. 
     + exists stl1; exists yl; exists stlr; exists yr; exists str1. 
       case H17: (yl \in str1); last first.
       (* first case *)
-      move: H17 => /negP K4.
+       ++ move: H17 => /negP K4.
+          have K1: (allLu R stlr yl yr) by split.
+          pose proof RedBackLR1 K1 H11 H13 H14 as [K2 K3].
       
-         have K1: (allLu R stlr yl yr) by split.
+          have H21: forall s : T, s <> z -> s \in stlr -> s \in str1 -> False.
+          move: H11 => [H11 H11'] s H18 H19 H20.
+          by pose proof (allL_asym_rl H19 H15 H20 H18 H11 H14) as [H notH]. 
+      
+          have H17: allL R ((rcons stlr yr) ++ str1) yl z.
+          by move: H11 => [H11' H11'']; by rewrite allL_cat; apply/andP. 
+      
+          have H18: uniq (rcons stlr yr)
+            by move: H16; rewrite cons_uniq => /andP [_ ?]. 
+
+          have H19: uniq str1
+            by move: H11 => [_ ];rewrite cons_uniq rcons_uniq => /andP [_ /andP [_ ?]].
+      
+          have P1: uniq ((yl :: stlr) ++ yr :: rcons str1 z).
+          move: H11 => [H11 H11'].
+          apply: (uniq_util H16 H11' H21).
+          by [].
+          by [].
+          by [].
+          (* end of P1 *)
+
+          have H20: uniq (yl::(rcons ((rcons stlr yr) ++ str1) z))
+            by move: P1; rewrite cat_cons -rcons_cons -rcons_cat -cat_rcons. 
+
+          have H22: allLu R ((rcons stlr yr) ++ str1) yl z
+            by split.
+
+          have H23: exists s, s \in (rcons stlr yr ++ str1) /\ ~ R.+ (z,s).
+          exists yr. split; last by [].
+          rewrite mem_cat. apply/orP. left. rewrite in_rcons. apply/orP. right. 
+          by apply/eqP.
+          
+          by right;left.
+          
+       ++ move: H11 => [/[dup] H11 /(@allL_to_clos_t T) H11' /uniq_crc [[J1 [J2 J3]] J4]].
+          move: (H15) => /(@allL_to_clos_t T) H15'.
+          have H12: ~ (yl =z) by move => H12;rewrite H12 in H15'.
+      
+          have H20: ~ (R.+ (z, yl)) 
+            by move => H21; have H22: R.+ (z,yr) by apply: (t_trans H21 H15').
+          
+          pose proof allL_drop H17 H11 as H21. 
+          
+          have H22: subseq (drop (index yl str1).+1 str1) str1 by apply: drop_subseq.
+          have H23: ~ yr \in drop (index yl str1).+1 str1 by apply: in_subseq H22 J1.
+          have H24: uniq (drop (index yl str1).+1 str1) by apply: subseq_uniq H22 J3.
+          have H25: uniq (yl::(drop (index yl str1).+1 str1))
+            by rewrite cons_uniq H24 andbT;apply: drop_notin. 
+          have H26: uniq (yl::(rcons (drop (index yl str1).+1 str1) z)).
+          rewrite -rcons_cons rcons_uniq H25 andbT. 
+          rewrite in_cons. apply/orP.  move => [/eqP H27 | H27];first by rewrite H27 in H12.
+          by pose proof in_subseq' H22 H27. 
+          
+          have H27:  allLu R (drop (index yl str1).+1 str1) yl z by split.
             
-         pose proof RedBackLR1 K1 H11 H13 H14 as [K2 K3].
-      
-      have H21: forall s : T, s <> z -> s \in stlr -> s \in str1 -> False.
-      move: H11 => [H11 H11'] s H18 H19 H20.
-      by pose proof (allL_asym_rl H19 H15 H20 H18 H11 H14) as [H notH]. 
-      
-      have H17: allL R ((rcons stlr yr) ++ str1) yl z.
-      by move: H11 => [H11' H11'']; by rewrite allL_cat; apply/andP. 
-      
-      have H18: uniq (rcons stlr yr)
-        by move: H16; rewrite cons_uniq => /andP [_ ?]. 
+          right. right.
+          split. by [].
+          split. by [].
+          split. by [].
+          split. by [].
 
-      have H19: uniq str1
-        by move: H11 => [_ ];rewrite cons_uniq rcons_uniq => /andP [_ /andP [_ ?]].
+          move: (H7) => [H7'' /uniq_crc [[K1 [K2 K3]] K4]].
       
-      have P1: uniq ((yl :: stlr) ++ yr :: rcons str1 z).
-      move: H11 => [H11 H11'].
-      apply: (uniq_util H16 H11' H21).
-      by [].
-      by [].
-      by [].
-      (* end of P1 *)
-
-      have H20: uniq (yl::(rcons ((rcons stlr yr) ++ str1) z))
-        by move: P1; rewrite cat_cons -rcons_cons -rcons_cat -cat_rcons. 
-
-      have H22: allLu R ((rcons stlr yr) ++ str1) yl z
-        by split.
-
-      have H23: exists s, s \in (rcons stlr yr ++ str1) /\ ~ R.+ (z,s).
-      exists yr. split; last by [].
-      rewrite mem_cat. apply/orP. left. rewrite in_rcons. apply/orP. right. 
-      by apply/eqP.
-      
-      right. left.
-      split. by[].
-      split. by[].
-      split. by[].
-      by [].
-      
-      (* the last case *)
-      (* we consider x -> yl then yl -> z by truncating str1 *)
-
-      move: H11 => [/[dup] H11 /(@allL_to_clos_t T) H11' /uniq_crc [[J1 [J2 J3]] J4]].
-      move: (H15) => /(@allL_to_clos_t T) H15'.
-      have H12: ~ (yl =z) by move => H12;rewrite H12 in H15'.
-      
-      have H20: ~ (R.+ (z, yl)) 
-        by move => H21; have H22: R.+ (z,yr) by apply: (t_trans H21 H15').
-        
-      pose proof allL_drop H17 H11 as H21. 
-      
-      have H22: subseq (drop (index yl str1).+1 str1) str1 by apply: drop_subseq.
-      have H23: ~ yr \in drop (index yl str1).+1 str1 by apply: in_subseq H22 J1.
-      have H24: uniq (drop (index yl str1).+1 str1) by apply: subseq_uniq H22 J3.
-      have H25: uniq (yl::(drop (index yl str1).+1 str1))
-        by rewrite cons_uniq H24 andbT;apply: drop_notin. 
-      have H26: uniq (yl::(rcons (drop (index yl str1).+1 str1) z)).
-      rewrite -rcons_cons rcons_uniq H25 andbT. 
-      rewrite in_cons. apply/orP.  move => [/eqP H27 | H27];first by rewrite H27 in H12.
-      by pose proof in_subseq' H22 H27. 
-
-      have H27:  allLu R (drop (index yl str1).+1 str1) yl z by split.
-            
-      right. right.
-      split. by [].
-      split. by [].
-      split. by [].
-      split. by [].
-
-      move: (H7) => [H7'' /uniq_crc [[K1 [K2 K3]] K4]].
-      
-      have H28: (forall s : T, s \in stl1 -> s \in drop (index yl str1).+1 str1 -> False). 
-      move => s H29 H28. 
-      have H30: s \in str1 by pose proof (in_subseq' H22 H28).
-      have H31: ~ (s = x) by move => H32;rewrite H32 in H29.
-      have H32: (s \in (rcons stlr yr) ++ str1).
-      by rewrite mem_cat; apply/orP; right.
-      
-      have H33: allL R ((rcons stlr yr) ++ str1) yl z
-        by rewrite allL_cat; apply/andP. 
-      by pose proof (allL_asym_lr H29 H31 H7'' H10 H32 H33) as [H notH].
-
-      by pose proof (uniq_cat K3 H24 H28).
+          have H28: (forall s : T, s \in stl1 -> s \in drop (index yl str1).+1 str1 -> False). 
+          move => s H29 H28. 
+          have H30: s \in str1 by pose proof (in_subseq' H22 H28).
+          have H31: ~ (s = x) by move => H32;rewrite H32 in H29.
+          have H32: (s \in (rcons stlr yr) ++ str1).
+          by rewrite mem_cat; apply/orP; right.
+          
+          have H33: allL R ((rcons stlr yr) ++ str1) yl z
+            by rewrite allL_cat; apply/andP. 
+          by pose proof (allL_asym_lr H29 H31 H7'' H10 H32 H33) as [H notH].
+          
+          by pose proof (uniq_cat K3 H24 H28).
   Qed.
   
   (** * The main Lemma of this section *)
-  (* ZZZZZ rajouter le subseq dans les conclusions *)
   Lemma Asym2P: forall (x y z:T) (stl: seq T),
       allLu R stl x y -> ~ R.+ (y,x) -> (Asym R.+) (y,z) 
       -> exists stl', exists y', exists str',
-          allLu R stl' x y' /\ ~ R.+ (y',x)
+          subseq (rcons stl' y') (rcons stl y) 
+          /\ allLu R stl' x y' /\ ~ R.+ (y',x)
           /\ allLu R str' y' z /\ ~ R.+ (z, y')
           /\ uniq (stl' ++ str').
   Proof.
     move => x y z stl H1 H1' H2.
     move: (RedBackLR2 H1 H1' H2) => [stl1 [yl [str1 [yr [stlr H7]]]]].
-    move: H7 => [[H7 [H8 [H9 [H10 [H11 H12]]]]] | ]. 
+    move: H7 => [[H7 [H8 [H9' [H9 [H10 [H11 H12]]]]]] | ]. 
     + exists stl1;exists yl;exists stlr.
       have H13:  uniq (stl1 ++ stlr). 
       move: H9 H11 => [_ /uniq_crc [[K1 [K2 K3]] K4]] [_ /uniq_crc [[J1 [J2 J3]] J4]].
@@ -2050,7 +2045,7 @@ Section Hn4.
       
       by rewrite -H7 in H11.
     + 
-      move => [[H7 [H9 ] [H11 H11']] |].
+      move => [[H7'' [H7 [H9 ] [H11 H11']]] |].
       ++ exists stl1;exists yl;exists(rcons str1 yr ++ stlr).
          move: (H7) (H11)  => [H7' H8] [H9' H10].
          have H12: forall s, s \in stl1 -> s \in (rcons str1 yr ++ stlr) -> False.
@@ -2080,7 +2075,7 @@ Section Hn4.
            by pose proof allL_asym_l1 H7' H9 as [H18 H19].
          
          exact.
-      ++ move => [H7 [H8 [H9 [H10 H11]]]].
+      ++ move => [H7'' [H7 [H8 [H9 [H10 H11]]]]].
          exists stl1;exists yl;exists(drop (index yl stlr).+1 stlr).
          move: H7 => [H7 H7'].
          have H12: ~ R.+ (yl, x) by pose proof (allL_asym_l1 H7 H8) as [_ H'].
@@ -2176,20 +2171,23 @@ Section Hn6.
 
   Variables (T:choiceType) (R: relation T). 
   
-  Definition T1 : Type := (T*T)*(T*T).
+  Definition T1 : Type := (T*T*(seq T))*T.
   Definition T2 : Type := (seq T)*T*(seq T).
-
+  
   Definition Re1 :=
-    [set p: T1 | (p.1.2 = p.2.1) 
-                 /\ (Asym R.+) (p.1) /\ (Asym R.+) (p.2)].
-
+    [set p: T1 | exists (x:T) (y:T) (stl:seq T) (z:T), 
+      p = (((x,y), stl), z)
+      /\ allLu R stl x y 
+      /\ ~ R.+ (y,x) 
+      /\ (Asym R.+) (y,z)].
+  
   Definition Re2 := 
-    [set p: T1*T2 | (p.1.1.2 = p.1.2.1)
-                    /\ allLu R p.2.1.1 p.1.1.1 p.2.1.2 
-                    /\ ~ R.+ (p.2.1.2, p.1.1.1) 
-                    /\ allLu R p.2.2 p.2.1.2 p.1.2.2 
-                    /\ ~ R.+ (p.1.2.2, p.2.1.2)
-                    /\ uniq (p.2.1.1 ++ p.2.2)].
+    [set p: T1*T2 |  exists x yl stl z stl' y' str',
+           p.1 = ((x , yl), stl, z)
+           /\ p.2 = (stl', y', str')
+           /\ subseq (rcons stl' y') (rcons stl yl)
+           /\ allLu R stl' x y' /\ ~ R.+ (y',x) 
+           /\ allLu R str' y' z /\ ~ R.+ (z,y')].
   
   Hypothesis A1: (exists (v0:T), (v0 \in setT)).
 
@@ -2198,9 +2196,12 @@ Section Hn6.
   
   Lemma Au2: forall (p: T1), Re1 p -> exists t:T2, Re2 (p,t).
   Proof.
-    move => [[x y1][y2 z]] [/= -> [H1 H2]]. 
-    pose proof (Asym2P H1 H2) as [stl [y [str [H3 [H4 [H5 [H6 H7]]]]]]].
-    by exists (stl,y,str).
+    move => [[[x y] stl] z] [x' [y' [stl' [z' [H1 [H2 [H3 H4]]]]]]].
+    pose proof (Asym2P H2 H3 H4) as [stl'' [y'' [str'' [H5 [H6 [H7 [H8 [H9 H10]]]]]]]].
+    exists (stl'',y'',str'').
+    exists x';exists y';exists stl';exists z';exists stl'';exists y'';exists str''.
+    rewrite /=.
+    exact. 
   Qed.
   
   Lemma choose_Au2: exists (g: T1 -> T2), 
