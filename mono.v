@@ -1570,88 +1570,6 @@ Section allL_uniq.
 
 End allL_uniq.
 
-Section Hn1.
-  (** * some Lemmata around Axiom of choice *) 
-  
-  Variables (T T':choiceType) (R: relation T) (R': set ((T*T)*T')).
-  
-  Hypothesis Au0: (exists (v0:T'), (v0 \in [set: T'])).
-  Hypothesis Au1: forall (xy: T*T), R xy -> exists z, R' (xy,z).
-  
-  Lemma Au1_P1: forall (xy: T*T),
-    exists z, z \in [set u| (R xy /\ R' (xy,u)) \/ ~ R xy].
-  Proof. 
-    move => xy. 
-    case H1: (xy \in R).
-    + move: H1 => /inP H1;move: xy H1 => [x y] /[dup] H1 /Au1 [z H1'].
-      by exists z;rewrite inP;left;split.
-    + move: Au0 => [v0 Au0'].
-      by exists v0; rewrite inP; right;move => /inP H2;rewrite H1 in H2.
-  Qed.
-  
-  Definition g1 (xy : T*T) := xchoose (Au1_P1 xy).
-  
-  Lemma Au1_P3 (xy: T*T): R xy -> R' (xy,g1(xy)).
-  Proof.
-    have H0: g1(xy) \in [set u| (R xy /\ R' (xy,u)) \/ ~ R xy]
-      by apply: xchooseP.
-    by move: H0 => /inP [[_ ?] //| ? //].
-  Qed.
-  
-  Lemma Au1_G: exists (g: T*T -> T'), forall xy, R xy -> R' (xy,g(xy)).
-  Proof. by exists g1; apply: Au1_P3. Qed.
-  
-End Hn1.
-
-Section Hn2. 
-  (** * Using Hn1 combined to TCP_uniq' *) 
-  Variables (T:choiceType) (R: relation T). 
-
-  Definition R' :=[set xyz: (T*T)*(seq T)| 
-                    uniq (xyz.1.1 ::(rcons xyz.2 xyz.1.2))
-                    /\ (xyz.1.1 ::(rcons xyz.2 xyz.1.2)) [L\in] R].
-
-  Lemma Au0: (exists (v0: seq T), (v0 \in [set: seq T])).
-  Proof. by exists [::];rewrite inP. Qed.
-  
-  Lemma Au1: forall (xy:T*T), (Asym R.+) xy -> exists z, R' (xy,z).
-  Proof. 
-    by move => [x y] H1;move: (TCP_uniq' H1) => [st H3];exists st. Qed.
-  
-  Lemma choose_Rseq: exists (g: T*T -> seq T), forall xy, (Asym R.+) xy -> R' (xy,g(xy)).
-  Proof. by move: (Au1_G Au0 Au1) => [g H1]; exists g. Qed.
-
-End Hn2.
-
-Section Hn3. 
-  (** * Using Hn1 *) 
-  Variables (T:choiceType) (R: relation T) (Rseq: relation (seq T)) 
-    (g: T*T -> seq T).           
-
-  Definition Re1 :=
-    [set xyzt:(T*T)*(T*T) |
-      (xyzt.1.2 = xyzt.2.1) /\
-      (Asym R.+) (xyzt.1) /\ (Asym R.+) (xyzt.2)].
-
-  Definition Mix (xyztu: ((T*T)*(T*T))*T)
-    := ((xyztu.1.1.1,xyztu.2),(xyztu.2, xyztu.1.2.2)).
-  
-  Definition Re2 (g: T*T -> seq T) := 
-    [set xyztu:((T*T)*(T*T))*T | 
-      Re1 (Mix xyztu) /\ (Rseq (g (Mix xyztu).1, g (Mix xyztu).2))].
- 
-  Hypothesis ARR':  (exists (v0:T), (v0 \in [set: T])).
-
-  Lemma Au2: forall (xyzt: (T*T)*(T*T)),
-      Re1 xyzt -> exists z: T, Re2 g (xyzt,z).
-  Admitted.
-  
-  Lemma Todo1: exists (g1: (T*T)*(T*T) -> T), 
-      forall xyzt, Re1 xyzt -> Re2 g (xyzt,g1(xyzt)).
-  Proof. by move: (Au1_G ARR' Au2) => [g1 H1]; exists g1. Qed.
-
-End Hn3.
-
 Section Hn4.
   (** * some Lemmata around infinite outward R-path *) 
   
@@ -2097,8 +2015,9 @@ Section Hn4.
 
       by pose proof (uniq_cat K3 H24 H28).
   Qed.
-  
-  Lemma RedBackLR3: forall (x y z:T),
+
+  (** * The main Lemma of this section *)
+  Lemma Asym2P: forall (x y z:T),
       (Asym R.+)(x,y) -> (Asym R.+) (y,z) 
       -> exists stl', exists y', exists str',
           allLu R stl' x y' /\ ~ R.+ (y',x)
@@ -2167,3 +2086,124 @@ Section Hn4.
   Qed.
   
 End Hn4.
+
+Section Hn1.
+  (** * some Lemmata around Axiom of choice *) 
+  
+  Variables (T T':choiceType) (R: relation T) (R': set ((T*T)*T')).
+  
+  Hypothesis Au0: (exists (v0:T'), (v0 \in [set: T'])).
+  Hypothesis Au1: forall (xy: T*T), R xy -> exists z, R' (xy,z).
+  
+  Lemma Au1_P1: forall (xy: T*T),
+    exists z, z \in [set u| (R xy /\ R' (xy,u)) \/ ~ R xy].
+  Proof. 
+    move => xy. 
+    case H1: (xy \in R).
+    + move: H1 => /inP H1;move: xy H1 => [x y] /[dup] H1 /Au1 [z H1'].
+      by exists z;rewrite inP;left;split.
+    + move: Au0 => [v0 Au0'].
+      by exists v0; rewrite inP; right;move => /inP H2;rewrite H1 in H2.
+  Qed.
+  
+  Definition g1 (xy : T*T) := xchoose (Au1_P1 xy).
+  
+  Lemma Au1_P3 (xy: T*T): R xy -> R' (xy,g1(xy)).
+  Proof.
+    have H0: g1(xy) \in [set u| (R xy /\ R' (xy,u)) \/ ~ R xy]
+      by apply: xchooseP.
+    by move: H0 => /inP [[_ ?] //| ? //].
+  Qed.
+  
+  Lemma Au1_G: exists (g: T*T -> T'), forall xy, R xy -> R' (xy,g(xy)).
+  Proof. by exists g1; apply: Au1_P3. Qed.
+  
+End Hn1.
+
+Section Hn2. 
+  (** * Using Hn1 combined to TCP_uniq *) 
+  Variables (T:choiceType) (R: relation T). 
+
+  Definition R' :=[set xyz: (T*T)*(seq T)|  allLu R xyz.2 xyz.1.1 xyz.1.2].
+  
+  Lemma Au0: (exists (v0: seq T), (v0 \in [set: seq T])).
+  Proof. by exists [::];rewrite inP. Qed.
+  
+  Lemma Au1: forall (xy:T*T), (Asym R.+) xy -> exists z, R' (xy,z).
+  Proof. by move => [x y] /TCP_uniq1 [[st H3] _];exists st. Qed.
+  
+  Lemma choose_Rseq: exists (g: T*T -> seq T), forall xy, (Asym R.+) xy -> R' (xy,g(xy)).
+  Proof. by move: (Au1_G Au0 Au1) => [g H1]; exists g. Qed.
+
+End Hn2.
+
+Section Hn5.
+  (** * some Lemmata around Axiom of choice *) 
+  
+  Variables (T T':choiceType) (R: set T) (R': set (T*T')).
+  
+  Hypothesis Au0: (exists (v0:T'), (v0 \in [set: T'])).
+  Hypothesis Au1: forall (t: T), R t -> exists z, R' (t,z).
+  
+  Lemma Au1_P1': forall (t: T),
+    exists z, z \in [set u| (R t /\ R' (t,u)) \/ ~ R t].
+  Proof. 
+    move => t. 
+    case H1: (t \in R).
+    + move: H1 => /inP H1;move: H1 => /[dup] H1 /Au1 [z H1'].
+      by exists z;rewrite inP;left;split.
+    + move: Au0 => [v0 Au0'].
+      by exists v0; rewrite inP; right;move => /inP H2;rewrite H1 in H2.
+  Qed.
+  
+  Definition h (t : T) := xchoose (Au1_P1' t).
+  
+  Lemma Au1_P3' (t: T): R t -> R' (t, h(t)).
+  Proof.
+    have H0: h(t) \in [set u| (R t /\ R' (t,u)) \/ ~ R t]
+      by apply: xchooseP.
+    by move: H0 => /inP [[_ ?] //| ? //].
+  Qed.
+  
+  Lemma Au1_G': exists (h: T -> T'), forall t, R t -> R' (t, h(t)).
+  Proof. by exists h; apply: Au1_P3'. Qed.
+  
+End Hn5.
+
+Section Hn6. 
+
+  Variables (T:choiceType) (R: relation T). 
+  
+  Definition T1 : Type := (T*T)*(T*T).
+  Definition T2 : Type := (seq T)*T*(seq T).
+
+  Definition Re1 :=
+    [set p: T1 | (p.1.2 = p.2.1) 
+                 /\ (Asym R.+) (p.1) /\ (Asym R.+) (p.2)].
+
+  Definition Re2 := 
+    [set p: T1*T2 | (p.1.1.2 = p.1.2.1)
+                    /\ allLu R p.2.1.1 p.1.1.1 p.2.1.2 
+                    /\ ~ R.+ (p.2.1.2, p.1.1.1) 
+                    /\ allLu R p.2.2 p.2.1.2 p.1.2.2 
+                    /\ ~ R.+ (p.1.2.2, p.2.1.2)
+                    /\ uniq (p.2.1.1 ++ p.2.2)].
+  
+  Hypothesis A1: (exists (v0:T), (v0 \in setT)).
+
+  Lemma ARR':exists (v: T2), (v \in [set: T2]).
+  Proof. by move: A1 => [v0 _];exists ([::],v0,[::]);rewrite inP. Qed.
+  
+  Lemma Au2: forall (p: T1), Re1 p -> exists t:T2, Re2 (p,t).
+  Proof.
+    move => [[x y1][y2 z]] [/= -> [H1 H2]]. 
+    pose proof (Asym2P H1 H2) as [stl [y [str [H3 [H4 [H5 [H6 H7]]]]]]].
+    by exists (stl,y,str).
+  Qed.
+  
+  Lemma choose_Au2: exists (g: T1 -> T2), 
+      forall p, Re1 p  -> Re2(p, g(p)).
+  Proof. by move: (@Au1_G' T1 T2 Re1 Re2 ARR' Au2)  => [g1 H1]; exists g1. Qed. 
+
+End Hn6.
+
