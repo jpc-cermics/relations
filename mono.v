@@ -2048,57 +2048,7 @@ Section Hn4.
   
 End Hn4.
 
-Section Hn1.
-  (** * some Lemmata around Axiom of choice *) 
-  
-  Variables (T T':choiceType) (R: relation T) (R': set ((T*T)*T')).
-  
-  Hypothesis Au0: (exists (v0:T'), (v0 \in [set: T'])).
-  Hypothesis Au1: forall (xy: T*T), R xy -> exists z, R' (xy,z).
-  
-  Lemma Au1_P1: forall (xy: T*T),
-    exists z, z \in [set u| (R xy /\ R' (xy,u)) \/ ~ R xy].
-  Proof. 
-    move => xy. 
-    case H1: (xy \in R).
-    + move: H1 => /inP H1;move: xy H1 => [x y] /[dup] H1 /Au1 [z H1'].
-      by exists z;rewrite inP;left;split.
-    + move: Au0 => [v0 Au0'].
-      by exists v0; rewrite inP; right;move => /inP H2;rewrite H1 in H2.
-  Qed.
-  
-  Definition g1 (xy : T*T) := xchoose (Au1_P1 xy).
-  
-  Lemma Au1_P3 (xy: T*T): R xy -> R' (xy,g1(xy)).
-  Proof.
-    have H0: g1(xy) \in [set u| (R xy /\ R' (xy,u)) \/ ~ R xy]
-      by apply: xchooseP.
-    by move: H0 => /inP [[_ ?] //| ? //].
-  Qed.
-  
-  Lemma Au1_G: exists (g: T*T -> T'), forall xy, R xy -> R' (xy,g(xy)).
-  Proof. by exists g1; apply: Au1_P3. Qed.
-  
-End Hn1.
-
-Section Hn2. 
-  (** * Using Hn1 combined to TCP_uniq *) 
-  Variables (T:choiceType) (R: relation T). 
-
-  Definition R' :=[set xyz: (T*T)*(seq T)|  allLu R xyz.2 xyz.1.1 xyz.1.2].
-  
-  Lemma Au0: (exists (v0: seq T), (v0 \in [set: seq T])).
-  Proof. by exists [::];rewrite inP. Qed.
-  
-  Lemma Au1: forall (xy:T*T), (Asym R.+) xy -> exists z, R' (xy,z).
-  Proof. by move => [x y] /TCP_uniq1 [[st H3] _];exists st. Qed.
-  
-  Lemma choose_Rseq: exists (g: T*T -> seq T), forall xy, (Asym R.+) xy -> R' (xy,g(xy)).
-  Proof. by move: (Au1_G Au0 Au1) => [g H1]; exists g. Qed.
-
-End Hn2.
-
-Section Hn5.
+Section Hn0.
   (** * some Lemmata around Axiom of choice *) 
   
   Variables (T T':choiceType) (R: set T) (R': set (T*T')).
@@ -2106,34 +2056,51 @@ Section Hn5.
   Hypothesis Au0: (exists (v0:T'), (v0 \in [set: T'])).
   Hypothesis Au1: forall (t: T), R t -> exists z, R' (t,z).
   
-  Lemma Au1_P1': forall (t: T),
+  Lemma Au1_P1: forall (t: T),
     exists z, z \in [set u| (R t /\ R' (t,u)) \/ ~ R t].
   Proof. 
     move => t. 
     case H1: (t \in R).
-    + move: H1 => /inP H1;move: H1 => /[dup] H1 /Au1 [z H1'].
+    + move: H1 => /inP H1;move: t H1 => t /[dup] H1 /Au1 [z H1'].
       by exists z;rewrite inP;left;split.
     + move: Au0 => [v0 Au0'].
       by exists v0; rewrite inP; right;move => /inP H2;rewrite H1 in H2.
   Qed.
   
-  Definition h (t : T) := xchoose (Au1_P1' t).
-  
-  Lemma Au1_P3' (t: T): R t -> R' (t, h(t)).
+  Lemma Au1_P3 (t: T): R t -> R' (t,xchoose (Au1_P1 t)).
   Proof.
-    have H0: h(t) \in [set u| (R t /\ R' (t,u)) \/ ~ R t]
+    have H0: xchoose (Au1_P1 t) \in [set u| (R t /\ R' (t,u)) \/ ~ R t]
       by apply: xchooseP.
     by move: H0 => /inP [[_ ?] //| ? //].
   Qed.
   
-  Lemma Au1_G': exists (h: T -> T'), forall t, R t -> R' (t, h(t)).
-  Proof. by exists h; apply: Au1_P3'. Qed.
+  Lemma Au1_G: exists (g: T -> T'), forall t, R t -> R' (t,g(t)).
+  Proof. by exists (fun t => xchoose (Au1_P1 t)); apply: Au1_P3. Qed.
   
-End Hn5.
+End Hn0.
+
+Section Hn2. 
+  (* apply Hn0 to allLu *)
+  Variables (T:choiceType) (R: relation T). 
+  
+  Lemma choose_Rseq: exists (g: T*T -> seq T), forall xy, 
+      (Asym R.+) xy -> allLu R (g xy) xy.1 xy.2.
+  Proof.
+    have Au0: (exists (v0: seq T), (v0 \in [set: seq T]))
+      by (exists [::]);rewrite inP.
+    pose R' :=[set xyz: (T*T)*(seq T)| allLu R xyz.2 xyz.1.1 xyz.1.2].
+    have Au1: forall (xy:T*T), (Asym R.+) xy -> exists z, R' (xy,z)
+          by move => [x y] /TCP_uniq1 [[st H3] _];exists st.
+    by move: (Au1_G Au0 Au1) => [g H1]; exists g. 
+  Qed.
+  
+End Hn2.
 
 Section Hn6. 
-
+  
   Variables (T:choiceType) (R: relation T). 
+
+  Hypothesis A1: (exists (v0:T), (v0 \in setT)).
   
   Definition T1 : Type := (T*T*(seq T))*T.
   Definition T2 : Type := (seq T)*T*(seq T).
@@ -2153,8 +2120,6 @@ Section Hn6.
            /\ allLu R stl' x y' /\ ~ R.+ (y',x) 
            /\ allLu R str' y' z /\ ~ R.+ (z,y')].
   
-  Hypothesis A1: (exists (v0:T), (v0 \in setT)).
-
   Lemma ARR':exists (v: T2), (v \in [set: T2]).
   Proof. by move: A1 => [v0 _];exists ([::],v0,[::]);rewrite inP. Qed.
   
@@ -2170,7 +2135,54 @@ Section Hn6.
   
   Lemma choose_Au2: exists (g: T1 -> T2), 
       forall p, Re1 p  -> Re2(p, g(p)).
-  Proof. by move: (@Au1_G' T1 T2 Re1 Re2 ARR' Au2)  => [g1 H1]; exists g1. Qed. 
+  Proof. by move: (@Au1_G T1 T2 Re1 Re2 ARR' Au2)  => [g1 H1]; exists g1. Qed. 
 
 End Hn6.
 
+Section Infinite_paths.
+
+  Variables (T:choiceType) (R: relation T). 
+
+  Hypothesis A1: (exists (v0:T), (v0 \in setT)).
+  
+  Lemma Inf1: (iic (Asym R.+)) -> exists f: nat ->T, exists g: nat -> seq T,
+      forall n, allLu R (g n) (f n) (f n.+1) /\ ~ R.+ (f(n.+1), f(n)) /\ Asym R.+ (f n.+1, f n.+2).
+  Proof.
+    move => [f H1];move: (@choose_Rseq T R) => [g H2].
+    exists f;exists (fun n => (g ((f n),(f n.+1)))).
+    move => n.
+    move: (H1) => /(_ n)/[dup] -[_ H3] /H2 H4.
+    move: H1 => /(_ n.+1) H5.
+    exact.
+  Qed.
+  
+  Lemma Inf2: (iic (Asym R.+)) -> exists f: nat ->T, exists g: nat -> seq T, 
+      exists hl: nat -> (seq T), exists h: nat -> T, exists hr: nat -> seq T,
+      forall n,  allLu R (hl n) (f n) (h n) /\ ~ R.+ (h (n), f(n)) /\ Asym R.+ (h n, f n.+2)
+            /\ subseq (rcons (hr n) (h n)) (rcons (g n) (f n.+2)).
+  Proof.
+    move => /[dup] H0 /Inf1 [f [g H1]].
+    pose proof (@choose_Au2 T R A1) as [h H2].
+    exists f; exists g.
+    exists (fun n => (h ((f n),(f n.+1),(g n),(f n.+2))).1.1). 
+    exists (fun n => (h ((f n),(f n.+1),(g n),(f n.+2))).1.2). 
+    exists (fun n => (h ((f n),(f n.+1),(g n),(f n.+2))).2). 
+    move => n. 
+    move: H1 => /(_ n) H3.
+    rewrite /Re1 in H2.
+    have H4: (@Re1 T) R ((f n), (f n.+1), (g n), (f n.+2)).
+    rewrite /Re1. exists (f n,f n.+1, g n, f n.+2).
+    rewrite /Re1 /mkset.
+    
+    
+    
+    have H4: Re1 R (
+    
+    rewrite /Re1 in H2.
+    rewrite /=.
+    move => [f H1];move: (@choose_Rseq T R) => [g H2].
+    exists f;exists (fun n => (g ((f n),(f n.+1)))).
+
+
+
+End Infinite_paths.
