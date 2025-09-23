@@ -2208,5 +2208,16 @@ Section Hn6.
       forall p, Re1 p  -> Re2(p, g(p)).
   Proof. by move: (@Au1_G' T1 T2 Re1 Re2 ARR' Au2)  => [g1 H1]; exists g1. Qed. 
 
+  Lemma last:  (iic (Asym R.+)) -> True.
+  Proof.
+    move => [f H1].
+    have H2: Asym R.+ (f 0, f 1) by apply: H1.
+    move: H2 => /TCP_uniq1 [[st H2] H3].
+    pose proof choose_Au2 as [g H4].
+    pose proof TCP_uniq1.
+  Admitted.
+  
+
+
 End Hn6.
 
