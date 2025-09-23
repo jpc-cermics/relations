@@ -1797,10 +1797,12 @@ Section Hn4.
       by move: H1'; rewrite cons_uniq rcons_cons => /andP [_ H1'].
   Qed.
   
-  Lemma RedBackLR: forall (x y z:T),
-      (Asym R.+)(x,y) -> (Asym R.+) (y,z) 
+  Lemma RedBackLR: forall (x y z:T) (stl: seq T),
+      allLu R stl x y -> ~ R.+ (y,x) -> 
+      (Asym R.+) (y,z) 
       -> exists stl', exists yl, exists str', exists yr, exists stlr,
           ((yl = yr) \/ (allLu R stlr yl yr))
+          /\ subseq (rcons stl' yl) (rcons stl y) 
           /\ allLu R stl' x yl 
           /\ ~ (R.+ (yl,x))
           /\ ~ (R.+ (yl,(last x stl')))
@@ -1808,8 +1810,8 @@ Section Hn4.
           /\ ~ (R.+ (z,yr))
           /\ ~ (R.+ ((head z str'),yr)).
   Proof.
-    move => x y z /TCP_uniq1 [[stl [H1 H2]] H3] /TCP_uniq1 [[str [H4 H5]] H6].
-    pose proof (RedBackL H1 H2 H3) as [stl' [yl [_ H7]]].
+    move => x y z stl [H1 H2] H3 /TCP_uniq1 [[str [H4 H5]] H6].
+    pose proof (RedBackL H1 H2 H3) as [stl' [yl [H7' H7]]].
     pose proof (RedBackR H4 H5 H6) as [str' [yr [_ H8]]].
     exists stl';exists yl;exists str';exists yr.
     move: H7 => [L1 [L2 [L3 [L4 [L5 L6]]]]].
@@ -1870,31 +1872,30 @@ Section Hn4.
     by pose proof (uniq_cat H7 H2 H12).
   Qed.
   
+  (* XXXX changer le nom et deplacer *)
   Lemma RedBackLR1: forall yl (stlr: seq T) yr str z,
       allLu R stlr yl yr -> allLu R str yr z 
       -> ~ R.+ (z, yr) -> ~ R.+ (head z str, yr)
       -> ~ ( z \in stlr)  /\ ~ (yl = z).
   Proof.
     move => yl stlr yr str z H1 H2 H3 H4.
-    move: H1 => [H1 /uniq_crc  [[J1 [J2 J3]] J4]].
-    move: H2 => [H2 /uniq_crc  [[K1 [K2 K3]] K4]].
+    move: H1 => [H1 /uniq_crc  [[J1 [J2 _]] _]].
+    move: H2 => [H2 /uniq_crc  [[K1 [K2 _]] _]].
     have H5: forall s, s \in stlr -> ~(s = yr)
         by move => s H6 H7; rewrite H7 in H6.
     split. 
     + move => /[dup] H6 /H5 H7.
-      have H8: R.+ (z, yr). 
-      pose proof (Lift_in_F (allL_Lift_in_rc H1)) as H8.
-      pose proof (allset_in H6 H8) as H9. 
-      by rewrite Fset_t0 -inP.
-      exact. 
-    + (* par composition des Asym *)
-      move => H6. 
-      move: H1 => /(@allL_to_clos_t T) H1.
-      by  rewrite H6 in H1.
+      have H8: R.+ (z, yr) 
+        by pose proof (allset_in H6 (Lift_in_F (allL_Lift_in_rc H1)));
+        rewrite Fset_t0 -inP.
+      exact.
+    + (* Asym composition is Asym *) 
+      by move: H1 => + H6;rewrite H6 => /(@allL_to_clos_t T) H1.
   Qed.
   
-  Lemma RedBackLR2:  forall (x y z:T),
-      (Asym R.+)(x,y) -> (Asym R.+) (y,z) 
+  (* ZZZZZ rajouter le subseq dans les conclusions *)
+  Lemma RedBackLR2:  forall (x y z:T) (stl: seq T),
+      allLu R stl x y -> ~ R.+ (y,x) -> (Asym R.+) (y,z) 
       -> exists stl', exists yl, exists (stlr: seq T), exists yr, exists str',
           ((yl = yr /\ (forall s, s \in stl' -> s \in str' -> False)
             /\ allLu R stl' x yl /\ ~ (R.+ (yl,(last x stl')))
@@ -1914,10 +1915,10 @@ Section Hn4.
              )
            ).
   Proof.
-    move => x y z H1 H2.
-    move: (RedBackLR H1 H2) => [stl1 [yl [str1 [yr [stlr H7]]]]].
+    move => x y z stl H1 H1' H2.
+    move: (RedBackLR H1 H1' H2) => [stl1 [yl [str1 [yr [stlr H7]]]]].
     
-    move: H7=> [[H15 | [H15 H16]] [H7 [H8 [H10 [H11 [H13 H14]]]]]].
+    move: H7=> [[H15 | [H15 H16]] [H7' [H7 [H8 [H10 [H11 [H13 H14]]]]]]].
     + exists stl1; exists yl; exists stlr; exists yr; exists str1. 
       move:  H7 H8 H10; rewrite H15 => H7 H8 H10.
       left. split. by []. 
@@ -2000,7 +2001,7 @@ Section Hn4.
       split. by [].
       split. by [].
 
-      move: (H7) => [H7' /uniq_crc [[K1 [K2 K3]] K4]].
+      move: (H7) => [H7'' /uniq_crc [[K1 [K2 K3]] K4]].
       
       have H28: (forall s : T, s \in stl1 -> s \in drop (index yl str1).+1 str1 -> False). 
       move => s H29 H28. 
@@ -2011,21 +2012,22 @@ Section Hn4.
       
       have H33: allL R ((rcons stlr yr) ++ str1) yl z
         by rewrite allL_cat; apply/andP. 
-      by pose proof (allL_asym_lr H29 H31 H7' H10 H32 H33) as [H notH].
+      by pose proof (allL_asym_lr H29 H31 H7'' H10 H32 H33) as [H notH].
 
       by pose proof (uniq_cat K3 H24 H28).
   Qed.
-
+  
   (** * The main Lemma of this section *)
-  Lemma Asym2P: forall (x y z:T),
-      (Asym R.+)(x,y) -> (Asym R.+) (y,z) 
+  (* ZZZZZ rajouter le subseq dans les conclusions *)
+  Lemma Asym2P: forall (x y z:T) (stl: seq T),
+      allLu R stl x y -> ~ R.+ (y,x) -> (Asym R.+) (y,z) 
       -> exists stl', exists y', exists str',
           allLu R stl' x y' /\ ~ R.+ (y',x)
           /\ allLu R str' y' z /\ ~ R.+ (z, y')
           /\ uniq (stl' ++ str').
   Proof.
-    move => x y z H1 H2.
-    move: (RedBackLR2 H1 H2) => [stl1 [yl [str1 [yr [stlr H7]]]]].
+    move => x y z stl H1 H1' H2.
+    move: (RedBackLR2 H1 H1' H2) => [stl1 [yl [str1 [yr [stlr H7]]]]].
     move: H7 => [[H7 [H8 [H9 [H10 [H11 H12]]]]] | ]. 
     + exists stl1;exists yl;exists stlr.
       have H13:  uniq (stl1 ++ stlr). 
