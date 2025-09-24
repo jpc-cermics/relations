@@ -2197,4 +2197,12 @@ Section Infinite_paths.
     exact.
   Qed.
 
+  Fixpoint rho (f: nat -> T) (g: nat -> seq T) (h: (T1 T) -> (T2 T)) n : T*(seq T):= 
+    match n with 
+    | 0 => ((f 0),(g 0))
+    | S n => let y:= h( (rho f g h n).1, (f n.+1), (rho f g h n).2, (f n.+2)) 
+            in (y.1.2,y.1.1)
+    end.
+
+
 End Infinite_paths.
