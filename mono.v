@@ -2144,7 +2144,11 @@ Section Poo.
   Lemma gnP: forall n (f : nat -> T) (g : nat -> seq T) h,
       (gn f g h n) = ((gn f g h n).1.1, (gn f g h n).1.2, (gn f g h n).2).
   Proof.
-  Admitted.
+    move => n f g h.
+    have H1: forall p: (seq T)*T*(seq T), p = (p.1.1, p.1.2, p.2)
+        by move => [[p1 p2] p3].
+    by pose proof (H1 (gn f g h n)).
+  Qed.
   
   Lemma Asym2P3: 
     (iic (Asym R.+)) -> 
@@ -2163,14 +2167,16 @@ Section Poo.
     exists f. exists (fun n => gn f (fun n => g ((f n.+1),(f n.+2))) h n).
     move => n Gn H4 H5 H6.
     move: H1 => /(_ Gn.1.1 Gn.1.2 Gn.2 n) H1.
-    pose proof (H1 H4 H5 H6) as H7. 
+    pose proof (H1 H4 H5 H6) as H7.
+    have H6': forall p: (seq T)*T*(seq T), p = (p.1.1, p.1.2, p.2)
+        by move => [[p1 p2] p3].
+    
     move: H7; rewrite  /Gn -gnP => -[H7 [H8 [H9 [H10 H11]]]].
     by rewrite /gn. 
   Qed.
 
-    
-    
-    
+End Poo.
+
 
 Section Hn3. 
   
