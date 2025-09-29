@@ -2118,42 +2118,44 @@ Section Poo.
   Qed.
 
   (** Axiome du choix ici *)
-  Lemma Asym2P2: (iic (Asym R.+)) -> 
-                 exists f : nat -> T,
-                 exists h, 
-                 forall (stl: seq T) x (str: seq T) n, 
-                   uniq (stl ++ str) -> allLu R str x (f n.+1) -> ~ R.+ (f n.+1,x) 
-                   -> let p := h (stl, x, str, n) in 
-                     (* uniq(stl ++ stl') /\ *)
-                     allLu R p.1.1 x p.1.2 /\ ~ R.+ (p.1.2,x) 
-                     /\ (uniq (p.1.1 ++ p.2) /\ allLu R p.2 p.1.2 (f n.+2) /\ ~ R.+ (f n.+2,p.1.2)).
+  Lemma Asym2P2: 
+    (iic (Asym R.+)) -> exists f : nat -> T, exists h, 
+      forall (stl: seq T) x (str: seq T) n, 
+        uniq (stl ++ str) -> allLu R str x (f n.+1) -> ~ R.+ (f n.+1,x) 
+        -> let p := h (stl, x, str, n) in 
+          (* uniq(stl ++ stl') /\ *)
+          allLu R p.1.1 x p.1.2 /\ ~ R.+ (p.1.2,x) 
+          /\ (uniq (p.1.1 ++ p.2) /\ allLu R p.2 p.1.2 (f n.+2) /\ ~ R.+ (f n.+2,p.1.2)).
   Proof.
   Admitted.
 
-  Fixpoint gn (f : nat -> T) (g : nat -> seq T) h n := 
+  Fixpoint gn (f : nat -> T) (g : nat -> seq T) 
+    (h:(seq T)*T*(seq T)*nat->(seq T)*T*(seq T))  n : (seq T)*T*(seq T) := 
     match n with 
     | 0 => (g 0, f 0, g 0)
     | S n => h ((gn f g h n),n)
     end.
 
-  Lemma gnP: forall n (f : nat -> T) (g : nat -> seq T) h,
-      ((gn f g h n),n) = ((gn f g h n).1.1, (gn f g h n).1.2, (gn f g h n).2, n).
-  Proof.
-    elim => [f g h // | n Hn f g h].
-    rewrite /gn -/gn.
-    rewrite Hn /=.
-    
+  Definition hn n := (n, n.+1, n.+2).
   
-  (** Axiome du choix ici *)
-  Lemma Asym2P3: (iic (Asym R.+)) -> 
-                 exists f : nat -> T,
-                 exists gn, 
-                 forall n, let t:= (gn n) in 
-                   uniq (t.1.1 ++ t.2) -> allLu R t.2 t.1.2 (f n.+1) -> ~ R.+ (f n.+1,t.1.2) 
-                   -> let p := gn n.+1 in 
-                     (* uniq(stl ++ stl') /\ *)
-                     allLu R p.1.1 (gn n).1.2 p.1.2 /\ ~ R.+ (p.1.2,(gn n).1.2) 
-                     /\ (uniq (p.1.1 ++ p.2) /\ allLu R p.2 p.1.2 (f n.+2) /\ ~ R.+ (f n.+2,p.1.2)).
+  Lemma testR: forall n, (hn n)= ((hn n).1.1, (hn n).1.2, (hn n).2).
+  Proof. by move => n. Qed.
+  
+  Lemma gnP: forall n (f : nat -> T) (g : nat -> seq T) h,
+      (gn f g h n) = ((gn f g h n).1.1, (gn f g h n).1.2, (gn f g h n).2).
+  Proof.
+  Admitted.
+  
+  Lemma Asym2P3: 
+    (iic (Asym R.+)) -> 
+    exists f : nat -> T,
+    exists gn, 
+    forall n, let t:= (gn n) in 
+         uniq (t.1.1 ++ t.2) -> allLu R t.2 t.1.2 (f n.+1) -> ~ R.+ (f n.+1,t.1.2) 
+         -> let p := gn n.+1 in 
+           (* uniq(stl ++ stl') /\ *)
+           allLu R p.1.1 (gn n).1.2 p.1.2 /\ ~ R.+ (p.1.2,(gn n).1.2) 
+           /\ (uniq (p.1.1 ++ p.2) /\ allLu R p.2 p.1.2 (f n.+2) /\ ~ R.+ (f n.+2,p.1.2)).
   Proof.
     move => H0. 
     pose proof Asym2P2 H0 as [f [h H1]].
@@ -2161,28 +2163,11 @@ Section Poo.
     exists f. exists (fun n => gn f (fun n => g ((f n.+1),(f n.+2))) h n).
     move => n Gn H4 H5 H6.
     move: H1 => /(_ Gn.1.1 Gn.1.2 Gn.2 n) H1.
-    pose proof (H1 H4 H5 H6) as [H7 [H8 [H9 [H10 H11]]]].
-    
-    have H12: 
-      ((gn f (fun n : nat => g (f n.+1, f n.+2)) h n).1.1,
-        (gn f (fun n : nat => g (f n.+1, f n.+2)) h n).1.2,
-        (gn f (fun n : nat => g (f n.+1, f n.+2)) h n).2, n)
-      (gn f (fun n : nat => g (f n.+1, f n.+2)) h n).1.2
-      (h
-         ((gn f (fun n : nat => g (f n.+1, f n.+2)) h n).1.1,
-          (gn f (fun n : nat => g (f n.+1, f n.+2)) h n).1.2,
-          (gn f (fun n : nat => g (f n.+1, f n.+2)) h n).2, n)).1.2
-  ============================
-  allLu R (h (gn f (fun n0 : nat => g (f n0.+1, f n0.+2)) h n, n)).1.1
-    (gn f (fun n0 : nat => g (f n0.+1, f n0.+2)) h n).1.2
-    (h (gn f (fun n0 : nat => g (f n0.+1, f n0.+2)) h n, n)).1.2
+    pose proof (H1 H4 H5 H6) as H7. 
+    move: H7; rewrite  /Gn -gnP => -[H7 [H8 [H9 [H10 H11]]]].
+    by rewrite /gn. 
+  Qed.
 
-
-
-    split. rewrite /gn -/gn.
-    rewrite /Gn in H7.
-    
-    
     
     
     
