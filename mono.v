@@ -2045,7 +2045,7 @@ Section Hn4.
          have H12: ~ R.+ (yl, x) by pose proof (allL_asym_l1 H7 H8) as [_ H'].
          exact.
   Qed.
-  
+
 End Hn4.
 
 Section Hn0.
@@ -2096,32 +2096,148 @@ Section Hn2.
   
 End Hn2.
 
+Section Poo. 
+  
+  Variables (T:choiceType) (R: relation T). 
+
+  Hypothesis A1: (exists (v0:T), (v0 \in setT)).
+
+  Lemma Asym2P1: (iic (Asym R.+)) -> 
+                 exists f : nat -> T, forall (stl: seq T) x (str: seq T) n, 
+                   uniq (stl ++ str) -> allLu R str x (f n.+1) -> ~ R.+ (f n.+1,x) 
+                   -> exists stl', exists y', exists str',
+                       (* uniq(stl ++ stl') /\ *)
+                         allLu R stl' x y' /\ ~ R.+ (y',x) 
+                       /\ (uniq (stl' ++ str') /\ allLu R str' y' (f n.+2) /\ ~ R.+ (f n.+2,y')).
+  Proof.
+    move => [f Hn]; exists f; move => stl x str n H1 H2 H3.
+    move: (Hn) => /(_ n.+1) Hn'.
+    pose proof (Asym2P H2 H3 Hn') as [stl' [y' [str' [H4 [H5 [H6 [H7 [H8 H9]]]]]]]].
+    exists stl';exists y';exists str'.
+    exact. 
+  Qed.
+
+  (** Axiome du choix ici *)
+  Lemma Asym2P2: (iic (Asym R.+)) -> 
+                 exists f : nat -> T,
+                 exists h, 
+                 forall (stl: seq T) x (str: seq T) n, 
+                   uniq (stl ++ str) -> allLu R str x (f n.+1) -> ~ R.+ (f n.+1,x) 
+                   -> let p := h (stl, x, str, n) in 
+                     (* uniq(stl ++ stl') /\ *)
+                     allLu R p.1.1 x p.1.2 /\ ~ R.+ (p.1.2,x) 
+                     /\ (uniq (p.1.1 ++ p.2) /\ allLu R p.2 p.1.2 (f n.+2) /\ ~ R.+ (f n.+2,p.1.2)).
+  Proof.
+  Admitted.
+
+  Fixpoint gn (f : nat -> T) (g : nat -> seq T) h n := 
+    match n with 
+    | 0 => (g 0, f 0, g 0)
+    | S n => h ((gn f g h n),n)
+    end.
+
+  Lemma gnP: forall n (f : nat -> T) (g : nat -> seq T) h,
+      ((gn f g h n),n) = ((gn f g h n).1.1, (gn f g h n).1.2, (gn f g h n).2, n).
+  Proof.
+    elim => [f g h // | n Hn f g h].
+    rewrite /gn -/gn.
+    rewrite Hn /=.
+    
+  
+  (** Axiome du choix ici *)
+  Lemma Asym2P3: (iic (Asym R.+)) -> 
+                 exists f : nat -> T,
+                 exists gn, 
+                 forall n, let t:= (gn n) in 
+                   uniq (t.1.1 ++ t.2) -> allLu R t.2 t.1.2 (f n.+1) -> ~ R.+ (f n.+1,t.1.2) 
+                   -> let p := gn n.+1 in 
+                     (* uniq(stl ++ stl') /\ *)
+                     allLu R p.1.1 (gn n).1.2 p.1.2 /\ ~ R.+ (p.1.2,(gn n).1.2) 
+                     /\ (uniq (p.1.1 ++ p.2) /\ allLu R p.2 p.1.2 (f n.+2) /\ ~ R.+ (f n.+2,p.1.2)).
+  Proof.
+    move => H0. 
+    pose proof Asym2P2 H0 as [f [h H1]].
+    pose proof (@choose_Rseq T R) as [g H2].
+    exists f. exists (fun n => gn f (fun n => g ((f n.+1),(f n.+2))) h n).
+    move => n Gn H4 H5 H6.
+    move: H1 => /(_ Gn.1.1 Gn.1.2 Gn.2 n) H1.
+    pose proof (H1 H4 H5 H6) as [H7 [H8 [H9 [H10 H11]]]].
+    
+    have H12: 
+      ((gn f (fun n : nat => g (f n.+1, f n.+2)) h n).1.1,
+        (gn f (fun n : nat => g (f n.+1, f n.+2)) h n).1.2,
+        (gn f (fun n : nat => g (f n.+1, f n.+2)) h n).2, n)
+      (gn f (fun n : nat => g (f n.+1, f n.+2)) h n).1.2
+      (h
+         ((gn f (fun n : nat => g (f n.+1, f n.+2)) h n).1.1,
+          (gn f (fun n : nat => g (f n.+1, f n.+2)) h n).1.2,
+          (gn f (fun n : nat => g (f n.+1, f n.+2)) h n).2, n)).1.2
+  ============================
+  allLu R (h (gn f (fun n0 : nat => g (f n0.+1, f n0.+2)) h n, n)).1.1
+    (gn f (fun n0 : nat => g (f n0.+1, f n0.+2)) h n).1.2
+    (h (gn f (fun n0 : nat => g (f n0.+1, f n0.+2)) h n, n)).1.2
+
+
+
+    split. rewrite /gn -/gn.
+    rewrite /Gn in H7.
+    
+    
+    
+    
+    
+
 Section Hn3. 
   
   Variables (T:choiceType) (R: relation T). 
 
   Hypothesis A1: (exists (v0:T), (v0 \in setT)).
   
-  Definition T1 : Type := T*T*(seq T)*T.
+  Definition T1 : Type := T*(seq T)*T*T.
   Definition T2 : Type := (seq T)*T*(seq T).
   
+  Variables (f: nat -> T) (g: nat -> seq T) (h: T1 -> T2). 
+
+  Definition F (tst: T*(seq T)) n := h(tst, f n.+1, f n.+2).
+  Definition G1 (tst: T*(seq T)) n := (F tst n).1.1. 
+  Definition G2 (tst: T*(seq T)) n := let f := (F tst n) in (f.1.2, f.2).
+  
+  Fixpoint Fn n : T2 := 
+    match n with 
+    | 0 => (g 0, f 0, g 0)
+    | S n => F ((Fn n).1.2, (Fn n).2) n
+    end.
+  
+End Hn3.
+
+Section PHn3. 
+  
+  Variables (T:choiceType) (R: relation T). 
+
+  Hypothesis A1: (exists (v0:T), (v0 \in setT)).
+  
+  Definition P1 x stl y:= allLu R stl x y /\ ~ R.+ (y, x).
+  Definition P2 x stl y z:= allLu R stl x y /\ ~ R.+ (y, x) /\ Asym R.+ (y, z).
+  Definition P3 x stl y str z:= (P1 x stl y) /\ (P1 y str z) /\ uniq (stl ++ str).
+  
   Definition Re1 :=
-    [set p: T1 | exists (x:T) (y:T) (stl:seq T) (z:T), 
-      p = (x,y, stl, z)
-      /\ allLu R stl x y /\ ~ R.+ (y,x) /\ (Asym R.+) (y,z)].
+    [set p: T1 T | exists (x:T) (y:T) (stl:seq T) (z:T),
+      p = (x,stl,y, z) /\ P2 x stl y z].
   
   Definition Re2 := 
-    [set p: T1*T2 |  exists x yl stl z stl' y' str',
-           p.1 = (x , yl, stl, z)
+    [set p: (T1 T)*(T2 T) |  exists x yl stl z stl' y' str',
+           p.1 = (x , stl, yl, z)
            /\ p.2 = (stl', y', str')
            /\ subseq (rcons stl' y') (rcons stl yl)
            /\ allLu R stl' x y' /\ ~ R.+ (y',x) 
-           /\ allLu R str' y' z /\ ~ R.+ (z,y')].
+           /\ allLu R str' y' z /\ ~ R.+ (z,y')
+           /\ uniq (stl' ++ str')
+    ].
   
-  Lemma ARR':exists (v: T2), (v \in [set: T2]).
+  Lemma ARR':exists (v: T2 T), (v \in [set: T2 T]).
   Proof. by move: A1 => [v0 _];exists ([::],v0,[::]);rewrite inP. Qed.
   
-  Lemma Au2: forall (p: T1), Re1 p -> exists t:T2, Re2 (p,t).
+  Lemma Au2: forall (p: T1 T), Re1 p -> exists t:T2 T, Re2 (p,t).
   Proof.
     move => [[[x y] stl] z] [x' [y' [stl' [z' [H1 [H2 [H3 H4]]]]]]].
     pose proof (Asym2P H2 H3 H4) as
@@ -2132,24 +2248,27 @@ Section Hn3.
     exact. 
   Qed.
   
-  Lemma choose_Au2: exists (g: T1 -> T2), 
+  Lemma choose_Au2: exists (g: T1 T -> T2 T), 
       forall p, Re1 p  -> Re2(p, g(p)).
-  Proof. by move: (@Au1_G T1 T2 Re1 Re2 ARR' Au2)  => [g1 H1]; exists g1. Qed. 
+  Proof. by move: (@Au1_G (T1 T) (T2 T) Re1 Re2 ARR' Au2)  => [g1 H1]; exists g1. Qed. 
   
-  Lemma choose_Au2': exists (g: T1 -> T2), 
+  Lemma choose_Au2': exists (g: T1 T -> T2 T), 
     forall (x y : T) (stl : seq T) (z : T), 
       allLu R stl x y /\ ~ R.+ (y, x) /\ Asym R.+ (y, z) 
       -> 
-        subseq (rcons (g (x, y, stl, z)).1.1  (g (x, y, stl, z)).1.2) (rcons stl y)
-        /\ allLu R (g (x, y, stl, z)).1.1 x (g (x, y, stl, z)).1.2 
-        /\ ~ R.+ ((g (x, y, stl, z)).1.2, x)
-        /\ allLu R (g (x, y, stl, z)).2 (g (x, y, stl, z)).1.2 z 
-        /\ ~ R.+ (z, (g (x, y, stl, z)).1.2). 
+        let t2 := g (x, stl, y, z) in 
+        let stl':= t2.1.1 in 
+        let y' :=  t2.1.2 in 
+        let str' := t2.2 in 
+        subseq (rcons stl' y') (rcons stl y)
+        /\ allLu R stl' x y' /\ ~ R.+ (y', x)
+        /\ allLu R str' y' z /\ ~ R.+ (z, y')
+        /\ uniq (stl' ++ str').
   Proof.
     move: choose_Au2 => [g H0].
     exists g.
     move => x y stl z H1.
-    have H2: Re1 (x,y,stl,z) by (exists x;exists y;exists stl;exists z).
+    have H2: Re1 (x,stl,y,z) by (exists x;exists y;exists stl;exists z).
     move: H2 => /H0 [x' [yl' [stl' [z' [stl'' [y' [str'' H2]]]]]]]. 
     move: H2; rewrite /= => -[H2 [H3 [H4 [H5 [H6 [H7 H8]]]]]].
     move: H2 => [J2 J3] J4 J5.
@@ -2157,24 +2276,39 @@ Section Hn3.
     exact.
   Qed.
 
-End Hn3.
+  
+  Lemma choose_Au3: 
+    exists (stl': T1 T -> seq T),  exists y', exists (str': T1 T -> seq T),
+    forall x stl y z, (P2 x stl y z)
+      -> let t1 := (x, stl, y, z) in 
+        subseq (rcons (stl' t1) (y' t1)) (rcons stl y)
+        /\ (P3 x (stl' t1) (y' t1) (str' t1) z).
+  Proof.
+    move: choose_Au2' => [g H0].
+    exists (fun t1 => (g t1).1.1).
+    exists (fun t1 => (g t1).1.2).
+    exists (fun t1 => (g t1).2).
+    move => x y stl z /H0 [H1 [H2 [H3 [H4 [H5 H6]]]]].
+    exact.
+  Qed.
+    
+End PHn3.
 
 Section Infinite_paths.
 
-  Variables (T:choiceType) (R: relation T). 
+  Variables (T:choiceType) (R: relation T).
 
   Hypothesis A1: (exists (v0:T), (v0 \in setT)).
   
   Lemma Inf1: (iic (Asym R.+)) -> exists f: nat ->T, exists g: nat -> seq T,
-      forall n, allLu R (g n) (f n) (f n.+1) 
-           /\ ~ R.+ (f(n.+1), f(n)) /\ Asym R.+ (f n.+1, f n.+2).
+      forall n, P2 R (f n) (g n) (f n.+1) (f n.+2).
   Proof.
     move => [f H1];move: (@choose_Rseq T R) => [g H2].
     exists f;exists (fun n => (g ((f n),(f n.+1)))).
     move => n.
     move: (H1) => /(_ n)/[dup] -[_ H3] /H2 H4.
     move: H1 => /(_ n.+1) H5.
-    exact.
+    rewrite /P2. exact.
   Qed.
   
   Lemma Inf2: (iic (Asym R.+)) -> exists f: nat ->T, exists g: nat -> seq T, 
@@ -2189,20 +2323,29 @@ Section Infinite_paths.
     move => /[dup] H0 /Inf1 [f [g H1]].
     pose proof (@choose_Au2' T R A1) as [h H2].
     exists f; exists g.
-    exists (fun n => (h ((f n),(f n.+1),(g n),(f n.+2))).1.1). 
-    exists (fun n => (h ((f n),(f n.+1),(g n),(f n.+2))).1.2). 
-    exists (fun n => (h ((f n),(f n.+1),(g n),(f n.+2))).2). 
+    exists (fun n => (h (f n, g n, f n.+1, f n.+2)).1.1). 
+    exists (fun n => (h (f n, g n, f n.+1, f n.+2)).1.2). 
+    exists (fun n => (h (f n, g n, f n.+1, f n.+2)).2). 
     move => n. 
-    move: H1 => /(_ n)/H2 [H1 [H3 [H4 [H5 H6]]]].
+    move: H1 => /(_ n)/H2 [H1 [H3 [H4 [H5 [H6 H7]]]]].
     exact.
   Qed.
-
-  Fixpoint rho (f: nat -> T) (g: nat -> seq T) (h: (T1 T) -> (T2 T)) n : T*(seq T):= 
-    match n with 
-    | 0 => ((f 0),(g 0))
-    | S n => let y:= h( (rho f g h n).1, (f n.+1), (rho f g h n).2, (f n.+2)) 
-            in (y.1.2,y.1.1)
-    end.
+    
+  Lemma Inf3: (iic (Asym R.+)) -> exists f: nat ->T, exists g: nat -> seq T, 
+      exists h: (T1 T) -> (T2 T),
+      forall (tst: T*(seq T)) n, 
+        P2 R tst.1 tst.2 (f n.+1) (f n.+2) -> 
+           let t2:= F f h tst n in 
+           P3 R tst.1 t2.1.1 t2.1.2 t2.2 (f n.+2).
+  Proof.
+    move => /[dup] H0 /Inf1 [f [g H1]].
+    pose proof (@choose_Au2' T R A1) as [h H2].
+    exists f; exists g; exists h.
+    move => [x st] n /= /H2 /= [H3 [H4 [H5 [H6 [H7 H8]]]]].
+    by split.
+  Qed.
+  
+  
 
 
 End Infinite_paths.
