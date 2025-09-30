@@ -2101,46 +2101,55 @@ Section Poo.
   Variables (T:choiceType) (R: relation T). 
 
   Hypothesis A1: (exists (v0:T), (v0 \in setT)).
-
-  Lemma Asym2P1: (iic (Asym R.+)) -> 
-                 exists f : nat -> T, forall (stl: seq T) x (str: seq T) n, 
-                   uniq (stl ++ str) -> allLu R str x (f n.+1) -> ~ R.+ (f n.+1,x) 
-                   -> exists stl', exists y', exists str',
-                       (* uniq(stl ++ stl') /\ *)
-                         allLu R stl' x y' /\ ~ R.+ (y',x) 
-                       /\ (uniq (stl' ++ str') /\ allLu R str' y' (f n.+2) /\ ~ R.+ (f n.+2,y')).
+  
+  Lemma Asym2P1: 
+    (iic (Asym R.+)) -> 
+    exists f : nat -> T, exists g: T*T -> seq T, 
+      (allLu R (g (f 0,f 1)) (f 0) (f 1) /\ ~ R.+ (f 1, f 0))
+      /\
+        (
+          forall (stl: seq T) x (str: seq T) n, 
+            uniq (stl ++ str) -> allLu R str x (f n.+1) -> ~ R.+ (f n.+1,x) 
+            -> exists stl', exists y', exists str',
+                (* uniq(stl ++ stl') /\ *)
+                allLu R stl' x y' /\ ~ R.+ (y',x) 
+                /\ (uniq (stl' ++ str') /\ allLu R str' y' (f n.+2)
+                   /\ ~ R.+ (f n.+2,y'))).
   Proof.
-    move => [f Hn]; exists f; move => stl x str n H1 H2 H3.
+    move => [f Hn]; exists f.
+    pose proof (@choose_Rseq T R) as [g H0]; exists g.
+    split; first by split;[apply: H0 | move: Hn => /(_ 0) [_ Hn]].
+    move => stl x str n H1 H2 H3.
     move: (Hn) => /(_ n.+1) Hn'.
     pose proof (Asym2P H2 H3 Hn') as [stl' [y' [str' [H4 [H5 [H6 [H7 [H8 H9]]]]]]]].
     exists stl';exists y';exists str'.
     exact. 
   Qed.
-
+  
   (** Axiome du choix ici *)
   Lemma Asym2P2: 
-    (iic (Asym R.+)) -> exists f : nat -> T, exists h, 
-      forall (stl: seq T) x (str: seq T) n, 
-        uniq (stl ++ str) -> allLu R str x (f n.+1) -> ~ R.+ (f n.+1,x) 
-        -> let p := h (stl, x, str, n) in 
-          (* uniq(stl ++ stl') /\ *)
-          allLu R p.1.1 x p.1.2 /\ ~ R.+ (p.1.2,x) 
-          /\ (uniq (p.1.1 ++ p.2) /\ allLu R p.2 p.1.2 (f n.+2) /\ ~ R.+ (f n.+2,p.1.2)).
+    (iic (Asym R.+))
+    -> exists f : nat -> T, exists g: T*T -> seq T, 
+        (allLu R (g (f 0,f 1)) (f 0) (f 1) /\ ~ R.+ (f 1, f 0))
+        /\
+          exists h, 
+          forall (stl: seq T) x (str: seq T) n, 
+            uniq (stl ++ str) -> allLu R str x (f n.+1) -> ~ R.+ (f n.+1,x) 
+            -> let p := h (stl, x, str, n) in 
+              (* uniq(stl ++ stl') /\ *)
+              allLu R p.1.1 x p.1.2 /\ ~ R.+ (p.1.2,x) 
+              /\ (uniq (p.1.1 ++ p.2) /\ allLu R p.2 p.1.2 (f n.+2)
+                 /\ ~ R.+ (f n.+2,p.1.2)).
   Proof.
   Admitted.
 
   Fixpoint gn (f : nat -> T) (g : nat -> seq T) 
     (h:(seq T)*T*(seq T)*nat->(seq T)*T*(seq T))  n : (seq T)*T*(seq T) := 
     match n with 
-    | 0 => (g 0, f 0, g 0)
+    | 0 => ([::], f 0, g 0)
     | S n => h ((gn f g h n),n)
     end.
 
-  Definition hn n := (n, n.+1, n.+2).
-  
-  Lemma testR: forall n, (hn n)= ((hn n).1.1, (hn n).1.2, (hn n).2).
-  Proof. by move => n. Qed.
-  
   Lemma gnP: forall n (f : nat -> T) (g : nat -> seq T) h,
       (gn f g h n) = ((gn f g h n).1.1, (gn f g h n).1.2, (gn f g h n).2).
   Proof.
@@ -2151,29 +2160,40 @@ Section Poo.
   Qed.
   
   Lemma Asym2P3: 
-    (iic (Asym R.+)) -> 
-    exists f : nat -> T,
-    exists gn, 
-    forall n, let t:= (gn n) in 
-         uniq (t.1.1 ++ t.2) -> allLu R t.2 t.1.2 (f n.+1) -> ~ R.+ (f n.+1,t.1.2) 
-         -> let p := gn n.+1 in 
-           (* uniq(stl ++ stl') /\ *)
-           allLu R p.1.1 (gn n).1.2 p.1.2 /\ ~ R.+ (p.1.2,(gn n).1.2) 
-           /\ (uniq (p.1.1 ++ p.2) /\ allLu R p.2 p.1.2 (f n.+2) /\ ~ R.+ (f n.+2,p.1.2)).
+    (iic (Asym R.+)) -> exists f : nat -> T, exists g: T*T -> seq T, 
+        (allLu R (g (f 0,f 1)) (f 0) (f 1) /\ ~ R.+ (f 1, f 0))
+        /\
+          exists gn,
+            ( 
+              (let t:= (gn 0) in 
+               uniq (t.1.1 ++ t.2) /\ allLu R t.2 t.1.2 (f 1) /\ ~ R.+ (f 1, f 0))
+              /\
+                forall n, let t:= (gn n) in 
+                     uniq (t.1.1 ++ t.2) -> allLu R t.2 t.1.2 (f n.+1) -> ~ R.+ (f n.+1,t.1.2) 
+                     -> let p := gn n.+1 in 
+                       (* uniq(stl ++ stl') /\ *)
+                       allLu R p.1.1 (gn n).1.2 p.1.2 /\ ~ R.+ (p.1.2,(gn n).1.2) 
+                       /\ (uniq (p.1.1 ++ p.2) /\ allLu R p.2 p.1.2 (f n.+2)
+                          /\ ~ R.+ (f n.+2,p.1.2))).
   Proof.
     move => H0. 
-    pose proof Asym2P2 H0 as [f [h H1]].
-    pose proof (@choose_Rseq T R) as [g H2].
-    exists f. exists (fun n => gn f (fun n => g ((f n.+1),(f n.+2))) h n).
+    pose proof Asym2P2 H0 as [f [g [H0' [h H1]]]].
+    exists f; exists g.
+    split; first exact.
+    exists (fun n => gn f (fun n => g ((f n),(f n.+1))) h n).
+    move: H0' => [[H2' H3'] H4'].
+    have H5': uniq (g (f 0,f 1))
+      by move: H3';rewrite cons_uniq rcons_uniq => /andP [_ /andP [_ ] ].
+    split; first exact. 
     move => n Gn H4 H5 H6.
     move: H1 => /(_ Gn.1.1 Gn.1.2 Gn.2 n) H1.
     pose proof (H1 H4 H5 H6) as H7.
     have H6': forall p: (seq T)*T*(seq T), p = (p.1.1, p.1.2, p.2)
         by move => [[p1 p2] p3].
-    
     move: H7; rewrite  /Gn -gnP => -[H7 [H8 [H9 [H10 H11]]]].
     by rewrite /gn. 
   Qed.
+  
 
 End Poo.
 
