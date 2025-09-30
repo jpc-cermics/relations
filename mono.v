@@ -2225,3 +2225,58 @@ Section Infinite_path.
 
 End Infinite_path. 
 
+Section walk. 
+
+  Variables (T:choiceType) (f: nat -> T).
+  
+  Fixpoint prefix_sum  (g: nat -> seq T) (n : nat) : nat :=
+    match n with
+    | 0 => 0
+    | S n' => prefix_sum g n' + size (g n')
+    end.
+
+  Definition encode (g : nat -> seq T) (row col : nat) : nat :=
+    prefix_sum g row + col.
+
+  (* 
+  Fixpoint decode_aux (f : nat -> nat) (i row : nat) : (nat * nat) :=
+    let len := f row in
+    if (i < len)%nat then (row, i)
+    else decode_aux f (i - len) (S row).
+
+  Definition decode (f : nat -> nat) (i : nat) : nat * nat :=
+    decode_aux f i 0.
+   *)
+
+  Variables (a b c d e  g k l m :T).
+
+  Definition G n := 
+    match n with 
+    | 0 => [:: a ; b ; c]
+    | 1 => [:: d ; e]
+    | _ => [::  g]
+    end.
+
+  Definition F n := 
+    match n with 
+    | 0 => k
+    | 1 => l
+    | _ => m
+    end.
+  
+  Definition Val n p := 
+    match p with
+    | 0 => F n
+    | S p => nth (F 0) (G n) p
+    end.
+  
+  Compute Val 0 0.
+  Compute Val 0 1.
+  Compute Val 0 2.
+  Compute Val 0 3.
+  Compute Val 1 0.
+  Compute Val 1 1.
+  
+End walk.
+
+  
