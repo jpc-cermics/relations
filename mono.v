@@ -1170,6 +1170,13 @@ Section Seq1_plus.
     have /contra H6: x \in st' -> x \in st by rewrite H5;apply: mem_mask.
     by apply: H6.
   Qed.
+
+  Lemma uniq_subseq': forall (str stl stl': seq T),
+      uniq (stl ++ str) -> subseq stl' str -> uniq (stl ++ stl').
+  Proof.
+    elim/last_ind =>  [stl' str| str x Hr stl stl' H1 H2];
+            first by rewrite cats0 subseq0 => H1 /eqP ->; rewrite cats0.
+  Admitted.
   
   (** * properties of \in for eqType *)
   
@@ -1508,21 +1515,7 @@ Section allL_uniq.
     by have:  x \in st2 by apply in_subseq' with st1.  
   Qed.
   
-  Lemma rcons_subseq: forall (x x':T) (st st': seq T),
-      subseq (rcons st' x') (rcons st x) 
-      -> subseq st' st.
-  Proof.
-    move => x x' st st' H1.
-    have H2: x' \in (rcons st' x') 
-        by rewrite in_rcons;apply/orP;right;apply eq_refl.
-    have H3: x' \in (rcons st x).
-    
-
-    
-  Admitted.
-  (* XXXX il faut rrajouter des uniq *)
-
-
+  
   Lemma allL_uniq: forall (st: seq T) (x y: T),
       allL R st x y -> 
       exists st', subseq st' st /\ ~( x \in st') /\  ~(y \in st')
@@ -1728,7 +1721,7 @@ Section Hn4.
       -> uniq (x::(rcons st y)) 
       -> ~ ( R.+ (y,x))
       -> exists st', exists y',
-          subseq (rcons st' y') (rcons st y) 
+          subseq st' st (* subseq (rcons st' y') (rcons st y) *)
           /\ uniq (x::(rcons st' y'))       
           /\ st' [\in] R.+#_(x) 
           /\ (x::(rcons st' y')) [L\in] R 
@@ -1757,8 +1750,9 @@ Section Hn4.
       have H5: (x :: rcons st z) [L\in] R by rewrite Lift_crc allset_cons.
       apply Hr in H5; last by move => /inP H6; rewrite H6 in H3.
       move: H5 => [st' [y' [H5 [H5' [H6 [H7 [H8 [H9 H9']]]]]]]].
-      have H11: subseq (rcons st' y') (rcons (rcons st z) y)
-        by apply subseq_trans with (rcons st z);[ | apply subseq_rcons].
+      (* have H11: subseq (rcons st' y') (rcons (rcons st z) y)
+        by apply subseq_trans with (rcons st z);[ | apply subseq_rcons]. *)
+      have H11: subseq st' (rcons st z). by apply/subseq_trans/subseq_rcons.
       (exists st', y'); move: H9 => [H9 | H9].
       by have H12: (y = y' \/ R.+ (y', y)) by right;rewrite -H9;apply: t_step.
       by have H12: (y = y' \/ R.+ (y', y)) by right;apply t_trans with z;[ |apply: t_step].
@@ -1766,14 +1760,14 @@ Section Hn4.
       have H14: uniq (x :: rcons st z) by apply: (uniq_subseq H1' H13).
       exact.
   Qed.
-
+  
   (* utility lemma *)
   Lemma RedBackR: forall (st:seq T) (y z:T),
       (y::(rcons st z)) [L\in] R
       -> uniq (y::(rcons st z)) 
       -> ~ ( R.+ (z,y))
       -> exists st', exists y',
-          subseq (y'::st') (y::st) 
+          subseq st' st (* (y'::st') (y::st)  *)
           /\ uniq (y'::(rcons st' z))       
           /\ st' [\in] (z)_:#R.+ 
           /\ (y'::(rcons st' z)) [L\in] R 
@@ -1802,8 +1796,9 @@ Section Hn4.
         by rewrite -rcons_cons Lift_rcc allset_rcons.
       apply Hr in H5; last by move => /inP H6; rewrite H6 in H3.
       move: H5 => [st' [z' [H5 [H5' [H6 [H7 [H8 [H9 H9']]]]]]]].
-      have H11: subseq (z'::st') (y::(y1::st)).
-      by apply subseq_trans with (y1::st);[| apply subseq_cons].
+      (*  have H11: subseq (z'::st') (y::(y1::st)).
+      by apply subseq_trans with (y1::st);[| apply subseq_cons]. *)
+      have H11: subseq st' (y1 :: st) by apply/subseq_trans/subseq_cons.
       (exists st', z'); move: H9 => [H9 | H9].
       by have H12: (y = z' \/ R.+ (y, z')) by right; rewrite -H9; apply: t_step.
       by have H12: (y = z' \/ R.+ (y, z')) by right;apply t_trans with y1;[apply: t_step|].
@@ -1815,7 +1810,7 @@ Section Hn4.
       (Asym R.+) (y,z) 
       -> exists stl', exists yl, exists str', exists yr, exists stlr,
           ((yl = yr) \/ (allLu R stlr yl yr))
-          /\ subseq (rcons stl' yl) (rcons stl y) 
+          /\ subseq stl' stl (* (rcons stl' yl) (rcons stl y)  *)
           /\ allLu R stl' x yl 
           /\ ~ (R.+ (yl,x))
           /\ ~ (R.+ (yl,(last x stl')))
@@ -1885,20 +1880,20 @@ Section Hn4.
       allLu R stl x y -> ~ R.+ (y,x) -> (Asym R.+) (y,z) 
       -> exists stl', exists yl, exists (stlr: seq T), exists yr, exists str',
           ((yl = yr /\ (forall s, s \in stl' -> s \in str' -> False)
-            /\ subseq (rcons stl' yl) (rcons stl y) 
+            /\ subseq stl' stl (* subseq (rcons stl' yl) (rcons stl y)  *)
             /\ allLu R stl' x yl /\ ~ (R.+ (yl,(last x stl')))
             /\ allLu R str' yr z /\ ~ (R.+ ((head z str'),yr))
            )
            \/
              ( 
-               subseq (rcons stl' yl) (rcons stl y) 
+               subseq stl' stl (* subseq (rcons stl' yl) (rcons stl y)  *)
                /\allLu R stl' x yl /\ ~ (R.+ (yl,(last x stl')))
                /\ allLu R ((rcons stlr yr) ++ str') yl z
                /\ (exists s, s \in (rcons stlr yr ++ str') /\ ~ R.+ (z,s))
              )
            \/ 
              (
-               subseq (rcons stl' yl) (rcons stl y) 
+               subseq stl' stl (* subseq (rcons stl' yl) (rcons stl y)  *)
                /\ allLu R stl' x yl /\ ~ (R.+ (yl,(last x stl')))
                /\ allLu R (drop (index yl str').+1 str') yl z
                /\  ~ R.+ (z, yl)
@@ -1995,7 +1990,7 @@ Section Hn4.
   Lemma Asym2P: forall (x y z:T) (stl: seq T),
       allLu R stl x y -> ~ R.+ (y,x) -> (Asym R.+) (y,z) 
       -> exists stl', exists y', exists str',
-          subseq (rcons stl' y') (rcons stl y) 
+          subseq stl' stl 
           /\ allLu R stl' x y' /\ ~ R.+ (y',x)
           /\ allLu R str' y' z /\ ~ R.+ (z, y')
           /\ uniq (stl' ++ str').
@@ -2110,7 +2105,7 @@ Section Hn2.
   
 End Hn2.
 
-Section Poo. 
+Section Infinite_path. 
   
   Variables (T:choiceType) (R: relation T). 
 
@@ -2128,14 +2123,13 @@ Section Poo.
       /\ n' = n.+1
       /\ allLu R stl' x y' /\ ~ R.+ (y',x) 
       /\ uniq (stl' ++ str')
-      /\ allLu R str' y' (f n.+2)
-      /\ ~ R.+ (f n.+2,y')].
-  (* XXXXX /\ uniq (stl ++ stl')]. *)
+      /\ allLu R str' y' (f n.+2) /\ ~ R.+ (f n.+2,y')
+      /\ uniq (stl ++ stl')].
   
   Lemma Re2_to_Re1: forall (f: nat -> T) (p q: T2), Re2 f (p,q) -> Re1 f q.
   Proof.
     move => f p q -[stl [x [str [n [stl' [x' [str' [n' [/= _ [-> [H1 H2]]]]]]]]]]].
-    move: H2 => [H2 [H3 [H4 [H5 H6]]]].
+    move: H2 => [H2 [H3 [H4 [H5 [H6 H7]]]]].
     exists stl'; exists x';exists str';exists n'.
     rewrite H1.
     exact. 
@@ -2144,6 +2138,7 @@ Section Poo.
   Lemma ARR':exists (v: T2), (v \in [set: T2]).
   Proof. by move: A1 => [v0 _];exists ([::],v0,[::],0);rewrite inP. Qed.
 
+  
   Lemma Asym2P1: 
     (iic (Asym R.+)) -> 
     exists f : nat -> T, exists g: T*T -> seq T, 
@@ -2157,6 +2152,7 @@ Section Poo.
     move => [[stl0 x0] str0] [stl [x [str [n [-> [H1 [H2 H3]]]]]]].
     move: (Hn) => /(_ n.+1) Hn'.
     pose proof (Asym2P H2 H3 Hn')  as [stl' [y' [str' [H4 [H5 [H6 [H7 [H8 H9]]]]]]]].
+    have H10:  uniq (stl ++ stl') by apply: (uniq_subseq' R H1 H4).
     by exists (stl',y', str',n.+1);exists stl; exists x; exists str;exists n; exists stl'; exists y'; exists str'; exists n.+1.
   Qed.
   
@@ -2198,42 +2194,34 @@ Section Poo.
   
   Lemma Asym2P4: 
     (iic (Asym R.+)) -> exists f : nat -> T, exists h: T2 -> T2, exists (p0: T2),
-        Re1 f p0 /\ (forall n, Re2 f (iter h p0 n, iterh h p0 n.+1)).
+        Re1 f p0 /\ (forall n, Re2 f (iterh h p0 n, iterh h p0 n.+1)).
   Proof.
     move => /Asym2P3 [f [[p0 H0] [h H1]]]. 
     exists f. exists h. exists p0. split. by []. 
-    elim; first by rewrite /iter; apply: H1.
+    elim; first by rewrite /iterh; apply: H1.
     move => n Hn.
     pose proof Re2_to_Re1 Hn as H2.
     by apply: H1.
   Qed.
-
-End Poo.
-
-
-
-
-Section Infinite_paths.
-
-  Variables (T:choiceType) (R: relation T).
-
-  Hypothesis A1: (exists (v0:T), (v0 \in setT)).
-
-  Definition P1 x stl y:= allLu R stl x y /\ ~ R.+ (y, x).
-  Definition P2 x stl y z:= allLu R stl x y /\ ~ R.+ (y, x) /\ Asym R.+ (y, z).
-  Definition P3 x stl y str z:= (P1 x stl y) /\ (P1 y str z) /\ uniq (stl ++ str).
-
   
-  Lemma Inf1: (iic (Asym R.+)) -> exists f: nat ->T, exists g: nat -> seq T,
-      forall n, P2  (f n) (g n) (f n.+1) (f n.+2).
+  Lemma Asym2P5: 
+    (iic (Asym R.+)) -> exists k: nat -> T, exists l: nat -> seq T,
+        forall n, allLu R (l n) (k n) (k n.+1) /\ ~ R.+ (k n.+1, k n)
+             /\ uniq ((l n) ++ (l n.+1)).
   Proof.
-    move => [f H1];move: (@choose_Rseq T R) => [g H2].
-    exists f;exists (fun n => (g ((f n),(f n.+1)))).
-    move => n.
-    move: (H1) => /(_ n)/[dup] -[_ H3] /H2 H4.
-    move: H1 => /(_ n.+1) H5.
-    rewrite /P2. exact.
+    move => /Asym2P4 [f [h [p0 [H0 H1]]]].  
+    exists (fun n => (iterh h p0 n).1.1.2).
+    exists (fun n => (iterh h p0 n.+1).1.1.1).
+    move => n. move: (H1) => /(_ n) H1'.
+    move: H1' => [stl [x [str [n1 [stl' [x' [str' [n1' /= [J1 [J2 [J3 HH]]]]]]]]]]]. 
+    move: HH => [H4 [H5 [H6 [H7 [H8 H9]]]]].
+    move: H1 => /(_ n.+1) H1.
+    move: H1 => [stl1 [x1 [str1 [n11 [stl1' [x1' [str1' [n11' /= [K1 [K2 [K3 HH']]]]]]]]]]].
+    move: HH' => [H4' [H5' [H6' [H7' [H8' H9']]]]].
+    split. by rewrite J2 J1 /=.
+    split. by rewrite J2 J1 /=.
+    by rewrite K2 K1 /=.
   Qed.
 
-End Infinite_paths.
+End Infinite_path. 
 
