@@ -2210,18 +2210,52 @@ Section Infinite_path.
 
 End Infinite_path. 
 
-Section walk. 
+From Equations Require Import Equations.
+Require Import Lia Arith.
 
+Section walk.
+
+End walk.
+
+From Coq Require Import Program.Wf.
+
+Section walk. 
+  
   Variables (T:choiceType) (f: nat -> T).
   
   Fixpoint prefix_sum  (g: nat -> seq T) (n : nat) : nat :=
     match n with
     | 0 => 0
-    | S n' => prefix_sum g n' + size (g n')
+    | S n' => (prefix_sum g n' + (size (g n')).+1)
     end.
 
   Definition encode (g : nat -> seq T) (row col : nat) : nat :=
-    prefix_sum g row + col.
+    (prefix_sum g row + col)%N.
+  
+  (* Décodeur avec preuve de terminaison
+  Program Fixpoint decode_aux (p : nat -> nat) (i row : nat)
+    (*  {wf lt i} : nat * nat := *)
+    {measure i} :=
+    let len := (p row).+1 in
+    if (i < len) then (row, i)
+    else decode_aux p (i - len) (S row).
+  Next Obligation. 
+    (* i - len < i if i >= len *)
+    set len := (p row).+1.
+    have H1: 0 <= i - len by [].
+    rewrite leq_subRL in H1.
+    - rewrite addn0 in H1.
+      have H2: 1 <= len. by [].
+      have H3: 1 <= i. by apply: (leq_trans H2 H1).
+      by apply/ltP;rewrite ltn_subrL;apply/andP. 
+    - 
+      
+  
+      Definition decode (g : nat -> seq T) (i : nat) : nat * nat :=
+        decode_aux g i 0.
+
+   *)
+
 
   (*
   Fixpoint decode_aux (g : nat -> seq T) (i row : nat) : (nat * nat) :=
