@@ -61,12 +61,9 @@ Section Asym.
 
   Lemma AsymInvol: Asym (Asym R) = (Asym R).
   Proof.
-    rewrite predeqE => [[a b]];split; first by move => [? _].
-    move => H1;split; first by [].
-    move => H2. 
-    move: Asym_antisymmetric => /(_  a b) H3.
-    move: (H1) (H2) => /H3 H1' /H1' H2'.
-    by move: H1; rewrite H2'; apply: Asym_irreflexive. 
+    rewrite predeqE => [[a b]];split => [[? _] //| H1]. 
+    split => [// | H2];pose proof (Asym_antisymmetric H1 H2) as H3.
+    by move: H1;rewrite H3;apply: Asym_irreflexive.
   Qed.
   
   Lemma AsymIncl: R.+ `;` Asym(R.+) `<=`  Asym(R.+).
@@ -2238,16 +2235,16 @@ Section walk.
   Definition encode (g : nat -> seq T) (row col : nat) : nat :=
     prefix_sum g row + col.
 
-  (* 
-  Fixpoint decode_aux (f : nat -> nat) (i row : nat) : (nat * nat) :=
-    let len := f row in
-    if (i < len)%nat then (row, i)
-    else decode_aux f (i - len) (S row).
-
+  (*
+  Fixpoint decode_aux (g : nat -> seq T) (i row : nat) : (nat * nat) :=
+    let len := prefix_sum g row in
+    if (i < len)%N then (row, i)
+    else decode_aux g (i - len) (S row).
+  
   Definition decode (f : nat -> nat) (i : nat) : nat * nat :=
     decode_aux f i 0.
    *)
-
+  
   Variables (a b c d e  g k l m :T).
 
   Definition G n := 
