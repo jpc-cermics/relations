@@ -26,7 +26,7 @@ Local Open Scope classical_set_scope.
 Reserved Notation "A [<=] B" (at level 4, no associativity). 
 Reserved Notation "A [<= R ] S" (at level 4, no associativity). 
 
-Section Asym. 
+Section Asymmetric. 
   (** * Asymmetric part of a relation *) 
     
   Variables (T: Type) (R: relation T).
@@ -82,7 +82,7 @@ Section Asym.
     by move: H2 => [_ H2 ].
   Qed.
   
-End Asym.
+End Asymmetric. 
 
 Section Independent_set.
   (** * Independence of sets with respect to a relation *)
@@ -236,7 +236,7 @@ Section Set_order.
 End Set_order. 
 
 Section Infinite_paths.
-  (** * Assumptions on infinite paths *)
+  (** * Definitions around infinite paths *)
   Variables (T:Type).
 
   (* total (or left total)  *) 
@@ -334,17 +334,6 @@ End Infinite_paths.
 Section Infinite_paths_X.
   (** * Assumptions on infinite paths *)
   Variables (T:Type).
-
-  (** (* this is mem_setT *)
-  Lemma test90 (X: set T): forall (x: X), x\in [set: X].
-  Proof. by move => x; apply: mem_setT. Qed.
-      (* this is set_valP *)
-  Lemma test91 (X: set T): forall (x: X), (sval x) \in X. 
-  Proof. by move => x; rewrite inP; apply: set_valP.  Qed.
-  
-  Lemma XtoT (X: set T): forall x, x \in X -> exists (x': X), (sval x') = x.
-  Proof. by move => x H1;exists (exist _ x H1). Qed.
-  *)
   
   Lemma setTypeP (X: set T):
     (exists v : X, v \in [set: X]) <-> (exists (v:T), (v \in X)).
@@ -800,10 +789,10 @@ Section Paper.
   Qed.
   
   Section Maximal. 
-    (** * We show that A maximal set is a solution *)
-    
+
+    (** * We show that the maximal set is the independ set we search *)
     Variable (Sm: set T).
-  
+    
     Definition IsMaximal (S: set T):= 
       S \in Scal /\ forall T, T \in Scal -> S [<= (Asym Eb.+)] T -> S = T.
   
@@ -2134,7 +2123,6 @@ Section Infinite_path.
   
   Lemma ARR':exists (v: T2), (v \in [set: T2]).
   Proof. by move: A1 => [v0 _];exists ([::],v0,[::],0);rewrite inP. Qed.
-
   
   Lemma Asym2P1: 
     (iic (Asym R.+)) -> 
