@@ -2214,6 +2214,23 @@ From Equations Require Import Equations.
 Require Import Lia Arith.
 
 Section walk.
+  
+  Equations decode_aux (i row : nat) (p : nat -> nat) : nat* nat  by wf i lt :=
+    decode_aux i row p with (i < (p row).+1) => {
+      | false := decode_aux (i - (p row).+1) (S row) p; 
+      | true := (row, i) ;
+      }.
+  Next Obligation.
+    set len := (p row).+1.
+    have H1: 0 <= i - len by [].
+    rewrite leq_subRL in H1.
+    - rewrite addn0 in H1.
+      have H2: 1 <= len. by [].
+      have H3: 1 <= i. by apply: (leq_trans H2 H1).
+      by apply/ltP;rewrite ltn_subrL;apply/andP.
+  Admitted.
+  
+
 
 End walk.
 
