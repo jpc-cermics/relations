@@ -2212,16 +2212,19 @@ End Infinite_path.
 
 From Equations Require Import Equations.
 Require Import Lia Arith.
+From Coq  Require Import Sumbool.
+
+Notation dec x := (sumbool_of_bool x).
 
 Section walk.
   
-  Equations decode_aux (i row : nat) (p : nat -> nat) : nat* nat  by wf i lt :=
-    decode_aux i row p with (i < (p row).+1) => {
-      | false := decode_aux (i - (p row).+1) (S row) p; 
-      | true := (row, i) ;
+  Equations? decode_aux (i row : nat) (p : nat -> nat) : nat* nat  by wf i lt :=
+    decode_aux i row p with dec  (i < (p row).+1) => {
+      | left H0 => decode_aux (i - (p row).+1) (S row) p; 
+      | right H0 => (row, i) ;
       }.
-  Next Obligation.
-    set len := (p row).+1.
+  Proof.
+  set len := (p row).+1.
     have H1: 0 <= i - len by [].
     rewrite leq_subRL in H1.
     - rewrite addn0 in H1.
