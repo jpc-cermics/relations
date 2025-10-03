@@ -406,8 +406,11 @@ Section Paper.
   (* end snippet Scal *) 
     
   (* The set Scal as a Type *)
+  
+  (* begin snippet SType:: no-out *)    
   Definition SType := {S: set T| RelIndep Mono S /\ ScalP S /\ S != set0}.
-
+  (* end snippet SType *)  
+  
   Definition Elt (C: set SType) := {x : T |exists (S: SType), S \in C /\ x \in (sval S)}.
   
   Lemma S2Scal: forall (S: SType), (sval S) \in Scal.
@@ -415,10 +418,12 @@ Section Paper.
 
   Lemma Scal2S: forall S, S \in Scal -> exists (S': SType), (sval S') = S.
   Proof.  by move => S /inP H1; exists (exist _ S H1). Qed.
-  
+
+  (* begin snippet leSetone:: no-out *)   
   Definition leSet1 (AB: SType*SType) :=
     leSet (Asym Eb.+) ((proj1_sig AB.1), (proj1_sig AB.2)).
-
+  (* end snippet leSetone *)  
+  
   (** * The relation on sets restricted to Stype subsets *)
   Notation "A [<=] B" := (leSet1 (A,B)).
   
@@ -461,8 +466,11 @@ Section Paper.
 
   Section SType_chains.
     (** * Chains in Stype *)
+
+    (* begin snippet Chains:: no-out *)    
     Definition Chains := [set C: set SType| forall (c1 c2: SType),
           c1 \in C -> c2 \in C -> c1 [<=] c2 \/ c2 [<=] c1].
+    (* end snippet Chains *)    
     
     Lemma Chains_is_total: forall (A : set SType),
         A \in Chains <-> total_on A (curry leSet1).

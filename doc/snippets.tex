@@ -760,3 +760,35 @@
     \end{input}
   \end{sentence}
 }
+\newcommand{\SnippetSType}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{SType}~\PY{o}{:=}~\PY{o}{\PYZob{}}\PY{n}{S}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{|}~\PY{n}{RelIndep}~\PY{n}{Mono}~\PY{n}{S}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{ScalP}~\PY{n}{S}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{S}~\PY{o}{!=}~\PY{n}{set0}\PY{o}{\PYZcb{}.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetleSetone}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{leSet1}~\PY{o}{(}\PY{n+nv}{AB}\PY{o}{:}~\PY{n}{SType}\PY{o}{*}\PY{n}{SType}\PY{o}{)}~\PY{o}{:=}\nl
+      ~~~~\PY{n}{leSet}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)}~\PY{o}{((}\PY{n}{proj1\PYZus{}sig}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{),}~\PY{o}{(}\PY{n}{proj1\PYZus{}sig}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{)).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetChains}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{Chains}~\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{C}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{SType}\PY{o}{|}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{c1}~\PY{n+nv}{c2}\PY{o}{:}~\PY{n}{SType}\PY{o}{),}\nl
+      ~~~~~~~~~~\PY{n}{c1}~\(\in\)~\PY{n}{C}~\PY{o}{\(\rightarrow\)}~\PY{n}{c2}~\(\in\)~\PY{n}{C}~\PY{o}{\(\rightarrow\)}~\PY{n}{c1}~\PY{o}{[\PYZlt{}=]}~\PY{n}{c2}~\PY{o}{\(\,\vee\,\)}~\PY{n}{c2}~\PY{o}{[\PYZlt{}=]}~\PY{n}{c1}\PY{o}{].}
+    \end{input}
+  \end{sentence}
+}

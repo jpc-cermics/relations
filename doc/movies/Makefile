@@ -64,6 +64,9 @@ SNIPPETS = \
 	snippets/mono/Rloop-n.tex \
 	snippets/mono/Assumptions-n.tex \
 	snippets/mono/Scalnotempty-n.tex \
+	snippets/mono/SType-n.tex \
+	snippets/mono/leSetone-n.tex \
+	snippets/mono/Chains-n.tex \
 
 all: allstd allplus ../snippets.tex
 
