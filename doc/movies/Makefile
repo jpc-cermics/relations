@@ -63,7 +63,6 @@ SNIPPETS = \
 	snippets/mono/Scal-n.tex \
 	snippets/mono/Rloop-n.tex \
 	snippets/mono/Assumptions-n.tex \
-	snippets/mono/RloopErp-n.tex \
 	snippets/mono/Scalnotempty-n.tex \
 
 all: allstd allplus ../snippets.tex
