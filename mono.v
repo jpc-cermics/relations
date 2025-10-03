@@ -2216,7 +2216,7 @@ From Coq  Require Import Sumbool.
 Notation dec x := (sumbool_of_bool x).
 
 Section walk.
-
+  (** * How to encode in one function the two functions obtained above *)
   Variables (T:choiceType) (f: nat -> T).
   
   Equations? decode_aux (i row : nat) (p : nat -> nat) : nat* nat  by wf i lt :=
