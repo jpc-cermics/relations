@@ -1164,13 +1164,48 @@ Section Seq1_plus.
     have /contra H6: x \in st' -> x \in st by rewrite H5;apply: mem_mask.
     by apply: H6.
   Qed.
+  
 
+  Lemma uniq_cat:  forall (stl str: seq T),
+      uniq(stl) -> uniq(str) -> (forall s, s \in stl -> s \in str -> False) 
+      -> uniq(stl ++ str).
+  Proof.
+    move => stl str H1 H2 H3.
+    rewrite cat_uniq H1 H2 andbT andTb; apply: negbT.
+    have: has (in_mem^~ (mem stl)) str -> False
+      by move => /hasP [s H4 H5];pose proof (H3 s H5 H4).
+    by apply: contra_notF.
+  Qed.
+
+  Lemma uniq_catE : forall (stl str: seq T),
+      uniq(stl ++ str) <-> 
+      uniq(stl) /\ uniq(str) /\ (forall s, s \in stl -> s \in str -> False).
+  Proof.
+    move => stl str.
+    split;last by move => [H1 [H2 H3]];apply: (uniq_cat H1 H2 H3).
+    rewrite cat_uniq => /andP [H0 /andP [/hasP H1 H2]].
+    split;[exact | split;[exact|]] => s H3 H4.
+    move: H1 => /not_exists2P/contrapT/(_ s)/not_andP H1.
+    have H5:  s \in str /\ s \in stl by [].
+    exact.
+  Qed.
+  
   Lemma uniq_subseq': forall (str stl stl': seq T),
       uniq (stl ++ str) -> subseq stl' str -> uniq (stl ++ stl').
   Proof.
-    elim/last_ind =>  [stl' str| str x Hr stl stl' H1 H2];
-            first by rewrite cats0 subseq0 => H1 /eqP ->; rewrite cats0.
-  Admitted.
+    move => str stl stl' /uniq_catE [H1 [H2 H3]] H4.
+    rewrite uniq_catE.
+    split. by [].
+    split. by apply: (subseq_uniq H4 H2).
+    move => s H5 H6.
+    move: H4 => /subseqP [m H4 H4'].
+    have H7: has [predI [in stl'] & [in stl]] stl'. 
+    apply/hasP. (exists s). by []. apply/andP. by split.
+    move: H7; rewrite [stl' in (has _ stl')]H4' => /has_mask/hasP [x H7 H8].
+    move: H8 => /andP [_ H8] .
+    apply: H3. apply: H8. by apply H7.
+
+  Qed.
   
   (** * properties of \in for eqType *)
   
@@ -1212,18 +1247,8 @@ Section Seq1_plus.
     elim => [x y /= | z st Hr x y]; first by rewrite mem_seq1.
     by rewrite rcons_cons 2!in_cons Hr /= orbA.
   Qed.
-  
-  Lemma uniq_cat:  forall (stl str: seq T),
-      uniq(stl) -> uniq(str) -> (forall s, s \in stl -> s \in str -> False) 
-      -> uniq(stl ++ str).
-  Proof.
-    move => stl str H1 H2 H3.
-    rewrite cat_uniq H1 H2 andbT andTb; apply: negbT.
-    have: has (in_mem^~ (mem stl)) str -> False
-      by move => /hasP [s H4 H5];pose proof (H3 s H5 H4).
-    by apply: contra_notF.
-  Qed.
-
+   
+ 
   Lemma Lxx: forall (st: seq T) (y z: T),
       y \in st -> (rcons st z) [L\in] R -> R.+ (y, z).
   Proof.
@@ -2145,7 +2170,7 @@ Section Infinite_path.
     move => [[stl0 x0] str0] [stl [x [str [n [-> [H1 [H2 H3]]]]]]].
     move: (Hn) => /(_ n.+1) Hn'.
     pose proof (Asym2P H2 H3 Hn')  as [stl' [y' [str' [H4 [H5 [H6 [H7 [H8 H9]]]]]]]].
-    have H10:  uniq (stl ++ stl') by apply: (uniq_subseq' R H1 H4).
+    have H10:  uniq (stl ++ stl') by apply: (uniq_subseq' H1 H4).
     by exists (stl',y', str',n.+1);exists stl; exists x; exists str;exists n; exists stl'; exists y'; exists str'; exists n.+1.
   Qed.
   
