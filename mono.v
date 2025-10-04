@@ -171,10 +171,6 @@ Section Set_order.
 
   Axiom proof_irrelevance: forall (P : Prop) (p q : P), p = q.
   
-  Definition isetType := {S: set T| RelIndep R S}.
-  
-  Definition leSet2 (AB: isetType* isetType) := (sval AB.1) [<= R] (sval AB.2).
-
   Section Util.
     (** ingredients *)
     Lemma le_trans (U: relation T): transitive U -> transitive (leSet U).
@@ -219,18 +215,20 @@ Section Set_order.
   
   End Util.
 
-  Lemma leSet2_transitive: transitive R -> @transitive isetType leSet2.
-  Proof. by move => ? [A ?] [B ?] [C ?]; apply/le_trans. Qed.
+  (** * A préciser plus finement ici R est transitive, antisymmetrique et irreflexive *)
+  (** * peut-etre que le irreflexif est pas demandé *)
   
-  Lemma leSet2_reflexive: @reflexive isetType leSet2.
-  Proof. by move => [A ?];apply: le_refl. Qed.
-
-  Lemma leSet2_antisymmetric:
-    transitive R -> Asym R = R ->  @antisymmetric isetType leSet2.
-  Proof. 
-    move => H_T H_As [A Ha] [B Hb] H1 H2.
-    move: (le_antisym H_T H_As Ha Hb H1 H2) => H5.
-    subst A;apply: f_equal;apply: proof_irrelevance.
+  Lemma leSet2_porder: 
+    transitive R -> Asym R = R -> 
+    @porder {S: set T| RelIndep R S} [set AB | (sval AB.1) [<= R] (sval AB.2)].
+  Proof.
+    move => H_T H_As.
+    split => [ [A ?] | [A Ha] [B Hb] H1 H2 | [A ?] [B ?] [C ?]].
+    + (* reflexive *) by apply/le_refl.
+    + (* antisymmetric *) 
+      move: (le_antisym H_T H_As Ha Hb H1 H2) => H5.
+      subst A;apply: f_equal;apply: proof_irrelevance.
+    + (* transitive *) by apply/le_trans.
   Qed.
   
 End Set_order. 
