@@ -44,15 +44,30 @@ Section Relation_Definition.
   Definition transitive (R : relation T): Prop := forall x y z:T, R (x,y) -> R (y,z) -> R (x,z).
   Definition symmetric (R : relation T): Prop := forall x y:T, R (x,y) -> R (y,x).
   Definition antisymmetric (R : relation T): Prop := forall x y:T, R (x,y) -> R (y,x) -> x = y.
+  Definition asymmetric (R : relation T): Prop := forall x y:T, R (x,y) -> ~ R (y,x).
   Definition irreflexive (R : relation T) : Prop := forall x:T, ~ R (x,x).
   
   Record preorder (R : relation T) : Prop :=
-    { preord_refl : reflexive R; preord_trans : transitive R}.
+    { preord_refl: reflexive R; preord_trans: transitive R}.
+
+  Record porder (R : relation T) : Prop :=
+    { poset_refl: reflexive R; poset_antisym: antisymmetric R;poset_trans : transitive R}.
   
+  Record sorder (R : relation T) : Prop := 
+    { sorder_irefl: irreflexive R; sorder_transitive: transitive R}.
+
   Record equivalence (R : relation T) : Prop :=
-    { equiv_refl : reflexive R;
-      equiv_trans : transitive R;
-      equiv_sym : symmetric R}.
+    { equiv_refl : reflexive R; equiv_trans : transitive R; equiv_sym : symmetric R}.
+
+  (* sorder is also asymmetric *)
+  Lemma sorderP (R : relation T): transitive R -> irreflexive R -> asymmetric R.
+  Proof. by move => Tr Ir x y H1 H2; pose proof (Ir x (Tr x y x H1 H2)). Qed.
+
+  (* sorder is also antisymmetric *)
+  Lemma irP (R : relation T): irreflexive R -> (asymmetric R <-> antisymmetric R).
+  Proof. move => Ir. split => [Asy x y /Asy ? ? //| Atsy x y /[dup] H0 H1 H2]. 
+         by move: (Atsy x y H1 H2) H0 => ->;apply: Ir.
+  Qed.
   
 End Relation_Definition.
 
