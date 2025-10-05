@@ -50,24 +50,30 @@ Section Relation_Definition.
   Record preorder (R : relation T) : Prop :=
     { preord_refl: reflexive R; preord_trans: transitive R}.
 
+  (** * partial order *)
   Record porder (R : relation T) : Prop :=
     { poset_refl: reflexive R; poset_antisym: antisymmetric R;poset_trans : transitive R}.
   
-  Record sorder (R : relation T) : Prop := 
+  (** * strict partial order *)
+  Record sporder (R : relation T) : Prop := 
     { sorder_irefl: irreflexive R; sorder_transitive: transitive R}.
 
+  (** * equivalence relation *)
   Record equivalence (R : relation T) : Prop :=
     { equiv_refl : reflexive R; equiv_trans : transitive R; equiv_sym : symmetric R}.
 
-  (* sorder is also asymmetric *)
-  Lemma sorderP (R : relation T): transitive R -> irreflexive R -> asymmetric R.
-  Proof. by move => Tr Ir x y H1 H2; pose proof (Ir x (Tr x y x H1 H2)). Qed.
-
-  (* sorder is also antisymmetric *)
   Lemma irP (R : relation T): irreflexive R -> (asymmetric R <-> antisymmetric R).
   Proof. move => Ir. split => [Asy x y /Asy ? ? //| Atsy x y /[dup] H0 H1 H2]. 
          by move: (Atsy x y H1 H2) H0 => ->;apply: Ir.
   Qed.
+
+  (* sorder is also asymmetric *)
+  Lemma sporder_asym (R : relation T): transitive R -> irreflexive R -> asymmetric R.
+  Proof. by move => Tr Ir x y H1 H2; pose proof (Ir x (Tr x y x H1 H2)). Qed.
+
+  (* sorder is also antisymmetric *)
+  Lemma sporder_antisym (R : relation T): transitive R -> irreflexive R -> antisymmetric R.
+  Proof. by move => Tr Ir x y H1 H2; pose proof (Ir x (Tr x y x H1 H2)). Qed.
   
 End Relation_Definition.
 

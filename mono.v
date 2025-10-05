@@ -173,7 +173,7 @@ Section Set_order.
   
   Section Util.
     (** ingredients *)
-    Lemma le_trans (U: relation T): transitive U -> transitive (leSet U).
+    Lemma le_trans_if_tr (U: relation T): transitive U -> transitive (leSet U).
     Proof.
       rewrite lesetE => /clos_t_iff H0 A B C /= H1 H2.
       have : ('Δ  `|` U)#B `<=` ('Δ  `|` U)#(('Δ  `|` U)#C) by apply: Fset_inc1.
@@ -183,12 +183,14 @@ Section Set_order.
 
     Lemma le_refl (U: relation T): reflexive (leSet U).
     Proof. by move => A r H1;exists r;split;[| left]. Qed.
- 
-    Lemma le_antisym_l1' (U: relation T): 
-      transitive U -> Asym U = U ->
+    
+    Lemma le_antisym_if_sp' (U: relation T): 
+      sporder U -> 
       forall A B, (RelIndep U A) -> A [<= U] B -> B  [<= U] A -> A `<=` B.
     Proof.
-      move => H0 H0' A B H1 H2 H3 a H4.
+      move => [Ir H0] A B H1 H2 H3 a H4.
+      pose proof (sporder_antisym H0 Ir) as Asy.
+      have H0': Asym U = U by rewrite -AsymE.
       move: H2 H3; rewrite -H0' => H2 H3.
       move: (H4) => /inP /H2 [b [/inP /= H5 [-> // | [H6 H6']]]]. 
       move: (H5) => /inP /H3 /= [c [/inP H8 H9]].
@@ -202,15 +204,15 @@ Section Set_order.
         have H14: U (a,c) by apply: H0 H6 H9.
         by have: False by move: H13 H4 H8 => /eqP H13 /inP H4 /inP H8; apply: (H1 a c). 
     Qed.
-  
-    Lemma le_antisym (U: relation T): 
-      transitive U -> Asym U = U -> 
+    
+    Lemma le_antisym_if_sp (U: relation T): 
+      sporder U ->
       forall A B, (RelIndep U A) -> (RelIndep U B) 
              -> A [<= U] B -> B  [<= U] A -> A = B.
     Proof.
-      move => H0 H0' A B H1 H2 H3 H4.
-      by move: (le_antisym_l1' H0 H0' H1 H3 H4)
-                 (le_antisym_l1' H0 H0' H2 H4 H3);rewrite eqEsubset.
+      move => Hsp A B H1 H2 H3 H4.
+      by move: (le_antisym_if_sp' Hsp H1 H3 H4)
+                 (le_antisym_if_sp' Hsp H2 H4 H3);rewrite eqEsubset.
     Qed.
   
   End Util.
@@ -219,16 +221,16 @@ Section Set_order.
   (** * peut-etre que le irreflexif est pas demandé *)
   
   Lemma leSet2_porder: 
-    transitive R -> Asym R = R -> 
+    sporder R -> 
     @porder {S: set T| RelIndep R S} [set AB | (sval AB.1) [<= R] (sval AB.2)].
   Proof.
-    move => H_T H_As.
+    move => H_sp.
     split => [ [A ?] | [A Ha] [B Hb] H1 H2 | [A ?] [B ?] [C ?]].
     + (* reflexive *) by apply/le_refl.
     + (* antisymmetric *) 
-      move: (le_antisym H_T H_As Ha Hb H1 H2) => H5.
+      move: (le_antisym_if_sp H_sp Ha Hb H1 H2) => H5.
       subst A;apply: f_equal;apply: proof_irrelevance.
-    + (* transitive *) by apply/le_trans.
+    + (* transitive *) by move: H_sp => [_ ?];apply/le_trans_if_tr.
   Qed.
   
 End Set_order. 
@@ -429,7 +431,7 @@ Section Paper.
 
     Lemma leSet1_transitive: @transitive SType leSet1.
     Proof. by move => [A ?] [B ?] [C ?]; 
-                     apply/le_trans/Asym_preserve_transitivity/t_trans. Qed.
+                     apply/le_trans_if_tr/Asym_preserve_transitivity/t_trans. Qed.
     
     Lemma leSet1_reflexive: @reflexive SType leSet1.
     Proof. by move => [A ?];apply: le_refl. Qed.
