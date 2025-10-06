@@ -81,7 +81,7 @@ Section Asymmetric.
     have H6: R.+ (z,x) by apply: (t_trans H1 H5).
     by move: H2 => [_ H2 ].
   Qed.
-  
+
 End Asymmetric. 
 
 Section Independent_set.
@@ -428,7 +428,12 @@ Section Paper.
   Notation "A [<=] B" := (leSet1 (A,B)).
   
   Section Scal_order. 
-
+    
+    Lemma sporderAst: sporder (Asym Eb.+).
+    Proof.
+      by split;[apply/Asym_irreflexive|apply/Asym_preserve_transitivity/t_trans].
+    Qed.
+    
     Lemma leSet1_transitive: @transitive SType leSet1.
     Proof. by move => [A ?] [B ?] [C ?]; 
                      apply/le_trans_if_tr/Asym_preserve_transitivity/t_trans. Qed.
@@ -448,8 +453,9 @@ Section Paper.
       have H7: (RelIndep (Asym Eb.+) B) by apply: RelIndep_I H5 H2. 
       have H8: transitive (Asym Eb.+) 
         by apply: Asym_preserve_transitivity;apply: t_trans.
-      have H9: (Asym (Asym Eb.+)) = (Asym Eb.+) by apply: AsymInvol.
-      by move : (le_antisym H8 H9 H6 H7 H1' H2').
+      have H9: irreflexive (Asym Eb.+) by apply Asym_irreflexive.
+      have H10: sporder (Asym Eb.+) by exact. 
+      by move : (le_antisym_if_sp H10 H6 H7 H1' H2').
     Qed.
     
     Lemma leSet1_antisymmetric: @antisymmetric SType leSet1.
@@ -460,6 +466,16 @@ Section Paper.
       subst A. (** why I cannot use rewrite *)
       apply: f_equal.
       apply: proof_irrelevance.
+    Qed.
+    
+    Lemma leSet1_porder: 
+      @porder SType leSet1. 
+    Proof.
+      pose proof sporderAst as H_sp.
+      split => [ [A ?] | [A Ha] [B Hb] H1 H2 | [A ?] [B ?] [C ?]].
+      + by apply/leSet1_reflexive.
+      + by apply/leSet1_antisymmetric.
+      + by apply/leSet1_transitive. 
     Qed.
     
   End Scal_order.
