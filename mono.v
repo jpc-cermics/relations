@@ -1170,6 +1170,72 @@ Section Seq1_plus.
   
   Definition uniq_path (st: seq T) x y := (~ x \in st /\ ~ y \in st /\ uniq st).
 
+  Lemma nth_dv: forall (st: seq T) x y i, i < size st -> nth x st i = nth y st i.
+  Proof.
+    elim/last_ind => [// | st z Hr x y i H1].
+    move: H1;rewrite size_rcons ltnS leq_eqVlt => /orP [/eqP H1 | H1].
+    by rewrite nth_rcons nth_rcons -H1 eq_refl ltnn //.
+    by rewrite nth_rcons nth_rcons H1; apply: Hr.
+  Qed.
+
+
+  Lemma allL_nth : forall st x y, 
+      allL R st x y -> forall i, i.+1 < size st -> R (nth x st i, nth y st i.+1).
+  Proof.
+    elim/last_ind => [// | st x0 Hr x y H1 i H2].
+    rewrite allL_rc in H1. 
+    move: H1 => /andP [H1 H3].
+    rewrite size_rcons in H2.
+    case H4: (i.+1 <size st). 
+    + pose proof (Hr x x0 H3 i H4).
+      have H5: i <= i.+1 by apply leqnSn.
+      have H6: i < size st by pose proof (leq_ltn_trans H5 H4). 
+      rewrite nth_rcons nth_rcons H4 H6 //.
+      have ->: nth y st i.+1 = nth x0 st i.+1 by apply: nth_dv.
+      by apply: Hr.
+    + have H6: size st <= i.+1 < (size st).+1 by rewrite leqNgt H4 H2.
+      have H7: size st == i.+1 by rewrite eqn_leq.
+  Admitted.
+  (* 
+      have H8: size (rcons st x0) 
+      ZZZ
+
+        Lemma nth_last s : nth s (size s).-1 = last x0 s.
+
+      < (size st).+1.
+      apply/andP. split; last by [].
+      move: H4 => /negP H4.
+      
+      
+    rewrite nth_rcons nth_rcons size_rcons => H2.
+    have H3: i < size st. admit.
+    rewrite H3.
+    case H4: (i.+1 == (size st)).
+    + move: H4 => /eqP H4.
+      rewrite H4 ltnn.
+      
+
+    have H4: forall p j,  j < size p -> nth y p j = nth x0 p j.
+    elim/last_ind => [// | p z Hr' j H4].
+    move: H4;rewrite size_rcons ltnS leq_eqVlt => /orP [/eqP H4 | H4].
+    by rewrite nth_rcons nth_rcons -H4 eq_refl ltnn //.
+    rewrite nth_rcons nth_rcons H4. by apply: Hr'.
+    
+    case H3: (i < size st).
+    + rewrite nth_rcons. 
+      case H4: (i.+1 < size st).
+      ++ move: H1;rewrite allL_rc => /andP [_ H1].
+         have ->: nth y st i = nth x0 st i by apply nth_dv.
+         have ->: nth y st i.+1 = nth x0 st i.+1 by apply nth_dv.
+         move => H2. by pose proof (Hr x x0 H1 i H3).
+      ++ move => _.
+         
+    
+    
+    
+    tion T) st x y := (x::(rcons st y)) [L\in] R.
+   *) 
+  
   (** * utilities for uniq *)
   Lemma uniq_subseq: forall (st st': seq T) (x:T),
       uniq (x :: st) -> subseq st' st -> uniq (x:: st').
@@ -1180,7 +1246,6 @@ Section Seq1_plus.
     have /contra H6: x \in st' -> x \in st by rewrite H5;apply: mem_mask.
     by apply: H6.
   Qed.
-  
 
   Lemma uniq_cat:  forall (stl str: seq T),
       uniq(stl) -> uniq(str) -> (forall s, s \in stl -> s \in str -> False) 
