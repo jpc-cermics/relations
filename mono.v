@@ -1177,17 +1177,24 @@ Section Seq1_plus.
     by rewrite nth_rcons nth_rcons -H1 eq_refl ltnn //.
     by rewrite nth_rcons nth_rcons H1; apply: Hr.
   Qed.
-
-
+  
   Lemma allL_nth : forall st x y, 
-      allL R st x y -> forall i, i.+1 < size st -> R (nth x st i, nth y st i.+1).
+      allL R st x y -> forall i, i <= size st -> R (nth (last x st) st i, nth y st i.+1).
   Proof.
-    elim/last_ind => [// | st x0 Hr x y H1 i H2].
+    elim/last_ind => [/= x y + i | st x0 Hr x y H1 i H2].  
+    by rewrite leqn0 allL0 => /inP H0 /eqP ->. 
     rewrite allL_rc in H1. 
     move: H1 => /andP [H1 H3].
-    rewrite size_rcons in H2.
-    case H4: (i.+1 <size st). 
+    move: H2;rewrite size_rcons leq_eqVlt => /orP [/eqP H2 | H2].
+    have H4: size (rcons st x0) = i by rewrite size_rcons -H2.
+    rewrite -H4.
+    rewrite nth_rcons nth_rcons /= H4 H2 //.
+    
+
+    case H4: (i < (size st).+1 ). 
     + pose proof (Hr x x0 H3 i H4).
+      rewrite nth_rcons nth_rcons.
+      
       have H5: i <= i.+1 by apply leqnSn.
       have H6: i < size st by pose proof (leq_ltn_trans H5 H4). 
       rewrite nth_rcons nth_rcons H4 H6 //.
@@ -1195,6 +1202,8 @@ Section Seq1_plus.
       by apply: Hr.
     + have H6: size st <= i.+1 < (size st).+1 by rewrite leqNgt H4 H2.
       have H7: size st == i.+1 by rewrite eqn_leq.
+      move: H7 => /eqP H7. rewrite -H7 nth_rcons nth_rcons ltnn eq_refl.
+
   Admitted.
   (* 
       have H8: size (rcons st x0) 
