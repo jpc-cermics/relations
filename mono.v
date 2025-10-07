@@ -1178,72 +1178,65 @@ Section Seq1_plus.
     by rewrite nth_rcons nth_rcons H1; apply: Hr.
   Qed.
   
+  Lemma last_dv: forall (st: seq T) x y i, i < size st -> last x st = last y st.
+  Proof.
+    elim/last_ind => [// | st z Hr x y i H1].
+    by move: H1;rewrite size_rcons ltnS leq_eqVlt 2!last_rcons => /orP [/eqP H1 | H1].
+  Qed.
+
+  Lemma allL_lastR: forall st x y z i, i < size st -> allL R st x y -> R (last z st, y).
+  Proof.
+    move => st x y z i H1;rewrite allL_split => -[_ H2].
+    by have <- : last x st = last z st by apply: last_dv;apply:H1. 
+  Qed.
+  
   Lemma allL_nth : forall st x y, 
       allL R st x y -> forall i, i <= size st -> R (nth (last x st) st i, nth y st i.+1).
   Proof.
-    elim/last_ind => [/= x y + i | st x0 Hr x y H1 i H2].  
-    by rewrite leqn0 allL0 => /inP H0 /eqP ->. 
-    rewrite allL_rc in H1. 
-    move: H1 => /andP [H1 H3].
+    have P6: forall n, n.+1 < n = false
+        by move => n;apply/negP => H6;move: (leq_ltn_trans (leqnSn n) H6);rewrite ltnn.
+    have P8: forall n, (n.+1 == n) = false
+        by move => n;apply/negP => /eqP H0;move: (ltnSn n);rewrite -{1}H0 ltnn. 
+    have P9: forall n, n.+2 < n = false
+        by move => n;apply/negP => H9;move: (leq_ltn_trans (leqnSn n.+1) H9);rewrite P6.
+    have P10: forall n, n.+2 == n = false
+        by move => n;apply/negP  => /eqP H0;move: (ltnSn n.+1);rewrite [X in n.+1 < X]H0 P6. 
+    have P4: forall n i, i.+1 < n.+1 -> i < n by move => n i; rewrite ltnS. 
+    have P5: forall n i, i < n.+1 -> (i == n) = false -> i < n
+        by move => n i;rewrite leq_eqVlt eqSS => /orP [-> // | ? _];apply: P4.
+    have P7: forall n i, i < n -> (i.+1 < n) = false -> i.+1 = n.
+    move => n i H1 /negP/negP H2; move: H2; rewrite -ltnNge => H2.
+    case H3: (i.+1 == n);first by move: H3 =>/eqP H3.
+    move: H2;rewrite ltnS leq_eqVlt ltnS => /orP [/eqP -> // | H2].
+    by move: (leq_ltn_trans H2 H1);rewrite ltnn.
+
+    have P11: forall n i, i < n -> i.+1 = n -> (i = n.-1)%N.
+    move => n i H0 H1; pose proof (ltn_predK H0) as H2.
+    by move: H1; rewrite -{1}H2 => /eqP H1; move: H1; rewrite eqSS => /eqP H1.
+    
+    elim/last_ind => [/= x y + i | st x0 Hr x y H1 i H2];
+                    first by rewrite leqn0 allL0 => /inP H0 /eqP ->. 
+    move: (H1);rewrite allL_rc => /andP [/inP H1' H3].
     move: H2;rewrite size_rcons leq_eqVlt => /orP [/eqP H2 | H2].
-    have H4: size (rcons st x0) = i by rewrite size_rcons -H2.
-    rewrite -H4.
-    rewrite nth_rcons nth_rcons /= H4 H2 //.
-    
-
-    case H4: (i < (size st).+1 ). 
-    + pose proof (Hr x x0 H3 i H4).
-      rewrite nth_rcons nth_rcons.
-      
-      have H5: i <= i.+1 by apply leqnSn.
-      have H6: i < size st by pose proof (leq_ltn_trans H5 H4). 
-      rewrite nth_rcons nth_rcons H4 H6 //.
-      have ->: nth y st i.+1 = nth x0 st i.+1 by apply: nth_dv.
-      by apply: Hr.
-    + have H6: size st <= i.+1 < (size st).+1 by rewrite leqNgt H4 H2.
-      have H7: size st == i.+1 by rewrite eqn_leq.
-      move: H7 => /eqP H7. rewrite -H7 nth_rcons nth_rcons ltnn eq_refl.
-
-  Admitted.
-  (* 
-      have H8: size (rcons st x0) 
-      ZZZ
-
-        Lemma nth_last s : nth s (size s).-1 = last x0 s.
-
-      < (size st).+1.
-      apply/andP. split; last by [].
-      move: H4 => /negP H4.
-      
-      
-    rewrite nth_rcons nth_rcons size_rcons => H2.
-    have H3: i < size st. admit.
-    rewrite H3.
-    case H4: (i.+1 == (size st)).
-    + move: H4 => /eqP H4.
-      rewrite H4 ltnn.
-      
-
-    have H4: forall p j,  j < size p -> nth y p j = nth x0 p j.
-    elim/last_ind => [// | p z Hr' j H4].
-    move: H4;rewrite size_rcons ltnS leq_eqVlt => /orP [/eqP H4 | H4].
-    by rewrite nth_rcons nth_rcons -H4 eq_refl ltnn //.
-    rewrite nth_rcons nth_rcons H4. by apply: Hr'.
-    
-    case H3: (i < size st).
-    + rewrite nth_rcons. 
-      case H4: (i.+1 < size st).
-      ++ move: H1;rewrite allL_rc => /andP [_ H1].
-         have ->: nth y st i = nth x0 st i by apply nth_dv.
-         have ->: nth y st i.+1 = nth x0 st i.+1 by apply nth_dv.
-         move => H2. by pose proof (Hr x x0 H1 i H3).
-      ++ move => _.
-         
-    
-    
-    
-    tion T) st x y := (x::(rcons st y)) [L\in] R.
-   *) 
+    + have H4: size (rcons st x0) = i by rewrite size_rcons -H2.
+      rewrite -H4 nth_rcons nth_rcons /= H4 H2 // P6 P8 P9 P10.
+      by move: H1;rewrite (@allL_split T R (rcons st x0) x y) => -[_ H1].
+    + rewrite nth_rcons.
+      case H4: (i == size st).
+      ++ move: H4 => /eqP H4.
+         have H5: i < size st = false by apply/negP;rewrite H4 ltnn.
+         by rewrite H5 H4 nth_rcons P6 P8.
+      ++ have H5: i < (size st) by apply: P5.
+        rewrite H5 last_rcons nth_rcons.
+        case H6: ( i.+1 < size st).
+        +++ have <- : nth (last x st) st i = nth x0 st i by apply nth_dv.
+            have -> :  nth y st i.+1 =  nth x0 st i.+1 by apply nth_dv.
+            by apply: Hr. 
+        +++ have H9: i.+1 = size st by pose proof P7 (size st) i H5 H6.
+            have H10: (i = (size st).-1)%N by pose proof P11(size st) i H5 H9.
+            rewrite H9 H10 nth_last eq_refl.
+            by pose proof (@allL_lastR st x x0 x0 i H5 H3).
+  Qed.
   
   (** * utilities for uniq *)
   Lemma uniq_subseq: forall (st st': seq T) (x:T),
