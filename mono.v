@@ -220,9 +220,6 @@ Section Set_order.
   
   End Util.
 
-  (** * A préciser plus finement ici R est transitive, antisymmetrique et irreflexive *)
-  (** * peut-etre que le irreflexif est pas demandé *)
-  
   Lemma leSet2_porder: 
     sporder R -> 
     @porder {S: set T| RelIndep R S} [set AB | (sval AB.1) [<= R] (sval AB.2)].
@@ -396,22 +393,15 @@ Section Paper.
   Definition Mono :=  Eb.+ `|` Er.+.
   (* end snippet Mono *) 
 
-  (** The after set of S (for the red-path relation) is included in the forset of S 
-   *  for the monochromatic path relation *)
-
-  (* begin snippet ScalP:: no-out *)    
-  Definition ScalP (S: set T) := S:#(Er.+) `<=` Mono#S.
-  (* end snippet ScalP *)    
-
   (* The set Scal as a subset of T *)
   (* begin snippet Scal:: no-out *) 
-  Definition Scal := [ set S | RelIndep Mono S /\ ScalP S /\  S != set0 ].
+  Definition Scal := [ set S | RelIndep Mono S /\ S:#(Er.+) `<=` Mono#S /\  S != set0 ].
   (* end snippet Scal *) 
     
   (* The set Scal as a Type *)
   
   (* begin snippet SType:: no-out *)    
-  Definition SType := {S: set T| RelIndep Mono S /\ ScalP S /\ S != set0}.
+  Definition SType := {S: set T| RelIndep Mono S /\ S:#(Er.+) `<=` Mono#S  /\ S != set0}.
   (* end snippet SType *)  
   
   Definition Elt (C: set SType) := {x : T |exists (S: SType), S \in C /\ x \in (sval S)}.
@@ -676,7 +666,6 @@ Section Paper.
              split. by []. by apply: H10.           
       Qed.
 
-
       Lemma ChooseRC5:~ (iic (Asym Eb.+))
             -> forall (s:Ec), (sval s \in Sinf) \/ exists s',  s' \in Sinf /\ (Asym Eb.+) (sval s, s').
       Proof. 
@@ -731,7 +720,7 @@ Section Paper.
       by move: (ChooseRC5 A4 s) => [H1 | [s' [H1 _]]];[exists (sval s) | exists s'].
     Qed.
     
-    Lemma Sinf_ScalP: ScalP Sinf.
+    Lemma Sinf_ScalP: Sinf:#(Er.+) `<=` Mono#Sinf.
     Proof.
       move: Hc => H1 y [s [ H2 H3]].
       move: (H3) => [S [H4 [H5 H6]]].
