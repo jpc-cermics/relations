@@ -1438,26 +1438,22 @@ Section Seq1_plus.
     have P11: forall n i, i < n -> i.+1 = n -> (i = n.-1)%N.
     move => n i H0 H1; pose proof (ltn_predK H0) as H2.
     by move: H1; rewrite -{1}H2 => /eqP H1; move: H1; rewrite eqSS => /eqP H1.
-    
-    move => st x y;rewrite uniq_crc => -[[H1 [H2 H3]] _].
-    move => i H4.
-    move => H5.
-    pose proof nth_in.
+    move => st x y;rewrite uniq_crc => -[[H1 [H2 H3]] _] i H4 H5.
     case H6: (i == (size st).-1)%N.
     + move: H6 => /eqP H6.
       have H7: (size st).-1.+1 = (size st) by apply: (ltn_predK H4).
       have H8: nth y st (size st) = y by apply: nth_default.
-      move: H5;rewrite H6 H7  nth_last H8 /=.
-      have H9: (last y st) \in st by apply: last0';move => H10;rewrite H10 /= in H4. 
-      move => H10.
-      by rewrite H10 in H9.
+      move: H5;rewrite H6 H7  nth_last H8 /= => H5.
+      have: (last y st) \in st by apply: last0' => H10;rewrite H10 /= in H4. 
+      by rewrite H5.
     + 
-      have H7:  nth y st i \in st by apply: nth_in.
+      (* have H7:  nth y st i \in st by apply: nth_in.
       have H8:  nth y st i.+1 \in st by apply: nth_in;lia.
+       *)
       have H9: (i.+1 == size st) || (i.+1 < size st) by rewrite -leq_eqVlt.
       move: H9 => /orP [/eqP H9 | H9];
-                 first by pose proof (P11 (size st) i H4 H9);rewrite -H0 eq_refl in H6.
- 
+                 first by pose proof (P11 (size st) i H4 H9) as H0;rewrite -H0 eq_refl in H6.
+      
       pose proof (cat_take_drop i.+1 st) as H10.
        
       have H11: nth y (take i.+1 st) i \in take i.+1 st
@@ -1482,7 +1478,15 @@ Section Seq1_plus.
       
       by move: H15 => /(_ (nth y st i) H12 H16) H15.
   Qed.
-
+  
+  Lemma uniq_nth': forall (st: seq T) x y, 
+      uniq (x :: rcons st y) -> 
+      forall i, i < size st -> ~ (x = nth y st i) /\ ~ (y = nth y st i).
+  Proof.
+    move => st x y /uniq_crc [[H1 [H2 _]] _] i H3.
+    by pose proof (@nth_in st y i H3) as H4;split;move => H5;rewrite -H5 in H4.
+  Qed.
+  
 End Seq1_plus. 
 
 Section allL_uniq.
@@ -2411,7 +2415,10 @@ Section Infinite_path.
   
   Lemma Asym2P6: 
     (iic (Asym R.+)) -> exists k: nat -> T, exists l: nat -> seq T, exists l': nat -> nat -> T,
-        forall n, (forall i, i < size (l n) -> R ((l' n i), l' n i.+1))
+        forall n, (forall i, i < size (l n)
+                   -> R ((l' n i), l' n i.+1)
+                     /\ ~ ((l' n i) = (l' n i.+1))
+                     /\ ~ (k n = l' n i) /\ ~ (k n.+1 =  l' n i))
              /\ allLu R (l n) (k n) (k n.+1) /\ ~ R.+ (k n.+1, k n) /\ uniq ((l n) ++ (l n.+1)).
   Proof.
     move => /Asym2P5 [k [l H0]]. 
@@ -2419,10 +2426,13 @@ Section Infinite_path.
     move => n.
     split; last exact.
     move => i H1.
-    move: H0 => /(_ n) [[H0 _] _].
-    pose proof (@allL_nth' T R (l n) (k n) (k n.+1) H0) as H2.
-    apply: H2. by []. 
+    move: H0 => /(_ n) [[H0 H0'] _].
+    pose proof (@allL_nth' T R (l n) (k n) (k n.+1) H0 i H1) as H2.
+    pose proof (@uniq_nth T (l n) (k n) (k n.+1) H0' i H1) as H3.
+    pose proof (@uniq_nth' T (l n) (k n) (k n.+1) H0' i H1) as H4.
+    exact. 
   Qed.
+  
 
 End Infinite_path. 
 
