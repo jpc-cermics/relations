@@ -1467,6 +1467,37 @@ Section Seq1_plus.
       by rewrite in_rcons;apply/orP/not_orP;split;[| apply/negP/eqP].
       by rewrite rcons_uniq;apply/andP;split;[apply/negP |].
   Qed.
+
+  Lemma nth_in_take: forall (st:seq T) j y, j.+1 < size st -> nth y st j \in take j.+1 st.
+  Proof.
+    move => st j y H1;move: (@nth_take j.+1 T y j (ltnSn j) st) => <-.
+    by apply: nth_in;rewrite size_take H1 ltnSn.
+  Qed.
+  
+  Lemma nth_in_drop:  forall (st: seq T) i y, i < size st -> nth y st i \in drop i st.  
+  Proof.
+    move => st i y H1.
+    move: (@nth_drop i T y st 1);rewrite addn1 => ?.
+    move: (@drop_nth T y i st H1) => H3.
+    by rewrite H3 in_cons eq_refl orTb.
+  Qed.
+
+  Lemma nth_in_drop':  forall i (st: seq T) j y, i <= j -> j < size st  -> nth y st j \in drop i st.  
+  Proof.
+    elim => [st j y _ H1 // | ]. rewrite drop0. by apply: nth_in.
+    move => i Hr st j y H1 H2.
+    rewrite -addn1 -drop_drop.    
+    have H3:  nth y (drop 1 st) j.-1 \in drop i (drop 1 st).
+    apply: Hr.
+    by lia.
+    rewrite size_drop. by lia.
+    have H4: nth y (drop 1 st) j.-1 =  nth y st j. 
+
+    move: (@nth_drop 1 T y st j.-1);rewrite add1n.
+    have -> : j.-1.+1 = j by apply: ltn_predK H1. 
+    by move => ->. 
+    by rewrite -H4.
+  Qed.
   
   Lemma uniq_nth:  forall (st: seq T) x y, 
       uniq (x :: rcons st y) -> 
@@ -1514,6 +1545,24 @@ Section Seq1_plus.
       have H16:  nth y st i \in drop i.+1 st by rewrite H5 -H13'.
       
       by move: H15 => /(_ (nth y st i) H12 H16) H15.
+  Qed.
+    
+  Lemma uniq_nth'':  forall (st: seq T) x y, 
+      uniq (x :: rcons st y) -> 
+      forall i j, j < i -> i < size st -> ~ (nth y st j = nth y st i).
+  Proof.
+    move => st x y;rewrite uniq_crc => -[[H1 [H2 H3]] _] i j H4 H5 H6.
+    
+    have H7: uniq (take j.+1 st ++ drop j.+1 st)
+      by move: H3;pose proof (cat_take_drop j.+1 st) as ->.
+    have H8: j.+1 < (size st) by lia. 
+    pose proof (@nth_in_take st j y H8) as H10.
+    pose proof (@nth_in_drop' j.+1 st i y H4 H5) as H11.
+    
+    have H15: (forall s, s \in take j.+1 st -> s \in drop j.+1 st -> False)
+      by move: H7 => /uniq_catE [_ [_ H14]].
+    move: H15 => /(_ (nth y st j) H10);rewrite H6 H11 => H15.
+    by apply: H15.
   Qed.
   
   Lemma uniq_nth': forall (st: seq T) x y, 
@@ -2383,21 +2432,6 @@ Section Infinite_path.
     by exists (stl',y', str',n.+1);exists stl; exists x; exists str;exists n; exists stl'; exists y'; exists str'; exists n.+1.
   Qed.
   
-  Lemma Asym2P2: 
-    (iic (Asym R.+)) -> 
-    exists f : nat -> T, exists g: T*T -> seq T, 
-      Re1 f ([::], f 0, g (f 0,f 1),0)
-      /\ exists h: T2 -> T2, forall (p : T2), Re1 f p -> Re2 f (p,h p).
-  Proof.
-    move => /Asym2P1 [f [g [H0 H1]]]; exists f; exists g.
-    move: H0 => [[H2' H3'] H4'].
-    have H5': uniq (g (f 0,f 1))
-      by move: H3';rewrite cons_uniq rcons_uniq => /andP [_ /andP [_ ] ].
-    split;first by (exists [::]; exists (f 0); exists (g (f 0,f 1)); exists 0).
-    pose proof (@Au1_G T2 T2 (Re1 f) (Re2 f) ARR' H1) as [h H2].
-    by exists h.
-  Qed.
-
   Lemma Asym2P3: 
     (iic (Asym R.+)) -> exists f : nat -> T, 
       (exists (p0: T2), Re1 f p0) 
