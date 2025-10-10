@@ -2434,23 +2434,22 @@ Section walk.
   (** * How to encode in one function the two functions obtained above *)
   Variables (T:choiceType).
   
-  Equations? decode_aux (i row : nat) (p : nat -> nat) : nat* nat  by wf i lt :=
-    decode_aux n row p with dec  ((p row).+1 <= n) => {
-      | right H0 => (row, n) ;
-      | left H0 => decode_aux (n - (p row).+1) (S row) p; 
+  Equations? decode_aux (row col: nat) (p : nat -> nat) : nat* nat  by wf col lt :=
+    decode_aux row col p with dec  ((p row) < col) => {
+      | right H0 => (row, col) ;
+      | left H0 => decode_aux (S row) (col - (p row).+1) p; 
       }.
   Proof.
-    have H1: 0 <= n - (p row).+1 by [].
+    have H1: 0 <= col - (p row).+1 by [].
     rewrite leq_subRL in H1. 
     + rewrite addn0 in H1.
-      have H2: 1 <= (p row).+1. by [].
-      have H3: 1 <= n. by apply: (leq_trans H2 H1).
+      have H2: 1 <= col by apply: (leq_trans _ H1).
       by apply/ltP;rewrite ltn_subrL;apply/andP.
     + by rewrite H0.
   Qed.
 
   Definition decode (g : nat -> seq T) (i : nat) : nat * nat :=
-    decode_aux i 0 (fun n => size (g n)).
+    decode_aux 0 i (fun n => size (g n)).
 
   Fixpoint prefix_sum  (g: nat -> seq T) (n : nat) : nat :=
     match n with
@@ -2462,10 +2461,10 @@ Section walk.
     (prefix_sum g row + col)%N.
 
   Definition val (f: nat -> T) (g : nat -> seq T) n := 
-    let (p,q):= decode g n in 
-    match q with
-    | 0 => f p
-    | S q => nth (f 0) (g p) q
+    let (row,col):= decode g n in 
+    match col with
+    | 0 => f row
+    | S col' => nth (f row) (g row) col'
     end.
   
   Variables (a1 b1 c1 d1 e1 f1 g1 h1 i1 j1 k1 l1 m1 :T).
@@ -2488,7 +2487,7 @@ Section walk.
     end.
   
   (* should give a1 b1 c1 d1 e1 f1 g1 h1 i1 j1 *)
-  Compute ((val f g  0) =   (nth m1 L 1)).
+  Compute ((val f g  0) =   (nth m1 L 0)).
   Compute ((val f g  1) =   (nth m1 L 1)).
   Compute ((val f g  2) =   (nth m1 L 2)).
   Compute ((val f g  3) =   (nth m1 L 3)).
@@ -2499,6 +2498,49 @@ Section walk.
   Compute ((val f g  8) =   (nth m1 L 8)).
   Compute ((val f g  9) =   (nth m1 L 9)).
   Compute ((val f g  10) =  (nth m1 L 10)).
+
+  Lemma decode_encode (g : nat -> seq T) :
+    forall (row col : nat),
+      ((size (g row)).+1 <= col = false) -> 
+      decode g (encode g row col) = (row, col).
+  Proof.
+    elim. 
+    + move => col H0.
+      rewrite /encode /decode /prefix_sum add0n. 
+      rewrite decode_aux_equation_1.
+      by rewrite /decode_aux_unfold_clause_1 H0 /=.
+    - move => row Hr col H1.
+      rewrite /encode /decode. 
+      rewrite decode_aux_equation_1.
+      rewrite /prefix_sum -/prefix_sum.
+      simpl.
+    unfold encode.
+    simpl.
+    remember (prefix_sum f row') as pref.
+    unfold decode.
+    simpl.
+    unfold decode_aux.
+    simpl.
+    (* On a index = prefix_sum f row' + f row' + col *)
+    (* Donc le premier test échoue et on descend dans la récursion *)
+    assert (Hge : pref + col + f row' >= f row').
+    { lia. }
+    rewrite Nat.ltb_ge in Hge.
+    rewrite Hge.
+    (* On se ramène au cas IH *)
+    replace (pref + col + f row' - f row') with (pref + col) by lia.
+    specialize (IH col Hlt).
+    simpl in IH.
+    exact IH.
+Q
+
+
+
+
+
+
+
+
 
 
 End walk.
