@@ -329,6 +329,54 @@ Section Infinite_paths.
     by move => S H0; apply contraPP => /test3/(DC H0) H1.
   Qed.
 
+  Lemma AsymInf (f : nat -> T) (R: relation T): 
+    (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
+     forall p n, 0 < p -> (Asym R.+) (f n, f (n + p)). 
+  Proof.
+    move => Hi. 
+    elim => [// | p Hr n' _].
+    case H2: (p == 0); first by move: H2 => /eqP ->;rewrite addn1;apply: Hi. 
+    have: (0 < p ) by lia.
+    move => /(Hr n') H3.
+    have H4: transitive (Asym R.+) by apply: Asym_preserve_transitivity;apply: t_trans.
+    have H5: Asym R.+ (f (n' + p), f (n' + p).+1) by apply: Hi.
+    rewrite /transitive in H4.
+    move: (H4 (f n') (f (n' + p)) (f (n'+p).+1) H3 H5).
+    by rewrite -addn1 -[p.+1]addn1 addnA.
+  Qed.
+  
+  Lemma AsymInf' (f : nat -> T) (R: relation T): 
+    (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
+    forall p n, 0 < p -> ~ (f n) = f (n + p). 
+  Proof.
+    by move => + p n H1 => /AsymInf /(_ p n H1) + H2;rewrite -H2; apply: Asym_irreflexive.
+  Qed.
+
+  Lemma comp: forall n, forall m, m < n -> exists p, p> 0 /\ n = m + p.
+  Proof.
+    elim => [// | n' Hr m' H1]. 
+    case H2: (m' == n'.+1);first by move: H2=> /eqP H2; rewrite H2 ltnn in H1.
+    case H3: (m' == n'). 
+    + move: H3 => /eqP ->. exists 1. split. exact. by rewrite addn1.
+    + have H4:  m' <= n' by lia.
+      move: H4; rewrite leq_eqVlt => /orP [/eqP -> | H5].
+      ++ exists 1. by rewrite addn1.
+      ++ move: (Hr m' H5) => [p [H6 H7]].
+         exists p.+1. split. exact. 
+         by rewrite -addn1 H7 -addnA addn1.
+  Qed.
+  
+  Lemma AsymInf'' (f : nat -> T) (R: relation T): 
+    (forall n, (Asym R.+) ((f n),(f (S n)))) -> injective f.
+  Proof.
+    move => /AsymInf' Hi p q;apply contraPP => H1.
+    have [H2|H2]: (p < q \/ q < p) by lia.
+    + by pose proof (comp H2) as [p' [H3 ->]]; apply: Hi.
+    + move: (comp H2) => [p' [H3 ->]].
+      pose proof (Hi p' q H3).
+      by symmetry.
+Qed.
+  
 End Infinite_paths.
 
 Section Infinite_paths_X.
@@ -2434,39 +2482,6 @@ Section walk.
   (** * How to encode in one function the two functions obtained above *)
   Variables (T:choiceType).
   
-  Equations? decode_aux (row col: nat) (p : nat -> nat) : nat* nat  by wf col lt :=
-    decode_aux row col p with dec  ((p row) < col) => {
-      | right H0 => (row, col) ;
-      | left H0 => decode_aux (S row) (col - (p row).+1) p; 
-      }.
-  Proof.
-    have H1: 0 <= col - (p row).+1 by [].
-    rewrite leq_subRL in H1. 
-    + rewrite addn0 in H1.
-      have H2: 1 <= col by apply: (leq_trans _ H1).
-      by apply/ltP;rewrite ltn_subrL;apply/andP.
-    + by rewrite H0.
-  Qed.
-
-  Definition decode (g : nat -> seq T) (i : nat) : nat * nat :=
-    decode_aux 0 i (fun n => size (g n)).
-
-  Fixpoint prefix_sum  (g: nat -> seq T) (n : nat) : nat :=
-    match n with
-    | 0 => 0
-    | S n' => (prefix_sum g n' + (size (g n')).+1)
-    end.
-
-  Definition encode (g : nat -> seq T) (row col : nat) : nat :=
-    (prefix_sum g row + col)%N.
-
-  Definition val (f: nat -> T) (g : nat -> seq T) n := 
-    let (row,col):= decode g n in 
-    match col with
-    | 0 => f row
-    | S col' => nth (f row) (g row) col'
-    end.
-  
   Variables (a1 b1 c1 d1 e1 f1 g1 h1 i1 j1 k1 l1 m1 :T).
   Definition L:= [:: a1; b1; c1; d1; e1; f1; g1; h1; i1; j1; k1; l1; m1].
   Definition g n := 
@@ -2486,6 +2501,39 @@ Section walk.
     |_  => k1
     end.
   
+  Equations? decode_aux (row col: nat) (p : nat -> nat) : nat* nat  by wf col lt :=
+    decode_aux row col p with dec  ((p row) < col) => {
+      | left H0 => decode_aux (S row) (col - (p row).+1) p; 
+      | right H0 => (row, col) ;
+      }.
+  Proof.
+    have H1: 0 <= col - (p row).+1 by [].
+    rewrite leq_subRL in H1. 
+    + rewrite addn0 in H1.
+      have H2: 1 <= col by apply: (leq_trans _ H1).
+      by apply/ltP;rewrite ltn_subrL;apply/andP.
+    + by rewrite H0.
+  Qed.
+
+  Definition decode (g : nat -> seq T) (i : nat) : nat * nat :=
+    decode_aux 0 i (fun n => size (g n)).
+
+  Definition val (f: nat -> T) (g : nat -> seq T) n := 
+    let (row,col):= decode g n in 
+    match col with
+    | 0 => f row
+    | S col' => nth (f row) (g row) col'
+    end.
+ 
+  Compute (decode g 0).
+  Compute (decode g 1).
+  Compute (decode g 2).
+  Compute (decode g 3).
+  Compute (decode g 4).
+  Compute (decode g 5).
+  Compute (decode g 6).
+  Compute (decode g 7).
+  
   (* should give a1 b1 c1 d1 e1 f1 g1 h1 i1 j1 *)
   Compute ((val f g  0) =   (nth m1 L 0)).
   Compute ((val f g  1) =   (nth m1 L 1)).
@@ -2499,49 +2547,51 @@ Section walk.
   Compute ((val f g  9) =   (nth m1 L 9)).
   Compute ((val f g  10) =  (nth m1 L 10)).
 
-  Lemma decode_encode (g : nat -> seq T) :
+  Fixpoint prefix_sum  (g: nat -> seq T) (n : nat) : nat :=
+    match n with
+    | 0 => 0
+    | S n' => (prefix_sum g n' + (size (g n')).+1)
+    end.
+
+  Definition encode (g : nat -> seq T) (row col : nat) : nat :=
+    (prefix_sum g row + col)%N.
+  
+  Compute (encode g (decode g 0).1 (decode g 0).2) == 0.
+  Compute (encode g (decode g 1).1 (decode g 1).2) == 1.
+  Compute (encode g (decode g 2).1 (decode g 2).2) == 2.
+  Compute (encode g (decode g 3).1 (decode g 3).2) == 3.
+  Compute (encode g (decode g 4).1 (decode g 4).2) == 4.
+  Compute (encode g (decode g 5).1 (decode g 5).2) == 5.
+  Compute (encode g (decode g 6).1 (decode g 6).2) == 6.
+  Compute (encode g (decode g 7).1 (decode g 7).2) == 7.
+
+  Lemma decode_aux_id (g : nat -> seq T) :
     forall (row col : nat),
       ((size (g row)).+1 <= col = false) -> 
-      decode g (encode g row col) = (row, col).
+      decode_aux row col (fun n => size (g n)) = (row, col).
   Proof.
-    elim. 
-    + move => col H0.
-      rewrite /encode /decode /prefix_sum add0n. 
-      rewrite decode_aux_equation_1.
-      by rewrite /decode_aux_unfold_clause_1 H0 /=.
-    - move => row Hr col H1.
-      rewrite /encode /decode. 
-      rewrite decode_aux_equation_1.
-      rewrite /prefix_sum -/prefix_sum.
-      simpl.
-    unfold encode.
-    simpl.
-    remember (prefix_sum f row') as pref.
-    unfold decode.
-    simpl.
-    unfold decode_aux.
-    simpl.
-    (* On a index = prefix_sum f row' + f row' + col *)
-    (* Donc le premier test échoue et on descend dans la récursion *)
-    assert (Hge : pref + col + f row' >= f row').
-    { lia. }
-    rewrite Nat.ltb_ge in Hge.
-    rewrite Hge.
-    (* On se ramène au cas IH *)
-    replace (pref + col + f row' - f row') with (pref + col) by lia.
-    specialize (IH col Hlt).
-    simpl in IH.
-    exact IH.
-Q
-
-
-
-
-
-
-
-
-
+    by move => row col H1;rewrite decode_aux_equation_1 /decode_aux_unfold_clause_1 H1 /=. 
+  Qed.
+  
+  Lemma decodeP (g : nat -> seq T): 
+    forall n, let d:= decode g n in ((size (g d.1)).+1 <= d.2 = false).
+  Proof.
+    elim;first by []. 
+    move => n Hr.
+    rewrite /decode decode_aux_equation_1 /decode_aux_unfold_clause_1 // .
+    rewrite /decode decode_aux_equation_1 /decode_aux_unfold_clause_1 in Hr.
+    case H2: (size (g 0) < n.+1); last by rewrite /=.
+    rewrite /=.
+    case H3: (size (g 0) == n).
+    + move: H3 => /eqP H3.
+      have H4: (n - n) = 0. by lia.
+      by rewrite H3 subSS H4 //.
+    + rewrite subSS.
+      have H4: size (g 0) < n. by lia.
+      rewrite H4 /= in Hr.
+      rewrite /decode decode_aux_equation_1 /decode_aux_unfold_clause_1.
+  Admitted.
+  
 
 End walk.
 
