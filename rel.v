@@ -9,6 +9,14 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 
+(******************************************************************************)
+(* relations defined as set (T * T)                                           *)
+(* thus using properties from classical_sets.v                                *)
+(* R2rel can be used to coerce a relation T to rel T                          *) 
+(******************************************************************************)
+
+(* XXXX the .-1 notation is not good as it clashes with .-1 of nat *)
+
 Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_ssreflect order. 
 From mathcomp Require Import mathcomp_extra boolp.
@@ -35,7 +43,7 @@ Notation "R .*" := (clos_rt R)
 Reserved Notation "R `;` U" (at level 51, left associativity, format "R `;` U").
 
 Section Sets_facts.
-
+  
   Variables (T:Type).
   
   (* should be replaced by in_setE *)
@@ -1259,3 +1267,103 @@ Section clos_rt.
 
 End clos_rt.
 
+
+Section Asymmetric. 
+  (** * Asymmetric part of a relation *) 
+    
+  Variables (T: Type) (R: relation T).
+  
+  Definition Asym (R: relation T): relation T := [set xy | R xy /\ ~ (R.-1 xy)].
+  
+  Lemma Asym_antisymmetric: antisymmetric  (Asym R).
+  Proof. by move => x y [_ ?] [? _]. Qed.
+
+  Lemma Asym_irreflexive: irreflexive (Asym R).
+  Proof. by move => x [? ?]. Qed.
+
+  Lemma Asym_asymmetric : asymmetric (Asym R). 
+  Proof. by apply/(irP Asym_irreflexive)/Asym_antisymmetric. Qed.
+  
+  Lemma Asym_preserve_transitivity: transitive R -> transitive (Asym R).
+  Proof.
+    move => H0 x y z [H1 /= H1'] [H2 /= H2'];split => [ | /= H3].
+    by apply: H0 H1 H2.
+    by have: R (y,x) by apply: H0 H2 H3.
+  Qed.
+  
+  Lemma AsymE: antisymmetric R /\ irreflexive R <-> Asym R = R.
+  Proof.
+    split; last by move => <-;split;
+                          [apply: Asym_antisymmetric | apply: Asym_irreflexive].
+    move => [H1 H2].
+    rewrite predeqE => [[x y]]; split => [[H3 _] // | H3]. 
+    split; first by [].
+    by move: H3 => /[dup] H3 /H1 H3' /H3' H4; move: H3; rewrite H4 => /H2 H3.
+  Qed.
+
+  Lemma AsymI: forall (R: relation T), Asym R `<=` R.
+  Proof. by move => R' [a b] [? _]. Qed.
+
+  Lemma AsymInvol: Asym (Asym R) = (Asym R).
+  Proof.
+    rewrite predeqE => [[a b]];split => [[? _] //| H1]. 
+    split => [// | H2];pose proof (Asym_antisymmetric H1 H2) as H3.
+    by move: H1;rewrite H3;apply: Asym_irreflexive.
+  Qed.
+  
+  Lemma AsymIncl: R.+ `;` Asym(R.+) `<=`  Asym(R.+).
+  Proof.
+    move: AsymI => /(_ R.+) H3 => [[x y] [z /= [H1 /[dup] H2 /H3 H4]]].
+    split =>[| H5]; first by apply: (t_trans H1 H4).
+    have H6: R.+ (y,z) by apply: (t_trans H5 H1).
+    by move: H2 => [_ H2].
+  Qed.
+    
+  Lemma AsymIncr: Asym(R.+) `;` R.+ `<=`  Asym(R.+).
+  Proof.
+    move: AsymI => /(_ R.+) H3 => [[x y] [z /= [/[dup] H2 /H3 H4 H1]]].
+    split =>[| H5]; first by apply: (t_trans H4 H1).
+    have H6: R.+ (z,x) by apply: (t_trans H1 H5).
+    by move: H2 => [_ H2 ].
+  Qed.
+
+End Asymmetric. 
+
+Section Independent_set.
+  (** * Independence of sets with respect to a relation *)
+  
+  Variables (T: Type) (R: relation T).
+
+  (* begin snippet RelIndep:: no-out *)    
+  Definition RelIndep (R: relation T) (S: set T) :=
+    forall (x y:T),  x \in S -> y \in S -> ~(x = y) -> ~( R (x,y)).
+  (* end snippet RelIndep *)    
+  
+  Lemma RelIndep_I: forall (Q R: relation T) (S: set T),
+      Q `<=` R -> RelIndep R S -> RelIndep Q S.
+  Proof.
+    move => Q R' S H1 H2 x y H3 H4 H5 /H1 H6.
+    by pose proof (H2 x y) H3 H4 H5.
+  Qed.
+  
+  Lemma RelIndep_set0: RelIndep R set0.
+  Proof. by move => x y /inP H3 _ _ _. Qed.
+  
+  Lemma RelIndep_set1: forall (x: T), RelIndep R [set x].
+  Proof. by move => x x1 x2 /inP -> /inP -> H4. Qed.
+  
+  Lemma RelIndep_U: forall X x,
+      RelIndep R X -> ~(x \in R#X) -> ~(x \in (X:#R)) -> RelIndep R (X `|` [set x]).
+  Proof.
+    move => X x H2 H3 H4 x1 x2 /inP 
+             [/inP H5 | /inP H5] /inP [/inP H6 |/inP H6] H7 H8.
+    rewrite /RelIndep in H2.
+    + by apply: ((H2 x1 x2) H5 H6 H7 H8).
+    + move: H6 H4 => /inP <- H4. 
+      by have H9: x2 \in X:#R by rewrite inP;exists x1; rewrite inP in H5.
+    + move: H5 H3 => /inP <- H3. 
+      by have H9: x1 \in R#X by rewrite inP;exists x2;rewrite inP in H6.
+    + by move: H5 H6 H7 => /inP -> /inP ->. 
+  Qed.
+  
+End Independent_set.
