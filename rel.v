@@ -952,11 +952,12 @@ Section Clos_trans_facts_1.
   Proof.
     by move => H;rewrite predeqE;split;[apply: clos_trans_inc | apply: clos_trans_inc].
   Qed.
-  
+
 End Clos_trans_facts_1.
 
 Section Clos_refl_trans_facts.
 
+  (* sumRk R n = ('Δ `|` R)^(n). *)
   Fixpoint sumRk (T:Type) (R: relation T) (n : nat) : relation T :=
     match n with 
     | 0 => 'Δ
@@ -1062,6 +1063,21 @@ Section Clos_refl_trans_facts.
     by exists (addn n1 n2);rewrite sumRk_compose;exists y;split.
   Qed.
 
+  Lemma clos_rt_D_clos_t: R.* = ('Δ `|` R).+.
+  Proof.
+    rewrite predeqE => -[x y];split.
+    + move => /clos_rt_sumRk [n +];rewrite sumRk_compose2.
+    case H1: (n == 0).
+    + move: H1 => /eqP ->; rewrite /= => H1.
+      have H2: ('Δ `|` R) (x, y) by rewrite /setU;left.
+      by apply: iter1_inc_clos_trans. 
+    + move: H1 => /neq0_lt0n/prednK H1.
+      pose proof (@iterk_inc_clos_trans T ('Δ `|` R) (n.-1)%N) as H2. 
+      by move: H2; rewrite H1 => H2 /H2 H3.
+    + move => /(@clos_t_iterk T ('Δ `|` R) x y) [n H1].
+    by move: H1; rewrite -sumRk_compose2 => /sumRk_inc_clos_refl_trans.
+  Qed.
+  
   Lemma clos_t_decomp_rt: R `|` (R `;` R.+) = R.+.
   Proof.
     rewrite predeqE => [[x' y']];split => [[H1| [z [H1 H2]]] |].
