@@ -1383,3 +1383,75 @@ Section Independent_set.
   Qed.
   
 End Independent_set.
+
+Section EquivalencePartition.
+
+  Variables (T: Type) (R: relation T).
+
+  (* Définition de la classe d'équivalence de x *)
+  Definition class_of (x : T) := [set y: T| R (x,y)].
+
+  Definition Quotient := {E : set T| exists x : T, E = class_of x }.
+
+  (* Hypothèse : R est une relation d'équivalence *)
+  Hypothesis R_equiv : equivalence R.
+
+  (* Ensemble des classes d'équivalence (possiblement avec répétitions) *)
+  Definition Classes := [set C | exists x:T, C = class_of x].
+  
+  (* Lemme 1 : Chaque classe est non vide *)
+  Lemma classe_non_vide : forall (x : T) C, Classes C ->  (C != set0).
+  Proof.
+    move: (R_equiv) => [R_ref _ _].
+    rewrite /Classes/class_of => x C -[x0 H1]. 
+    rewrite -notempty_exists H1 /mkset. exists x0.
+    by apply/inP. 
+  Qed.
+
+  (* Lemme 2 : Deux classes sont égales ou disjointes *)
+  Lemma classes_disjointes_ou_egales :
+    forall (x y : T), (exists z : T, R (x,z) /\ R (y,z)) -> class_of x = class_of y.
+  Proof.
+    move: (R_equiv) => [R_ref R_tr R_sy] x y [z [H1 H2]].
+    rewrite predeqE;move => x0;split.
+    + rewrite/class_of/mkset => H3.
+      by pose proof (R_tr y x x0 (R_tr y z x H2 (R_sy x z H1)) H3).
+    + rewrite/class_of/mkset => H3.
+      by pose proof (R_tr x y x0 (R_tr x z y H1 (R_sy y z H2)) H3).
+  Qed.
+
+  (* Lemme 3 : Toute l'union des classes couvre T *)
+  Lemma union_classes_couvre_E : forall x : T, exists C : set T, Classes C /\ C x.
+  Proof.
+    move: (R_equiv) => [R_ref _ _] x; exists (class_of x).
+    by split;[rewrite /Classes/mkset;exists x;exact| rewrite /class_of/mkset].
+  Qed.
+
+  Lemma ER_union: \bigcup_ (C in Classes) (fun C  => C) C = setT.
+  Proof.
+    rewrite predeqE => x.
+    split;first exact.
+    move => H0. 
+    by move: (union_classes_couvre_E x) => [C [H1 H2]]; exists C.
+  Qed.
+
+  Lemma ER_empty (C C': set T):
+    C \in Classes -> C' \in Classes -> (exists z, C z /\ C' z) -> C = C'.
+  Proof.
+    rewrite /Classes;move => /inP [x ->] /inP [x' ->] [z H1].
+    by apply: classes_disjointes_ou_egales;exists z. 
+  Qed.
+  
+  Lemma ER_check (C C': set T):
+    (C `&` C') != set0 <-> exists z, C z /\ C' z.
+  Proof.
+    split. 
+    by move => /notempty_exists [z /inP [H1 H2]];exists z.
+    by move => [z [H1 H2]];apply/notempty_exists;exists z;apply/inP. 
+  Qed.
+
+End EquivalencePartition.
+
+
+
+
