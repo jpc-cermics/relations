@@ -833,6 +833,22 @@ Section Iter_facts.
     by rewrite [addn n0 n1.+1]addnS /iter -/iter -[RHS]composeA H.
   Qed.
   
+  Lemma iter_delta (n: nat): (DeltaE (@setT T))^(n) = 'Δ.
+  Proof. 
+    elim: n. exact. move => n Hr.
+    by rewrite -addn1 (iter_compose 'Δ n 1) Hr iter1_id Delta_idem_l.
+  Qed.
+
+  Lemma iter_include (n:nat): R `<=` S -> R^(n) `<=` S^(n).
+  Proof.
+    elim: n => [_ //| n Hr H1]. 
+    move: (iter_compose R n 1) (iter_compose S n 1) => H2 H3.
+    have H4: R^(n)`;`R^(1) `<=` S^(n)`;`R^(1) by apply: composer_inc;apply:Hr.
+    have H5: S^(n)`;`R^(1) `<=` S^(n)`;`S^(1) by apply: compose_inc;rewrite 2!iter1_id.
+    rewrite -addn1 H2 H3.
+    by apply: subset_trans H4 H5.
+  Qed.
+  
   Lemma iter_subset: transitive S ->  R `<=` S -> forall n, n > 0 -> R^(n) `<=` S.
   Proof.
     move => Ht H1;elim => [//| n Hr H2 [x y]].
@@ -849,16 +865,6 @@ Section Iter_facts.
     move: (@iter_compose R n 1) (iter_compose R.-1 1 n)=> H2. 
     rewrite iter1_id => H3.
     by rewrite -addn1 H2 inverse_compose H1 iter1_id -H3 addnC. 
-  Qed.
-  
-  Lemma iter_include (n:nat): R `<=` S -> R^(n) `<=` S^(n).
-  Proof.
-    elim: n => [_ //| n Hr H1]. 
-    move: (iter_compose R n 1) (iter_compose S n 1) => H2 H3.
-    have H4: R^(n)`;`R^(1) `<=` S^(n)`;`R^(1) by apply: composer_inc;apply:Hr.
-    have H5: S^(n)`;`R^(1) `<=` S^(n)`;`S^(1) by apply: compose_inc;rewrite 2!iter1_id.
-    rewrite -addn1 H2 H3.
-    by apply: subset_trans H4 H5.
   Qed.
   
   Lemma iter_C (n:nat): R^(n)`;`R = R `;` R^(n).
@@ -1228,16 +1234,22 @@ Section Clos_refl_trans_facts.
     by split => [/Delta_Id -> |] //.
   Qed.
 
+  Lemma sumRk_0' : ('Δ `|` R)^(0) = 'Δ.
+  Proof. exact. Qed.
+  
   Lemma sumRk_1 : sumRk R 1 = 'Δ `|` R. 
   Proof.
     by rewrite /sumRk Delta_idem_r.
   Qed.
+
+  Lemma sumRk_1' : ('Δ `|` R)^(1) = 'Δ `|` R. 
+  Proof. by rewrite iter1_id. Qed.
   
   Lemma sumRk_kp1_l : forall (n: nat), sumRk R (n.+1) = 'Δ `|`  (R `;` (sumRk R n)).
   Proof.
     by move => n.
   Qed.
-  
+
   Lemma sumRk_kp1_r : forall (n: nat), sumRk R (n.+1) = 'Δ `|` ((sumRk R n) `;` R).
   Proof.
     elim => [ | n H]; first by rewrite sumRk_0 Delta_idem_l sumRk_1. 
@@ -1250,6 +1262,11 @@ Section Clos_refl_trans_facts.
   Proof.
     elim => [ | n H]; first  by rewrite sumRk_0.
     by rewrite sumRk_kp1_l;apply: subsetUl.
+  Qed.
+
+  Lemma Delta_inc_sumRk' (n: nat): 'Δ `<=` ('Δ `|` R)^(n).
+  Proof.
+    by rewrite -{1}(@iter_delta T n);apply: iter_include;apply subsetUl.
   Qed.
 
   Lemma sumRk_inc_sumRkp1 : forall (n: nat),
