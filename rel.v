@@ -665,20 +665,20 @@ Section Clos_trans_facts.
   Qed.
   *)
   
-  Lemma inverse_clos_t: R.+.-1 = (Tclos R.-1).
+  Lemma inverse_clos_t: R.+.-1 = R.-1.+ .
   Proof.
     rewrite /Tclos /inverse /mkset /= predeqE => -[x y] /=.
     split => [[n H1 H2]| [n H1]]; first by (exists n);[ exact|rewrite -inverse_iter].
     by rewrite -inverse_iter => H2;exists n.
   Qed.
-
+  
   Lemma clos_t_sym: symmetric R -> symmetric R.+.
   Proof. by move => Hs x y [n /= H1 /(iter_sym Hs) H2];exists n. Qed.
 
   Lemma iter1_inc_clos_trans: R `<=` R.+.
   Proof. by move => xy H1;exists 1;[ | rewrite iter1_id]. Qed.
   
-  Lemma clos_t_inc: R `<=` S -> R.+ `<=` (Tclos S).
+  Lemma clos_t_inc: R `<=` S -> R.+ `<=` S.+ .
   Proof. by move => H1 xy [n /= H2 H3];(exists n);[|apply: (@iter_include T R S)]. Qed.
   
   Lemma clos_t_sep_n : forall (n: nat) (x y: T) (W:set T),
