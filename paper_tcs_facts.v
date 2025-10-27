@@ -489,8 +489,8 @@ Section Tcs.
     Proof.
       move => x y Hx Hy [[[[_ /= H1]| H2] | H3] | H4]. 
       - rewrite -notempty_exists;exists x. rewrite in_setE. split.
-        by rewrite /Fset /mkset;exists x;split;[apply rt_refl|].
-        by rewrite /Fset /mkset -H1;exists x;split;[apply rt_refl|].
+        by rewrite /Fset /mkset;exists x;split;[apply: RTclosR|].
+        by rewrite /Fset /mkset -H1;exists x;split;[apply: RTclosR|].
       - by apply: L7_1.
       - by apply: L7_2.
       - by apply: L7_3.

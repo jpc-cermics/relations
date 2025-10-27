@@ -1285,8 +1285,8 @@ Section Hn4.
         by apply subseq_trans with (rcons st z);[ | apply subseq_rcons]. *)
       have H11: subseq st' (rcons st z). by apply/subseq_trans/subseq_rcons.
       (exists st', y'); move: H9 => [H9 | H9].
-      by have H12: (y = y' \/ R.+ (y', y)) by right;rewrite -H9;apply: t_step.
-      by have H12: (y = y' \/ R.+ (y', y)) by right;apply TclosT with z;[ |apply: t_step].
+      by have H12: (y = y' \/ R.+ (y', y)) by right;rewrite -H9;apply: TclosS.
+      by have H12: (y = y' \/ R.+ (y', y)) by right;apply TclosT with z;[ |apply: TclosS].
       have H13: subseq (rcons st z) (rcons (rcons st z) y) by apply: subseq_rcons. 
       have H14: uniq (x :: rcons st z) by apply: (uniq_subseq H1' H13).
       exact.
@@ -1331,8 +1331,8 @@ Section Hn4.
       by apply subseq_trans with (y1::st);[| apply subseq_cons]. *)
       have H11: subseq st' (y1 :: st) by apply/subseq_trans/subseq_cons.
       (exists st', z'); move: H9 => [H9 | H9].
-      by have H12: (y = z' \/ R.+ (y, z')) by right; rewrite -H9; apply: t_step.
-      by have H12: (y = z' \/ R.+ (y, z')) by right;apply TclosT with y1;[apply: t_step|].
+      by have H12: (y = z' \/ R.+ (y, z')) by right; rewrite -H9; apply: TclosS.
+      by have H12: (y = z' \/ R.+ (y, z')) by right;apply TclosT with y1;[apply: TclosS|].
       by move: H1'; rewrite cons_uniq rcons_cons => /andP [_ H1'].
   Qed.
   

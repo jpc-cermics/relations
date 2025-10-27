@@ -135,7 +135,7 @@ Section Csbr.
         rewrite -[(Ew .* `;` _ )]composeA.
       have B_L7_E28g : Δ_( W) `<=` Δ_( W_s)
         by move => [x y] [H'1 H'2]; rewrite /W_s /Fset /DeltaE /mkset /=;
-                  split;[exists x; split;[ apply: rt_refl |] | ].
+                  split;[exists x; split;[ apply: RTclosR |] | ].
       have B_L7_E28h : (Ew .* `;` Δ_( W) `;` Emw .* ) `<=` (Ew .* `;` Δ_( W_s) `;` Emw .* )
         by apply: composer_inc; apply: compose_inc; apply: B_L7_E28g.
       

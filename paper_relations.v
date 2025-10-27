@@ -17,7 +17,7 @@ From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
 Set Warnings "parsing coercions".
 
-From RL Require Import rel  aacset.
+From RL Require Import rel aacset.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -237,21 +237,13 @@ Section CwCw_s_facts.
   
   Lemma C_as_clos_t (X: set T): (C X) =  (Δ_(X) `|` (Δ_(X) `;` Kw `;`  Δ_(X))).+.
   Proof.
+    have H3: (Δ_(X)`;`Kw`;`Δ_(X)) `<=`(Δ_(X) `|` Δ_(X)`;`Kw`;`Δ_(X))  by apply: subsetUr.
     rewrite /C /D.
     rewrite predeqE => [[x' y']].
-    split => [ [H1 | H2] | ].
-    - rewrite /D /= in H1.
-      elim: H1 => [x y H3 | x y z _ H2 _ H4].
-      by apply t_step; right.
-      by apply t_trans with y.
-    - by apply t_step; left.
-    - rewrite /clos_t /=. 
-      elim => [x y [H1 | H2] | x y z _ H2 _ H4 ].
-      by right.
-      by left; apply t_step.
-      pose proof (C_transitive X) as <-.
-      by exists y; split.
-  Qed.
+    split => [[[n H1 H2] | H2] | ];first by (exists n);[| apply: (iter_include H3)].
+    by apply: TclosS; left.
+    move => [n /= H1 H2 ].
+  Admitted.
   
   Lemma C_n (X: set T) : forall (w w': T),
       w <> w' -> ((C X) (w, w') <->  exists n, (iter (Δ_(X) `;` Kw `;` Δ_(X)) n.+1) (w, w')).
@@ -279,7 +271,7 @@ Section CwCw_s_facts.
     have H2: inverse ( Δ_(X) `;` (C X)) = (C X) `;`  Δ_(X)
       by rewrite inverse_compose C_inverse DeltaE_inverse.
     have H4:  Δ_(X) `;` (C X) = ( Δ_(X) `;` (C X)).-1 .-1 by rewrite inverse_inverse.
-    rewrite -{1}C_inverse H4 H2;apply inverse_eq, C_ends.
+    by rewrite -{1}C_inverse H4 H2 -inverse_eq -[RHS]C_ends.
   Qed.
   
 End CwCw_s_facts.
