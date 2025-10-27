@@ -238,7 +238,7 @@ Section Infinite_paths.
     case H2: (p == 0); first by move: H2 => /eqP ->;rewrite addn1;apply: Hi. 
     have: (0 < p ) by lia.
     move => /(Hr n') H3.
-    have H4: transitive (Asym R.+) by apply: Asym_preserve_transitivity;apply: t_trans.
+    have H4: transitive (Asym R.+) by apply: Asym_preserve_transitivity;apply: TclosT.
     have H5: Asym R.+ (f (n' + p), f (n' + p).+1) by apply: Hi.
     rewrite /transitive in H4.
     move: (H4 (f n') (f (n' + p)) (f (n'+p).+1) H3 H5).
@@ -372,12 +372,12 @@ Section Paper.
     
     Lemma sporderAst: sporder (Asym Eb.+).
     Proof.
-      by split;[apply/Asym_irreflexive|apply/Asym_preserve_transitivity/t_trans].
+      by split;[apply/Asym_irreflexive|apply/Asym_preserve_transitivity/TclosT].
     Qed.
     
     Lemma leSet1_transitive: @transitive SType leSet1.
     Proof. by move => [A ?] [B ?] [C ?]; 
-                     apply/le_trans_if_tr/Asym_preserve_transitivity/t_trans. Qed.
+                     apply/le_trans_if_tr/Asym_preserve_transitivity/TclosT. Qed.
     
     Lemma leSet1_reflexive: @reflexive SType leSet1.
     Proof. by move => [A ?];apply: le_refl. Qed.
@@ -393,7 +393,7 @@ Section Paper.
       have H6: (RelIndep (Asym Eb.+) A) by apply: RelIndep_I H5 H1. 
       have H7: (RelIndep (Asym Eb.+) B) by apply: RelIndep_I H5 H2. 
       have H8: transitive (Asym Eb.+) 
-        by apply: Asym_preserve_transitivity;apply: t_trans.
+        by apply: Asym_preserve_transitivity;apply: TclosT.
       have H9: irreflexive (Asym Eb.+) by apply Asym_irreflexive.
       have H10: sporder (Asym Eb.+) by exact. 
       by move : (le_antisym_if_sp H10 H6 H7 H1' H2').
@@ -470,7 +470,7 @@ Section Paper.
     
     Lemma transitive_RC: transitive RC. 
     Proof.
-      have H3: transitive (Asym Eb.+) by apply/Asym_preserve_transitivity/t_trans.
+      have H3: transitive (Asym Eb.+) by apply/Asym_preserve_transitivity/TclosT.
       by move => x y z [/= [H0 ->]| [H1 H1']] [ /= [H0' /= ->]| /= [H2 H2']]; 
                 [left | right | right |right;split;[ | apply H3 with (sval y)]].
     Qed.
@@ -680,7 +680,7 @@ Section Paper.
       have H16: (s <> t) by move => H17;rewrite -inP H17 in H3;rewrite H3 in H15.
       have H17: ~ ( Er.+ (y,t)). 
       move => H18.
-      have H19: Mono (s,t) by right; apply: (t_trans H2 H18).
+      have H19: Mono (s,t) by right; apply: (TclosT H2 H18).
       move: H7 => /(_ s t) H7.
       move: H14 => /inP H14.
       by move: (H7 H5 H14 H16).
@@ -688,7 +688,7 @@ Section Paper.
       have H19: (sval S) [<= (Asym Eb.+)] Sinf by apply: ChooseRC6. 
       move: H14 => /inP/H19 [tinf [/= H20 [H21 | [H21 H22]]]].
       + by rewrite -H21 in H20;rewrite H20 in H15. 
-      + by exists tinf;split;[ left;apply: (t_trans H18 H21) | rewrite -inP].
+      + by exists tinf;split;[ left;apply: (TclosT H18 H21) | rewrite -inP].
     Qed.
     
     Lemma Sinf_Scal: Sinf \in Scal. 
@@ -932,7 +932,7 @@ Section Paper.
         move: H9;rewrite -Fset_union_rel inP => [[H9 | H9]].
         + move: H9 => [t [H13 /inP H14]].
           move: H14 => /Sb1' H14.
-          have H15: Eb.+ (y,x) by apply: (t_trans H13 H14).
+          have H15: Eb.+ (y,x) by apply: (TclosT H13 H14).
           have H16: y \in Mono#_(x)
               by rewrite -Fset_union_rel inP;left;rewrite -Fset_t0.
           have H17: y \in Mono#(Tm x `|` [set x])
@@ -941,7 +941,7 @@ Section Paper.
         + (* T -R-> y -R-> S \ (Tm x) contredit indep  *)
           move: H6 => /inP [z1 [H13 H14]].
           move: H9 => [z2 [H15 H16]].
-          have H17: Er.+ (z1, z2) by apply: t_trans H13 H15.
+          have H17: Er.+ (z1, z2) by apply: TclosT H13 H15.
           have H17': Mono (z1,z2) by right.
           
           (* montrer que z1 et z2 sont differents et dans Sm *)
@@ -968,7 +968,7 @@ Section Paper.
               by apply: FsetlU;rewrite -Fset_union_rel inP;left;rewrite -inP.
           move: H9; rewrite inP => [[z1 [H10 /inP H11]]].
           move: (Sb1' H11) => H12.
-          have H13: Eb.+ (y,x) by apply: (t_trans H10 H12).
+          have H13: Eb.+ (y,x) by apply: (TclosT H10 H12).
           have H14: y \in Mono#(Tm x `|` [set x])
               by rewrite setUC;apply: FsetlU;rewrite -Fset_union_rel inP;
             left;rewrite -Fset_t0.
@@ -976,7 +976,7 @@ Section Paper.
         + (* ici y-R-> S et x-R-> y => x -R-> S contredit def de x *)
           move: H9 => [z1 [H9 H10]].
           have H11: x \in Mono#Sm
-              by rewrite inP;exists z1;split;[right;apply: (t_trans H6 H9) |].
+              by rewrite inP;exists z1;split;[right;apply: (TclosT H6 H9) |].
           by move: H2; rewrite inP => [[_ H13]].
           (** end of H8 *)
           have H13: ~ (y \in Sm).
@@ -1013,7 +1013,7 @@ Section Paper.
         move: H9;rewrite -Fset_union_rel inP => [[H9 | H9]].
         + move: H9 => [t [H13 /inP H14]].
           move: H14 => /Sb1' H14.
-          have H15: Eb.+ (y,x) by apply: (t_trans H13 H14).
+          have H15: Eb.+ (y,x) by apply: (TclosT H13 H14).
           have H16: y \in Mono#_(x)
               by rewrite -Fset_union_rel inP;left;rewrite -Fset_t0.
           have H17: y \in Mono#(Tm x `|` [set x])
@@ -1022,7 +1022,7 @@ Section Paper.
         + (* T -R-> y -R-> S \ (Tm x) contredit indep  *)
           move: H6 => /inP [z1 [H13 H14]].
           move: H9 => [z2 [H15 H16]].
-          have H17: Er.+ (z1, z2) by apply: t_trans H13 H15.
+          have H17: Er.+ (z1, z2) by apply: TclosT H13 H15.
           have H17': Mono (z1,z2) by right.
           
           (* montrer que z1 et z2 sont differents et dans Sm *)
@@ -1049,7 +1049,7 @@ Section Paper.
               by apply: FsetlU;rewrite -Fset_union_rel inP;left;rewrite -inP.
           move: H9; rewrite inP => [[z1 [H10 /inP H11]]].
           move: (Sb1' H11) => H12.
-          have H13: Eb.+ (y,x) by apply: (t_trans H10 H12).
+          have H13: Eb.+ (y,x) by apply: (TclosT H10 H12).
           have H14: y \in Mono#(Tm x `|` [set x])
               by rewrite setUC;apply: FsetlU;rewrite -Fset_union_rel inP;
             left;rewrite -Fset_t0.
@@ -1057,7 +1057,7 @@ Section Paper.
         + (* ici y-R-> S et x-R-> y => x -R-> S contredit def de x *)
           move: H9 => [z1 [H9 H10]].
           have H11: x \in Mono#Sm
-              by rewrite inP;exists z1;split;[right;apply: (t_trans H6 H9) |].
+              by rewrite inP;exists z1;split;[right;apply: (TclosT H6 H9) |].
           by move: H2; rewrite inP => [[_ H13]].
           (** end of H8 *)
           have H13: ~ (y \in Sm).
@@ -1118,7 +1118,7 @@ Section Hn4.
     move: H4 => /eqP/(@last0' T) => /(_ x) H4.
     have H5: (last x st) \in (rcons st y) by rewrite in_rcons; apply/orP; left. 
     move: (Lxx_head' H5 H1) => H6. 
-    have H7: R.+ (y, last x st) by apply: t_trans H3 H6.
+    have H7: R.+ (y, last x st) by apply: TclosT H3 H6.
     exact.
   Qed.
 
@@ -1132,7 +1132,7 @@ Section Hn4.
     move: H4 => /eqP/(@head0 T) =>  /(_ y) H4.
     have H5: (head y st) \in (x::st) by rewrite in_cons; apply/orP;right.
     move: (Lxx H5 H1) => H6. 
-    have H7: R.+ (head y st,x) by apply: t_trans H6 H3.
+    have H7: R.+ (head y st,x) by apply: TclosT H6 H3.
     exact.
   Qed.
   
@@ -1145,7 +1145,7 @@ Section Hn4.
     case H3: (s == (last x st)); first by move: H3 => /eqP ->.
     have H6: ~ ( s = (last x st)). by move => H7; rewrite -H7 eq_refl in H3.
     pose proof (allL_belast H1 H2 H6 H4) as H7.
-    by move => H8;have H9: R.+ (y, last x st) by apply: (t_trans H8 H7).
+    by move => H8;have H9: R.+ (y, last x st) by apply: (TclosT H8 H7).
   Qed.
   
   Lemma allL_asym_r: forall st x s y,
@@ -1157,7 +1157,7 @@ Section Hn4.
     case H3: (s == (head y st)); first by move: H3 => /eqP ->.
     have H6: ~ ( s = (head y st)). by move => H7; rewrite -H7 eq_refl in H3.
     pose proof (allL_behead H1 H2 H6 H4) as H7.
-    by move => H8;have H9: R.+ (head y st,x) by apply: (t_trans H7 H8).
+    by move => H8;have H9: R.+ (head y st,x) by apply: (TclosT H7 H8).
   Qed.
   
   Lemma allL_asym_lr: forall st st' x s y s' z,
@@ -1196,19 +1196,19 @@ Section Hn4.
       split.
       ++ pose proof (allL_to_clos_t H4) as H6.
          have H7: R.+ (x, y) by apply: iter1_inc_clos_trans.
-         by pose proof t_trans H7 H6.
+         by pose proof TclosT H7 H6.
       ++ move => H6.
          have H7: R.+ (x, y) by apply: iter1_inc_clos_trans.
-         by pose proof t_trans H6 H7.
+         by pose proof TclosT H6 H7.
     + rewrite allL_c => /andP [/inP H3 H4] H5. 
       split.
       ++ pose proof (allL_to_clos_t H4) as H6.
          have H7: R.+ (x, y) by apply: iter1_inc_clos_trans.
-         by pose proof t_trans H7 H6.      
+         by pose proof TclosT H7 H6.      
       ++ pose proof (Hr y s z) H1 H2 H4 H5 as [H8 H9].
          move => H10.
          have H7: R.+ (x, y) by apply: iter1_inc_clos_trans.
-         have H11: R.+ (z,y) by apply: t_trans H10 H7.
+         have H11: R.+ (z,y) by apply: TclosT H10 H7.
          exact.
   Qed.
 
@@ -1274,7 +1274,7 @@ Section Hn4.
       have H5: y = y \/ R.+ (y, y) by left.
       move: H3 => /inP H3.
       have H6: ~ R.+ (y, last x (rcons st z))
-        by rewrite last_rcons; move => H7;have H8: R.+ (y,x) by apply: t_trans H7 H3.
+        by rewrite last_rcons; move => H7;have H8: R.+ (y,x) by apply: TclosT H7 H3.
       exact. 
     - rewrite Lift_crc Lift_rcrc allset_cons allset_rcons in H1.
       move: (H1); rewrite H0 => [[H10 [H10' H10'']]].
@@ -1286,7 +1286,7 @@ Section Hn4.
       have H11: subseq st' (rcons st z). by apply/subseq_trans/subseq_rcons.
       (exists st', y'); move: H9 => [H9 | H9].
       by have H12: (y = y' \/ R.+ (y', y)) by right;rewrite -H9;apply: t_step.
-      by have H12: (y = y' \/ R.+ (y', y)) by right;apply t_trans with z;[ |apply: t_step].
+      by have H12: (y = y' \/ R.+ (y', y)) by right;apply TclosT with z;[ |apply: t_step].
       have H13: subseq (rcons st z) (rcons (rcons st z) y) by apply: subseq_rcons. 
       have H14: uniq (x :: rcons st z) by apply: (uniq_subseq H1' H13).
       exact.
@@ -1319,7 +1319,7 @@ Section Hn4.
       have H5: y = y \/ R.+ (y, y) by left.
       move: H3 => /inP H3.
       have H6: ~ R.+ (head z (y1 :: st), y)
-        by move => /= H7;have H8: R.+ (z,y) by apply: t_trans H3 H7.
+        by move => /= H7;have H8: R.+ (z,y) by apply: TclosT H3 H7.
       exact.
     - rewrite Lift_crc Lift_rcc allset_cons allset_rcons in H1.
       move: (H1) => [H10 [H10' H10'']].
@@ -1332,7 +1332,7 @@ Section Hn4.
       have H11: subseq st' (y1 :: st) by apply/subseq_trans/subseq_cons.
       (exists st', z'); move: H9 => [H9 | H9].
       by have H12: (y = z' \/ R.+ (y, z')) by right; rewrite -H9; apply: t_step.
-      by have H12: (y = z' \/ R.+ (y, z')) by right;apply t_trans with y1;[apply: t_step|].
+      by have H12: (y = z' \/ R.+ (y, z')) by right;apply TclosT with y1;[apply: t_step|].
       by move: H1'; rewrite cons_uniq rcons_cons => /andP [_ H1'].
   Qed.
   
@@ -1358,7 +1358,7 @@ Section Hn4.
     
     have: (yl = yr) \/  R.+ (yl, yr).
     by move: L5 M5 => [<- | H16] [<- | H17];
-                  [left | right | right | right;apply t_trans with y].
+                  [left | right | right | right;apply TclosT with y].
     
     move => [? | ?]; first by (exists [::]);split;[left |]. 
     case H17: (yl == yr);move: H17 => /eqP H17;first by (exists [::]);split;[ left|].
@@ -1481,7 +1481,7 @@ Section Hn4.
           have H12: ~ (yl =z) by move => H12;rewrite H12 in H15'.
       
           have H20: ~ (R.+ (z, yl)) 
-            by move => H21; have H22: R.+ (z,yr) by apply: (t_trans H21 H15').
+            by move => H21; have H22: R.+ (z,yr) by apply: (TclosT H21 H15').
           
           pose proof allL_drop H17 H11 as H21. 
           

@@ -17,7 +17,7 @@ From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
 Set Warnings "parsing coercions".
 
-From RL Require Import  ssrel rel  aacset.
+From RL Require Import rel  aacset.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -223,7 +223,7 @@ Section CwCw_s_facts.
       by aac_reflexivity.
     rewrite H1 setUid.
     have H2: forall (T: relation T), ( T.+ `;` T.+ `<=` T.+)
-        by move => T [x y] [z [/= H3 H4]];apply t_trans with z.
+        by move => T [x y] [z [/= H3 H4]];apply TclosT with z.
     have H3: ((D X).+ `;` (D X).+ `|` (D X).+ = (D X).+)
       by rewrite setUC; apply setUidPl.
     by rewrite H3.
@@ -237,9 +237,10 @@ Section CwCw_s_facts.
   
   Lemma C_as_clos_t (X: set T): (C X) =  (Δ_(X) `|` (Δ_(X) `;` Kw `;`  Δ_(X))).+.
   Proof.
+    rewrite /C /D.
     rewrite predeqE => [[x' y']].
     split => [ [H1 | H2] | ].
-    - rewrite /D /clos_t /= in H1.
+    - rewrite /D /= in H1.
       elim: H1 => [x y H3 | x y z _ H2 _ H4].
       by apply t_step; right.
       by apply t_trans with y.
