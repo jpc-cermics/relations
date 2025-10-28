@@ -935,7 +935,7 @@ Section Clos_refl_trans_facts.
       elim => [| n H]; first by rewrite sumRk_0 sumRk_1; apply subsetUl.
       by rewrite 2!sumRk_kp1_l;apply/setUS/compose_inc.
     Qed.
-    
+
     Local Lemma RsumRk_inc_sumRkp1 :  forall (n: nat), R `;` (sumRk R U n)  `<=` (sumRk R U (n.+1)).
     Proof. 
       elim => [| n H1];first by rewrite sumRk_0 sumRk_1 Hc2; apply/subsetUr.
@@ -1015,7 +1015,7 @@ Section Clos_refl_trans_facts.
                (Delta_idem_l R) (Delta_idem_r R) Delta_n (n.+1)) => H4.
       by move: H1;rewrite -H3 => /H4 H1.
   Qed.
-  
+
 End Clos_refl_trans_facts.
 
 Notation "R .*" := (RTclos R) 
