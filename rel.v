@@ -27,7 +27,6 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-
 Local Open Scope classical_set_scope.
 
 (** * relations as sets: (set T*T) *)
@@ -594,6 +593,21 @@ Section Iter_facts.
     by rewrite -addn1 addnC (iter_compose (Δ_(X)`;`R) 1 n) -[RHS]composeA -H1.
   Qed.
   
+  Lemma bigcup_iter0: \bigcup_(i < 1) R^(i) = 'Δ. 
+  Proof. 
+    rewrite predeqE => -[x y];split.
+    by move => [n +]; rewrite II1 => -> /Delta_Id ->.
+    by move => ?; exists 0.
+  Qed.
+  
+  Lemma bigcupC I (F : I -> relation T) (P : set I) U:
+    \bigcup_(i in P) (F i `;` U) = (\bigcup_(i in P) F i) `;` U.
+  Proof.
+    apply/predeqP => -[x y]. split. 
+    by move => [n Pn [z /= [H1 H2]]];exists z;split;[exists n|]. 
+    by move => [z [[n Pn /= H1] /= H2]];exists n;[|exists z].
+  Qed.
+
 End Iter_facts. 
 
 Notation "R ^( n )" := (@iter _ R n) 
@@ -609,14 +623,6 @@ Section Clos_trans_facts.
   Local Notation "R .+" := (Tclos R) 
                                 (at level 1, left associativity, format "R .+").
   
-  Lemma bigcupC  I (F : I -> relation T) (P : set I):
-    \bigcup_(i in P) (F i `;` S) = (\bigcup_(i in P) F i) `;` S.
-  Proof.
-    apply/predeqP => -[x y]. split. 
-    by move => [n Pn [z /= [H1 H2]]];exists z;split;[exists n|]. 
-    by move => [z [[n Pn /= H1] /= H2]];exists n;[|exists z].
-  Qed.
-  
   Lemma Tclos_r: (Tclos R) `;` S = \bigcup_ (n >= 1) ((iter R n) `;` S).
   Proof. by rewrite -bigcupC. Qed.
   
@@ -627,10 +633,9 @@ Section Clos_trans_facts.
   
   Lemma TclosT: transitive R.+.
   Proof.
-    move => x y z -[n1 /= H1 H2] -[n2 /= H3 H4].
-    have H5: R^(n1 + n2) (x,z) by rewrite iter_compose;exists y. 
-    have H6: 0 < n1 + n2 by rewrite addn_gt0 H1 H3.
-    by exists (n1 + n2).
+    move => x y z -[n1 /= H1 ?] -[n2 /= H3 ?];exists (n1 + n2).
+    by rewrite /= (addn_gt0 n1 n2);apply/orP;left. 
+    by rewrite (iter_compose R n1 n2);exists y.
   Qed.
   
   Lemma TclosS: R `<=` R.+.
@@ -678,9 +683,9 @@ Section Clos_trans_facts.
   
   Lemma inverse_clos_t: R.+.-1 = R.-1.+ .
   Proof.
-    rewrite /Tclos /inverse /mkset /= predeqE => -[x y] /=.
-    split => [[n H1 H2]| [n H1]]; first by (exists n);[ exact|rewrite -inverse_iter].
-    by rewrite -inverse_iter => H2;exists n.
+    rewrite predeqE => -[x y] /=;split => [[n ? ?]| [n H1]].
+    by (exists n);[ exact|rewrite -inverse_iter].
+    by rewrite -inverse_iter => ?;exists n.
   Qed.
   
   Lemma clos_t_sym: symmetric R -> symmetric R.+.
@@ -817,6 +822,13 @@ Section Clos_refl_trans_facts.
 
   Local Notation "R .*" := (RTclos R) 
                              (at level 1, left associativity, format "R .*").
+  
+  (* A proof with bigcup *)
+  Lemma RTclosE U: U.* = 'Δ `|` U.+.
+  Proof. 
+    by rewrite /RTclos (bigcup_splitn 1) 
+      -(@bigcup_mkord (T*T) 1 (fun n => U^(n))) bigcup_iter0 (@bigcup_addn (T*T)).
+  Qed.
 
   Lemma RTclos_dec U: U.* = 'Δ `|` U.+.
   Proof.
@@ -831,8 +843,7 @@ Section Clos_refl_trans_facts.
   Proof.
     move => S' Ht Hr H1 [x y] [n _]. 
     case H2: (n == 0);first by move: H2 => /eqP -> /Delta_Id ->.
-    move: H2 => /neq0_lt0n H2.
-    by move: (iter_subset Ht H1 H2) => H3 /H3 ?.
+    by move: H2 => /neq0_lt0n H2;move: (iter_subset Ht H1 H2) => H3 /H3 ?.
   Qed.
   
   Lemma RTclosT: transitive R.*.
@@ -851,15 +862,13 @@ Section Clos_refl_trans_facts.
   Proof. by rewrite RTclos_dec; move => x; left. Qed.
   
   Lemma RTclosS: R `<=` R.*.
-  Proof.
-    by rewrite RTclos_dec;move => [x y] ?;right;exists 1;[|rewrite iter1_id].
-  Qed.
+  Proof. by rewrite RTclos_dec;move => [x y] ?;right;exists 1;[|rewrite iter1_id]. Qed.
   
   (* mathematical def of closure 
      smallest [set S | transitive S] R
      is also \bigcap_(S in [set S | transitive S /\ R `<=` S]) S *)
   
-  Lemma RTclosE: R.* = smallest [set S | reflexive S /\ transitive S] R. 
+  Lemma RTclosIff: R.* = smallest [set S | reflexive S /\ transitive S] R. 
   Proof.
     rewrite predeqE => -[x y];split.
     + move => [n /= H1 H2 S' [[H3 H3'] H4]].
@@ -888,7 +897,7 @@ Section Clos_refl_trans_facts.
   Lemma clos_t_clos_rt: R.+ `<=` R.*.
   Proof. by rewrite RTclos_dec;apply: subsetUr. Qed.
   
-  Lemma clos_refl_trans_inc: R `<=` S -> R.* `<=` (RTclos S).
+  Lemma clos_refl_trans_inc: R `<=` S -> R.* `<=` S.*.
   Proof. by move => H1;rewrite 2!RTclos_dec;apply/setUS/clos_t_inc. Qed.
   
   Lemma DuT_eq_Tstar:  'Δ `|` R.+ = R.*.  
@@ -1661,7 +1670,3 @@ Section EquivalencePartition.
   Qed.
 
 End EquivalencePartition.
-
-
-
-
