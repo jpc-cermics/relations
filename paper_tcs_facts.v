@@ -844,8 +844,8 @@ Section Tcs.
     Proof.
       move => Γ Λ W' W'' Wt [H1 [H2 H3]] H4 H5 H6 H7.
       have H8: (W'`|` W'') `&` Wt = set0 by rewrite H6; apply: setDIK.
-      have [H9 H10]: (Wt `&` W' = set0) /\ (Wt `&` W'' = set0) 
-        by rewrite setIC setIUr Union_empty in H8.
+      have [H9 H10]: (Wt `&` W' = set0) /\ (Wt `&` W'' = set0)
+        by rewrite setIC setIUr  setU_eq0 in H8. 
       have H11: (Wt `&` (Cw`;`(Bmw `|` Kw))#Γ = set0) by rewrite -H5.
       have H12: Wt `<=` W by  rewrite H6;apply: subDsetl.
       pose proof (L11 H11 H12 H1) as H13.

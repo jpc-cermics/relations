@@ -135,10 +135,6 @@ Section Sets_facts.
     move => X Y Z [? H2];rewrite empty_notexists H2.
     by move => [z /inP [? [_ ?]]].
   Qed.
-
-  (** * XXX already exists: should be replaced by setU_eq0 *)
-  Lemma Union_empty : forall (X Y: set T), X `|` Y = set0 <-> (X = set0) /\ ( Y = set0).
-  Proof. by move => X Y; rewrite setU_eq0. Qed.
   
 End Sets_facts. 
 
@@ -193,10 +189,6 @@ Section Inverse.
 End Inverse.
 
 Notation "R .-1" := (@inverse _ R). 
-
-(* #[global]
-  Hint Resolve inverse_star inverse_clos_t: relations.
-*)
 
 Section Compose.
   
@@ -259,10 +251,6 @@ Section Compose_facts.
   Proof. by apply/inverse_sym/RRm_sym. Qed. 
   
 End Compose_facts.
-
-#[global]
-  Hint Resolve inverse_compose composeDl composeDr composeA : relations.
-
 
 Section Delta.
 
@@ -485,10 +473,6 @@ Section Delta_facts.
   Qed.
     
 End Delta_facts.
-
-#[global]
-  Hint Resolve DeltaE_union DeltaCE DeltaE_inverse DeltaE_inv Delta_idem_l Delta_idem_r : relations.
-
 
 Section Iter_facts. 
 
