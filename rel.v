@@ -244,29 +244,19 @@ Section Compose_facts.
   Qed.
   
   Lemma compose_inc : S `<=` U ->(R `;` S) `<=` (R `;` U). 
-  Proof.
-    rewrite /subset => H x [z [H1 H2]].
-    by exists z; split; [ | apply H].
-  Qed.
+  Proof. by move => H x [z [? ?]];exists z;split;[|apply: H]. Qed.
   
   Lemma composer_inc : S `<=` U ->(S `;` R ) `<=` (U `;` R). 
-  Proof.
-    rewrite /subset => H x [z [? ?]].
-    by exists z; split; [apply H | ].
-  Qed.
+  Proof. by move => H x [z [? ?]];exists z;split;[apply: H|]. Qed.
   
   Lemma inverse_compose : (R `;` S).-1 = S.-1 `;` R.-1.
-  Proof.
-    rewrite predeqE => x.
-    by split;move => [z [? ?]]; exists z; split.
-  Qed.
+  Proof. by rewrite predeqE => x;split;move => [z [? ?]];exists z;split. Qed.
+
+  Lemma RRm_sym:  symmetric (R `;` R.-1).
+  Proof. by move => x y [z [H1 H2]];exists z;split;[apply: H2|apply: H1]. Qed.
   
   Lemma RRm_inverse : (R `;` R.-1).-1 = R `;` R.-1.
-  Proof.
-    have RRm_sym : symmetric (R `;` R.-1)
-        by move => x y [z [H1 H2]];exists z; split; [apply H2| apply H1].
-    by apply inverse_sym, RRm_sym.
-  Qed. 
+  Proof. by apply/inverse_sym/RRm_sym. Qed. 
   
 End Compose_facts.
 
@@ -368,7 +358,6 @@ Section Delta_facts.
     by move => [x y] /= [H1 <-].
   Qed.
   
-
   Lemma WWcI: X `&` X.^c = set0.
   Proof.
     rewrite /mkset predeqE.
