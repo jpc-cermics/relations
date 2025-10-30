@@ -434,8 +434,8 @@ Section Tcs.
     Proof.
       move => w1 w2 H1;rewrite (WClosureI H1).
       move: H1 => [H1 [H2 H3]].
-      have H4: (let R:= Δ_(W) `;` Kw `;` Δ_(W) in R (w1, w2)) <-> Kw (w1,w2)
-        by split;[rewrite -R_restrict | move => /R_restrict H5;apply: H5].
+      have H4: (Δ_(W) `;` Kw `;` Δ_(W)) (w1, w2) <-> Kw (w1,w2).
+      by split;[rewrite -(@R_restrict T) | move => /(@R_restrict T) H5;apply: H5].
       by [].
     Qed.
     
@@ -845,7 +845,7 @@ Section Tcs.
       move => Γ Λ W' W'' Wt [H1 [H2 H3]] H4 H5 H6 H7.
       have H8: (W'`|` W'') `&` Wt = set0 by rewrite H6; apply: setDIK.
       have [H9 H10]: (Wt `&` W' = set0) /\ (Wt `&` W'' = set0) 
-        by rewrite setIC setIUr Union_empty in H8.
+        by rewrite setIC setIUr setU_eq0 in H8.
       have H11: (Wt `&` (Cw`;`(Bmw `|` Kw))#Γ = set0) by rewrite -H5.
       have H12: Wt `<=` W by  rewrite H6;apply: subDsetl.
       pose proof (L11 H11 H12 H1) as H13.

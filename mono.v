@@ -389,7 +389,7 @@ Section Paper.
       move => A B H1 H2 H1' H2'. 
       pose proof @AsymI T (Eb.+) as H3.
       have H4: Eb.+ `<=` Mono by apply: subsetUl.
-      have H5: Asym Eb.+ `<=` Mono by apply: subset_trans H3 H4.
+      have H5: Asym Eb.+ `<=` Mono by apply: subset_trans (H3 Eb.+) H4.
       have H6: (RelIndep (Asym Eb.+) A) by apply: RelIndep_I H5 H1. 
       have H7: (RelIndep (Asym Eb.+) B) by apply: RelIndep_I H5 H2. 
       have H8: transitive (Asym Eb.+) 
