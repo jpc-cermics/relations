@@ -15,6 +15,8 @@
  * Jean-Philippe Chancelier 2023.
  *)
 
+(** * No more used in rel.v as we use a different definition for closures *)
+
 Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_ssreflect order boolp classical_sets ssrbool.
 Set Warnings "parsing coercions".
