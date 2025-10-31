@@ -13,17 +13,32 @@
 (* relations defined as set (T * T)                                           *)
 (* thus using properties from classical_sets.v                                *)
 (* R2rel can be used to coerce a relation T to rel T                          *) 
+(*                                                                            *)
+(* R.-1        : inverse of the relation R  R.-1 (x,y) <-> R (y,x)            *)
+(* XXXX the .-1 notation is not good as it clashes with .-1 of nat: change it to ^-1 *)
+(* R `;` S     : composition: (R `;` S) (x,y) <-> exists z, R (x,z) /\ S (z,y)*)
+(* 'Δ          : diagonal relation                                            *)
+(* Δ_( W )     : diagonal relation on a subset                                *)
+(* L_( W )     : relation W x setT                                            *)
+(* R_( W )     : relation setT x X                                            *)
+(* R^(n)       : n-iterate of composition                                     *) 
+(* W .^c       : complementary (~` W) XXXXX                                   *)
+(* 'Δc         : XXXXX                                                        *)
+(* R.+         : transitive closure of R                                      *)
+(* R.*         : reflexive transitive closure of R                            *)
+(* R#Y         : Foreset of the subset Y by relation R                        *)
+(* R#_(y)      : Foreset of the subset [set y] by relation R                  *)
+(* Y:#R        : Afterset of the subset Y by relation R                       *)
+(* y_:#R       : Afterset of the subset [set y] by relation R                 *)
+(* Clos(Y|R,W) : closure of Y for the relation Δ_(W.^c) `;` R                 *)
+(* Clos_(y|R,W): closure of [set y] for the relation Δ_(W.^c) `;` R           *)
 (******************************************************************************)
-
-(* XXXX the .-1 notation is not good as it clashes with .-1 of nat *)
 
 Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_ssreflect order. 
 From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
 Set Warnings "parsing coercions".
-
-From RL Require Import ssrel.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -32,13 +47,6 @@ Unset Printing Implicit Defensive.
 Local Open Scope classical_set_scope.
 
 (** * relations as sets: (set T*T) *)
-
-Reserved Notation "R .+" (at level 1, left associativity, format "R .+").
-(* Reserved Notation "R .-1" (at level 2, left associativity, format "R .-1").  *)
-
-Reserved Notation "R .*" (at level 1, left associativity, format "R .*").
-
-Reserved Notation "R `;` U" (at level 51, left associativity, format "R `;` U").
 
 (* begin snippet relation:: no-out *)  
 Definition relation (T: Type) := set (T * T).
@@ -49,10 +57,11 @@ Definition inverse (T: Type) (R:relation T) : relation T := [set x | R (x.2,x.1)
 (* end snippet Sthree *)  
 
 Notation "R .-1" := (@inverse _ R) : classical_set_scope.
-
+Notation "R ^-1" := (@inverse _ R) : classical_set_scope.
 Definition compose (T: Type) (R U: relation T): relation T := 
     [set x | exists (z: T), R (x.1,z) /\ U (z,x.2)].
-Notation "R `;` U" := (@compose _ R U).
+Notation "R `;` U" := 
+  (@compose _ R U) (at level 51, left associativity, format "R `;` U").
 
 Definition DeltaE (T: Type) (X: set T) : relation T := 
   [set x | X x.1 /\ x.1 = x.2].
@@ -65,15 +74,12 @@ Definition DeltaCE (T: Type) (X: set T) : relation T :=
 Definition Lr (T: Type) (X: set T) : relation T := [set x | X x.1].
 Definition Rr (T: Type) (X: set T) : relation T := [set x | X x.2].
 
-Fixpoint iter (T: Type) (R:relation T) (n : nat) :=
-    match n with 
-    | 0 => 'Δ
-    | n'.+1 => (@iter T R n') `;` R
-    end.
+Definition iter (T: Type) R S n : relation T:=
+  let fix loop m := if m is i.+1 then (loop i) `;` R else S in loop n.
 
-Definition Tclos (T: Type) (R: relation T) := \bigcup_ (n >= 1) (iter R n).
+Definition Tclos (T: Type) (R: relation T) := \bigcup_ (n >= 1) (iter R 'Δ n).
 
-Definition RTclos (T: Type) (R: relation T) := \bigcup_ n (iter R n).
+Definition RTclos (T: Type) (R: relation T) := \bigcup_ n (iter R 'Δ n).
 
 Definition Fset (T:Type) (R: relation T) (Y: set T) : set T :=
   [set x | exists (y: T), R (x,y) /\ Y y].
@@ -100,7 +106,8 @@ Notation "W .^c" := (~` W)
                       (at level 2, left associativity, format "W .^c").
 
 Notation "'Δc" := (DeltaCE setT) (at level 2, no associativity).
-Notation "R ^( n )" := (@iter _ R n) (at level 2, left associativity, format "R ^( n )").
+Notation "R ^( n )" := (@iter _ R 'Δ n) 
+                         (at level 2, left associativity, format "R ^( n )").
 Notation "R .+" := (Tclos R) (at level 1, left associativity, format "R .+").
 Notation "R .*" := (RTclos R) (at level 1, left associativity, format "R .*").
 
@@ -134,6 +141,7 @@ Section Relation_Facts.
 
   (** We could use reflexive, transitive, ... from  Coq.ssr.ssrbool 
       using the coercion to rel T *)
+  
   Definition reflexive R : Prop := forall x:T, R (x,x).
   Definition transitive R: Prop := forall x y z:T, R (x,y) -> R (y,z) -> R (x,z).
   Definition symmetric R: Prop := forall x y:T, R (x,y) -> R (y,x).
@@ -411,17 +419,18 @@ Section Relation_Facts.
   
   Lemma iter1_id R: R^(1) = R.
   Proof. by rewrite /iter Delta_idem_l. Qed.
-
-  Lemma iter_compose R n1 n2: R^(addn n1 n2) = R^(n1) `;` R^(n2).
+  
+  Lemma iter_compose R n1 n2: R^(n1 + n2) = R^(n1) `;` R^(n2).
   Proof.
-    elim: n2 n1 => [n1| n1 H n0];first by rewrite addn0 Delta_idem_r.
-    by rewrite [addn n0 n1.+1]addnS /iter -/iter -[RHS]composeA H.
+    have H0: forall n, R^(n.+1) = R^(n) `;` R  by elim => [//|n ?].
+    elim: n2 n1 => [n1| n1 H n0];first by rewrite addn0  Delta_idem_r.
+    by rewrite [addn n0 n1.+1]addnS H0 H composeA -H0.
   Qed.
   
   Lemma iter_delta (n: nat): 'Δ^(n) = ('Δ :relation T).
   Proof. 
-    elim: n. exact. move => n Hr.
-    by rewrite -addn1 (iter_compose 'Δ n 1) Hr iter1_id Delta_idem_l.
+    by elim: n => [//|n Hr];rewrite -addn1 (iter_compose 'Δ n 1)
+                                      Hr iter1_id Delta_idem_l.
   Qed.
 
   Lemma iter_include R S (n:nat): R `<=` S -> R^(n) `<=` S^(n).
@@ -501,7 +510,7 @@ Section Relation_Facts.
 
   (** * Transitive closure  *)
   
-  Lemma Tclos_r R S: (Tclos R) `;` S = \bigcup_ (n >= 1) ((iter R n) `;` S).
+  Lemma Tclos_r R S: (Tclos R) `;` S = \bigcup_ (n >= 1) R^(n) `;` S.
   Proof. by rewrite -bigcupC. Qed.
   
   Lemma Tclos_in R S: transitive S -> R `<=` S -> R.+  `<=` S.
@@ -534,7 +543,7 @@ Section Relation_Facts.
       by move => /H2.
   Qed.
 
-  Lemma clos_t_iterk R (x y:T): R.+ (x,y) -> exists (n:nat), (iter R n.+1) (x,y).
+  Lemma clos_t_iterk R (x y:T): R.+ (x,y) -> exists (n:nat), R^(n.+1) (x,y).
   Proof.
     move => [n H1 ?];exists (n.-1)%N. 
     by have -> : n.-1.+1 = n by apply: ltn_predK H1. 
@@ -561,7 +570,7 @@ Section Relation_Facts.
     by move => H1 xy [n /= H2 H3];(exists n);[|apply: (@iter_include R S n H1)]. Qed.
   
   Lemma clos_t_sep_n R: forall (n: nat) (x y: T) (W:set T),
-      x\in W /\ y \in W.^c /\ (iter R n.+1) (x, y)
+      x\in W /\ y \in W.^c /\ R^(n.+1) (x, y)
       ->  (exists (x' y': T), x'\in W /\ y' \in W.^c /\ R (x',y')).
   Proof.
     move => n x y W.
@@ -1306,7 +1315,7 @@ Section Relation_Facts.
   Qed.
 
 
-  Lemma clos_tn_iff R: forall (n: nat), transitive R -> (iter R n.+1) `<=` R.
+  Lemma clos_tn_iff R: forall (n: nat), transitive R -> R^(n.+1) `<=` R.
   Proof.
     move => n H1.
     elim: n.
@@ -1397,7 +1406,7 @@ Section Relation_Facts.
     by move: H2 => [_ H2 ].
   Qed.
 
-  (** * Independence of sets with respect to a relation *)
+  (** * Independent sets with respect to a relation *)
   
   Lemma RelIndep_I R S X: R `<=` S -> RelIndep S X -> RelIndep R X.
   Proof. by move => H1 H2 x y H3 H4 H5;move: (H2 x y H3 H4 H5) => ? /H1 ?. Qed.
