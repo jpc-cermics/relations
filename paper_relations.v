@@ -246,11 +246,11 @@ Section CwCw_s_facts.
   Admitted.
   
   Lemma C_n (X: set T) : forall (w w': T),
-      w <> w' -> ((C X) (w, w') <->  exists n, (iter (Δ_(X) `;` Kw `;` Δ_(X)) n.+1) (w, w')).
+      w <> w' -> ((C X) (w, w') <->  exists n, (Δ_(X) `;` Kw `;` Δ_(X))^(n.+1) (w, w')).
   Proof.
     rewrite /C /D; move => w w' H1; split => [[H3| [w1 H3] // ] | [n H3]].
     by apply: clos_t_iterk.
-    have H4: (iter (Δ_(X) `;` Kw `;` Δ_(X)) (n.+1)) `<=` (Δ_(X) `;` Kw `;` Δ_(X)).+
+    have H4: (Δ_(X) `;` Kw `;` Δ_(X))^(n.+1) `<=` (Δ_(X) `;` Kw `;` Δ_(X)).+
       by apply iterk_inc_clos_trans.
     apply H4 in H3.
     by left.
@@ -301,7 +301,7 @@ Section Cw_facts.
   Qed.
   
   Lemma Cw_n : forall (w w': T),
-      w <> w' -> (Cw (w, w') <->  exists n, (iter (Δ_(W) `;` Kw `;` Δ_(W)) n.+1) (w, w')).
+      w <> w' -> (Cw (w, w') <->  exists n, (Δ_(W) `;` Kw `;` Δ_(W))^(n.+1) (w, w')).
   Proof.
     apply C_n.
   Qed.
@@ -363,7 +363,7 @@ Section Cw_s_facts.
   Qed.
   
   Lemma Cw_s_n : forall (w w': T),
-      w <> w' -> (Cw_s (w, w') <->  exists n, (iter (Δ_(W_s) `;` Kw `;` Δ_(W_s)) n.+1) (w, w')).
+      w <> w' -> (Cw_s (w, w') <->  exists n, (Δ_(W_s) `;` Kw `;` Δ_(W_s))^(n.+1) (w, w')).
   Proof.
     apply C_n. 
   Qed.
@@ -600,12 +600,12 @@ End Aw_sp_sm_facts.
 Section Key_Lemma_W_s.
   
   Lemma Ws_L1: forall (n: nat) (S R V: relation T) (X: set T),
-      (V `;` (iter ( Δ_(X) `;` S `;` R `;` V `;` Δ_(X)) (n.+1))) `;` S =
-        ((iter (V `;` Δ_(X) `;` S `;` R) (n.+1)) `;` (V `;` Δ_(X) `;` S)).
+      (V `;` ( Δ_(X) `;` S `;` R `;` V `;` Δ_(X))^(n.+1) `;` S =
+         (V `;` Δ_(X) `;` S `;` R)^(n.+1) `;` (V `;` Δ_(X) `;` S)).
   Proof.
     move => n S R V X.
-    have Ws_L4: (V `;` (iter ( Δ_(X) `;` S `;` R `;` V `;` Δ_(X)) (n.+1))) = 
-                  ((iter (V `;` Δ_(X) `;` S `;` R) (n.+1)) `;` V `;` Δ_(X)).
+    have Ws_L4: (V `;` (Δ_(X) `;` S `;` R `;` V `;` Δ_(X))^(n.+1) = 
+                  (V `;` Δ_(X) `;` S `;` R)^(n.+1) `;` V `;` Δ_(X)).
     elim: n => [| n' H]; 
               first by rewrite /iter 
                          -!['Δ `;` (_)]composeA Delta_idem_l Delta_idem_l -!composeA.
@@ -622,14 +622,12 @@ Section Key_Lemma_W_s.
   
   Lemma Ws_L2: forall (n: nat) (S R V: relation T) (X Y: set T),
       V `;` Δ_(X) `;` S = V `;` Δ_(Y) `;` S 
-      ->  ((V `;` (iter ( Δ_(X) `;` S `;` R `;` V `;` Δ_(X)) (n.+1))) `;` S)
-         =
-           (V `;` (iter ( Δ_(Y) `;` S `;` R `;` V `;` Δ_(Y)) (n.+1))) `;` S.
+      -> (V `;` (Δ_(X) `;` S `;` R `;` V `;` Δ_(X))^(n.+1) `;` S)
+        = (V `;` (Δ_(Y) `;` S `;` R `;` V `;` Δ_(Y))^(n.+1)) `;` S.
   Proof.
     move => n S R V X Y H.
-    have H1: ((V `;` (iter ( Δ_(X) `;` S `;` R `;` V `;` Δ_(X)) (n.+1))) `;` S)
-             =
-               ((iter (V `;` Δ_(X) `;` S `;` R) (n.+1)) `;` (V `;` Δ_(X) `;` S)).
+    have H1: (V `;` (Δ_(X) `;` S `;` R `;` V `;` Δ_(X))^(n.+1)) `;` S
+             = (V `;` Δ_(X) `;` S `;` R)^(n.+1) `;` (V `;` Δ_(X) `;` S).
     by apply: Ws_L1.
     by rewrite H in H1;rewrite -Ws_L1 in H1.
   Qed.

@@ -240,7 +240,7 @@ Section Intermediate_results_closed.
   Qed.
 
   Local Lemma Rclosed3: forall (X: set T),
-      R#X `<=` X -> forall (n: nat), (iter R n.+1)#X `<=` X.
+      R#X `<=` X -> forall (n: nat), R^(n.+1)#X `<=` X.
   Proof. 
     move =>X H1 n. 
     elim: n => [ | n H2]; first by rewrite iter1_id.
@@ -258,9 +258,9 @@ Section Intermediate_results_closed.
     - have H2: R `<=` R.+ by apply: iter1_inc_clos_trans.
       have H3: R#X  `<=` R.+#X by apply: Fset_inc.
       by apply: (subset_trans H3 H1).
-    - have [n H4]: exists (n:nat), (iter R n.+1) (x,y) by apply: clos_t_iterk.
-      have H5: (iter R n.+1)#X x by (exists y).
-      have H6: (iter R n.+1)#X `<=` X by apply: (Rclosed3 H1).
+    - have [n H4]: exists (n:nat), R^(n.+1) (x,y) by apply: clos_t_iterk.
+      have H5: R^(n.+1)#X x by (exists y).
+      have H6: R^(n.+1)#X `<=` X by apply: (Rclosed3 H1).
       by move: H5 => /H6 H5.
   Qed.
   

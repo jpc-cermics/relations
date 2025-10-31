@@ -588,7 +588,7 @@ Section Tcs.
     (** * Lemma 8 part 2 *)
     Local Lemma clos_t_sep_n : forall (n: nat) (W' W'': set T) (w' w'': T) (R: relation T),
         (W' `<=` W) /\ (W''= W `\` W') /\ 
-          w' \in W' /\ w'' \in W'' /\ (iter (Δ_(W) `;` R `;` Δ_(W))  n.+1) (w', w'')
+          w' \in W' /\ w'' \in W'' /\ (Δ_(W) `;` R `;` Δ_(W))^(n.+1) (w', w'')
         -> let Rw := (Δ_(W) `;` R `;` Δ_(W)) in
            (exists (x' y': T), x'\in W' /\ y' \in W'' /\ Rw (x', y')).
     Proof.
@@ -1130,7 +1130,7 @@ Section Tcs.
     Qed.
 
     Lemma Ropen3: forall (R : relation T) (X: set T),
-        R#X `<=` X -> forall (n: nat), (iter R n.+1)#X `<=` X.
+        R#X `<=` X -> forall (n: nat), R^(n.+1)#X `<=` X.
     Proof.
       move => R X H1 n. 
       elim: n => [ | n H2]; first by rewrite iter1_id.
@@ -1148,9 +1148,9 @@ Section Tcs.
       - have H2:  R `<=` R.+ by apply: iter1_inc_clos_trans.
         have H3: R#X  `<=` R.+#X by apply: Fset_inc.
         by apply: (subset_trans H3 H1).
-      - have [n H4]: exists (n:nat), (iter R n.+1) (x,y) by apply: clos_t_iterk.
-        have H5: (iter R n.+1)#X x by (exists y).
-        have H6: (iter R n.+1)#X `<=` X by apply: (Ropen3 H1).
+      - have [n H4]: exists (n:nat), R^(n.+1) (x,y) by apply: clos_t_iterk.
+        have H5: R^(n.+1)#X x by (exists y).
+        have H6: R^(n.+1)#X `<=` X by apply: (Ropen3 H1).
         by move: H5 => /H6 H5.
     Qed.
 
