@@ -202,8 +202,7 @@ Section Relation_Facts.
   Lemma W_part X Y Z: (Y `<=` X) /\ (Z= X `\` Y) -> Y `&` Z = set0.
   Proof. by move => [? H2];rewrite empty_notexists H2;move => [z /inP [? [_ ?]]]. Qed.
   
-  (** * Union_facts *)
-  (** * union of relations using set unions *)
+  (** * Union of relations *)
   
   Lemma union_inc_b (R S U:relation T): S `<=` U -> R `<=` U -> (S `|` R) `<=` U.
   Proof. by move => H1 H2;(have <- : U `|` R = U by apply setUidPl);apply setSU. Qed.
@@ -217,6 +216,16 @@ Section Relation_Facts.
   
   Lemma inverse_eq R S: R = S <-> R.-1 = S.-1.
   Proof.
+    have H0: forall (X Y: relation T), X = Y -> X.-1 = Y.-1
+        by move => X Y H;rewrite /inverse /mkset /predeqE H.
+    split; first by apply H0.
+    move => H1; have H2: R.-1.-1 = S.-1.-1 by apply H0.
+    by rewrite -[R]inverse_inverse -[S]inverse_inverse.
+  Qed.
+  
+  Lemma inverseE R S: (R = S) = (R.-1 = S.-1).
+  Proof. ZZZ
+    
     have H0: forall (X Y: relation T), X = Y -> X.-1 = Y.-1
         by move => X Y H;rewrite /inverse /mkset /predeqE H.
     split; first by apply H0.
