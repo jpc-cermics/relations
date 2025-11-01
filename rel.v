@@ -17,13 +17,13 @@
 (* R.-1        : inverse of the relation R  R.-1 (x,y) <-> R (y,x)            *)
 (* XXXX the .-1 notation is not good as it clashes with .-1 of nat: change it to ^-1 *)
 (* R `;` S     : composition: (R `;` S) (x,y) <-> exists z, R (x,z) /\ S (z,y)*)
-(* 'Δ          : diagonal relation                                            *)
 (* Δ_( W )     : diagonal relation on a subset                                *)
+(* 'Δ          : diagonal relation on setT  'Δ = Δ_(setT)                     *)
+(* 'Δc         : diagonal relation on set0  'Δ = Δ_(set0)                     *)
 (* L_( W )     : relation W x setT                                            *)
 (* R_( W )     : relation setT x X                                            *)
 (* R^(n)       : n-iterate of composition                                     *) 
 (* W .^c       : complementary (~` W) XXXXX                                   *)
-(* 'Δc         : XXXXX                                                        *)
 (* R.+         : transitive closure of R                                      *)
 (* R.*         : reflexive transitive closure of R                            *)
 (* R#Y         : Foreset of the subset Y by relation R                        *)
@@ -215,6 +215,11 @@ Section Relation_Facts.
   
   Lemma union_inc_b (R S U:relation T): S `<=` U -> R `<=` U -> (S `|` R) `<=` U.
   Proof. by move => H1 H2;(have <- : U `|` R = U by apply setUidPl);apply setSU. Qed.
+  
+  (** XXXX doit exister dans classical_sets *)
+  Lemma WWcI X: X `&` X.^c = set0.
+  Proof. by rewrite predeqE => x;split => [[?]|?];[rewrite /setC mksetE|]. Qed.
+  
   (** *  Inverse *)
   
   Lemma inverse_inverse R:  R.-1.-1 = R.
@@ -314,9 +319,6 @@ Section Relation_Facts.
   (* XXXXXX identique a Lemma DeltaEsub: Δ_(X) `<=` 'Δ. *)
   Lemma DeltaE_inc_D X : Δ_(X) `<=` 'Δ.
   Proof. by move => -[x y] /= [_ /= <-]. Qed.
-  
-  Lemma WWcI X: X `&` X.^c = set0.
-  Proof. by rewrite predeqE => x;split => [[?]|?];[rewrite /setC mksetE|]. Qed.
   
   Lemma DeltaLco X R: Δ_(X) `;` R = L_(X) `&` R.
   Proof. by rewrite predeqE /= => [[x y]] /=;split => [[z [[? /= <-] ?]]|[? ?]];[|exists x].  Qed.
@@ -492,6 +494,44 @@ Section Relation_Facts.
     by move => [z [[n Pn /= H1] /= H2]];exists n;[|exists z].
   Qed.
 
+  (** * Reflexive Closure *)
+  
+  Lemma delUrel R S: reflexive S -> R `<=` S -> 'Δ `|` R  `<=` S.
+  Proof. by move => ? Hs -[x y] [/Delta_Id -> // | /Hs ?]. Qed.
+
+(*  
+Definition smallest := \bigcap_(A in [set M | C M /\ G `<=` M]) A.
+
+Lemma sub_smallest X : X `<=` G -> X `<=` smallest.
+Proof. by move=> XG A /XG GA Y /= [PY]; apply. Qed.
+
+Lemma sub_gen_smallest : G `<=` smallest. Proof. exact: sub_smallest. Qed.
+
+Lemma smallest_sub X : C X -> G `<=` X -> smallest `<=` X.
+Proof. by move=> XC GX A; apply. Qed.
+
+Lemma smallest_id : C G -> smallest = G.
+Proof.
+by move=> Cs; apply/seteqP; split; [apply: smallest_sub|apply: sub_smallest].
+Qed.
+*)
+
+  Lemma RclosE R: 'Δ `|` R = smallest [set S | reflexive S] R. 
+  Proof. 
+    rewrite predeqE => -[x y];split.
+    + move => [/Delta_Id -> // | H1].
+      have H1: reflexive (smallest [set S | reflexive S] R)
+        by move => x' A [? _].
+      by apply: H1. 
+      have H2: R `<=` (smallest [set S | reflexive S] R)
+        by move => [x' y'] H3 M [_ H5];apply: H5.
+      by apply: H2.
+    + move => H2.
+      have: [set S | reflexive S /\ R `<=` S] ('Δ `|` R)
+      by split;[left|apply: subsetUr].
+      by move => /H2.
+  Qed.
+  
   (** * Transitive closure  *)
   
   Lemma Tclos_r R S: (Tclos R) `;` S = \bigcup_ (n >= 1) R^(n) `;` S.
