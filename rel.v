@@ -231,16 +231,6 @@ Section Relation_Facts.
     by rewrite -[R]inverse_inverse -[S]inverse_inverse.
   Qed.
   
-  Lemma inverseE R S: (R = S) = (R.-1 = S.-1).
-  Proof. ZZZ
-    
-    have H0: forall (X Y: relation T), X = Y -> X.-1 = Y.-1
-        by move => X Y H;rewrite /inverse /mkset /predeqE H.
-    split; first by apply H0.
-    move => H1; have H2: R.-1.-1 = S.-1.-1 by apply H0.
-    by rewrite -[R]inverse_inverse -[S]inverse_inverse.
-  Qed.
-  
   Lemma inverse_union R S: (R `|` S).-1 = R.-1 `|` S.-1.
   Proof. by rewrite /predeqE. Qed.
 
@@ -267,12 +257,9 @@ Section Relation_Facts.
   
   Lemma composeDl  R S U: R `;` (S `|` U) = (R `;` S) `|` (R `;` U).
   Proof.
-    rewrite predeqE => x.
-    split.
-    by move => [z [H1 [H3|H4]]];[ left; exists z; split | right; exists z; split].
-    move => [[z [H1 H2]] | [z [H1 H2]]];
-           first by exists z; split; [ | left].
-                      by exists z;  split; [ | right]. 
+    rewrite predeqE => x;split => [[z [H1 H2]] | H1].
+    by move: H2 => [H2|H2];[left;exists z;split|right;exists z; split].
+    by move: H1 => [[z [H1 H2]] | [z [H1 H2]]];(exists z);split;[|left| |right]. 
   Qed.
   
   Lemma compose_inc  R S U: S `<=` U ->(R `;` S) `<=` (R `;` U). 
@@ -401,8 +388,7 @@ Section Relation_Facts.
     x \in X /\ y \in X -> (R (x,y) <-> (Δ_(X) `;` R `;` Δ_(X)) (x,y)).
   Proof.
     rewrite /compose /DeltaE /mkset /=.
-    move => [/inP H1 /inP H2].
-    split=> [ H3 | [z [[t [[H3 ->] H4] [H5 <-]]]] //].
+    move => [/inP H1 /inP H2];split=> [ H3 | [z [[t [[H3 ->] H4] [H5 <-]]]] //].
     by (exists y; split;[ exists x; split | ]).
   Qed.
 
@@ -435,22 +421,18 @@ Section Relation_Facts.
 
   Lemma iter_include R S (n:nat): R `<=` S -> R^(n) `<=` S^(n).
   Proof.
-    elim: n => [_ //| n Hr H1]. 
-    move: (iter_compose R n 1) (iter_compose S n 1) => H2 H3.
+    elim: n => [_ //| n Hr H1];rewrite -addn1 (iter_compose R n 1) (iter_compose S n 1).
     have H4: R^(n)`;`R^(1) `<=` S^(n)`;`R^(1) by apply: composer_inc;apply:Hr.
-    have H5: S^(n)`;`R^(1) `<=` S^(n)`;`S^(1) by apply: compose_inc;rewrite 2!iter1_id.
-    rewrite -addn1 H2 H3.
-    by apply: subset_trans H4 H5.
+    by apply: (subset_trans H4 _);apply: compose_inc;rewrite 2!iter1_id.
   Qed.
   
   Lemma iter_subset R S: transitive S ->  R `<=` S -> forall n, n > 0 -> R^(n) `<=` S.
   Proof.
     move => Ht H1;elim => [//| n Hr H2 [x y]].
     have H2': R^(1) `<=` S by rewrite iter1_id.
-    case H3: (n == 0);first by  move: H3 => /eqP -> => /H2'.
-    move: H3 => /neq0_lt0n /Hr H3. 
-    rewrite -addn1 (iter_compose R n 1) => -[z [/H3 H4 /H2' H5]].
-    by apply: (Ht x z y H4 H5). 
+    case H3: (n == 0);first by move: H3 => /eqP -> => /H2'.
+    move: H3 => /neq0_lt0n /Hr H3.
+    rewrite -addn1 (iter_compose R n 1) => -[z [/H3 H4 /H2' H5]];apply: (Ht x z y H4 H5). 
   Qed. 
   
   Lemma inverse_iter R (n: nat) : R^(n).-1 = (R.-1)^(n).
@@ -494,11 +476,7 @@ Section Relation_Facts.
   Qed.
   
   Lemma bigcup_iter0 R: \bigcup_(i < 1) R^(i) = 'Δ. 
-  Proof. 
-    rewrite predeqE => -[x y];split.
-    by move => [n +]; rewrite II1 => -> /Delta_Id ->.
-    by move => ?; exists 0.
-  Qed.
+  Proof. by rewrite predeqE => -[x y];split => [[n]|?];[rewrite II1 => -> /Delta_Id ->|exists 0]. Qed.
   
   Lemma bigcupC I (F : I -> relation T) (P : set I) U:
     \bigcup_(i in P) (F i `;` U) = (\bigcup_(i in P) F i) `;` U.
@@ -514,9 +492,7 @@ Section Relation_Facts.
   Proof. by rewrite -bigcupC. Qed.
   
   Lemma Tclos_in R S: transitive S -> R `<=` S -> R.+  `<=` S.
-  Proof.
-    by move => Ht H1 [x y] [n /= H2];move: (iter_subset Ht H1 H2) => H3 /H3 ?.
-  Qed.
+  Proof. by move => Ht H1 [x y] [n /= H2];move: (iter_subset Ht H1 H2) => H3 /H3 ?. Qed.
   
   Lemma TclosT R: transitive R.+.
   Proof.
@@ -799,7 +775,7 @@ Section Relation_Facts.
   
   Local Lemma sumRk_compose2 R: forall (n: nat),  sumRk R n = ('Δ `|` R)^(n).
   Proof.
-    elim => [  | n H];first  by rewrite /sumRk /iter.
+    elim => [|n H];first  by rewrite /sumRk /iter.
     by rewrite -addn1 addnC (iter_compose ('Δ `|` R) 1 n) iter1_id -H;apply/sumRk_composel.
   Qed.
   
