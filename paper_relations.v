@@ -65,9 +65,9 @@ Section Ew_facts.
   Lemma Ew_t_starts: Δ_(W.^c) `;` Ew.+ = Ew.+ .
   Proof.
     by rewrite {1}/Ew  Delta_clos_trans_starts
-       -composeA DeltaE_inv -Delta_clos_trans_starts -/Ew.
+       -composeA DsetK -Delta_clos_trans_starts -/Ew.
   Qed.
-
+  
   Lemma Emw_1 : Emw.* = Ew.* .-1.
   Proof.
     by rewrite /Emw inverse_star.
@@ -85,18 +85,18 @@ Section Bw_facts.
   Lemma Bw_ends1 : Bw `;` Ew `<=` Bw.
   Proof.
     rewrite /Bw composeA clos_rt_r_clos_t.
-    by apply compose_inc; apply clos_t_clos_rt.
+    by apply composeSl; apply clos_t_clos_rt.
   Qed.
 
   Lemma Bmw_starts : Bmw = (Emw.* `;` Bmw).
   Proof.
-    by rewrite {2}/Bmw inverse_compose [Ew .*.-1]inverse_star -composeA compose_rt_rt
-       -inverse_star -inverse_compose.
+    by rewrite {2}/Bmw composeIv [Ew .*.-1]inverse_star -composeA compose_rt_rt
+       -inverse_star -composeIv.
   Qed.
 
   Lemma E_incl_Bw : E `<=` Bw.
   Proof.
-    by rewrite -[E]Delta_idem_r; apply: compose_inc; apply: clos_refl_trans_containsD.
+    by rewrite -[E]Delta_idem_r; apply: composeSl; apply: clos_refl_trans_containsD.
   Qed.
 
   Lemma EDwE_in_Bw: E `;` Δ_(W.^c) `;` E `<=` Bw.
@@ -107,7 +107,7 @@ Section Bw_facts.
     apply iter1_inc_clos_trans.
     apply clos_t_clos_rt.
     rewrite composeA.
-    by apply compose_inc.
+    by apply composeSl.
   Qed.
       
 End Bw_facts. 
@@ -117,8 +117,8 @@ Section Bmw_facts.
   Lemma Einv_inc_Bmw: E.-1 `<=` Bmw.
   Proof.
     have H1: Bmw = (Emw.* `;` E.-1)
-      by rewrite /Bmw /Bw /Emw /Ew inverse_compose inverse_star.
-    by rewrite H1 -{1}[E.-1]Delta_idem_l;apply: composer_inc;
+      by rewrite /Bmw /Bw /Emw /Ew composeIv inverse_star.
+    by rewrite H1 -{1}[E.-1]Delta_idem_l;apply: composeSr;
     apply: clos_refl_trans_containsD.
   Qed.
   
@@ -135,7 +135,7 @@ Section Kw_facts.
   Proof.
     pose proof Bw_ends1 as H1.
     have H2: (Bmw `;` Δ_(W.^c)) `;` (Bw `;` Ew) `<=` (Bmw `;` Δ_(W.^c)) `;` Bw
-      by apply compose_inc.
+      by apply composeSl.
     by rewrite /Kw composeA.
   Qed.
   
@@ -152,17 +152,17 @@ Section Kw_facts.
   Lemma E9e : Kw = ((Emw).+ `;` Ew.+).
   Proof.
     have H1: (Δ_(W.^c) `;` (E `;` Ew .* )) = Ew.+ by rewrite -composeA -/Ew r_clos_rt_clos_t.
-    have H2: Ew.-1 = E.-1 `;` Δ_(W.^c) by rewrite  inverse_compose DeltaE_inverse.
+    have H2: Ew.-1 = E.-1 `;` Δ_(W.^c) by rewrite  composeIv DsetIv.
     have H3: E .-1 `;` (Δ_(W.^c) `;` Ew .+) = Ew.-1 `;` Ew .+  by rewrite -composeA H2.
     by rewrite /Kw /Bmw /Bw /Ew
-       -{2}DeltaE_inv -/Ew composeA composeA
-          H1 inverse_compose composeA H3 -composeA
-       -inverse_compose  r_clos_rt_clos_t inverse_clos_t -/Emw.
+       -{2}DsetK -/Ew composeA composeA
+          H1 composeIv composeA H3 -composeA
+       -composeIv  r_clos_rt_clos_t inverse_clos_t -/Emw.
   Qed.
   
   Lemma Kw_inverse: Kw.-1 = Kw.
   Proof.
-    by rewrite E9e  -inverse_clos_t inverse_compose inverse_inverse.
+    by rewrite E9e  -inverse_clos_t composeIv inverseK.
   Qed.
   
   Lemma Kw_sym : @symmetric T Kw.
@@ -173,7 +173,7 @@ Section Kw_facts.
   Lemma Dx_Kw_Dx_sym: forall (X: set T), @symmetric T (Δ_(X) `;` (Kw `;` Δ_(X))).
   Proof.
     move => X x y [z [H1 [z' [H2 H3]]]].
-    apply DeltaE_sym in H3;apply DeltaE_sym in H1;apply Kw_sym in H2.
+    apply Dset_sym in H3;apply Dset_sym in H1;apply Kw_sym in H2.
     by exists z';split; [ | exists z; split].
   Qed.
   
@@ -213,7 +213,7 @@ Section CwCw_s_facts.
   (* could be derived from below as Cw is a transitive closure *)
   Lemma C_transitive (X: set T) : (C X) `;` (C X) = (C X).
   Proof.
-    rewrite {1 2}/C composeDr composeDl composeDl DeltaE_compose_same.
+    rewrite {1 2}/C composeDr composeDl composeDl Dset_compose_same.
     have -> : ((D X).+ `;` Δ_(X) =(D X).+)
       by rewrite {1}/D -Delta_clos_trans_ends -/D.
     have -> : ( Δ_(X) `;` (D X).+ ) = (D X).+
@@ -263,15 +263,15 @@ Section CwCw_s_facts.
   
   Lemma C_ends (X: set T): (C X) = (C X) `;`  Δ_(X).
   Proof.
-    by rewrite composeDr  DeltaE_inv -Delta_clos_trans_ends.
+    by rewrite composeDr  DsetK -Delta_clos_trans_ends.
   Qed.
 
   Lemma C_starts (X: set T): (C X) =  Δ_(X) `;` (C X).
   Proof.
     have H2: inverse ( Δ_(X) `;` (C X)) = (C X) `;`  Δ_(X)
-      by rewrite inverse_compose C_inverse DeltaE_inverse.
-    have H4:  Δ_(X) `;` (C X) = ( Δ_(X) `;` (C X)).-1 .-1 by rewrite inverse_inverse.
-    by rewrite -{1}C_inverse H4 H2 -inverse_eq -[RHS]C_ends.
+      by rewrite composeIv C_inverse DsetIv.
+    have H4:  Δ_(X) `;` (C X) = ( Δ_(X) `;` (C X)).-1 .-1 by rewrite inverseK.
+    by rewrite -{1}C_inverse H4 H2 -inverseE -[RHS]C_ends.
   Qed.
   
 End CwCw_s_facts.
@@ -390,8 +390,8 @@ Section Sw_facts.
 
   Lemma Sw_inverse : Sw.-1 = Smw.
   Proof.
-    rewrite /Sw inverse_union inverse_compose Cw_inverse inverse_union.
-    by rewrite Kw_inverse /Bmw inverse_inverse DeltaE_inverse -/Smw.
+    rewrite /Sw inverseU composeIv Cw_inverse inverseU.
+    by rewrite Kw_inverse /Bmw inverseK DsetIv -/Smw.
   Qed.
   
 End Sw_facts.
@@ -461,11 +461,11 @@ Section Aw_sp_facts.
   Lemma Awsp_L1: E.-1 `;` Δ_(W.^c) `;` E `<=` Aw_sp.
   Proof.
     pose proof E_incl_Bw as H1.
-    have H2: E.-1 `<=` Bw.-1 by apply inverse_inc;rewrite /Bw.
+    have H2: E.-1 `<=` Bw.-1 by apply inverseS;rewrite /Bw.
     have H3: E.-1 `;` Δ_(W.^c) `;` E `<=` E.-1 `;` Δ_(W.^c) `;` Bw
-      by apply compose_inc.
+      by apply composeSl.
     have H4: E.-1 `;` Δ_(W.^c) `;` Bw `<=` Bmw `;` Δ_(W.^c) `;` Bw
-      by apply composer_inc; apply composer_inc.
+      by apply composeSr; apply composeSr.
     have H5: E.-1 `;` Δ_(W.^c) `;` E `<=`  Kw
       by apply subset_trans with (E.-1 `;` Δ_(W.^c) `;` Bw).
     have H6: Kw `<=` Aw_sp
@@ -492,19 +492,19 @@ Section Aw_sm_facts.
   Lemma Awsm_L1: E `;` Δ_(W_s) `;` E.-1 `<=` Aw_sm.
   Proof.
     pose proof E_incl_Bw as H1.
-    pose proof inverse_inc H1 as H2.
+    pose proof inverseS H1 as H2.
     have H3: E `;` Δ_(W_s) `;` E.-1 `<=` E `;` Δ_(W_s) `;` Bmw
-      by apply compose_inc.
+      by apply composeSl.
     have H4: E `;` Δ_(W_s) `;` Bmw `<=` Bw `;` Δ_(W_s) `;` Bmw
-      by apply composer_inc; apply composer_inc.
+      by apply composeSr; apply composeSr.
     have H5: E `;` Δ_(W_s) `;` E.-1 `<=` Bw `;` Δ_(W_s) `;` Bmw
       by apply subset_trans with (E `;` Δ_(W_s) `;` Bmw).
     have H'1: Δ_(W_s) `<=` Cw_s by apply subsetUr.
-    have H'2: Δ_(W_s) `;` Bmw `<=` Cw_s `;` Bmw by apply composer_inc.
+    have H'2: Δ_(W_s) `;` Bmw `<=` Cw_s `;` Bmw by apply composeSr.
     have H'3: Bw `;` Δ_(W_s) `;` Bmw `<=` Bw `;` Cw_s `;` Bmw
-      by rewrite composeA composeA; apply compose_inc.
+      by rewrite composeA composeA; apply composeSl.
     have H'4: Bw `;` Cw_s `;` Bmw `<=` (Bw `|` Kw) `;` Cw_s `;` Bmw
-      by apply composer_inc;apply composer_inc;apply subsetUl.
+      by apply composeSr;apply composeSr;apply subsetUl.
     have H'5: Bw `;` Δ_(W_s) `;` Bmw `<=` (Bw `|` Kw) `;` Cw_s `;` Bmw
       by apply subset_trans with (Bw `;` Cw_s `;` Bmw).
     have H'6: (Bw `|` Kw) `;` Cw_s `;` Bmw `<=` Bmw `|` ((Bw `|` Kw) `;` Cw_s `;` Bmw)
@@ -517,9 +517,9 @@ Section Aw_sm_facts.
   Lemma Awsm_L2: E.-1 `;` Δ_(W.^c) `;` E.-1 `<=` Aw_sm.
   Proof.
     have H1: E.-1 `;` Δ_(W.^c) `;` E.-1 `<=` Bmw.
-    rewrite composeA -DeltaE_inverse 
-            -[Δ_(W.^c).-1 `;` E.-1]inverse_compose -inverse_compose.
-    by apply inverse_inc; apply EDwE_in_Bw.
+    rewrite composeA -DsetIv
+            -[Δ_(W.^c).-1 `;` E.-1]composeIv -composeIv.
+    by apply inverseS; apply EDwE_in_Bw.
     have H2: Bmw `<=` Aw_sm by apply subsetUl.
     by apply  subset_trans with Bmw.
   Qed.
@@ -529,19 +529,19 @@ End Aw_sm_facts.
 (** already in E_incl_Bw *)
 Lemma E9b1 : E `<=` Bw.
 Proof.
-  by rewrite -[E]Delta_idem_r; apply: compose_inc; apply: clos_refl_trans_containsD.
+  by rewrite -[E]Delta_idem_r; apply: composeSl; apply: clos_refl_trans_containsD.
 Qed.
 
 (* Equation (9c) *)
 Lemma E9c : Emw = E.-1 `;` Δ_(W.^c). 
 Proof.
-  by rewrite /Emw /Ew inverse_compose DeltaE_inverse.
+  by rewrite /Emw /Ew composeIv DsetIv.
 Qed.
   
 (* Equation (9d) *)
 Lemma E9d : Bmw = (Emw.* `;` E.-1).
 Proof.
-  by rewrite /Bmw /Bw /Emw /Ew inverse_compose inverse_star.
+  by rewrite /Bmw /Bw /Emw /Ew composeIv inverse_star.
 Qed.
 
 Section Aw_sp_sm_facts.
@@ -560,7 +560,7 @@ Section Aw_sp_sm_facts.
                 `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew `<=` Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew)
       by apply setSU.
     have H7: ((Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew `<=` (Bw `|` Kw) `;` Cw_s `;` Kw)
-      by rewrite composeA; apply compose_inc.
+      by rewrite composeA; apply composeSl.
     have H8: (Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw `;` Ew `<=` Bw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` Kw).
     by apply setUS.
     
@@ -573,12 +573,12 @@ Section Aw_sp_sm_facts.
   Proof.
     have H1: (Bmw `;` Δ_(W.^c) `;` E.-1 `<=` Bmw).
     rewrite /Bmw /Bw /Ew.
-    rewrite -DeltaE_inverse inverse_compose inverse_star inverse_compose.
-    rewrite DeltaE_inverse DeltaE_inverse.
+    rewrite -DsetIv composeIv inverse_star composeIv.
+    rewrite DsetIv DsetIv.
     pose R:= E.-1 `;` Δ_(W.^c). 
     rewrite -/R [R.* `;` E.-1 `;` Δ_(W.^c)]composeA -/R. 
     rewrite clos_rt_r_clos_t.
-    apply composer_inc.
+    apply composeSr.
     apply clos_t_clos_rt.
     
     pose R:= Δ_(W.^c) `;` E.-1.
@@ -591,7 +591,7 @@ Section Aw_sp_sm_facts.
     have H2: (Bmw `;` R `|` S `;` Bmw `;` R `<=` Bmw `|` S `;` Bmw `;` R)
       by apply setSU. 
     have H3: (Bmw `|` S `;` Bmw `;` R `<=` Bmw `|` S `;` Bmw)
-      by apply setUS; rewrite composeA; apply compose_inc.
+      by apply setUS; rewrite composeA; apply composeSl.
     by apply subset_trans with (Bmw `|` S `;` Bmw `;` R).
   Qed.
 
@@ -615,7 +615,7 @@ Section Key_Lemma_W_s.
     rewrite -[Δ_( X) `;` (Δ_( X) `;` S `;` R `;` V)]composeA.
     rewrite -[Δ_( X) `;` (Δ_( X) `;` S `;` R)]composeA.
     rewrite -[Δ_( X) `;` (Δ_( X) `;` S)]composeA.
-    by rewrite DeltaE_inv -!composeA.
+    by rewrite DsetK -!composeA.
     (* *)
     by rewrite Ws_L4 -[_ `;` (V `;` Δ_( X) `;` S)]composeA -[_ `;` (V `;` Δ_( X))]composeA.
   Qed.

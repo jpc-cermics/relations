@@ -36,7 +36,7 @@ Section Tcs.
       have L14_E38a1 : Ew.+ = Δ_(W.^c) `;` Bw                            
         by rewrite /Bw -composeA -/Ew r_clos_rt_clos_t.
       have L14_E38a2 : Emw.+ = Bmw `;` Δ_(W.^c)
-        by rewrite -inverse_clos_t L14_E38a1 inverse_compose -/Bmw DeltaE_inverse.
+        by rewrite -inverse_clos_t L14_E38a1 composeIv -/Bmw DsetIv.
       by rewrite L1 !composeDr !composeDl !Delta_idem_r !Delta_idem_l setUA -E9e;
       rewrite -L14_E38a2 -L14_E38a1.
     Qed.
@@ -82,7 +82,7 @@ Section Tcs.
         R = R `;`  Δ_(W) -> R =  Δ_(W) `;` R -> ( Δ_(W) `|` R.+) `;` ( Δ_(W) `|` R) = ( Δ_(W) `|` R.+).
     Proof. 
       move => R H1 H2.
-      rewrite composeDr !composeDl DeltaE_compose_same -H2.
+      rewrite composeDr !composeDl Dset_compose_same -H2.
       rewrite L14_E38c2 //. 
       rewrite -setUA [in (R `|` _)]setUA [in (R `|` _)]setUC.
       rewrite -[in (R .+ `|` R `|` R .+ `;` R)]setUA.
@@ -94,7 +94,7 @@ Section Tcs.
         R = R `;`  Δ_(W) -> R =  Δ_(W) `;` R -> ( Δ_(W) `|` R.+) `;` ( Δ_(W) `|` R.+) = ( Δ_(W) `|` R.+).
     Proof.
       move => R H1 H2.
-      rewrite composeDr !composeDl DeltaE_compose_same.
+      rewrite composeDr !composeDl Dset_compose_same.
       rewrite L14_E38c2 // L14_E38c3 //.
       by rewrite clos_t_decomp_2 -setUA setUid.
     Qed.
@@ -103,15 +103,15 @@ Section Tcs.
     Lemma L14_E38c : (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw. 
     Proof.
       have H1: DKD `;`  Δ_(W) = DKD
-        by rewrite /DKD composeA DeltaE_compose_same.
+        by rewrite /DKD composeA Dset_compose_same.
       have H2:  Δ_(W) `;` DKD = DKD
-        by rewrite /DKD -composeA -composeA DeltaE_compose_same.
+        by rewrite /DKD -composeA -composeA Dset_compose_same.
       rewrite L14_E38c1.
       rewrite {1}Cw_ends.
       rewrite composeA. 
       rewrite -{1}[in ( Δ_(W) `;` (( Δ_(W) `|` Kw `;`  Δ_(W)) `;` Cw))]composeA. 
       rewrite [in  Δ_(W) `;` ( Δ_(W) `|` Kw `;`  Δ_(W))]composeDl.
-      rewrite DeltaE_compose_same.
+      rewrite Dset_compose_same.
       rewrite -[in  Δ_(W) `;` (Kw `;`  Δ_(W))]composeA.
       rewrite /Cw -/DKD. 
       rewrite [in (DKD .+ `|`  Δ_(W))]setUC.
@@ -126,7 +126,7 @@ Section Tcs.
       rewrite Cw_ends.
       rewrite composeA [in( 'Δ `|` Bmw `;` Δ_(W.^c) `|` Kw) `;` Δ_(W.^c)]composeDr.
       rewrite [in ('Δ `|` Bmw `;` Δ_(W.^c)) `;` Δ_(W.^c)]composeDr.
-      rewrite [in  Bmw `;` Δ_(W.^c) `;` Δ_(W.^c)]composeA DeltaE_compose_same.
+      rewrite [in  Bmw `;` Δ_(W.^c) `;` Δ_(W.^c)]composeA Dset_compose_same.
       rewrite [in LHS]composeA composeDl [in ( Δ_(W) `;` _)]composeDl.
       rewrite Delta_idem_l DeltaW_Wc  DeltaC_union_ideml. 
       rewrite -[in ( Δ_(W) `;` _ `|`  Δ_(W) `;` _)]composeDl.
@@ -140,18 +140,18 @@ Section Tcs.
     Proof.
       have H0 : forall (R: relation T), 
           (Δ_(W.^c) `;` R `;` Cw).-1 = Cw `;` R.-1 `;` Δ_(W.^c)
-          by move => R; rewrite inverse_compose  inverse_compose
-                         Cw_inverse DeltaE_inverse composeA.
+          by move => R; rewrite composeIv  composeIv
+                         Cw_inverse DsetIv composeA.
       have H1: inverse (Emw .* ) = (Ew .* )
-        by rewrite inverse_star /Emw inverse_inverse.
+        by rewrite inverse_star /Emw inverseK.
       have H2 : (Emw.* `;` Ew.* ).-1 = (Emw.* `;` Ew.* )
         by rewrite -H1; apply RRm_inverse. 
       have H3 : (Bw `|` Kw).-1 = (Bmw `|` Kw)
-        by rewrite inverse_union Kw_inverse.
+        by rewrite inverseU Kw_inverse.
       have H4 : (Δ_(W.^c) `;` ((Emw .* ) `;` (Ew .* )) `;` Cw).-1
                 =  (Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw).-1
         by rewrite [LHS]H0 [RHS]H0 H2 H3 -[RHS]L14_E38d -composeA. 
-      by apply inverse_eq in H4.
+      by apply inverseE in H4.
     Qed.
     
     (** * Lemma 14 *)
@@ -193,7 +193,7 @@ Section Tcs.
       rewrite L14_E38a.
       rewrite composeDl composeDl composeDl composeDr composeDr composeDr.
       have -> : Δ_(W) `;` 'Δ `;` Δ_(W) = Δ_(W)
-        by rewrite  Delta_idem_r DeltaE_inv.
+        by rewrite  Delta_idem_r DsetK.
       have -> : Δ_(W) `;` (Δ_(W.^c) `;` Bw) `;` Δ_(W) = 'Δc
         by rewrite -composeA DeltaW_Wc !DeltaC_compose_absorbl.
       have -> : Δ_(W) `;` (Bmw `;` Δ_(W.^c)) `;` Δ_(W) = 'Δc
@@ -299,11 +299,11 @@ Section Tcs.
                 = (Δ_(W.^c) `;` Bmw `;` (Δ_(W.^c) `;` Δ_(W.^c)))
         by aac_reflexivity.
       rewrite H1 L14_E38a composeDl composeDl composeDl Delta_idem_r.
-      rewrite -[Δ_(W.^c) `;` (Δ_(W.^c) `;` Bw)]composeA DeltaE_inv.
-      rewrite composeDr composeDr composeDr  DeltaE_inv.
-      rewrite H2  DeltaE_inv.
+      rewrite -[Δ_(W.^c) `;` (Δ_(W.^c) `;` Bw)]composeA DsetK.
+      rewrite composeDr composeDr composeDr  DsetK.
+      rewrite H2  DsetK.
       rewrite [in RHS]composeDl [in RHS]composeDl [in RHS]composeDl Delta_idem_r.
-      rewrite [in RHS]composeDr [in RHS]composeDr [in RHS]composeDr DeltaE_inv.
+      rewrite [in RHS]composeDr [in RHS]composeDr [in RHS]composeDr DsetK.
       by [].
     Qed.
     
@@ -375,7 +375,7 @@ Section Tcs.
           by apply R_restrict.
         have H5: (Δ_(W.^c) `;` Aw `;` Δ_(W.^c)) = 
                    (Δ_(W.^c) `;` ((Ew.* `;` Sw).-1 `;` (Ew.* `;` Sw)) `;` Δ_(W.^c))
-          by rewrite -L15 inverse_compose Sw_inverse Emw_1;aac_reflexivity.
+          by rewrite -L15 composeIv Sw_inverse Emw_1;aac_reflexivity.
         have H6: (Δ_(W.^c) `;` Aw `;` Δ_(W.^c)) (x, y)
           by rewrite H5.
         by apply R_restrict in H6.
@@ -383,7 +383,7 @@ Section Tcs.
         have H2: (Δ_(W.^c) `;` Aw `;` Δ_(W.^c)) (x, y) by apply R_restrict.
         have H3: (Δ_(W.^c) `;` Aw `;` Δ_(W.^c)) = 
                    (Δ_(W.^c) `;` ((Ew.* `;` Sw).-1 `;` (Ew.* `;` Sw)) `;` Δ_(W.^c))
-          by rewrite -L15 inverse_compose Sw_inverse Emw_1;aac_reflexivity.
+          by rewrite -L15 composeIv Sw_inverse Emw_1;aac_reflexivity.
         have H4: (Δ_(W.^c) `;` ((Ew.* `;` Sw).-1 `;` (Ew.* `;` Sw))  `;` Δ_(W.^c)) (x, y)
           by rewrite H3 in H2.
         apply R_restrict in H4; last by split.
@@ -532,7 +532,7 @@ Section Tcs.
         (let R:= (Bmw `|` Kw) in R (w, y)) ->
         Clos_( y | E,W) `&` Clos_(w | E,W) != set0.
     Proof.
-      rewrite /Bmw -Kw_inverse -inverse_union.
+      rewrite /Bmw -Kw_inverse -inverseU.
       by move => y w H1 H2; have H3: (Bw `|` Kw) (y, w) by [];apply: L7_7.
     Qed. 
     
@@ -806,7 +806,7 @@ Section Tcs.
     Local Lemma P6_1imp2_b: forall (Γ: set T) (W': set T),
         (W' = (Cw `;` (Bmw `|` Kw))#Γ) -> W' `<=` W.
     Proof.
-      by rewrite Cw_starts /Fset; move => Γ W' -> x [y [[z [[t [/= /DeltaEP [H2 _] _]] _]] _]].
+      by rewrite Cw_starts /Fset; move => Γ W' -> x [y [[z [[t [/= /DsetE [H2 _] _]] _]] _]].
     Qed.
     
     Local Lemma P6_1imp2_c: forall (Γ Λ: set T) (W' W'': set T),

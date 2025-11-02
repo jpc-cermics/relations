@@ -55,7 +55,7 @@ Section Csbr.
       set R1 := (Bw `|` Kw) `;` Cw_s .
       rewrite {1}[Bmw]H -composeDr. 
       set R2 := ('Δ `|` R1) `;` Bmw `;` Δ_( W .^c).
-      have H1: (R2 `;` E) `<=` (R2 `;` Bw) by  apply: compose_inc;apply: E9b1.
+      have H1: (R2 `;` E) `<=` (R2 `;` Bw) by  apply: composeSl;apply: E9b1.
       suff H2: (R2 `;` Bw) `<=` Aw_sp by apply: subset_trans H1 H2.
       rewrite /R2 composeA composeA.
       rewrite -[(Bmw `;` (_ `;` Bw))]composeA -/Kw composeDr. 
@@ -66,34 +66,34 @@ Section Csbr.
     Lemma D_L16_E42c :  (Aw_sp `;` Δ_(W_s) `;` Em) `<=`  Aw_sm.
     Proof.
       have E21c1: E.-1 `<=` Bmw
-        by rewrite E9d -{1}[E.-1]Delta_idem_l;apply: composer_inc;
+        by rewrite E9d -{1}[E.-1]Delta_idem_l;apply: composeSr;
         apply: clos_refl_trans_containsD.
       have E21c2: Δ_(W_s) `<=` Cw_s by rewrite /Cw_s;apply: subsetUr.
-      have H1: (Δ_(W_s) `;` E.-1) `<=` (Cw_s `;` E.-1) by apply composer_inc; apply: E21c2.
-      have H2: (Cw_s `;` E.-1) `<=` (Cw_s `;` Bmw) by apply compose_inc; apply: E21c1.
+      have H1: (Δ_(W_s) `;` E.-1) `<=` (Cw_s `;` E.-1) by apply composeSr; apply: E21c2.
+      have H2: (Cw_s `;` E.-1) `<=` (Cw_s `;` Bmw) by apply composeSl; apply: E21c1.
       have E21c3: (Δ_(W_s) `;` E.-1) `<=` (Cw_s `;` Bmw) by apply: subset_trans H1 H2.
       have E21c4: ((Bw `|` Kw) `;` Δ_(W_s) `;` E.-1) `<=` ((Bw `|` Kw) `;` (Cw_s) `;` Bmw)
         by rewrite [_ `;` _ `;` E.-1]composeA [_ `;` _ `;` Bmw]composeA;
-        apply: compose_inc; apply: E21c3.
+        apply: composeSl; apply: E21c3.
       have H3: ((Bw `|` Kw) `;` Cw_s `;` Bmw) `<=`  Aw_sm 
         by rewrite /Aw_sm; apply: subsetUr.
       have H4: ((Bw `|` Kw) `;` Δ_( W_s) `;` Em) `<=` Aw_sm 
         by apply: subset_trans E21c4 H3.
       have E21c5: Cw_s `;` Δ_(W_s) = Cw_s
-        by rewrite {1}/Cw_s composeDr -Delta_clos_trans_ends DeltaE_inv -/Cw_s.
+        by rewrite {1}/Cw_s composeDr -Delta_clos_trans_ends DsetK -/Cw_s.
       have E21c6: forall (R S: relation T), (S `;` R = R) -> ((R.+ `|` S) `;` R) = (R.+)
           by move => R S H; rewrite composeDr H setUC clos_t_decomp_rt_r.
       have E21c7: Cw_s `;` Kw `;` Δ_(W_s) = (Δ_( W_s) `;` Kw `;` Δ_( W_s)) .+ 
         by rewrite -{1}E21c5 {1}/Cw_s composeA composeA 
            -[Δ_( W_s) `;` (Kw `;` Δ_( W_s))]composeA;
-        apply: E21c6;rewrite -composeA -composeA {1}DeltaE_inv.
+        apply: E21c6;rewrite -composeA -composeA {1}DsetK.
       have E21c8: (Cw_s `;` Kw `;` Δ_(W_s)) `<=` Cw_s 
         by rewrite E21c7 /Cw_s;apply: subsetUl.
       have H1': (((Bw `|` Kw) `;` Cw_s `;` Kw `;` Δ_(W_s)) `;` E.-1) `<=` (((Bw `|` Kw) `;` Cw_s) `;` E.-1)
-        by apply: composer_inc;rewrite composeA composeA;apply: compose_inc;
+        by apply: composeSr;rewrite composeA composeA;apply: composeSl;
         rewrite -composeA;apply E21c8.
       have H2': (((Bw `|` Kw) `;` Cw_s) `;` E.-1) `<=` (((Bw `|` Kw) `;` Cw_s) `;` Bmw)
-        by apply: compose_inc; apply: E21c1.
+        by apply: composeSl; apply: E21c1.
       have E21c9: ((Bw `|` Kw) `;` Cw_s `;` Kw `;` Δ_(W_s) `;` E.-1) `<=` ((Bw `|` Kw) `;` Cw_s `;` Bmw)
         by apply: subset_trans H1' H2'.
       have H5: ((Bw `|` Kw) `;` Cw_s `;` Kw `;` Δ_(W_s) `;` Em) `<=` Aw_sm
@@ -113,7 +113,7 @@ Section Csbr.
     
     Lemma B_L7_E27: forall (R:relation T) (X: set T), Δ_(R # X) `<=` (R `;` Δ_(X) `;` R.-1).
     Proof.
-      rewrite /DeltaE /Fset /mkset.
+      rewrite /Delta /Fset /mkset.
       move => R X [x y]. 
       move => [[z [H1 H2]] /= <-]. 
       by exists z;split;[exists z |].
@@ -126,18 +126,18 @@ Section Csbr.
       have B_L7_E28c : Δ_(W_s) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* )) 
         by rewrite /W_s -B_L7_E28b Emw_1; apply: B_L7_E27.
       have H1:  (Δ_(W_s) `;` (Emw .* )) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* ) `;` (Emw .* ))
-        by apply: composer_inc B_L7_E28c.
+        by apply: composeSr B_L7_E28c.
       have B_L7_E28e :  (Δ_(W_s) `;` (Emw .* )) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* ))
         by rewrite composeA  compose_rt_rt in H1.
       have B_L7_E28f : ((Ew .* ) `;` Δ_(W_s) `;` (Emw .* )) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* ))
         by rewrite composeA -{2}[Ew.*]compose_rt_rt [(Ew .* `;` Ew .* `;` _ `;` _)]composeA
-                               [(Ew .* `;` Ew .* `;` _ )]composeA; apply: compose_inc;
+                               [(Ew .* `;` Ew .* `;` _ )]composeA; apply: composeSl;
         rewrite -[(Ew .* `;` _ )]composeA.
       have B_L7_E28g : Δ_( W) `<=` Δ_( W_s)
-        by move => [x y] [H'1 H'2]; rewrite /W_s /Fset /DeltaE /mkset /=;
+        by move => [x y] [H'1 H'2]; rewrite /W_s /Fset /Delta /mkset /=;
                   split;[exists x; split;[ apply: RTclosR |] | ].
       have B_L7_E28h : (Ew .* `;` Δ_( W) `;` Emw .* ) `<=` (Ew .* `;` Δ_( W_s) `;` Emw .* )
-        by apply: composer_inc; apply: compose_inc; apply: B_L7_E28g.
+        by apply: composeSr; apply: composeSl; apply: B_L7_E28g.
       
       by rewrite eqEsubset; split;[apply: B_L7_E28h | apply: B_L7_E28f].
     Qed.
@@ -181,7 +181,7 @@ Section Bw_implies_active_path.
                    /\ p [\in] (Ew.+)#_(y)).
   Proof.
     rewrite /Bw -DuT_eq_Tstar /mkset .
-    move => x y [x1 [/= H1 [/Delta_Id <- | H2]]];first by (exists [::]).
+    move => x y [x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
     pose proof (clos_t_to_paths_l H2) as [p [H3 [H4 H5]]].
     exists (x1::p);split. 
     apply Deployment_to_Active_path.
@@ -224,7 +224,7 @@ Section Bmw_implies_active_path.
                                /\ p [\in] (Ew.+)#_(x)).
   Proof.
     rewrite /Bmw /inverse /Bw -DuT_eq_Tstar.
-    move => x y [x1 [/= H1 [/Delta_Id <- | H2]]];first by (exists [::]).
+    move => x y [x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
     pose proof (clos_t_to_paths_l H2) as [p [H3 [H4 H5]]].  
     apply allL_rev in H4.
     move: H3 => /allset_cons [H3 H3'].
@@ -232,7 +232,7 @@ Section Bmw_implies_active_path.
     apply Deployment_to_Active_path.
     split. 
     by rewrite allset_rcons -allset_rev.
-    by rewrite /R_o allL_rev rev_rcons revK inverse_inverse allL_c;
+    by rewrite /R_o allL_rev rev_rcons revK inverseK allL_c;
     apply/andP; split;[apply mem_set| rewrite allL_rev].
     by rewrite allset_rev rev_rcons revK.
   Qed.
@@ -438,7 +438,7 @@ Section Aw_s_implies_active_path.
   Proof.
     move => x y H1.
     have H3: exists (p : seq (T*T*O)), Active_path W E p x y.
-    move: H1 => [[[[/Delta_Id -> | H2] | H2] | H2] | H2].
+    move: H1 => [[[[/DeltaP -> | H2] | H2] | H2] | H2].
     (* explore the five cases *)
     by (exists [::]).
     by pose proof C_L10 H2 as [p [H3 H4]];(exists (Lifto (x :: rcons p y) P)).
@@ -570,7 +570,7 @@ Section Active_path_implies_Aw_s.
     move => x y H1; apply contrapT in H1.
     move: H1 => [p H1].
     elim: p H1 => [ H1 | [[x1 y1] o1] p _ ];
-                 (* p = [::]*)first by rewrite D_L16_E42a;left;left;rewrite Delta_Id.
+                 (* p = [::]*)first by rewrite D_L16_E42a;left;left;rewrite DeltaP.
     elim: p => [[H1 [H2 H3]] | [[x2 y2] o2]  p _ H1].
     (* p = [::(x',y',o)] *)
     rewrite /= in H1 H2;rewrite -H1 -H2;clear H1 H2.

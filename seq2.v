@@ -581,7 +581,7 @@ Section allL_uniq.
   Proof.
     move => s x y; rewrite allL_rev => H1.
     pose proof allL_uniq_tail H1 as [s' H2].
-    move: H2; rewrite  allL_rev inverse_inverse => [[H2 [H3 H4]]].
+    move: H2; rewrite  allL_rev inverseK => [[H2 [H3 H4]]].
     exists (rev s');split. 
     have H5: s = (rev (rev s)) by rewrite revK.
     by rewrite H5 subseq_rev.

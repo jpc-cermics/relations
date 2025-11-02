@@ -288,7 +288,7 @@ Section Intermediate_results_closed_open.
   Lemma Rclosed7: forall (R : relation T) (X: set T),
       (X.^c :#R ) `<=` X.^c -> R#X  `<=` X. 
   Proof.
-    by rewrite /Aset => R X /Rclosed6; rewrite setCK /Aset inverse_inverse.
+    by rewrite /Aset => R X /Rclosed6; rewrite setCK /Aset inverseK.
   Qed.
   
   (* from closed sets to open set via complement *)

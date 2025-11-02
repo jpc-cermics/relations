@@ -2542,7 +2542,7 @@ Section PathRel_Examples.
                      /\ (y::(rev p)) [\in] ((Δ_(W.^c) `;` E.-1).+)#_(x)).
   Proof.
     move => x y; rewrite {1}TCP'; move  => [p H1]; exists p.
-    rewrite allL_rev inverse_compose DeltaE_inverse /= in H1.
+    rewrite allL_rev composeIv DsetIv /= in H1.
     move: (H1) => /allL_WS_iff/andP /= [/andP [/inP H2 H3] H2'].
     apply allL_All in H1;apply allset_cons in H1;move: H1=> [/inP /= H1 H1'].
     by rewrite H1 H1' andbT allL_rev H2' allset_rcons allset_rev H3. 
