@@ -699,12 +699,10 @@ Section Relation_Facts.
   (* coincide with mathematical def of closure  *)
   Lemma RTclosIff R: R.* = smallest [set S | reflexive S /\ transitive S] R. 
   Proof.
-    rewrite predeqE => -[x y];split.
-    + move => [n /= H1 H2 S' [[H3 H3'] H4]].
-      case H5: (n == 0);first by move: H5 H2 => /eqP -> /DeltaP ->.
-      move: H5 => /neq0_lt0n H5.
-      by move: (iter_subset H3' H4 H5) H2 => H6 /H6 H2. 
-    + move => /= H2.
+    rewrite RTclosE eqEsubset;split.
+    by move => -[x y] [/DeltaP -> //| /clos_t_iterk [n H2]] S' [[H3 H3'] H4];
+              [|apply: (@iter_subset R S' H3' H4 n.+1)].
+    + rewrite -RTclosE; move => -[x y] H2.
       have: [set S | (reflexive S /\ transitive S) /\ R `<=` S] R.*
         by split;[split;[apply: RTclosR|apply: RTclosT]|apply: RTclosS].
       by move => /H2.
