@@ -134,9 +134,12 @@ Notation "Clos( Y | R , W )" :=  (Fset ((Δ_(W.^c) `;` R).* ) Y)
 Notation "Clos_( y | R , W )" := (Fset ((Δ_(W.^c) `;` R).* ) ([set y]))
                                  (at level 3, no associativity, format "Clos_( y | R , W )").    
 
+Notation "R |_( X )" := (Δ_(X) `;` R `;` Δ_(X))
+                       (at level 3, no associativity, format "R |_( X )").
+
 Section Relation_Facts.
   
-  Context {T : Type}.
+  Context (T : Type).
   Implicit Types (T : Type) (R S: relation T) (X Y: set T).
 
   (** We could use reflexive, transitive, ... from  Coq.ssr.ssrbool 
@@ -1282,7 +1285,7 @@ Section Relation_Facts.
 
   Definition Restrict R X :=  [ set x | X x.1 /\ X x.2 /\ R x].
   
-  Lemma RestictE R X: (Restrict R X) = Δ_(X) `;` R `;` Δ_(X).
+  Lemma RestictE R X: (Restrict R X) = (R |_(X)).
   Proof.
     rewrite predeqE => [[x y]].
     split => [[/= H1 [H2 H3]] | [z [[t [[/= H1 H'1] H2]] [/= H3 H'3]]]].
@@ -1294,14 +1297,14 @@ Section Relation_Facts.
   Definition Restrict' R (X:set T) : relation X := 
     [set xy : X*X | R ((sval xy.1),(sval xy.2))].
   
-  Lemma RestrictP R (X: set T) : (Restrict' R) X = (Restrict' (Δ_(X) `;` R `;` Δ_(X))) X.
+  Lemma RestrictP R (X: set T) : (Restrict' R) X = (Restrict' (R |_(X))) X.
   Proof.
     rewrite /Restrict' predeqE => -[x y] /= ; split; last first.
     by move => [z [[t [/DsetE /= [_ <-] H4]] /DsetE [_ <-]]].
     move => H1;exists (sval y);split;last by rewrite DsetE /=;split;[apply: set_valP|].
     by (exists (sval x));rewrite DsetE /=;split;[split;[apply: set_valP|]|].
   Qed.
-  
+
   Definition Enlarge X (R: relation X) :=
     [set xy | exists x : X, exists y: X, xy.1 = (sval x) /\ xy.2 =(sval y) /\ R (x,y)].
 
@@ -1311,7 +1314,7 @@ Section Relation_Facts.
   Lemma setIn X v: (v \in X) -> exists v' : X, v = sval v'.
   Proof. by move => H0;exists (exist _ v H0). Qed.
   
-  Lemma EnlargeP X R: Enlarge ((Restrict' R) X) = (Δ_(X) `;` R `;` Δ_(X)).
+  Lemma EnlargeP X R: Enlarge ((Restrict' R) X) = (R |_(X)).
   Proof.
     rewrite RestrictP predeqE /Restrict' => -[x y]; split.
     by move => [x' [y' /= [-> [-> H3]]]].
@@ -1319,6 +1322,35 @@ Section Relation_Facts.
     rewrite H2' in H2.
     move: (H1) (H2) => /setIn [x' H1''] /setIn [y' H2''].
     by exists x';exists y';rewrite /mkset -H1'' -H2''.  
+  Qed.
+
+  Lemma EnlargeU X (R S: relation X): (Enlarge R) `|` (Enlarge S) = Enlarge (R `|` S).
+  Proof.
+    rewrite predeqE => -[x y];split.
+    + move => [|] [x' [y' /= [H2 [H3 H4]]]].
+      by (exists x';exists y');rewrite -H2 -H3 /=;split;[|split;[|left]].
+      by (exists x';exists y');rewrite -H2 -H3 /=;split;[|split;[|right]].
+    + move => [x' [y' /= [H2 [H3 [H4 | H4]]]]].
+      by left;(exists x';exists y');rewrite -H2 -H3 /=. 
+      by right;(exists x';exists y');rewrite -H2 -H3 /=. 
+  Qed. 
+  
+  Lemma RestrictE R X x y: (R |_(X)) (x,y) <-> X x /\ X y /\ R (x,y).
+  Proof.
+    by split => [[x' [[y' [/DsetE /= [? <-] ?]] /DsetE [? <-]]] //
+               | [? [? ?]]];exists y;split;[exists x|].
+  Qed.
+
+  Lemma RTRestrict R X: ( R |_(X)).+ = ( R |_(X)).+ |_(X). 
+  Proof. 
+    by rewrite {1}composeA  Delta_clos_trans_starts -composeA {1}Delta_clos_trans_ends -composeA.
+  Qed.
+
+  Lemma RestrictU R S X: (R `|` S) |_(X) = (R |_(X)) `|` (S |_(X)).
+  Proof.
+    rewrite predeqE => -[x y];split. 
+    by move => /RestrictE [? [? [? | ?]]];[left|right];rewrite RestrictE.
+    by move => [|] /RestrictE [? [? ?]];rewrite RestrictE;split;[|split;[|left]| |split;[|right]].
   Qed.
   
   (* reflexive and transitive properties using relation equalities *)
@@ -1485,3 +1517,29 @@ Section Relation_Facts.
   Qed.
 
 End Relation_Facts.
+
+
+Section Test.
+  
+  Context (T : Type).
+  Implicit Types (T : Type) (R S: relation T) (X Y: set T).
+  
+  Lemma Test' X (R: relation X):  R.* = (('Δ: relation X) `|` R).+.
+  Proof. by rewrite (@RTclosE X);apply: Rclos_Tclos. Qed.
+
+  Lemma Delta_restrict X: Δ_(X) = ('Δ |_(X)).
+  Proof. by rewrite Delta_idem_r DsetK. Qed.
+  
+  Lemma Rclos_Tclos' R X: (Δ_(X) `|` (R |_(X) ).+) = (Δ_(X) `|` (R |_(X)) ).+.
+  Proof.
+    rewrite [in Y in (Y `|` _)]Delta_restrict [in Y in ((Y `|` _).+)]Delta_restrict.
+
+    rewrite RTRestrict -RestrictU.
+    rewrite -RestrictU.
+    rewrite [(('Δ `|` R)|_(X)).+]RTRestrict.
+  Admitted.
+
+End Test.
+  
+
+
