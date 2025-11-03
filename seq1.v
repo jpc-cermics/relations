@@ -114,121 +114,94 @@ Notation "s [Suc\in] R" := (RPath R s).
 
 Section Seq_utilities.
   (** * some utilities for sequences *)
-  Variables (T: Type).
 
-  Lemma seq_rc: forall (s: seq T), 
-      (0 < size s) -> exists (s':seq T) (x:T), s = (rcons s' x).
-  Proof.
-    by elim => [ // | x s _ _];exists (belast x s), (last x s);rewrite lastI.
-  Qed.
+  Context {T : Type}.
+  Implicit Types (T : Type) (s: seq T).
+  
+  Lemma seq_rc s: (0 < size s) -> exists s' x, s = (rcons s' x).
+  Proof. by elim:s => [//| x s _ _];exists (belast x s), (last x s);rewrite lastI. Qed.
 
-  Lemma seq_c: forall (s: seq T), 
-      (0 < size s) -> exists (s':seq T) (x:T), s = x::s'.
+  Lemma seq_c s: (0 < size s) -> exists s' x, s = x::s'.
+  Proof. by elim:s  => [ // | x s _ _]; exists s, x. Qed.
+  
+  Lemma seq_rcrc s: 1 < size s -> exists s' x y, s = (rcons (rcons s' x) y).
   Proof.
-    by elim => [ // | x s _ _]; exists s, x. 
+    move => H1.
+    have /seq_rc [q [x H2]]: 0 < size s by apply: (leq_ltn_trans _ H1).
+    have /seq_rc [r [z H3]]: 0 < size q by rewrite H2 size_rcons ltnS in H1.
+    by exists r,z,x;rewrite H2 H3.
   Qed.
   
-  Lemma seq_rcrc: forall (s: seq T), 
-      1 < size s -> exists (s':seq T) (x y:T), s = (rcons (rcons s' x) y).
+  Lemma seq_crc s: 1 < size s -> exists s' x y, s = x::(rcons s' y).
   Proof.
-    move => s H1.
-    have H2: 0 < size s by apply: (leq_ltn_trans _ H1).
-    pose proof seq_rc H2 as [q [x H3]].
-    have H4: 0 < size q by rewrite H3 size_rcons ltnS in H1.
-    pose proof seq_rc H4 as [r [z H5]].
-    by exists r,z,x;rewrite H3 H5.
-  Qed.
-  
-  Lemma seq_crc: forall (s: seq T), 
-      1 < size s -> exists (s':seq T) (x y:T), s = x::(rcons s' y).
-  Proof.
-    move => s H1.
-    have H2: 0 < size s by apply: leq_ltn_trans _ H1.
-    pose proof seq_rc H2 as [r [y H3]].
-    have H4: 0 < size r by rewrite H3 size_rcons ltnS in H1.
-    pose proof seq_c H4 as [q [x H5]].
+    move => H1.
+    have /seq_rc [r [y H3]]: 0 < size s by apply: leq_ltn_trans _ H1.
+    have /seq_c [q [x H5]]: 0 < size r by rewrite H3 size_rcons ltnS in H1.
     by exists q,x,y;rewrite H3 H5.
   Qed.
   
-  Lemma seq_cc: forall (s: seq T), 
-      1 < size s -> exists (s':seq T) (x y:T), s = [::x,y &s'].
+  Lemma seq_cc s: 1 < size s -> exists s' x y, s = [::x,y &s'].
   Proof.
-    move => s H1.
-    have H2: 0 < size s by apply: leq_ltn_trans _ H1.
-    pose proof seq_c H2 as [r [y H3]].
-    have H4: 0 < size r by rewrite H3 ltnS in H1.
-    pose proof seq_c H4 as [q [x H5]].
+    move => H1.
+    have /seq_c [r [y H3]]: 0 < size s by apply: leq_ltn_trans _ H1.
+    have /seq_c [q [x H5]]: 0 < size r by rewrite H3 ltnS in H1.
     by exists q,y,x;rewrite H3 H5.
   Qed.
   
-  Lemma seq_1: forall (s: seq T), 
-      size s = 1 <-> exists (x:T), s = [::x].
+  Lemma seq_1 s: size s = 1 <-> exists (x:T), s = [::x].
   Proof.
     split; last by move => [x H1];rewrite H1.
     by elim:s => [// | x s _ /= /succn_inj/size0nil ->];exists x.
   Qed. 
   
-  Lemma seq_rcrc0: forall (s: seq T), 
-      size s = 2 <-> exists (x y:T), s = [::x;y].
+  Lemma seq_rcrc0 s: size s = 2 <-> exists (x y:T), s = [::x;y].
   Proof.
     split => [H1 |[x [y H1]]];last by rewrite H1.
-    - have H2: 1 < size s by rewrite -H1.
-      pose proof seq_rcrc H2 as [q [x [y H3]]].
-      move: H1;rewrite H3 size_rcons size_rcons => /eqP H1.
-      have /nilP H4: size q == 0 by [].
-      by exists x,y;rewrite H4.
+    have /seq_rcrc [q [x [y H3]]]: 1 < size s by rewrite -H1.
+    move: H1;rewrite H3 size_rcons size_rcons => /eqP H1.
+    have /nilP H4: size q == 0 by [].
+    by exists x,y;rewrite H4.
   Qed.
 
-  Lemma seq_n: forall (n:nat) (s: seq T), 
-      size s = n.+1 -> exists s',exists x, s = [::x & s'] /\ size(s') = n.
+  Lemma seq_n n s: size s = n.+1 -> exists s',exists x, s = [::x & s'] /\ size(s') = n.
   Proof.
-    elim => [| n Hn s H1].
-    + elim => [_ // | t s H1 /= /succn_inj/size0nil H2]. 
-      by rewrite H2;exists [::], t.
-    + have H2: size(s) > 0  by rewrite H1. 
-      pose proof (seq_c H2) as [q [x H3]].
-      move: H1;rewrite H3 /= => /succn_inj H1.
-      by exists q, x. 
+    elim: n s => [| n Hn s H1].
+    by elim => [_ // | t s H1 /= /succn_inj/size0nil ->];exists [::], t.
+    have /seq_c [q [x H3]]: size(s) > 0  by rewrite H1. 
+    by move: H1;rewrite H3 /= => /succn_inj H1;exists q, x. 
   Qed.
   
-  Lemma seq_rcn: forall (n:nat) (s: seq T), 
-      size s = n.+1 -> exists s',exists x, s = rcons s' x /\ size(s') = n.
+  Lemma seq_rcn n s: size s = n.+1 -> exists s',exists x, s = rcons s' x /\ size(s') = n.
   Proof.
-    elim => [| n Hn s H1].
-    + by elim => [_ // | t s _ /= /succn_inj/size0nil ->]; exists [::], t.
-    + have H2: size(s) > 0  by rewrite H1. 
-      pose proof (seq_rc H2) as [s' [x H3]].
-      move: H1; rewrite H3 size_rcons => /succn_inj H1.
-      by (exists s', x).
+    elim: n s => [| n Hn s H1].
+    by elim => [_ // | t s _ /= /succn_inj/size0nil ->]; exists [::], t.
+    have /seq_rc [s' [x H3]]: size(s) > 0  by rewrite H1. 
+    by move: H1; rewrite H3 size_rcons => /succn_inj H1;(exists s', x).
   Qed.
   
-  Lemma seq_cases: forall (s: seq T), 
+  Lemma seq_cases s:
       s=[::] \/ (exists x, s=[::x]) \/ exists (s':seq T), exists (x y:T), s=x::(rcons s' y).
   Proof.
-    elim => [| x s _]; first by left.
+    elim:s  => [| x s _]; first by left.
     elim: s => [ | y s _]; first by right;left;(exists x).
     right;right.
-    have H1: size([:: x, y & s]) > 1 by [].
-    pose proof (seq_crc H1) as [q [x' [y' H2]]].
+    have /seq_crc [q [x' [y' H2]]]: size([:: x, y & s]) > 1 by [].
     by exists q;exists x';exists y';rewrite H2.
   Qed.
 
-  Lemma seq_cases1: forall (s: seq T), 
+  Lemma seq_cases1 s:
       s=[::] \/ (exists x, s=[::x]) \/ exists (s':seq T), exists (x y:T), s=[::x,y & s'].
   Proof.
-    elim => [| x s _]; first by left.
+    elim: s => [| x s _]; first by left.
     elim: s => [ | y s _]; first by right;left;(exists x).
     right;right.
-    have H1: size([:: x, y & s]) > 1 by [].
-    pose proof (seq_cc H1) as [q [x' [y' H2]]].
+    have /seq_cc [q [x' [y' H2]]]: size([:: x, y & s]) > 1 by [].
     by exists q;exists x';exists y';rewrite H2.
   Qed.
 
-  Lemma last_rev: forall (st: seq T) (t:T),
-      last t (rev st) = head t st.
+  Lemma last_rev s t: last t (rev s) = head t s.
   Proof.
-    elim => [// | t1 st1 Hr t].
-    by rewrite rev_cons last_rcons /= .
+    by elim: s t => [// | t1 st1 Hr t];rewrite rev_cons last_rcons /= .
   Qed.
 
 End Seq_utilities.
