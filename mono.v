@@ -672,7 +672,7 @@ Section Paper.
       move: Hc => H1 y [s [ H2 H3]].
       move: (H3) => [S [H4 [H5 H6]]].
       move: (Chains_Scal H1 H4) => [H7 [H8 H9]].
-      have H13: y \in Er.+.-1#(sval S)
+      have H13: y \in Er.+^-1#(sval S)
           by rewrite inP /Fset;exists s;split;[exact | rewrite -inP].
       move: H13 => /inP/H8 [t [H13 H14]]. 
       case H15: (t \in Sinf); first by (exists t); split;[ exact | rewrite -inP].
@@ -921,8 +921,8 @@ Section Paper.
       move => Smax x H2 H3 [z [H4 H5]].
       move: (fact9 Smax H2) => [y [/FsetUO [H6|H6] H7]].
       - (* y \in Er.+.-1#(Tm x) *)
-        have H8: y \in Er.+.-1#Sm
-            by move: TmI => /(_ x)/Fset_inc1 => /(_ Er.+.-1) H9;
+        have H8: y \in Er.+^-1#Sm
+            by move: TmI => /(_ x)/Fset_inc1 => /(_ Er.+^-1) H9;
                                               move: H6; rewrite inP => /H9 H6;rewrite inP.
         have H9: y \in Mono#Sm by apply: fact.
         move: (fact12_1 H2) => H12.
@@ -1001,9 +1001,9 @@ Section Paper.
       move => Smax x H2 H3.
       move: (fact9 Smax H2) => [y [/FsetUO [H6|H6] H7]].
       - (* y \in Er.+.-1#(Tm x) *)
-        have H8: y \in Er.+.-1#Sm
+        have H8: y \in Er.+^-1#Sm
             by move: TmI => /(_ x)/Fset_inc1 
-             => /(_ Er.+.-1) H9;
+             => /(_ Er.+^-1) H9;
                move: H6; rewrite inP => /H9 H6;rewrite inP.
         have H9: y \in Mono#Sm by apply: fact.
         move: (fact12_1 H2) => H12.

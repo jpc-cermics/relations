@@ -65,7 +65,7 @@ Section Tcs.
       by rewrite L14_E38b composeA composeDr composeDr H2 DeltaC_union_idemr Delta_idem_l
            {2 3}Cw_starts H3.
     Qed.
-
+    
     Local Lemma L14_E38c2 : forall (R: relation T), 
         R = R `;`  Δ_(W) -> (R.+ `;`  Δ_(W) = R.+).
     Proof.
@@ -139,17 +139,17 @@ Section Tcs.
     Lemma L14_E38e : Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
     Proof.
       have H0 : forall (R: relation T), 
-          (Δ_(W.^c) `;` R `;` Cw).-1 = Cw `;` R.-1 `;` Δ_(W.^c)
+          (Δ_(W.^c) `;` R `;` Cw)^-1 = Cw `;` R^-1 `;` Δ_(W.^c)
           by move => R; rewrite composeIv  composeIv
                          Cw_inverse DsetIv composeA.
       have H1: inverse (Emw .* ) = (Ew .* )
         by rewrite inverse_star /Emw inverseK.
-      have H2 : (Emw.* `;` Ew.* ).-1 = (Emw.* `;` Ew.* )
+      have H2 : (Emw.* `;` Ew.* )^-1 = (Emw.* `;` Ew.* )
         by rewrite -H1; apply RRm_inverse. 
-      have H3 : (Bw `|` Kw).-1 = (Bmw `|` Kw)
+      have H3 : (Bw `|` Kw)^-1 = (Bmw `|` Kw)
         by rewrite inverseU Kw_inverse.
-      have H4 : (Δ_(W.^c) `;` ((Emw .* ) `;` (Ew .* )) `;` Cw).-1
-                =  (Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw).-1
+      have H4 : (Δ_(W.^c) `;` ((Emw .* ) `;` (Ew .* )) `;` Cw)^-1
+                =  (Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw)^-1
         by rewrite [LHS]H0 [RHS]H0 H2 H3 -[RHS]L14_E38d -composeA. 
       by apply inverseE in H4.
     Qed.
@@ -369,12 +369,12 @@ Section Tcs.
       split.
       - rewrite -notempty_exists 2!Fset_comp.
         move=> [z /inP [ H1 H2]]. 
-        have H3: ((Ew.* `;` Sw).-1 `;` (Ew.* `;` Sw)) (x, y)
+        have H3: ((Ew.* `;` Sw)^-1 `;` (Ew.* `;` Sw)) (x, y)
           by apply Fset_intersect; exists z;split.
-        have H4: (Δ_(W.^c) `;` ((Ew.* `;` Sw).-1 `;` (Ew.* `;` Sw))  `;` Δ_(W.^c)) (x, y)
+        have H4: (Δ_(W.^c) `;` ((Ew.* `;` Sw)^-1 `;` (Ew.* `;` Sw))  `;` Δ_(W.^c)) (x, y)
           by apply R_restrict.
         have H5: (Δ_(W.^c) `;` Aw `;` Δ_(W.^c)) = 
-                   (Δ_(W.^c) `;` ((Ew.* `;` Sw).-1 `;` (Ew.* `;` Sw)) `;` Δ_(W.^c))
+                   (Δ_(W.^c) `;` ((Ew.* `;` Sw)^-1 `;` (Ew.* `;` Sw)) `;` Δ_(W.^c))
           by rewrite -L15 composeIv Sw_inverse Emw_1;aac_reflexivity.
         have H6: (Δ_(W.^c) `;` Aw `;` Δ_(W.^c)) (x, y)
           by rewrite H5.
@@ -382,9 +382,9 @@ Section Tcs.
       - move => H1.
         have H2: (Δ_(W.^c) `;` Aw `;` Δ_(W.^c)) (x, y) by apply R_restrict.
         have H3: (Δ_(W.^c) `;` Aw `;` Δ_(W.^c)) = 
-                   (Δ_(W.^c) `;` ((Ew.* `;` Sw).-1 `;` (Ew.* `;` Sw)) `;` Δ_(W.^c))
+                   (Δ_(W.^c) `;` ((Ew.* `;` Sw)^-1 `;` (Ew.* `;` Sw)) `;` Δ_(W.^c))
           by rewrite -L15 composeIv Sw_inverse Emw_1;aac_reflexivity.
-        have H4: (Δ_(W.^c) `;` ((Ew.* `;` Sw).-1 `;` (Ew.* `;` Sw))  `;` Δ_(W.^c)) (x, y)
+        have H4: (Δ_(W.^c) `;` ((Ew.* `;` Sw)^-1 `;` (Ew.* `;` Sw))  `;` Δ_(W.^c)) (x, y)
           by rewrite H3 in H2.
         apply R_restrict in H4; last by split.
         move: H4 => [z [/= H4 H5]].

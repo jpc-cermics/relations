@@ -482,7 +482,7 @@ Section allset2.
   Variables (T: Type).
   
   Lemma allset_inv: forall (E: relation T) (spt: seq (T*T)), 
-      spt [\in] E <-> (map (fun tt => (tt.2,tt.1)) spt) [\in] E.-1. 
+      spt [\in] E <-> (map (fun tt => (tt.2,tt.1)) spt) [\in] E^-1. 
   Proof.
     move => E;elim => [ // | [x y] spt Hr].
     by rewrite map_cons !allset_cons Hr.
@@ -559,7 +559,7 @@ Section Lift_in.
   Qed.
   
   Lemma Lift_in_rev: forall (st: seq T),
-      st [L\in] R <-> (rev st) [L\in] R.-1. 
+      st [L\in] R <-> (rev st) [L\in] R^-1. 
   Proof.
     by move => st;rewrite allset_rev allset_inv Lift_rev.
   Qed.
@@ -683,7 +683,7 @@ Section allset_Lifted.
   Qed.
   
   Lemma allL_rev: forall (st: seq T) (x y: T),
-      allL E st x y <->  allL E.-1 (rev st) y x.
+      allL E st x y <->  allL E^-1 (rev st) y x.
   Proof.
     by move => st x y;rewrite Lift_in_rev rev_cons rev_rcons. 
   Qed.
@@ -1405,7 +1405,7 @@ Section Extended_Oriented_Paths.
   
   (* begin snippet Oedge:: no-out *)  
   Definition Oedge (E: relation T): set (T*T*O) :=
-    [set oe: T*T*O | (match oe with | (e,P) => E e | (e,N) => E.-1 e end)].
+    [set oe: T*T*O | (match oe with | (e,P) => E e | (e,N) => E^-1 e end)].
   (* end snippet Oedge *)
   
   (* begin snippet ChrelO:: no-out *)  
@@ -1424,7 +1424,7 @@ Section Extended_Oriented_Paths.
   Qed.
   
   Lemma Oedge_inv: forall (E: relation T) (x y: T) (o:O),
-      Oedge E (x,y,o) = Oedge E.-1 (x,y, O_rev o).
+      Oedge E (x,y,o) = Oedge E^-1 (x,y, O_rev o).
   Proof.
     by move => E x y; elim. 
   Qed.
@@ -1744,8 +1744,8 @@ Section Extended_Oriented_Paths.
   Qed.
   
   Lemma ActiveOe_rev: forall (W:set T) (E: relation T) (e1 e2: T*T) (o:O),
-      (ActiveOe W E).-1 ((e1,o), (e2,o)) 
-      <-> ActiveOe W E.-1 ((e2,O_rev o), (e1,O_rev o)).
+      (ActiveOe W E)^-1 ((e1,o), (e2,o)) 
+      <-> ActiveOe W E^-1 ((e2,O_rev o), (e1,O_rev o)).
   Proof.
     by move => W E [x1 y1] [x2 y2] o; case: o. 
   Qed.
@@ -2079,10 +2079,10 @@ Section Active_relation.
   Variables (T: Type) (ptv: T*T).
   Variables (W: set T) (E: relation T).
   
-  Definition R_o (o:O):= match o with | P => E | N=> E.-1 end.
+  Definition R_o (o:O):= match o with | P => E | N=> E^-1 end.
 
   Lemma R_o': forall (o:O) (xy: T*T),
-      R_o o xy <-> match o with | P => E xy | N=> E.-1 xy end.
+      R_o o xy <-> match o with | P => E xy | N=> E^-1 xy end.
   Proof.
     by move => o xy; case: o.
   Qed.
@@ -2512,7 +2512,7 @@ Section Active.
   Qed.
 
   Lemma Deployment_inv_to_Active: forall (W: set T) (E: relation T) (p: seq T) (x y: T),
-      p [\in] W.^c /\ allL E.-1 p x y -> Active W E x y.
+      p [\in] W.^c /\ allL E^-1 p x y -> Active W E x y.
   Proof.
     move => W E p x y [H1 H2].
     by exists (Lifto (x::(rcons p y)) N); apply Deployment_to_Active_path;split.
@@ -2539,7 +2539,7 @@ Section PathRel_Examples.
   Lemma clos_t_to_paths_r : forall (x y: T),
       (E `;` Δ_(W.^c)).+ (x, y) ->
       (exists (p: seq T), (rcons p y) [\in] W.^c /\ allL E p x y
-                     /\ (y::(rev p)) [\in] ((Δ_(W.^c) `;` E.-1).+)#_(x)).
+                     /\ (y::(rev p)) [\in] ((Δ_(W.^c) `;` E^-1).+)#_(x)).
   Proof.
     move => x y; rewrite {1}TCP'; move  => [p H1]; exists p.
     rewrite allL_rev composeIv DsetIv /= in H1.
