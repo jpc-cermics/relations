@@ -322,8 +322,7 @@ Section Infinite_paths_X.
     move => X R Ninf H0.
     move: (test68 Ninf H0) => [v H1].
     exists (sval v).
-    split. 
-    by rewrite inP; apply: set_valP.
+    split; first  by rewrite inP; apply: set_valP.
     move => w H2.
     have [w' <-]: exists (w': X), (sval w') = w by exists (exist _ w H2). 
     move => H3.

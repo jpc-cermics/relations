@@ -1264,17 +1264,47 @@ Section Relation_Facts.
   
   (** Restriction on Relation *)
 
-  Definition Restrict (T:Type) (R: relation T) (X: set T) := 
-    [ set x | X x.1 /\ X x.2 /\ R x].
+  Definition Restrict R X :=  [ set x | X x.1 /\ X x.2 /\ R x].
   
-  Lemma Rest X R: (Restrict R X) = Δ_(X) `;` R `;` Δ_(X).
+  Lemma RestictE R X: (Restrict R X) = Δ_(X) `;` R `;` Δ_(X).
   Proof.
     rewrite predeqE => [[x y]].
     split => [[/= H1 [H2 H3]] | [z [[t [[/= H1 H'1] H2]] [/= H3 H'3]]]].
     by (exists y;split;[ exists x;split | ]).
     by split; [ | split; [rewrite -H'3 | rewrite H'1 -H'3]].
   Qed.
+  
+  (** Restriction as a relation on X*X *)
+  Definition Restrict' R (X:set T) : relation X := 
+    [set xy : X*X | R ((sval xy.1),(sval xy.2))].
+  
+  Lemma RestrictP R (X: set T) : (Restrict' R) X = (Restrict' (Δ_(X) `;` R `;` Δ_(X))) X.
+  Proof.
+    rewrite /Restrict' predeqE => -[x y] /= ; split; last first.
+    by move => [z [[t [/DsetE /= [_ <-] H4]] /DsetE [_ <-]]].
+    move => H1;exists (sval y);split;last by rewrite DsetE /=;split;[apply: set_valP|].
+    by (exists (sval x));rewrite DsetE /=;split;[split;[apply: set_valP|]|].
+  Qed.
+  
+  Definition Enlarge X (R: relation X) :=
+    [set xy | exists x : X, exists y: X, xy.1 = (sval x) /\ xy.2 =(sval y) /\ R (x,y)].
 
+  Lemma Inset X (v: X) : (exists (v:T), (v \in X)).
+  Proof. by exists (sval v);rewrite inP; apply: set_valP. Qed.
+  
+  Lemma setIn X v: (v \in X) -> exists v' : X, v = sval v'.
+  Proof. by move => H0;exists (exist _ v H0). Qed.
+  
+  Lemma EnlargeP X R: Enlarge ((Restrict' R) X) = (Δ_(X) `;` R `;` Δ_(X)).
+  Proof.
+    rewrite RestrictP predeqE /Restrict' => -[x y]; split.
+    by move => [x' [y' /= [-> [-> H3]]]].
+    move => /[dup] H0 [z [[t [/DsetE /= [/inP H1 H1'] H4]] /DsetE [/inP H2 H2']]].
+    rewrite H2' in H2.
+    move: (H1) (H2) => /setIn [x' H1''] /setIn [y' H2''].
+    by exists x';exists y';rewrite /mkset -H1'' -H2''.  
+  Qed.
+  
   (* reflexive and transitive properties using relation equalities *)
   
   Lemma clos_r_iff R: reflexive R <-> R ='Δ  `|` R.
@@ -1282,7 +1312,6 @@ Section Relation_Facts.
     split => [? | ->];last by move => ?;left.
     by rewrite eqEsubset;split =>[[? ?]|[? ?]];[move=> ?;right | move => [/DeltaP -> | ?]].
   Qed.
-
 
   Lemma clos_tn_iff R: forall (n: nat), transitive R -> R^(n.+1) `<=` R.
   Proof.
@@ -1302,7 +1331,8 @@ Section Relation_Facts.
     rewrite eqEsubset;split;first by apply: iter1_inc_clos_trans.
     by move => [x y] /clos_t_iterk [n H2];apply: (clos_tn_iff H0 H2).
   Qed.
-
+  
+  (** XXXX A simplifier une partie vient du fait que R.* est le smallest *)
   Lemma clos_rt_iff R: (reflexive R /\  transitive R) <-> R = R.*.
   Proof.
     rewrite -DuT_eq_Tstar.
