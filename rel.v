@@ -213,8 +213,6 @@ Section Relation_Facts.
   Lemma W_part X Y Z: (Y `<=` X) /\ (Z= X `\` Y) -> Y `&` Z = set0.
   Proof. by move => [? H2];rewrite empty_notexists H2;move => [z /inP [? [_ ?]]]. Qed.
   
-  (** * Union of relations *)
-  
   Lemma union_inc_b (R S U:relation T): S `<=` U -> R `<=` U -> (S `|` R) `<=` U.
   Proof. by move => H1 H2;(have <- : U `|` R = U by apply setUidPl);apply setSU. Qed.
   
@@ -1281,10 +1279,11 @@ Section Relation_Facts.
     by rewrite predeqE => x;split;[apply: E29_1|apply: E29_2].
   Qed.
   
-  (** Restriction on Relation *)
+  (** *  Restriction of a relatio to a subset *)
 
   Definition Restrict R X :=  [ set x | X x.1 /\ X x.2 /\ R x].
   
+  (* equivalent expression with Dset *)
   Lemma RestictE R X: (Restrict R X) = (R |_(X)).
   Proof.
     rewrite predeqE => [[x y]].
@@ -1293,11 +1292,11 @@ Section Relation_Facts.
     by split; [ | split; [rewrite -H'3 | rewrite H'1 -H'3]].
   Qed.
   
-  (** Restriction as a relation on X*X *)
+  (* definition with subtype *)
   Definition Restrict' R (X:set T) : relation X := 
     [set xy : X*X | R ((sval xy.1),(sval xy.2))].
   
-  Lemma RestrictP R (X: set T) : (Restrict' R) X = (Restrict' (R |_(X))) X.
+  Lemma RestrictP R X: (Restrict' R) X = (Restrict' (R |_(X))) X.
   Proof.
     rewrite /Restrict' predeqE => -[x y] /= ; split; last first.
     by move => [z [[t [/DsetE /= [_ <-] H4]] /DsetE [_ <-]]].
@@ -1305,12 +1304,19 @@ Section Relation_Facts.
     by (exists (sval x));rewrite DsetE /=;split;[split;[apply: set_valP|]|].
   Qed.
 
+  Lemma Dset_restrict X: Δ_(X) = ('Δ |_(X)).
+  Proof. by rewrite Delta_idem_r DsetK. Qed.
+
   Definition Enlarge X (R: relation X) :=
     [set xy | exists x : X, exists y: X, xy.1 = (sval x) /\ xy.2 =(sval y) /\ R (x,y)].
 
-  Lemma Inset X (v: X) : (exists (v:T), (v \in X)).
-  Proof. by exists (sval v);rewrite inP; apply: set_valP. Qed.
-  
+  (** some helpers to understand sval *)
+  Lemma Inset X (v: X) : ((sval v) \in X).
+  Proof. by rewrite inP; apply: set_valP. Qed.
+
+  Lemma Inset' X (v: X) : ((sval v) \in X).
+  Proof. by move: v => [v' H] /=. Qed.
+    
   Lemma setIn X v: (v \in X) -> exists v' : X, v = sval v'.
   Proof. by move => H0;exists (exist _ v H0). Qed.
   
@@ -1518,17 +1524,28 @@ Section Relation_Facts.
 
 End Relation_Facts.
 
-
 Section Test.
+  (* La preuve qui suit nécessite un eqType *)
+  Context (T : eqType).
+  Implicit Types (R S: relation T) (X Y: set T).
   
-  Context (T : Type).
-  Implicit Types (T : Type) (R S: relation T) (X Y: set T).
-  
-  Lemma Test' X (R: relation X):  R.* = (('Δ: relation X) `|` R).+.
-  Proof. by rewrite (@RTclosE X);apply: Rclos_Tclos. Qed.
+  Lemma Test1 X (R: relation X): ('Δ: relation X) `|` R.+ = (('Δ: relation X) `|` R).+.
+  Proof. by apply: Rclos_Tclos. Qed.
 
-  Lemma Delta_restrict X: Δ_(X) = ('Δ |_(X)).
-  Proof. by rewrite Delta_idem_r DsetK. Qed.
+  Lemma Test2 X R: 
+    ('Δ: relation X) `|` ((Restrict' R) X).+ = (('Δ: relation X) `|` ((Restrict' R) X)).+.
+  Proof. by apply: Rclos_Tclos. Qed.
+
+  Lemma Dset_restrict' X: ('Δ: relation X) = (Restrict' 'Δ) X.
+  Proof. 
+    rewrite predeqE => -[x y];split;first by move => /@DeltaP ->. 
+    move => /DeltaP/= H1; rewrite DeltaP.
+  by apply: val_inj.
+    
+  Lemma Test3 X R: 
+    ((Restrict' Δ_(X)) X) `|` ((Restrict' R) X).+ 
+    = (((Restrict' Δ_(X)) X) `|` ((Restrict' R) X)).+.
+  Proof. by apply: Rclos_Tclos. Qed.
   
   Lemma Rclos_Tclos' R X: (Δ_(X) `|` (R |_(X) ).+) = (Δ_(X) `|` (R |_(X)) ).+.
   Proof.
