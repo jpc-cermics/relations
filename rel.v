@@ -1320,7 +1320,7 @@ Section Relation_Facts.
   Lemma setIn X v: (v \in X) -> exists v' : X, v = sval v'.
   Proof. by move => H0;exists (exist _ v H0). Qed.
   
-  Lemma EnlargeP X R: Enlarge ((Restrict' R) X) = (R |_(X)).
+  Lemma Enlarge_restrict X R: Enlarge ((Restrict' R) X) = (R |_(X)).
   Proof.
     rewrite RestrictP predeqE /Restrict' => -[x y]; split.
     by move => [x' [y' /= [-> [-> H3]]]].
@@ -1329,6 +1329,9 @@ Section Relation_Facts.
     move: (H1) (H2) => /setIn [x' H1''] /setIn [y' H2''].
     by exists x';exists y';rewrite /mkset -H1'' -H2''.  
   Qed.
+
+  
+
 
   Lemma EnlargeU X (R S: relation X): (Enlarge R) `|` (Enlarge S) = Enlarge (R `|` S).
   Proof.
@@ -1532,30 +1535,36 @@ Section Test.
   Lemma Test1 X (R: relation X): ('Δ: relation X) `|` R.+ = (('Δ: relation X) `|` R).+.
   Proof. by apply: Rclos_Tclos. Qed.
 
-  Lemma Test2 X R: 
-    ('Δ: relation X) `|` ((Restrict' R) X).+ = (('Δ: relation X) `|` ((Restrict' R) X)).+.
-  Proof. by apply: Rclos_Tclos. Qed.
-
-  Lemma Dset_restrict' X: ('Δ: relation X) = (Restrict' 'Δ) X.
+  Lemma Test2 X: ('Δ: relation X) = (Restrict' 'Δ) X.
   Proof. 
     rewrite predeqE => -[x y];split;first by move => /@DeltaP ->. 
-    move => /DeltaP/= H1; rewrite DeltaP.
-  by apply: val_inj.
-    
-  Lemma Test3 X R: 
-    ((Restrict' Δ_(X)) X) `|` ((Restrict' R) X).+ 
-    = (((Restrict' Δ_(X)) X) `|` ((Restrict' R) X)).+.
-  Proof. by apply: Rclos_Tclos. Qed.
+    by move => /DeltaP/= H1; rewrite DeltaP;apply: val_inj.
+  Qed.
   
-  Lemma Rclos_Tclos' R X: (Δ_(X) `|` (R |_(X) ).+) = (Δ_(X) `|` (R |_(X)) ).+.
+  Lemma Test3 X R: 
+    ((Restrict' 'Δ) X) `|` ((Restrict' R) X).+ = (((Restrict' 'Δ) X) `|` ((Restrict' R) X)).+.
+  Proof. by rewrite -Test2;apply: Rclos_Tclos. Qed.
+
+  Lemma Test4 X R S: ((Restrict' R) X) `|` ((Restrict' S) X) = (Restrict' (R `|` S)) X.
+  Proof. by rewrite predeqE => -[x y];split;move => [?|?];[left|right|left|right]. Qed.
+
+  Lemma Test5 X R: 
+    ((Restrict' 'Δ) X) `|` ((Restrict' R) X).+ = ((Restrict' ('Δ `|` R)) X).+.
+  Proof. by rewrite -Test4;apply: Test3. Qed.
+
+  Lemma Restrict_enlarge X (R:relation X): (Restrict' (Enlarge R)) X = R.
   Proof.
-    rewrite [in Y in (Y `|` _)]Delta_restrict [in Y in ((Y `|` _).+)]Delta_restrict.
+    rewrite predeqE => -[x y]; split;last by (exists x;exists y).
+    by move => [x' [y' /= [/val_inj <- [/val_inj <- ?]]]].
+  Qed.
+  
+  Lemma Test6 X R: (Restrict' (Enlarge ((Restrict' R) X).+)) X = ((Restrict' R) X).+.
+  Proof. by rewrite Restrict_enlarge. Qed.
 
-    rewrite RTRestrict -RestrictU.
-    rewrite -RestrictU.
-    rewrite [(('Δ `|` R)|_(X)).+]RTRestrict.
-  Admitted.
-
+  Lemma Test7 X R: 
+    ((Restrict' ('Δ `|` (Enlarge ((Restrict' R) X).+))) X) = ((Restrict' ('Δ `|` R)) X).+.
+  Proof. by rewrite -Test4 Test6 Test5. Qed.
+  
 End Test.
   
 
