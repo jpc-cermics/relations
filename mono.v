@@ -46,7 +46,7 @@ Section Set_relation.
     move => R';rewrite predeqE => -[A B];split. 
     - move => H1 a /inP/H1 [b [/inP H2 [->| H3]]]; first by (exists b);split;[left|].
       by (exists b);split;[right|].
-    - rewrite /leSet' /mkset /= -Fset_union_rel Fset_D.
+    - rewrite /leSet' /mkset /= -FsetUl Fset_D.
       move => H1 a /inP/H1 [/inP H2 | [b [H2 /inP H3]]].
       by (exists a); split;[ | left].
       by exists b; split;[ | right].
@@ -860,7 +860,7 @@ Section Paper.
     Lemma FsetUO: forall x X Y (R: relation T), 
         x \in R#(X `|` Y) -> x \in R#X \/ x \in R#Y.
     Proof.
-      by move => x X Y R;rewrite Fset_union => /inP [ /inP H1 | /inP H1];[left | right].
+      by move => x X Y R;rewrite FsetUr => /inP [ /inP H1 | /inP H1];[left | right].
     Qed.
     
     Lemma FsetDI: forall x X Y (R: relation T), 
@@ -888,7 +888,7 @@ Section Paper.
       have H11: y \in [set x]:#Er.+.
       move: H8 => /FsetUO [H8 | H8]; last by [].
       have: y \in Mono#(Sm). 
-      by rewrite -Fset_union_rel inP;right;rewrite -inP.
+      by rewrite -FsetUl inP;right;rewrite -inP.
       have: y \in Mono#(Sm`|` [set x]) by apply: FsetlU.
       by [].
       (* end of H11 *)
@@ -902,7 +902,7 @@ Section Paper.
       have H15: Er.+ (y,x) by apply: H2'. 
       
       have H16: y \in Mono#([set x]) 
-          by rewrite -Fset_union_rel inP; right; rewrite -Fset_t0.
+          by rewrite -FsetUl inP; right; rewrite -Fset_t0.
       have H17: y \in Mono#(Sm `|` [set x]) by rewrite setUC FsetlU.
       by [].
     Qed.
@@ -928,12 +928,12 @@ Section Paper.
         move: (fact12_1 H2) => H12.
         move: H9;rewrite -H12 => /FsetUO [H9 | H9].
         by have H13:  y \in Mono#(Tm x `|` [set x]) by apply: FsetlU.
-        move: H9;rewrite -Fset_union_rel inP => [[H9 | H9]].
+        move: H9;rewrite -FsetUl inP => [[H9 | H9]].
         + move: H9 => [t [H13 /inP H14]].
           move: H14 => /Sb1' H14.
           have H15: Eb.+ (y,x) by apply: (TclosT H13 H14).
           have H16: y \in Mono#_(x)
-              by rewrite -Fset_union_rel inP;left;rewrite -Fset_t0.
+              by rewrite -FsetUl inP;left;rewrite -Fset_t0.
           have H17: y \in Mono#(Tm x `|` [set x])
               by rewrite setUC; apply: FsetlU.
           by [].
@@ -959,17 +959,17 @@ Section Paper.
       - (* x -R-> y est contradictoire *)
         move: H6; rewrite inP -Fset_t0 /inverse /= => H6.
         have H8: ~(y \in Mono#Sm).
-        rewrite -Fset_union_rel => /inP [H9 | H9].
+        rewrite -FsetUl => /inP [H9 | H9].
         + (* de H9 on a aussi Eb.+#(Sm\ T) y car ~ (y -M-> T) 
          on en deduit que y -B-> x quicontredit 5 *)
           move: (fact12_1 H2) H9 => <- /inP/FsetUO [H9 | H9].
           by have H11: y \in Mono#(Tm x `|` [set x])
-              by apply: FsetlU;rewrite -Fset_union_rel inP;left;rewrite -inP.
+              by apply: FsetlU;rewrite -FsetUl inP;left;rewrite -inP.
           move: H9; rewrite inP => [[z1 [H10 /inP H11]]].
           move: (Sb1' H11) => H12.
           have H13: Eb.+ (y,x) by apply: (TclosT H10 H12).
           have H14: y \in Mono#(Tm x `|` [set x])
-              by rewrite setUC;apply: FsetlU;rewrite -Fset_union_rel inP;
+              by rewrite setUC;apply: FsetlU;rewrite -FsetUl inP;
             left;rewrite -Fset_t0.
           by [].
         + (* ici y-R-> S et x-R-> y => x -R-> S contredit def de x *)
@@ -991,7 +991,7 @@ Section Paper.
           rewrite /Sxm in H3.
           have H15: Er.+ (y, x). apply: ((H3 y) H14 H6). 
           have H16: y \in Mono#(Tm x `|` [set x])
-              by rewrite setUC;apply: FsetlU;rewrite -Fset_union_rel inP;
+              by rewrite setUC;apply: FsetlU;rewrite -FsetUl inP;
             right;rewrite -Fset_t0.
           by [].
     Qed.
@@ -1009,12 +1009,12 @@ Section Paper.
         move: (fact12_1 H2) => H12.
         move: H9;rewrite -H12 => /FsetUO [H9 | H9].
         by have H13:  y \in Mono#(Tm x `|` [set x]) by apply: FsetlU.
-        move: H9;rewrite -Fset_union_rel inP => [[H9 | H9]].
+        move: H9;rewrite -FsetUl inP => [[H9 | H9]].
         + move: H9 => [t [H13 /inP H14]].
           move: H14 => /Sb1' H14.
           have H15: Eb.+ (y,x) by apply: (TclosT H13 H14).
           have H16: y \in Mono#_(x)
-              by rewrite -Fset_union_rel inP;left;rewrite -Fset_t0.
+              by rewrite -FsetUl inP;left;rewrite -Fset_t0.
           have H17: y \in Mono#(Tm x `|` [set x])
               by rewrite setUC; apply: FsetlU.
           by [].
@@ -1040,17 +1040,17 @@ Section Paper.
       - (* x -R-> y est contradictoire *)
         move: H6; rewrite inP -Fset_t0 /inverse /= => H6.
         have H8: ~(y \in Mono#Sm).
-        rewrite -Fset_union_rel => /inP [H9 | H9].
+        rewrite -FsetUl => /inP [H9 | H9].
         + (* de H9 on a aussi Eb.+#(Sm\ T) y car ~ (y -M-> T) 
          on en deduit que y -B-> x quicontredit 5 *)
           move: (fact12_1 H2) H9 => <- /inP/FsetUO [H9 | H9].
           by have H11: y \in Mono#(Tm x `|` [set x])
-              by apply: FsetlU;rewrite -Fset_union_rel inP;left;rewrite -inP.
+              by apply: FsetlU;rewrite -FsetUl inP;left;rewrite -inP.
           move: H9; rewrite inP => [[z1 [H10 /inP H11]]].
           move: (Sb1' H11) => H12.
           have H13: Eb.+ (y,x) by apply: (TclosT H10 H12).
           have H14: y \in Mono#(Tm x `|` [set x])
-              by rewrite setUC;apply: FsetlU;rewrite -Fset_union_rel inP;
+              by rewrite setUC;apply: FsetlU;rewrite -FsetUl inP;
             left;rewrite -Fset_t0.
           by [].
         + (* ici y-R-> S et x-R-> y => x -R-> S contredit def de x *)
@@ -1072,7 +1072,7 @@ Section Paper.
           rewrite /Sxm in H3.
           have H15: Er.+ (y, x). apply: ((H3 y) H14 H6). 
           have H16: y \in Mono#(Tm x `|` [set x])
-              by rewrite setUC;apply: FsetlU;rewrite -Fset_union_rel inP;
+              by rewrite setUC;apply: FsetlU;rewrite -FsetUl inP;
             right;rewrite -Fset_t0.
           by [].
     Qed.

@@ -778,10 +778,10 @@ Section Tcs.
       rewrite Clos_to_singleton in H6; move: H6 => [λ [H6 H6'']].
       rewrite Clos_to_singleton in H7; move: H7 => [γ [H7 H7']].
       have H8: Sw#Λ λ
-        by move: H6 => [H6 | H6];rewrite /Sw -Fset_union_rel Fset_D;
+        by move: H6 => [H6 | H6];rewrite /Sw -FsetUl Fset_D;
                       [left| right;rewrite -H4].
       have H9: Sw#Γ γ 
-        by move: H7 => [H7 | H7];rewrite /Sw -Fset_union_rel Fset_D;
+        by move: H7 => [H7 | H7];rewrite /Sw -FsetUl Fset_D;
                       [ left | right;rewrite -H5].
       move: H8 => /Fset_union_set H8; move: H8 => [x [H8 H10]].
       move: H9 => /Fset_union_set H9; move: H9 => [y [H9 H11]].
@@ -1113,14 +1113,14 @@ Section Tcs.
     Proof.
       move => R X;split => [-> | H1];first by [].
       have H2: X `<=` R.*#X
-        by rewrite -DuT_eq_Tstar -Fset_union_rel Fset_D;apply: subsetUl.
+        by rewrite -DuT_eq_Tstar -FsetUl Fset_D;apply: subsetUl.
       by rewrite eqEsubset.
     Qed.
 
     Lemma Ropen2: forall (R : relation T) (X: set T),
         R.*#X `<=` X <-> R.+#X `<=` X.
     Proof.
-      move => R X;rewrite -DuT_eq_Tstar -Fset_union_rel Fset_D.
+      move => R X;rewrite -DuT_eq_Tstar -FsetUl Fset_D.
       split => [ H1 | H1].
       - have H2: R.+#X `<=` X `|` R.+#X by apply: subsetUr.
         by apply: (subset_trans H2 H1).
@@ -1178,7 +1178,7 @@ Section Tcs.
     Proof.
       move => R Y X.
       have H4: R.*#X = R.*#(R.*#X) by rewrite Fset_comp compose_rt_rt.
-      have H5: X `<=` R.*#X by rewrite -DuT_eq_Tstar -Fset_union_rel Fset_D;apply: subsetUl.
+      have H5: X `<=` R.*#X by rewrite -DuT_eq_Tstar -FsetUl Fset_D;apply: subsetUl.
       split  => [ [H1 [H2 H3]] | H1].
       - have H6: Y `<=`  R.*#X by apply: H3.
         have H7: R.*#X `<=` Y by rewrite H1; apply: Fset_inc1 .

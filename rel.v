@@ -883,14 +883,14 @@ Section Relation_Facts.
     by (exists z);split;[|exists y].
   Qed.
   
-  Lemma Fset_union_rel R S X: S#X `|` R#X = (S `|` R) # X.
+  Lemma FsetUl R S X: S#X `|` R#X = (S `|` R) # X.
   Proof.
     rewrite /Fset /setU predeqE /= => x; split. 
     by move => [[y [? ?]] | [y [? ?]]];exists y;[split;[left|]|split;[right|]].
     by move => [y [[?|?] ?]];[left|right];exists y.
   Qed.
   
-  Lemma Fset_union R X Y: R#(X `|` Y) = (R#X) `|` (R#Y).
+  Lemma FsetUr R X Y: R#(X `|` Y) = (R#X) `|` (R#Y).
   Proof.
     rewrite /Fset /setU predeqE /= => x; split. 
     by move => [z [? [?|?]]];[left|right];exists z.
@@ -1083,7 +1083,7 @@ Section Relation_Facts.
   Lemma Clos_union E W : forall (X Y: set T),
       Clos(X `|` Y| E,W) = Clos(X| E,W) `|` Clos(Y| E,W).
   Proof.
-    by move => X Y; rewrite Fset_union.
+    by move => X Y; rewrite FsetUr.
   Qed.
   
   Lemma Clos_s_inc E W : forall (X Y: set T) (x:T),
@@ -1136,12 +1136,21 @@ Section Relation_Facts.
     by  rewrite Fset_D Union_Setminus -Fset_DCE Fset_comp.
   Qed.
   
+  Lemma Fsetn R Y n: ('Δ `|` R)^(n)#Y `<=`  ('Δ `|` (Δ_(Y.^c) `;` R))^(n)#Y. 
+  Proof.
+    elim:n Y => [ Y // | n' Hr Y]. rewrite -addn1.
+    rewrite (iter_compose ('Δ `|` Δ_(Y.^c)`;`R) n' 1).
+    rewrite (iter_compose ('Δ `|` R) n' 1) !iter1_id.
+    have H1: ('Δ `|` R)#Y = ('Δ `|` (Δ_(Y.^c) `;` R))#Y by rewrite -!FsetUl -E30.
+    rewrite -!Fset_comp -H1.
+  Admitted.
+      
   Lemma Fset_n R Y: forall (n : nat), (sumRk R n)#Y `<=` (Δ_(Y.^c) `;` R).*#Y.
   Proof.
     move => n x H.
     have H0: forall (n':nat), (sumRk R n') # Y = (sumRk ( Δ_(Y.^c) `;` R) n') # Y
         by elim => [ | n' H'];[rewrite /sumRk 
-                             |rewrite -!Fset_union_rel -!/sumRk -!Fset_comp 
+                             |rewrite -!FsetUl -!/sumRk -!Fset_comp 
                               -[in RHS]H' !Fset_comp -[in RHS]E30].
     
     have H1: ((sumRk R n) # Y) `<=` ((sumRk (Δ_(Y.^c) `;` R) n) # Y)
