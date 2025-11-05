@@ -1529,56 +1529,46 @@ Section Relation_Facts.
 
 End Relation_Facts.
 
-Section Test.
-  (* La preuve qui suit nécessite un eqType ou bien proof_irrelevance *)
-  Context (T : eqType).
-  Implicit Types (R S: relation T) (X Y: set T).
+Section Restrict_to_subset.
   
-  Lemma Extend_compose X (R S: relation X):
-    Extend (R `;` S) = Extend R `;` Extend S.
+  (* La preuve qui suit nécessite un eqType ou bien proof_irrelevance *)
+  Context (T: eqType).
+  Implicit Types (R S: relation T) (X: set T).
+  
+  Lemma Extend_compose X (R S: relation X): Extend (R `;` S) = Extend R `;` Extend S.
   Proof.
-    rewrite predeqE => -[x y]. split.
-    + move => [x' [y' /= [H1 [H2 [z /= [H3 H4]]]]]].
-      exists (sval z).
-      split. 
-      by rewrite /Extend /mkset /=; (exists x';exists z).
-      by rewrite /Extend /mkset /=; (exists z;exists y').
-    + move => [z [[x' [z' /= [H1 [H2 H3]]]]] [z'' [y' /= [H4 [H5 H6]]]]].
-      rewrite /Extend /mkset /=.
+    rewrite predeqE => -[x y];split.
+    + move => [x' [y' /= [? [? [z' /= [? ?]]]]]].
+      by exists (sval z');split;[exists x';exists z'| exists z';exists y'].
+    + move => [z [[x' [z' /= [-> [-> H3]]]]] [z'' [y' /= [H4 [-> H6]]]]].
       exists x';exists y';split;[exact|split;[exact|]].
-      have H7: z' = z''. rewrite H2 in H4. by apply: val_inj.
-      exists z'. split. by []. by rewrite H7.
+      by exists z';split;[| have ->: z' = z'' by apply: val_inj].
   Qed.
   
-  Lemma Extend_iter X R n: 
-    @Extend _ X (@Restrict' _ X R)^(n.+1) = (R |_(X))^(n.+1).
+  Lemma Extend_iter X R n: @Extend _ X (@Restrict' _ X R)^(n.+1) = (R |_(X))^(n.+1).
   Proof.
     elim: n => [| n Hn];first by rewrite !iter1_id Extend_restrict.
     rewrite -addn1 (iter_compose (R|_(X)) n.+1 1) (iter_compose (Restrict' R) n.+1 1).
     by rewrite Extend_compose Hn !iter1_id Extend_restrict.
   Qed.
 
-  Lemma ExtendTclos X R: 
-    @Extend _ X (@Restrict' _ X R).+ = (R |_(X)).+.
+  Lemma Extend_tclos X R: @Extend _ X (@Restrict' _ X R).+ = (R |_(X)).+.
   Proof.
     rewrite predeqE => -[x y];split.
-    + move => [x' [y' /= [H1 [H2 H3]]]]. 
+    + move => [x' [y' /= [? [? H3]]]]. 
       move: H3 => /(@clos_t_iterk _ ((@Restrict' _ X R)) x' y') [ n H3].
-      exists n.+1. by []. rewrite -Extend_iter.
-      by (exists x';exists y').
-    + move => /(@clos_t_iterk _ (R|_(X)) x y) [ n H3].
-      move: H3; rewrite -Extend_iter. 
-      move => [x' [y' [H1 [H2 H3]]]].
-      exists x'. exists y'. split. by []. split. by []. by exists n.+1.
+      by (exists n.+1);[| rewrite -Extend_iter;(exists x';exists y')].
+    + move => /(@clos_t_iterk _ (R|_(X)) x y) [n H3];move: H3; rewrite -Extend_iter. 
+      by move => [x' [y']] H1;(exists x';exists y');move: H1 => [-> [-> /iterk_inc_clos_trans ?]]. 
   Qed.
-
-  Lemma Restrict_enlarge X (R:relation X): (@Restrict' _ X (Extend R)) = R.
+  
+  Lemma Restrict_extend X (R:relation X): (@Restrict' _ X (Extend R)) = R.
   Proof.
     rewrite predeqE => -[x y]; split;last by (exists x;exists y).
     by move => [x' [y' /= [/val_inj <- [/val_inj <- ?]]]].
   Qed.
   
-  Lemma Test2 X: ('Δ: relation X) = (@Restrict' _ X 'Δ).
+  Lemma Restrict_delta X: ('Δ: relation X) = (@Restrict' _ X 'Δ).
   Proof. 
     rewrite predeqE => -[x y];split;first by move => /@DeltaP ->. 
     by move => /DeltaP/= H1; rewrite DeltaP;apply: val_inj.
@@ -1586,27 +1576,13 @@ Section Test.
   
   Lemma RestrictU' X R S: (@Restrict' _ X R) `|` (@Restrict' _ X S) = (@Restrict' _ X (R `|` S)).
   Proof. by rewrite predeqE => -[x y];split;move => [?|?];[left|right|left|right]. Qed.
-
-  Lemma Test4 X R: (@Restrict' _ X 'Δ) `|` (@Restrict' _ X R).+ = (@Restrict' _ X ('Δ `|` R)).+ .
-  Proof. rewrite -RestrictU' -Test2. apply: Rclos_Tclos. Qed.
-
-  Lemma Test6 X R: (@Restrict' _ X (R |_(X)).+) = (@Restrict' _ X R).+ .
-  Proof. by rewrite -ExtendTclos Restrict_enlarge. Qed.
-
-  Lemma Test7 X R: (@Restrict' _ X 'Δ) `|` (@Restrict' _ X (R |_(X)).+) =
-                     (@Restrict' _ X ('Δ `|` R)).+.
-  Proof. rewrite Test6. by apply: Test4. Qed.
-         
-  Lemma Test8 X R: (@Restrict' _ X ('Δ `|` (R |_(X)).+)) =  (@Restrict' _ X ('Δ `|` R)).+.
-  Proof. rewrite -RestrictU'. by apply: Test7. Qed.
   
-  Lemma Test9 X R: 
-    @Extend _ X (@Restrict' _ X ('Δ `|` (R |_(X)).+)) = 
-      @Extend _ X  (@Restrict' _ X ('Δ `|` R)).+.
-  Proof. by rewrite Test8. Qed.
-
   (** * C'est a peu de chose ce que je voulais *)
-  Lemma Test10 X R: ('Δ `|` (R|_(X)).+)|_(X) = (('Δ `|` R)|_(X)).+.
-  Proof. by rewrite -[RHS]ExtendTclos -[LHS]Extend_restrict Test9. Qed.
+  Lemma Main X R: ('Δ `|` (R|_(X)).+)|_(X) = (('Δ `|` R)|_(X)).+.
+  Proof. 
+    by rewrite -Extend_tclos -Extend_restrict -RestrictU' -Extend_tclos Restrict_extend
+       -Restrict_delta Rclos_Tclos Restrict_delta RestrictU'.
+  Qed.
+  
+End Restrict_to_subset.
 
-End Test.    
