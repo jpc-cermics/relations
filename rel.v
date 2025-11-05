@@ -1063,7 +1063,7 @@ Section Relation_Facts.
   Lemma Aset_T R: setT:#R `<=` setT.
   Proof. by []. Qed.
 
-  (** Closures *) 
+  (** * Closures *) 
   
   Lemma Clos_x_x R X: forall (x:T), Clos_(x | R, X) x.
   Proof. by move => x;exists x;split;[apply RTclosR|]. Qed.
@@ -1153,17 +1153,15 @@ Section Relation_Facts.
 
   Lemma Fset_rt R Y: (Δ_(Y.^c) `;` R).*#Y = R.*#Y.
   Proof.
-    have H0: (Δ_(Y.^c) `;` R).* `<=`  (R.* )
-      by apply: clos_refl_trans_inc; move => [x y] [z [ [_ /= ->] H2]]. 
-    have E29_1:  (Δ_(Y.^c) `;` R).*#Y `<=` R.*#Y
-      by apply Fset_inc.
+    rewrite eqEsubset;split. 
+    by apply: Fset_inc; apply: (clos_refl_trans_inc (@DeltaCsubset _ Y.^c)).
     have E29_2:  R.*#Y `<=` (Δ_(Y.^c) `;` R).*#Y.
     move => x [z [H1 H2]];
            suff: exists n : nat, sumRk R n (x, z); last by apply: clos_rt_sumRk.
     by move => [n H3];(suff: (Fset (sumRk R n) Y) x; 
                       first by move => H; apply Fset_n in H);
               exists z; split.
-    by rewrite predeqE => x;split;[apply: E29_1|apply: E29_2].
+    by [].
   Qed.
   
   (** *  Restriction of a relation to a subset *)
