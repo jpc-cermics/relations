@@ -1280,11 +1280,10 @@ Section Relation_Facts.
   Qed.
   
   (** *  Restriction of a relation to a subset *)
-
-  Definition Restrict R X :=  [ set x | X x.1 /\ X x.2 /\ R x].
+  Definition Restrict R X :=  [set x | X x.1 /\ X x.2 /\ R x].
   
   (* equivalent expression with Dset *)
-  Lemma RestictE R X: (Restrict R X) = (R |_(X)).
+  Lemma RestrictE' R X: (Restrict R X) = (R |_(X)).
   Proof.
     rewrite predeqE => [[x y]].
     split => [[/= H1 [H2 H3]] | [z [[t [[/= H1 H'1] H2]] [/= H3 H'3]]]].
@@ -1292,66 +1291,15 @@ Section Relation_Facts.
     by split; [ | split; [rewrite -H'3 | rewrite H'1 -H'3]].
   Qed.
   
-  (* definition with subtype *)
-  Definition Restrict' (T: Type) (X:set T) (R: relation T): relation X := 
-    [set xy : X*X | R ((sval xy.1),(sval xy.2))].
-  
-  Lemma RestrictP R X: (@Restrict' _ X R) = (@Restrict' _ X (R |_(X))).
-  Proof.
-    rewrite /Restrict' predeqE => -[x y] /= ; split; last first.
-    by move => [z [[t [/DsetE /= [_ <-] H4]] /DsetE [_ <-]]].
-    move => H1;exists (sval y);split;last by rewrite DsetE /=;split;[apply: set_valP|].
-    by (exists (sval x));rewrite DsetE /=;split;[split;[apply: set_valP|]|].
-  Qed.
-
   Lemma Dset_restrict X: Δ_(X) = ('Δ |_(X)).
   Proof. by rewrite Delta_idem_r DsetK. Qed.
-
-  Definition Extend (T: Type) (X:set T) (R: relation X) :=
-    [set xy | exists x : X, exists y: X, xy.1 = (sval x) /\ xy.2 =(sval y) /\ R (x,y)].
-
-  (** some helpers to understand sval *)
-  Lemma Inset X (v: X) : ((sval v) \in X).
-  Proof. by rewrite inP; apply: set_valP. Qed.
-
-  Lemma Inset' X (v: X) : ((sval v) \in X).
-  Proof. by move: v => [v' H] /=. Qed.
-    
-  Lemma setIn X v: (v \in X) -> exists v' : X, v = sval v'.
-  Proof. by move => H0;exists (exist _ v H0). Qed.
-  
-  Lemma Extend_restrict X R: @Extend _ X (@Restrict' _ X R) = (R |_(X)).
-  Proof.
-    rewrite RestrictP predeqE /Restrict' => -[x y]; split.
-    by move => [x' [y' /= [-> [-> H3]]]].
-    move => /[dup] H0 [z [[t [/DsetE /= [/inP H1 H1'] H4]] /DsetE [/inP H2 H2']]].
-    rewrite H2' in H2.
-    move: (H1) (H2) => /setIn [x' H1''] /setIn [y' H2''].
-    by exists x';exists y';rewrite /mkset -H1'' -H2''.  
-  Qed.
-  
-  Lemma RestrictEq R S X: (R |_(X)) = (S |_(X)) <-> (@Restrict' _ X R) = (@Restrict' _ X S).
-  Proof.
-    by split => [H|H];[rewrite (RestrictP R) (RestrictP S) H| rewrite -2!Extend_restrict H].
-  Qed.
-  
-  Lemma ExtendU X (R S: relation X): (Extend R) `|` (Extend S) = Extend (R `|` S).
-  Proof.
-    rewrite predeqE => -[x y];split.
-    + move => [|] [x' [y' /= [H2 [H3 H4]]]].
-      by (exists x';exists y');rewrite -H2 -H3 /=;split;[|split;[|left]].
-      by (exists x';exists y');rewrite -H2 -H3 /=;split;[|split;[|right]].
-    + move => [x' [y' /= [H2 [H3 [H4 | H4]]]]].
-      by left;(exists x';exists y');rewrite -H2 -H3 /=. 
-      by right;(exists x';exists y');rewrite -H2 -H3 /=. 
-  Qed. 
   
   Lemma RestrictE R X x y: (R |_(X)) (x,y) <-> X x /\ X y /\ R (x,y).
   Proof.
     by split => [[x' [[y' [/DsetE /= [? <-] ?]] /DsetE [? <-]]] //
                | [? [? ?]]];exists y;split;[exists x|].
   Qed.
-
+  
   Lemma RTRestrict R X: ( R |_(X)).+ = ( R |_(X)).+ |_(X). 
   Proof. 
     by rewrite {1}composeA  Delta_clos_trans_starts -composeA {1}Delta_clos_trans_ends -composeA.
@@ -1534,6 +1482,51 @@ Section Restrict_to_subset.
   (* La preuve qui suit nécessite un eqType ou bien proof_irrelevance *)
   Context (T: eqType).
   Implicit Types (R S: relation T) (X: set T).
+
+  (** some helpers to understand sval *)
+  Lemma Inset X (v: X) : ((sval v) \in X).
+  Proof. by rewrite inP; apply: set_valP. Qed.
+
+  Lemma Inset' X (v: X) : ((sval v) \in X).
+  Proof. by move: v => [v' H] /=. Qed.
+    
+  Lemma setIn X v: (v \in X) -> exists v' : X, v = sval v'.
+  Proof. by move => H0;exists (exist _ v H0). Qed.
+  
+  Definition Restrict' (T: Type) (X:set T) (R: relation T): relation X := 
+    [set xy : X*X | R ((sval xy.1),(sval xy.2))].
+  
+  Lemma RestrictP R X: (@Restrict' _ X R) = (@Restrict' _ X (R |_(X))).
+  Proof.
+    rewrite /Restrict' predeqE => -[x y] /= ; split; last first.
+    by move => [z [[t [/DsetE /= [_ <-] H4]] /DsetE [_ <-]]].
+    move => H1;exists (sval y);split;last by rewrite DsetE /=;split;[apply: set_valP|].
+    by (exists (sval x));rewrite DsetE /=;split;[split;[apply: set_valP|]|].
+  Qed.
+  
+  Definition Extend (T: Type) (X:set T) (R: relation X) :=
+    [set xy | exists x : X, exists y: X, xy.1 = (sval x) /\ xy.2 =(sval y) /\ R (x,y)].
+
+  Lemma Extend_restrict X R: @Extend _ X (@Restrict' _ X R) = (R |_(X)).
+  Proof.
+    rewrite RestrictP predeqE /Restrict' => -[x y]; split.
+    by move => [x' [y' /= [-> [-> H3]]]].
+    move => /[dup] H0 [z [[t [/DsetE /= [/inP H1 H1'] H4]] /DsetE [/inP H2 H2']]].
+    rewrite H2' in H2.
+    move: (H1) (H2) => /setIn [x' H1''] /setIn [y' H2''].
+    by exists x';exists y';rewrite /mkset -H1'' -H2''.  
+  Qed.
+  
+  Lemma ExtendU X (R S: relation X): (Extend R) `|` (Extend S) = Extend (R `|` S).
+  Proof.
+    rewrite predeqE => -[x y];split.
+    + move => [|] [x' [y' /= [H2 [H3 H4]]]].
+      by (exists x';exists y');rewrite -H2 -H3 /=;split;[|split;[|left]].
+      by (exists x';exists y');rewrite -H2 -H3 /=;split;[|split;[|right]].
+    + move => [x' [y' /= [H2 [H3 [H4 | H4]]]]].
+      by left;(exists x';exists y');rewrite -H2 -H3 /=. 
+      by right;(exists x';exists y');rewrite -H2 -H3 /=. 
+  Qed. 
   
   Lemma Extend_compose X (R S: relation X): Extend (R `;` S) = Extend R `;` Extend S.
   Proof.
@@ -1560,6 +1553,11 @@ Section Restrict_to_subset.
       by (exists n.+1);[| rewrite -Extend_iter;(exists x';exists y')].
     + move => /(@clos_t_iterk _ (R|_(X)) x y) [n H3];move: H3; rewrite -Extend_iter. 
       by move => [x' [y']] H1;(exists x';exists y');move: H1 => [-> [-> /iterk_inc_clos_trans ?]]. 
+  Qed.
+
+  Lemma RestrictEq R S X: (R |_(X)) = (S |_(X)) <-> (@Restrict' _ X R) = (@Restrict' _ X S).
+  Proof.
+    by split => [H|H];[rewrite (RestrictP R) (RestrictP S) H| rewrite -2!Extend_restrict H].
   Qed.
   
   Lemma Restrict_extend X (R:relation X): (@Restrict' _ X (Extend R)) = R.
