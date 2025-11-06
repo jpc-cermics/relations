@@ -68,8 +68,7 @@ Definition Delta (T: Type) (X: set T) : relation T :=
 
 Notation "'Δ" := (Delta setT) (at level 2, no associativity).
 
-Definition DeltaC (T: Type) (X: set T) : relation T := 
-  Delta (~` X).
+Definition DeltaC (T: Type) (X: set T) : relation T := Delta (~` X).
 
 Definition Lr (T: Type) (X: set T) : relation T := [set x | X x.1].
 Definition Rr (T: Type) (X: set T) : relation T := [set x | X x.2].
@@ -223,7 +222,7 @@ Section Relation_Facts.
   Lemma WWcU X: X `|` X.^c = setT.
   Proof. by rewrite predeqE => x;split => _;[rewrite -in_setE in_setT|apply: lem]. Qed.
 
-  (** *  Inverse *)
+  (** *  Inverse of a relation *)
   
   Lemma inverseK R:  R^-1^-1 = R.
   Proof. by rewrite /inverse /mkset predeqE /=;tauto. Qed.
@@ -278,7 +277,10 @@ Section Relation_Facts.
   Lemma RRm_inverse R: (R `;` R^-1)^-1 = R `;` R^-1.
   Proof. by apply/inverse_sym/RRm_sym. Qed. 
 
-  (** Delta *)
+  (** * Delta_(X) *)
+ 
+  Lemma DsetE X (x y:T): Δ_(X) (x,y) <-> X x /\ x = y.
+  Proof. exact. Qed.
     
   Lemma Dset_sym X:  symmetric Δ_(X).
   Proof. by move => x y [+ /= <-] => /= H1;split. Qed.
@@ -289,9 +291,6 @@ Section Relation_Facts.
   Lemma DsetS X Y: X `<=` Y -> Δ_(X) `<=` Δ_(Y).
   Proof. by move =>  H [x y] [H1 /= <-];split;[apply: H|]. Qed.
 
-  Lemma DeltaS X: Δ_(X) `<=` 'Δ.
-  Proof. by apply: DsetS. Qed.
-
   Lemma Dset_compose X Y: Δ_(X) `;` Δ_(Y) = Δ_(X `&` Y).
   Proof. by rewrite predeqE
          => -[x y];split=>[[z [[? /= <-][? /= <-]]]|[[? ?] /= <-]];[|exists x]. Qed.
@@ -301,15 +300,49 @@ Section Relation_Facts.
 
   Lemma DsetIv X: Δ_(X)^-1 = Δ_(X). 
   Proof. by rewrite predeqE /inverse => -[x y] /=;split;move => [H1 /= <-]. Qed.
+
+  Lemma DsetU X Y: Δ_(X) `|` Δ_(Y) = Δ_(X `|` Y).
+  Proof.
+    rewrite predeqE => -[x y];split.
+    by move => [|] [/= ? /= <-];apply/DsetE;split;[left| |right| ].
+    by move => [[? | ?] /= <-];[left|right].
+  Qed.
+  
+  Lemma Dset_compZ X: Δ_(X) `|` Δ_(X.^c) = 'Δ.
+  Proof. by rewrite DsetU WWcU. Qed.
+  
+  Lemma Dset_compose_same X: Δ_(X) `;` Δ_(X) = Δ_(X).
+  Proof. by rewrite Dset_compose setIid.  Qed.
+  
+  (** * Delta *)
+
+  Lemma DeltaP (x y: T): 'Δ (x,y) <-> x = y.
+  Proof. by split => [[_ ? //]| ->]. Qed.
+
+  Lemma DeltaS X: Δ_(X) `<=` 'Δ.
+  Proof. by apply: DsetS. Qed.
   
   Lemma DeltaIv: 'Δ^-1 = ('Δ : relation T).
   Proof. by apply:  DsetIv. Qed.
+
+  Lemma Delta_idem_l R: 'Δ `;` R = R.  
+  Proof.
+    rewrite predeqE => -[x y];split=> [[z [/DeltaP <- ?]]| ?];first exact.
+    by exists x;split;[rewrite DeltaP |].
+  Qed.
   
-  Lemma DeltaP (x y: T): 'Δ (x,y) <-> x = y.
-  Proof. by split => [[_ ? //]| ->]. Qed.
-  
-  Lemma DsetE X (x y:T): Δ_(X) (x,y) <-> X x /\ x = y.
-  Proof. exact. Qed.
+  Lemma Delta_idem_r R: R `;` 'Δ = R.  
+  Proof.
+    rewrite predeqE => -[x y];split => [[z [? /DeltaP /= <-]] |];first exact.
+    by move => ?; exists y; split;[| apply DeltaP].
+  Qed.
+
+  (** XXX: proposition de renommage *)
+  Lemma DeltaCl: left_id 'Δ (@compose T). 
+  Proof. by move => R;apply: Delta_idem_l. Qed.
+
+  Lemma DeltaCr: right_id 'Δ (@compose T). 
+  Proof. by move => R;apply: Delta_idem_r. Qed.
   
   Lemma DeltaLco X R: Δ_(X) `;` R = L_(X) `&` R.
   Proof. by rewrite predeqE /= => [[x y]] /=;split => [[z [[? /= <-] ?]]|[? ?]];[|exists x].  Qed.
@@ -326,7 +359,7 @@ Section Relation_Facts.
     by move => [z [/DsetE [? <-] /DsetE [? _]] //].
     by move => /DsetE [? _].
   Qed.
-    
+  
   Lemma DeltaWc_W X: Δ_(X.^c) `;` Δ_(X) = 'Δc.
   Proof. by rewrite Dset_compose setIC WWcI Delta0. Qed.
   
@@ -344,42 +377,6 @@ Section Relation_Facts.
   
   Lemma DeltaC_compose_absorbr R:  R `;` 'Δc = 'Δc.
   Proof. by rewrite predeqE => x;split => [[z [_ [/= ? _]]]|[/= ? _]] //. Qed.
-  
-  Lemma DsetU X Y: Δ_(X) `|` Δ_(Y) = Δ_(X `|` Y).
-  Proof.
-    rewrite predeqE => -[x y];split.
-    by move => [|] [/= ? /= <-];apply/DsetE;split;[left| |right| ].
-    by move => [[? | ?] /= <-];[left|right].
-  Qed.
-  
-  Lemma Dset_compZ X: Δ_(X) `|` Δ_(X.^c) = 'Δ.
-  Proof. by rewrite DsetU WWcU. Qed.
-  
-  Lemma Dset_compose_same X: Δ_(X) `;` Δ_(X) = Δ_(X).
-  Proof. by rewrite Dset_compose setIid.  Qed.
-  
-  Lemma Delta_idem_l R: 'Δ `;` R = R.  
-  Proof.
-    rewrite predeqE => -[x y];split=> [[z [/DeltaP <- ?]]| ?];first exact.
-    by exists x;split;[rewrite DeltaP |].
-  Qed.
-  
-  Lemma Delta_idem_r R: R `;` 'Δ = R.  
-  Proof.
-    rewrite predeqE => -[x y];split => [[z [? /DeltaP /= <-]] |];first exact.
-    by move => ?; exists y; split;[| apply DeltaP].
-  Qed.
-  
-  Lemma R_restrict R X (x y: T): 
-    x \in X /\ y \in X -> (R (x,y) <-> (Δ_(X) `;` R `;` Δ_(X)) (x,y)).
-  Proof.
-    rewrite /compose /Delta /mkset /=.
-    move => [/inP H1 /inP H2];split=> [ H3 | [z [[t [[H3 ->] H4] [H5 <-]]]] //].
-    by (exists y; split;[ exists x; split | ]).
-  Qed.
-
-  Lemma R_restrict_l R X (x y: T): x \in X -> (R (x,y) <-> (Δ_(X) `;` R) (x,y)).
-  Proof. by move => /inP ?;split => [? | [z [[? /= ->] ?] ] //];(exists x; split). Qed.
   
   Lemma DeltaCsubset R X: (Δ_(X) `;` R `<=` R).
   Proof. by move => -[x y] /= => [[z [[_ /= <-] ?]]]. Qed.
@@ -433,7 +430,7 @@ Section Relation_Facts.
                   addnC (iter_compose R^-1 1 n) H1 !iter1_id. 
   Qed.
   
-  Lemma iter_C R (n:nat): R^(n)`;`R = R `;` R^(n).
+  Lemma iter_C R (n:nat): R^(n) `;` R = R `;` R^(n).
   Proof. by move: (iter_compose R n 1) (iter_compose R 1 n);rewrite  iter1_id addnC => <- <-. Qed.
   
   Lemma iter_sym R (n:nat): symmetric R -> symmetric R^(n).
@@ -490,7 +487,7 @@ Section Relation_Facts.
   
   (** * Transitive closure  *)
   
-  Lemma Tclos_r R S: (Tclos R) `;` S = \bigcup_ (n >= 1) R^(n) `;` S.
+  Lemma Tclos_r R S:  R.+ `;` S = \bigcup_ (n >= 1) R^(n) `;` S.
   Proof. by rewrite -bigcupC. Qed.
   
   Lemma Tclos_in R S: transitive S -> R `<=` S -> R.+ `<=` S.
@@ -531,7 +528,7 @@ Section Relation_Facts.
   Lemma clos_t_iterk' R (x y:T): (exists (n:nat), R^(n.+1) (x,y)) -> R.+ (x,y).
   Proof. by move => [n H1];apply: (@iterk_inc_clos_trans R n). Qed.
   
-  Lemma inverse_clos_t R: R.+^-1 = R^-1.+ .
+  Lemma TclosIv R: R.+^-1 = R^-1.+ .
   Proof.
     rewrite predeqE => -[x y] /=;split => [[n ? ?]| [n H1]].
     by (exists n);[ exact|rewrite -inverse_iter].
@@ -584,7 +581,7 @@ Section Relation_Facts.
     by (exists z);split;[|exists n].
   Qed.
   
-  Local Lemma clos_trans_inc (Z V U W: relation T):
+  Lemma clos_trans_inc (Z V U W: relation T):
     (forall (n:nat), Z `;` (V^(n.+1)) `;` U = Z `;` (W^(n.+1)) `;` U) 
     -> Z `;` V.+ `;` U `<=` Z `;` W.+ `;` U.
   Proof.
@@ -614,19 +611,6 @@ Section Relation_Facts.
   Qed.
   
   Lemma clos_t_decomp_rt R: R `|` (R `;` R.+) = R.+ .
-  Proof.
-    rewrite eqEsubset;split;first by
-      apply: (union_inc_b (@TclosSu _) (@clos_t_composer _)).
-    move => -[x y] [n /= H2].
-    case H1: (1 == n);first by move: H1 => /eqP <-;rewrite iter1_id => H3;left.
-    have H3': n.-1.+1 = n by apply: ltn_predK H2. 
-    have H5: 1 < n by move:H2;rewrite leq_eqVlt H1 orFb.
-    have H6: (0 < n.-1)%N by rewrite -(ltn_add2r 1) addn1 [n.-1 + 1]addn1 H3'.
-    rewrite -H3' (iter_compose1l R (n.-1)%N) => -[z [H7 H8]].
-    by right;exists z;split;[| exists (n.-1)%N].
-  Qed.
-
-  Lemma clos_t_decomp_rt' R: R `|` (R `;` R.+) = R.+ .
   Proof.
     rewrite eqEsubset;split;first by
       apply: (union_inc_b (@TclosSu _) (@clos_t_composer _)).
@@ -666,15 +650,6 @@ Section Relation_Facts.
       -(@bigcup_mkord _ 1 (fun n => R^(n))) bigcup_iter0 bigcup_addn.
   Qed.
 
-  Lemma RTclos_dec R: R.* = 'Δ `|` R.+.
-  Proof.
-    rewrite predeqE => -[x y].
-    split;last by move => [/DeltaP -> | [n /= H1 H2]];[exists 0|exists n].
-    move => [n _ ].
-    case H2: (n == 0);first by move: H2 => /eqP -> /DeltaP ->;left.
-    by move: H2 => /neq0_lt0n H2 H3;right;(exists n). 
-  Qed.
-  
   Lemma RTclos_in R S: transitive S -> reflexive S -> R `<=` S -> R.* `<=` S.
   Proof.
     move => Ht Hr H1 [x y] [n _]. 
@@ -684,44 +659,43 @@ Section Relation_Facts.
   
   Lemma RTclosT R: transitive R.*.
   Proof.
-    rewrite RTclos_dec.
-    move => x y z [/DeltaP -> //| /clos_t_iterk [n1 H1]].  
+    rewrite RTclosE => x y z [/DeltaP -> //| /clos_t_iterk [n1 H1]].
     move => [/DeltaP <- //|/clos_t_iterk [n2 H2]];first by right;(exists n1.+1).
     by right;exists (n1.+1 + n2.+1);[exact|rewrite iter_compose;exists y].
   Qed.
   
   Lemma RTclosR R: reflexive R.*.
-  Proof. by rewrite RTclos_dec; move => x; left. Qed.
+  Proof. by rewrite RTclosE; move => x; left. Qed.
   
   Lemma RTclosSu R: R `<=` R.*.
-  Proof. by rewrite RTclos_dec;move => [x y] ?;right;exists 1;[|rewrite iter1_id]. Qed.
+  Proof. by rewrite RTclosE;move => [x y] ?;right;exists 1;[|rewrite iter1_id]. Qed.
   
   (* coincide with mathematical def of closure  *)
   Lemma RTclos_smallest R: R.* = smallest [set S | reflexive S /\ transitive S] R. 
   Proof.
-    rewrite RTclosE eqEsubset;split.
-    by move => -[x y] [/DeltaP -> //| /clos_t_iterk [n H2]] S' [[H3 H3'] H4];
-              [|apply: (@iter_subset R S' H3' H4 n.+1)].
-    + rewrite -RTclosE; move => -[x y] H2.
+    rewrite RTclosE eqEsubset;split; first by 
+      move => -[x y] [/DeltaP -> //| /clos_t_iterk [n H2]] S' [[H3 H3'] H4];
+             [|apply: (@iter_subset R S' H3' H4 n.+1)].
+    rewrite -RTclosE; move => -[x y] H2.
       have: [set S | (reflexive S /\ transitive S) /\ R `<=` S] R.*
         by split;[split;[apply: RTclosR|apply: RTclosT]|apply: RTclosSu].
       by move => /H2.
   Qed.
   
   Lemma inverse_star R: R.*^-1 = R^-1.* .
-  Proof. by rewrite 2!RTclos_dec inverseU inverse_clos_t DeltaIv. Qed.
+  Proof. by rewrite 2!RTclosE inverseU TclosIv DeltaIv. Qed.
   
-  Lemma clos_refl_trans_containsD R X: Δ_(X) `<=` R.* .
-  Proof. by rewrite RTclos_dec;apply: subset_trans;[apply: DeltaS|apply: subsetUl].  Qed.
+  Lemma RTclos_containsD R X: Δ_(X) `<=` R.* .
+  Proof. by rewrite RTclosE;apply: subset_trans;[apply: DeltaS|apply: subsetUl].  Qed.
   
   Lemma clos_t_clos_rt R: R.+ `<=` R.*.
-  Proof. by rewrite RTclos_dec;apply: subsetUr. Qed.
+  Proof. by rewrite RTclosE;apply: subsetUr. Qed.
   
   Lemma clos_refl_trans_inc R S: R `<=` S -> R.* `<=` S.*.
-  Proof. by move => H1;rewrite 2!RTclos_dec;apply/setUS/TclosS. Qed.
+  Proof. by move => H1;rewrite 2!RTclosE;apply/setUS/TclosS. Qed.
   
   Lemma DuT_eq_Tstar R:  'Δ `|` R.+ = R.*.  
-  Proof. by rewrite RTclos_dec. Qed.
+  Proof. by rewrite RTclosE. Qed.
   
   Lemma r_clos_rt_clos_t R: R `;` R.* = R.+.
   Proof. by rewrite -DuT_eq_Tstar composeDl Delta_idem_r clos_t_decomp_rt. Qed.
@@ -752,12 +726,12 @@ Section Relation_Facts.
   Lemma iterU_inc_clos_refl_trans R: forall (n : nat), (iterU R n) `<=` R.*.
   Proof.
     elim => [|n Hr];first by rewrite iterU0 => [[x y] ?];exists 0.
-    rewrite iterU_split  RTclos_dec;apply: setUS;move => -[x y] [z [? /Hr]].
-    by rewrite RTclos_dec => -[/DeltaP /= <- | H2];[apply: TclosSu| apply: clos_t_composer;exists z].
+    rewrite iterU_split  RTclosE;apply: setUS;move => -[x y] [z [? /Hr]].
+    by rewrite RTclosE => -[/DeltaP /= <- | H2];[apply: TclosSu| apply: clos_t_composer;exists z].
   Qed.
   
   Lemma clos_rt_iterU R (x y:T): R.* (x, y) -> exists (n:nat), (iterU R n) (x,y).
-  Proof. by rewrite RTclos_dec => -[/DeltaP -> | [n H1 H2]];[(exists 0);rewrite iterU0| exists n;exists n].
+  Proof. by rewrite RTclosE => -[/DeltaP -> | [n H1 H2]];[(exists 0);rewrite iterU0| exists n;exists n].
   Qed.
 
   (* transitive (reflexive closure) = (reflexive (transitive closure)) *)
@@ -1117,6 +1091,19 @@ Section Relation_Facts.
   Qed.
   
   (** *  Restriction of a relation to a subset *)
+
+
+  Lemma R_restrict R X (x y: T): 
+    x \in X /\ y \in X -> (R (x,y) <-> (Δ_(X) `;` R `;` Δ_(X)) (x,y)).
+  Proof.
+    rewrite /compose /Delta /mkset /=.
+    move => [/inP H1 /inP H2];split=> [ H3 | [z [[t [[H3 ->] H4] [H5 <-]]]] //].
+    by (exists y; split;[ exists x; split | ]).
+  Qed.
+
+  Lemma R_restrict_l R X (x y: T): x \in X -> (R (x,y) <-> (Δ_(X) `;` R) (x,y)).
+  Proof. by move => /inP ?;split => [? | [z [[? /= ->] ?] ] //];(exists x; split). Qed.
+
   Definition Restrict R X :=  [set x | X x.1 /\ X x.2 /\ R x].
   
   (* equivalent expression with Dset *)
