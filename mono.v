@@ -1092,7 +1092,7 @@ Section Paper.
     
   End Maximal. 
   
-  Theorem Final: exists Sm, forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
+  Theorem Final: exists (Sm: set T), forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
     Proof.
       move: Exists_Smax => [Sm [H1 H2]]. 
       have H3: IsMaximal Sm 
