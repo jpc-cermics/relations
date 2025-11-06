@@ -222,6 +222,13 @@ Section Relation_Facts.
   Lemma WWcU X: X `|` X.^c = setT.
   Proof. by rewrite predeqE => x;split => _;[rewrite -in_setE in_setT|apply: lem]. Qed.
 
+  Lemma Union_Setminus X Y: X `|` Y = X `|` (Y `\` X). 
+  Proof.
+    rewrite /setU /setD /mkset predeqE => x.
+    by split => [[?|?]|[?|[? ?]]];
+            [left|pose proof lem (X x) as [?|?];[left|right]|left|right].
+  Qed.
+  
   (** *  Inverse of a relation *)
   
   Lemma inverseK R:  R^-1^-1 = R.
@@ -682,7 +689,7 @@ Section Relation_Facts.
       by move => /H2.
   Qed.
   
-  Lemma inverse_star R: R.*^-1 = R^-1.* .
+  Lemma RTclosIv R: R.*^-1 = R^-1.* .
   Proof. by rewrite 2!RTclosE inverseU TclosIv DeltaIv. Qed.
   
   Lemma RTclos_containsD R X: Δ_(X) `<=` R.* .
@@ -765,21 +772,12 @@ Section Relation_Facts.
   Proof. by rewrite L2 -setUA clos_t_decomp_2 -setUA setUid DuT_eq_Tstar. Qed.
 
   (** * Foresets *)
-
-  (* check that it coincide with usual definition *)
-  Lemma AsetE  R Y: (Aset R Y) = [set x | exists (y: T), R (y,x) /\ Y y].
-  Proof. by rewrite /Aset/Fset.  Qed.
   
   Lemma Fset_D X: 'Δ#X = X.
-  Proof.
-    rewrite /Fset predeqE => x;split =>[[x' [/DeltaP -> ?]] //| ?].
-    by exists x;rewrite DeltaP.
-  Qed.
-
+  Proof. by rewrite predeqE => x;split =>[[x' [/DeltaP -> ?]] //| ?];exists x;rewrite DeltaP. Qed.
+  
   Lemma Fset_DE X Z: Δ_(Z)#X = Z `&` X.
-  Proof.
-    by rewrite /Fset/Delta predeqE /= => x;split => [[x' [[? <-] ?]] //| [? ?]];exists x.
-  Qed.
+  Proof. by rewrite /Fset/Delta predeqE/= => x;split => [[x' [[? <-] ?]] //| [? ?]];exists x. Qed.
   
   Lemma Fset_DCE X Y: Δ_(Y.^c)#X = X `\` Y.
   Proof.
@@ -788,20 +786,13 @@ Section Relation_Facts.
   Qed.
   
   Lemma Fset_inc R S X: R `<=` S -> R#X `<=` S#X.
-  Proof.
-    by move => H x [y [? ?]];by exists y;split;[apply: H |].
-  Qed.
+  Proof. by move => H x [y [? ?]];by exists y;split;[apply: H |]. Qed.
   
   Lemma Fset_inc1 R X Y: X `<=` Y -> R#X `<=` R#Y.
-  Proof.
-    by move => H x [y [? ?]];exists y;split;[|apply: H].
-  Qed.
+  Proof. by move => H x [y [? ?]];exists y;split;[|apply: H]. Qed.
   
-  Lemma set_inc2 X: forall (x: T), x \in X <->  [set x] `<=` X.
-  Proof.
-    move => x;split => [/set_mem ? y /= -> // |].
-    by rewrite in_setE => H1; apply: H1. 
-  Qed.
+  Lemma set_inc2 X x: x \in X <->  [set x] `<=` X.
+  Proof. by split => [/set_mem ? y /= -> // |];rewrite in_setE;apply. Qed.
   
   Lemma Fset_comp R S X: S # (R # X) = (S `;` R) # X.
   Proof.
@@ -817,6 +808,9 @@ Section Relation_Facts.
     by move => [[y [? ?]] | [y [? ?]]];exists y;[split;[left|]|split;[right|]].
     by move => [y [[?|?] ?]];[left|right];exists y.
   Qed.
+
+  Lemma Fset_s R x y: R#_(x) y <-> R (y,x).
+  Proof. by split => [[y' [H1 /= <-] //] | ?];exists x. Qed.
   
   Lemma FsetUr R X Y: R#(X `|` Y) = (R#X) `|` (R#Y).
   Proof.
@@ -827,77 +821,50 @@ Section Relation_Facts.
 
   Lemma FsetI R X Y: R#(X `&` Y) `<=` (R#X) `&` (R#Y).
   Proof.  by move => x [y [? [? ?]]];split;exists y. Qed.
-  
+
   (* Foreset in extension *)
-  Lemma Fset_union_set R Y: forall (x:T), (R#Y) x <-> exists y, Y y /\ R#_(y) x.
-  Proof.
-    move => x;rewrite /Fset /mkset /=.
-    split => [[y [? ?]]|[y [? [z [? H3]]]]].
-    by (exists y);split;[|exists y; split].
-    by (exists z);split;[ |rewrite H3].
+  Lemma Fset_union_set R X x: (R#X) x <-> exists y, X y /\ R#_(y) x.
+  Proof. by split => [[y [? ?]]|[y [+ [z [+ /= H3]]]]];[(exists y);rewrite Fset_s| rewrite H3;exists y]. Qed.
+  
+  Lemma Fset_intersect R S x y: (exists z, R#_(x) z /\ S#_(y) z) <-> (R^-1 `;` S) (x,y). 
+  Proof. split.
+    by move => [z [/Fset_union_set [x' [/= -> /Fset_s ?]] /Fset_union_set [y' [/= -> /Fset_s ?]]]];(exists z).
+    by move => [z /= [H1 H2]];exists z;rewrite 2!Fset_s.
   Qed.
 
-  Lemma Union_Setminus X Y: X `|` Y = X `|` (Y `\` X). 
-  Proof.
-    rewrite /setU /setD /mkset predeqE => x.
-    by split => [[?|?]|[?|[? ?]]];
-            [left|pose proof lem (X x) as [?|?];[left|right]|left|right].
-  Qed.
-  
-  Lemma Fset_intersect R S: forall (x y:T), (exists z, R#_(x) z /\ S#_(y) z) <-> (R^-1 `;` S) (x,y). 
-  Proof.
-    rewrite /Fset /mkset => x y.
-    split => [[z [[r [H1 H1']] [t [H2 H2']]]]|[z /= [? ?]]].
-    have [-> <-]: x = r /\ t = y by [].
-    by (exists z);split;[rewrite /inverse /=|].
-    by (exists z);split;[exists x|exists y].
-  Qed.
-  
   Lemma Fset_singleton R: forall (x:T), reflexive R -> R#_(x) x. 
-  Proof.
-    by move => x H;rewrite /Fset /mkset;exists x.
-  Qed.
+  Proof. by move => x H;rewrite /Fset /mkset;exists x.   Qed.
   
   Lemma Fset_rt_singleton R: forall (x:T), R.*#_(x) x. 
-  Proof.
-    by move => x; exists x;split;[apply: RTclosR |].
-  Qed.
+  Proof. by move => x; exists x;split;[apply: RTclosR |]. Qed.
   
   Lemma Fset_restrict R X Y : X `<=` Y -> R#X = (R `;` Δ_(Y))# X.
   Proof.
-    rewrite /subset /Fset /compose /Delta /mkset predeqE /= => H x.
-    split => [[y [H1 H2]]| [y [[z [H1 [_ <- ]]] H4]]];last by (exists z).
-    by exists y;split;[exists y;split;[by [] |by split;[apply H|]]|]. 
+    rewrite predeqE /= => H x.
+    split => [[y [H1 H2]]|[y [[z [/= H1 /DsetE [_ <-]]] H4]]];last by (exists z).
+    by (exists y);split;[exists y;split;[by [] |by split;[apply H|]]|]. 
   Qed.
   
   Lemma Fset_t0 R: forall (x y:T), R (x, y) <-> R#_(y) x. 
-  Proof.
-    by move => x y ; split => [H1 | [z [H1 /= <-]]];[exists y |].
-  Qed.
+  Proof. by move => x y ; split => [H1 | [z [H1 /= <-]]];[exists y |]. Qed.
 
-  Lemma Fset_t1 R: forall (x y:T), R (x, y) -> R.+#_(y) x. 
-  Proof.
-    by move => x y H1;rewrite /Fset;exists y;split;[exists 1;[|rewrite iter1_id]|].
-  Qed.
+  Lemma Fset_t1 R x y: R (x, y) -> R.+#_(y) x. 
+  Proof. by move => ?;exists y;split;[exists 1;[|rewrite iter1_id]|]. Qed.
   
   Lemma Fset_t2 R: forall (x y:T), (exists (x1:T), R (x, x1) /\ R.+#_(y) x1) -> R.+#_(y) x. 
   Proof.
     move => x y' [x1 [H1 [y [[n /=H2' H2] <-]]]];exists y;split;last by exact. 
-    have H3: R^(1+n) (x,y) by rewrite (iter_compose R 1 n) iter1_id;exists x1. 
-    by exists (1+n). 
+    by exists (n.+1);[|rewrite iter_compose1l;exists x1].
   Qed.
   
   Lemma Fset_t3 R: forall (x y z:T), R.+#_(y) x /\ R (y, z) -> R.+#_(z) x. 
   Proof.
     move => x y z [[t [[n /= H1' H1] /= <-]] H3].
-    have H4: R^(n.+1) (x,z) by rewrite -addn1 (iter_compose R n 1) iter1_id;exists t. 
-    by exists z;split;[exists (n.+1)|].
+    by exists z;split;[exists (n.+1);[| rewrite iter_compose1r;exists t]|].
   Qed.
   
   Lemma Fset_t4 R: forall (y z:T), R (y, z) -> ( R.+#_(y) `<=` R.+#_(z) ).
-  Proof.
-    by move => y z ? x ?;apply Fset_t3 with y.
-  Qed.
+  Proof. by move => y z ? x ?;apply Fset_t3 with y. Qed.
 
   Lemma Fset_t5 R: forall (y z:T), y \in R.+#_(z) -> (R.+#_(y) `<=` R.+#_(z) ).
   Proof.
@@ -953,7 +920,11 @@ Section Relation_Facts.
   Lemma Fset_T R: R#setT `<=` setT.
   Proof.  by []. Qed.
 
-  (** Elements for After set Topology *)
+  (** * Ater sets *) 
+  
+  (* check that it coincide with usual definition *)
+  Lemma AsetE  R Y: (Aset R Y) = [set x | exists (y: T), R (y,x) /\ Y y].
+  Proof. by rewrite /Aset/Fset.  Qed.
   
   Lemma Aset_bigcup R: forall (I: Type) (F : I -> set T),
       ( \bigcup_ i (F i) ):#R =  \bigcup_ i ((F i):#R).
