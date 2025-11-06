@@ -542,7 +542,7 @@ Section Lift_in.
   Proof.
     move => st x. 
     rewrite Lift_in_rev rev_cons => /Lift_in_F H1.
-    by rewrite allset_rev /Aset inverse_clos_t.
+    by rewrite allset_rev /Aset TclosIv.
   Qed.
   
   Lemma Lift_in_AA: forall (st: seq T) (x y: T),
@@ -551,8 +551,8 @@ Section Lift_in.
     move => st x y H1 H2.
     pose proof Lift_in_A H1 as H3.
     have H4: (y)_:#R.+ `<=` (x)_:#R.+. 
-    rewrite /Aset inverse_clos_t. apply: Fset_t5.
-    by rewrite inP -inverse_clos_t -inP.
+    rewrite /Aset TclosIv. apply: Fset_t5.
+    by rewrite inP -TclosIv -inP.
     by apply allset_subset with (y)_:#R.+.
   Qed.
   
@@ -671,7 +671,7 @@ Section allset_Lifted.
       allL E st x y -> (rcons st y) [\in] (x)_:#(E.+).
   Proof.
     move => st x y;rewrite allL_rev => /allL_All.
-    by rewrite /Aset inverse_clos_t -all_rev rev_cons revK.
+    by rewrite /Aset TclosIv -all_rev rev_cons revK.
   Qed.
 
   Lemma allL_Lift_in_rc: forall (st: seq T) (x y: T),

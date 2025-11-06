@@ -67,7 +67,7 @@ Section Csbr.
     Proof.
       have E21c1: E^-1 `<=` Bmw
         by rewrite E9d -{1}[E^-1]Delta_idem_l;apply: composeSr;
-        apply: clos_refl_trans_containsD.
+        apply: RTclos_containsD.
       have E21c2: Δ_(W_s) `<=` Cw_s by rewrite /Cw_s;apply: subsetUr.
       have H1: (Δ_(W_s) `;` E^-1) `<=` (Cw_s `;` E^-1) by apply composeSr; apply: E21c2.
       have H2: (Cw_s `;` E^-1) `<=` (Cw_s `;` Bmw) by apply composeSl; apply: E21c1.

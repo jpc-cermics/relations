@@ -306,13 +306,13 @@ Section Intermediate_results_open.
   Context (T: Type) (R: relation T). 
 
   Lemma Ropen1: [set X | X:#R.* = X ] = [set X | X:#R.* `<=` X].
-  Proof. by rewrite /Aset inverse_star;apply: Rclosed1. Qed.
+  Proof. by rewrite /Aset RTclosIv;apply: Rclosed1. Qed.
   
   Lemma Ropen2: [set X | X:#R.* `<=` X] = [set X | X:#R.+ `<=` X].
-  Proof. by rewrite /Aset inverse_star inverse_clos_t;apply: Rclosed2. Qed.
+  Proof. by rewrite /Aset RTclosIv TclosIv;apply: Rclosed2. Qed.
 
   Lemma Ropen4: [set X | X:#R.+ `<=` X]= [set X | X:#R  `<=` X].
-  Proof. by rewrite /Aset inverse_clos_t; apply: Rclosed4. Qed.
+  Proof. by rewrite /Aset TclosIv; apply: Rclosed4. Qed.
   
   Lemma Ropen: [set X | X:#R.* = X] = [set X | X:#R  `<=` X].
   Proof. by rewrite Ropen1 Ropen2 Ropen4. Qed.

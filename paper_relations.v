@@ -70,7 +70,7 @@ Section Ew_facts.
   
   Lemma Emw_1 : Emw.* = Ew.* ^-1.
   Proof.
-    by rewrite /Emw inverse_star.
+    by rewrite /Emw RTclosIv.
   Qed.
   
 End Ew_facts.
@@ -90,13 +90,13 @@ Section Bw_facts.
 
   Lemma Bmw_starts : Bmw = (Emw.* `;` Bmw).
   Proof.
-    by rewrite {2}/Bmw composeIv [Ew .*^-1]inverse_star -composeA compose_rt_rt
-       -inverse_star -composeIv.
+    by rewrite {2}/Bmw composeIv [Ew .*^-1]RTclosIv -composeA compose_rt_rt
+       -RTclosIv -composeIv.
   Qed.
 
   Lemma E_incl_Bw : E `<=` Bw.
   Proof.
-    by rewrite -[E]Delta_idem_r; apply: composeSl; apply: clos_refl_trans_containsD.
+    by rewrite -[E]Delta_idem_r; apply: composeSl; apply: RTclos_containsD.
   Qed.
 
   Lemma EDwE_in_Bw: E `;` Δ_(W.^c) `;` E `<=` Bw.
@@ -117,9 +117,9 @@ Section Bmw_facts.
   Lemma Einv_inc_Bmw: E^-1 `<=` Bmw.
   Proof.
     have H1: Bmw = (Emw.* `;` E^-1)
-      by rewrite /Bmw /Bw /Emw /Ew composeIv inverse_star.
+      by rewrite /Bmw /Bw /Emw /Ew composeIv RTclosIv.
     by rewrite H1 -{1}[E^-1]Delta_idem_l;apply: composeSr;
-    apply: clos_refl_trans_containsD.
+    apply: RTclos_containsD.
   Qed.
   
 End Bmw_facts.
@@ -157,12 +157,12 @@ Section Kw_facts.
     by rewrite /Kw /Bmw /Bw /Ew
        -{2}DsetK -/Ew composeA composeA
           H1 composeIv composeA H3 -composeA
-       -composeIv  r_clos_rt_clos_t inverse_clos_t -/Emw.
+       -composeIv  r_clos_rt_clos_t TclosIv -/Emw.
   Qed.
   
   Lemma Kw_inverse: Kw^-1 = Kw.
   Proof.
-    by rewrite E9e  -inverse_clos_t composeIv inverseK.
+    by rewrite E9e  -TclosIv composeIv inverseK.
   Qed.
   
   Lemma Kw_sym : @symmetric T Kw.
@@ -529,7 +529,7 @@ End Aw_sm_facts.
 (** already in E_incl_Bw *)
 Lemma E9b1 : E `<=` Bw.
 Proof.
-  by rewrite -[E]Delta_idem_r; apply: composeSl; apply: clos_refl_trans_containsD.
+  by rewrite -[E]Delta_idem_r; apply: composeSl; apply: RTclos_containsD.
 Qed.
 
 (* Equation (9c) *)
@@ -541,7 +541,7 @@ Qed.
 (* Equation (9d) *)
 Lemma E9d : Bmw = (Emw.* `;` E^-1).
 Proof.
-  by rewrite /Bmw /Bw /Emw /Ew composeIv inverse_star.
+  by rewrite /Bmw /Bw /Emw /Ew composeIv RTclosIv.
 Qed.
 
 Section Aw_sp_sm_facts.
@@ -573,7 +573,7 @@ Section Aw_sp_sm_facts.
   Proof.
     have H1: (Bmw `;` Δ_(W.^c) `;` E^-1 `<=` Bmw).
     rewrite /Bmw /Bw /Ew.
-    rewrite -DsetIv composeIv inverse_star composeIv.
+    rewrite -DsetIv composeIv RTclosIv composeIv.
     rewrite DsetIv DsetIv.
     pose R:= E^-1 `;` Δ_(W.^c). 
     rewrite -/R [R.* `;` E^-1 `;` Δ_(W.^c)]composeA -/R. 

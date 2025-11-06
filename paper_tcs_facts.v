@@ -36,7 +36,7 @@ Section Tcs.
       have L14_E38a1 : Ew.+ = Δ_(W.^c) `;` Bw                            
         by rewrite /Bw -composeA -/Ew r_clos_rt_clos_t.
       have L14_E38a2 : Emw.+ = Bmw `;` Δ_(W.^c)
-        by rewrite -inverse_clos_t L14_E38a1 composeIv -/Bmw DsetIv.
+        by rewrite -TclosIv L14_E38a1 composeIv -/Bmw DsetIv.
       by rewrite L1 !composeDr !composeDl !Delta_idem_r !Delta_idem_l setUA -E9e;
       rewrite -L14_E38a2 -L14_E38a1.
     Qed.
@@ -143,7 +143,7 @@ Section Tcs.
           by move => R; rewrite composeIv  composeIv
                          Cw_inverse DsetIv composeA.
       have H1: inverse (Emw .* ) = (Ew .* )
-        by rewrite inverse_star /Emw inverseK.
+        by rewrite RTclosIv /Emw inverseK.
       have H2 : (Emw.* `;` Ew.* )^-1 = (Emw.* `;` Ew.* )
         by rewrite -H1; apply RRm_inverse. 
       have H3 : (Bw `|` Kw)^-1 = (Bmw `|` Kw)
@@ -478,7 +478,7 @@ Section Tcs.
         by move => xy; rewrite -DuT_eq_Tstar; apply subsetUr.
       rewrite E9e; move => x y [z [/= H1 H2]];rewrite -notempty_exists;exists z. 
       rewrite in_setE.
-      rewrite -inverse_clos_t /inverse /mkset /Ew /= in H1.
+      rewrite -TclosIv /inverse /mkset /Ew /= in H1.
       by split;[exists x;split;[apply H0 |] | exists y;split;[apply H0 |]].
     Qed.
     
