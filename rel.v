@@ -16,13 +16,13 @@
 (*                                                                            *)
 (* R^-1        : inverse of the relation R  R^-1 (x,y) <-> R (y,x)            *)
 (* R `;` S     : composition: (R `;` S) (x,y) <-> exists z, R (x,z) /\ S (z,y)*)
-(* Δ_( W )     : diagonal relation on a subset                                *)
+(* Δ_(X)       : diagonal relation on subset  X                               *)
 (* 'Δ          : diagonal relation on setT  'Δ = Δ_(setT)                     *)
 (* 'Δc         : diagonal relation on set0  'Δ = Δ_(set0)                     *)
-(* L_( W )     : relation W x setT                                            *)
-(* R_( W )     : relation setT x X                                            *)
+(* L_(X)       : relation (X x setT)                                          *)
+(* R_(X)       : relation (setT x X)                                          *)
 (* R^(n)       : n-iterate of composition                                     *) 
-(* W.^c        : complementary (~` W)                                         *)
+(* X.^c        : complementary (~` X)                                         *)
 (* R.+         : transitive closure of R                                      *)
 (* R.*         : reflexive transitive closure of R                            *)
 (* R#Y         : Foreset of the subset Y by relation R                        *)
@@ -53,41 +53,35 @@ Definition relation (T: Type) := set (T * T).
 (* end snippet relation *)  
 
 (* begin snippet Sthree *)  
-Definition inverse (T: Type) (R:relation T) : relation T := [set x | R (x.2,x.1)].
+Definition inverse (T: Type) (R: relation T) : relation T := [set x | R (x.2,x.1)].
 (* end snippet Sthree *)  
 
 (* Notation "R .-1" := (@inverse _ R) : classical_set_scope. *)
 Notation "R ^-1" := (@inverse _ R) : classical_set_scope.
-Definition compose (T: Type) (R U: relation T): relation T := 
-    [set x | exists (z: T), R (x.1,z) /\ U (z,x.2)].
+Definition compose T (R S: relation T) : relation T := [set x | exists (z: T), R (x.1,z) /\ S (z,x.2)].
 Notation "R `;` U" := 
   (@compose _ R U) (at level 51, left associativity, format "R `;` U").
 
-Definition Delta (T: Type) (X: set T) : relation T := 
-  [set x | X x.1 /\ x.1 = x.2].
+Definition Delta T X: relation T := [set x | X x.1 /\ x.1 = x.2].
 
 Notation "'Δ" := (Delta setT) (at level 2, no associativity).
 
-Definition DeltaC (T: Type) (X: set T) : relation T := Delta (~` X).
+Definition DeltaC T X: relation T := Delta (~` X).
+Definition Lr T X: relation T := [set x | X x.1].
+Definition Rr T X: relation T := [set x | X x.2].
 
-Definition Lr (T: Type) (X: set T) : relation T := [set x | X x.1].
-Definition Rr (T: Type) (X: set T) : relation T := [set x | X x.2].
-
-Definition iter (T: Type) R S n : relation T:=
+Definition iter (T: Type) (R: relation T) S n : relation T:=
   let fix loop m := if m is i.+1 then (loop i) `;` R else S in loop n.
 
-Definition Tclos (T: Type) (R: relation T) := \bigcup_ (n >= 1) (iter R 'Δ n).
+Definition Tclos T (R: relation T): relation T := \bigcup_ (n >= 1) (iter R 'Δ n).
 
-Definition RTclos (T: Type) (R: relation T) := \bigcup_ n (iter R 'Δ n).
+Definition RTclos T (R: relation T): relation T := \bigcup_ n (iter R 'Δ n).
 
-Definition Fset (T:Type) (R: relation T) (Y: set T) : set T :=
-  [set x | exists (y: T), R (x,y) /\ Y y].
-
-Definition Aset (T:Type) (R: relation T) (Y: set T) : set T :=
-  Fset R^-1 Y. 
+Definition Fset T (R: relation T) X : set T := [set x | exists (y: T), R (x,y) /\ X y].
+Definition Aset T (R: relation T) X : set T :=  Fset R^-1 X. 
 
 (* begin snippet RelIndep:: no-out *)    
-Definition RelIndep (T: Type) (R: relation T) (S: set T) :=
+Definition RelIndep (T:Type) (R: relation T) (S: set T) :=
   forall (x y:T),  x \in S -> y \in S -> ~(x = y) -> ~( R (x,y)).
 (* end snippet RelIndep *)    
 
@@ -95,14 +89,14 @@ Definition RelIndep (T: Type) (R: relation T) (S: set T) :=
 Definition R2rel (T: Type) (R: relation T) : rel T := (fun x y => ((x,y) \in R)).
 Global Coercion R2rel : relation >-> rel.
 
-Notation "Δ_( W )" := (@Delta _ W) 
-                        (at level 2, no associativity, format "Δ_( W )").
-Notation "L_( W )" := (@Lr _ W)
-                        (at level 2, no associativity, format "L_( W )").
-Notation "R_( W )" := (@Rr _ W)
-                        (at level 2, no associativity, format "R_( W )").
-Notation "W .^c" := (~` W) 
-                      (at level 2, left associativity, format "W .^c").
+Notation "Δ_( X )" := (@Delta _ X) 
+                        (at level 2, no associativity, format "Δ_( X )").
+Notation "L_( X )" := (@Lr _ X)
+                        (at level 2, no associativity, format "L_( X )").
+Notation "R_( X )" := (@Rr _ X)
+                        (at level 2, no associativity, format "R_( X )").
+Notation "X .^c" := (~` X) 
+                      (at level 2, left associativity, format "X .^c").
 
 Notation "'Δc" := (DeltaC setT) (at level 2, no associativity).
 Notation "R ^( n )" := (@iter _ R 'Δ n) 
@@ -232,7 +226,11 @@ Section Relation_Facts.
   (** *  Inverse of a relation *)
   
   Lemma inverseK R:  R^-1^-1 = R.
-  Proof. by rewrite /inverse /mkset predeqE /=;tauto. Qed.
+  Proof. by rewrite predeqE /= => -[x y]. Qed.
+
+  (** XXX *)
+  Lemma inverseK': involutive (@inverse T). 
+  Proof. by move => R; rewrite predeqE /= => -[x y]. Qed.
   
   Lemma inverse_sym R: R^-1 = R <-> symmetric R.
   Proof. by rewrite predeqE;split => [H0 x y /H0 //|H1 [x y]];split;apply H1. Qed.
@@ -337,13 +335,17 @@ Section Relation_Facts.
     rewrite predeqE => -[x y];split=> [[z [/DeltaP <- ?]]| ?];first exact.
     by exists x;split;[rewrite DeltaP |].
   Qed.
-  
+
   Lemma Delta_idem_r R: R `;` 'Δ = R.  
   Proof.
     rewrite predeqE => -[x y];split => [[z [? /DeltaP /= <-]] |];first exact.
     by move => ?; exists y; split;[| apply DeltaP].
   Qed.
 
+  (** XXXX *)
+  Lemma DeltaIr: right_id ('Δ: relation T) (@compose _). 
+  Proof. by move => R; rewrite Delta_idem_r. Qed.
+  
   (** XXX: proposition de renommage *)
   Lemma DeltaCl: left_id 'Δ (@compose T). 
   Proof. by move => R;apply: Delta_idem_l. Qed.
@@ -502,7 +504,7 @@ Section Relation_Facts.
   
   Lemma clos_t_iterk R (x y:T): R.+ (x,y) -> exists (n:nat), R^(n.+1) (x,y).
   Proof.
-    by move => [n H1 ?];exists (n.-1)%N;have ->: n.-1.+1 = n by apply: ltn_predK H1. 
+    by move => [n H1 ?];exists (n.-1);have ->: n.-1.+1 = n by apply: ltn_predK H1. 
   Qed.
 
   Lemma TclosT R: transitive R.+.
@@ -593,7 +595,7 @@ Section Relation_Facts.
     -> Z `;` V.+ `;` U `<=` Z `;` W.+ `;` U.
   Proof.
     move => H0 [x y] [z [[t /=[H1 [n H2 H3]]] /=H4]].
-    move: H0 => /(_ (n.-1)%N);(have ->: n.-1.+1 = n by apply: ltn_predK H2);move => H0.
+    move: H0 => /(_ (n.-1));(have ->: n.-1.+1 = n by apply: ltn_predK H2);move => H0.
     have [z' [[t' /=[H1' H2']] H4']]: (Z`;`W^(n)`;`U) (x,y) by rewrite -H0;exists z;split;[exists t|].
     by exists z';split;[exists t';split;[|exists n]|].
   Qed.
@@ -973,17 +975,11 @@ Section Relation_Facts.
     by move => ?;exists x';split.
   Qed.
   
-  Lemma Clos_to_singleton E W : forall (X: set T) (x:T),
-      Clos(X | E, W) x <-> exists y, X y /\ Clos_(y |E ,W) x.
-  Proof.
-    by split; rewrite Fset_union_set.
-  Qed.    
+  Lemma Clos_to_singleton E W X x: Clos(X |E, W) x <-> exists y, X y /\ Clos_(y |E, W) x.
+  Proof. by split; rewrite Fset_union_set.  Qed.    
   
-  Lemma Clos_union E W : forall (X Y: set T),
-      Clos(X `|` Y| E,W) = Clos(X| E,W) `|` Clos(Y| E,W).
-  Proof.
-    by move => X Y; rewrite FsetUr.
-  Qed.
+  Lemma Clos_union E W X Y:  Clos(X `|` Y| E,W) = Clos(X| E,W) `|` Clos(Y| E,W).
+  Proof. by rewrite FsetUr. Qed.
   
   Lemma Clos_s_inc E W : forall (X Y: set T) (x:T),
       X x -> Clos_(x| E,W) `<=` Clos(X `|` Y| E,W).
@@ -996,28 +992,18 @@ Section Relation_Facts.
     by apply subset_trans with Clos(X|E,W).
   Qed.
   
-  Lemma Clos_inc_l E W : forall (X Y: set T),
-      Clos(X| E,W) `<=` Clos(X `|` Y| E,W).
-  Proof.
-    by move => X Y x; rewrite Clos_union; left.
-  Qed.    
+  Lemma Clos_inc_l E W X Y: Clos(X| E,W) `<=` Clos(X `|` Y| E,W).
+  Proof. by move => x; rewrite Clos_union; left.  Qed.    
   
-  Lemma Clos_inc_r E W : forall (X Y: set T),
-      Clos(X| E,W) `<=` Clos(Y `|` X| E,W).
-  Proof.
-    by move => X Y x; rewrite Clos_union; right.
-  Qed.    
+  Lemma Clos_inc_r E W X Y: Clos(X| E,W) `<=` Clos(Y `|` X| E,W).
+  Proof. by move => x; rewrite Clos_union; right. Qed.    
   
-  Lemma Clos_contains E W : forall (X: set T),
-      X `<=` W -> X `<=` Clos(X| E,W).
-  Proof.
-    by move => X ? x ?;rewrite /Fset /mkset;exists x;split;[apply RTclosR|].
-  Qed.    
+  Lemma Clos_contains E W X: X `<=` W -> X `<=` Clos(X| E,W).
+  Proof. by move => ? x ?;rewrite /Fset /mkset;exists x;split;[apply RTclosR|].  Qed.    
 
-  Lemma ClosU_containsl E W : forall (X Y: set T),
-      X `<=` W -> X `<=` Clos(X `|` Y | E,W).
+  Lemma ClosU_containsl E W X Y: X `<=` W -> X `<=` Clos(X `|` Y | E,W).
   Proof.
-    move => X Y H0.
+    move => H0.
     have H2: X `<=` Clos( X | E,W)  by apply:Clos_contains.
     by apply: (subset_trans H2);apply: Clos_inc_l.
   Qed.
@@ -1031,9 +1017,7 @@ Section Relation_Facts.
   Qed.
   
   Lemma E30 R X Y: 'Δ#X `|` R#Y = 'Δ#X `|` (Δ_(X.^c) `;` R)#Y.
-  Proof.
-    by  rewrite Fset_D Union_Setminus -Fset_DCE Fset_comp.
-  Qed.
+  Proof. by  rewrite Fset_D Union_Setminus -Fset_DCE Fset_comp. Qed.
   
   Lemma Fset_iterU R Y n: (iterU R n)#Y = (iterU ( Δ_(Y.^c) `;` R) n)#Y.
   Proof.
@@ -1043,10 +1027,7 @@ Section Relation_Facts.
   Qed.
   
   Lemma Fset_n R Y n: (iterU R n)#Y `<=` (Δ_(Y.^c) `;` R).*#Y.
-  Proof.
-    rewrite Fset_iterU.
-    apply: Fset_inc. apply: iterU_inc_clos_refl_trans.
-  Qed.
+  Proof. by rewrite Fset_iterU;apply: Fset_inc;apply: iterU_inc_clos_refl_trans. Qed.
   
   Lemma Fset_rt R Y: (Δ_(Y.^c) `;` R).*#Y = R.*#Y.
   Proof.
@@ -1062,7 +1043,6 @@ Section Relation_Facts.
   Qed.
   
   (** *  Restriction of a relation to a subset *)
-
 
   Lemma R_restrict R X (x y: T): 
     x \in X /\ y \in X -> (R (x,y) <-> (Δ_(X) `;` R `;` Δ_(X)) (x,y)).
@@ -1231,8 +1211,8 @@ Section Relation_Facts.
   Proof. move => [R_ref _ _ ] C -[x0 ->];rewrite -notempty_exists;exists x0; apply/inP. exact. Qed.
   
   (* Lemme 2 : Deux classes sont égales ou disjointes *)
-  Lemma classes_disjointes_ou_egales R: equivalence R ->
-                                        forall (x y : T), (exists z : T, R (x,z) /\ R (y,z)) -> class_of R x = class_of R y.
+  Lemma classes_disjointes_ou_egales R:
+    equivalence R -> forall (x y: T), (exists z, R (x,z) /\ R (y,z)) -> class_of R x = class_of R y.
   Proof.
     move => [R_ref R_tr R_sy] x y [z [H1 H2]].
     rewrite predeqE;move => x0;split.
