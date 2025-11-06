@@ -728,49 +728,13 @@ Section Relation_Facts.
   
   Lemma clos_rt_r_clos_t R: R.* `;` R = R.+.
   Proof. by rewrite -DuT_eq_Tstar composeDr Delta_idem_l clos_t_decomp_rt_r. Qed.
+    
+  Definition iterU (T: Type) (R: relation T) n : relation T := [set xy | exists k, k < n.+1 /\ R^(k) xy].
   
-  (** 
-  Definition sumRk'' (T: Type) (R: relation T) n := \bigcup_( n' < n.+1) (iter R 'Δ n').
-  
-  Lemma sumRk0'' R: sumRk'' R 0 = 'Δ.
-  Proof.  by rewrite predeqE => -[x y];split => [[n]|?];[rewrite II1 => -> /DeltaP ->|exists 0]. Qed.
-  
-  Lemma sumRk_kp1_l'' R n: sumRk'' R (n.+1) = 'Δ `|`  (R `;` (sumRk'' R n)).
-  Proof. 
-    rewrite predeqE => -[x y]. split.
-    + move => [k P1 H1].
-      case H2: (n == 0). move: H2 P1 => /eqP -> P1.
-      ++ move: P1;rewrite IIS II1 => /mem_set;rewrite in_setU =>/orP [/inP/= P1 |/inP/= P1].
-         by left;rewrite P1 in H1.
-         right;rewrite P1 iter1_id in H1.
-         rewrite sumRk0''. exists y. by rewrite DeltaP.
-      ++ move: H2 => /neq0_lt0n H2.
-         move: P1;rewrite IIS => /mem_set;rewrite in_setU =>/orP [/inP/= P1 |/inP/= P1].
-         case H3: (k == 0). move: H3 H1 => /eqP -> H1. by left.
-         move: H3 => /neq0_lt0n H3.
-         have H4: k.-1.+1 = k by apply: ltn_predK H3. 
-         move: H1;rewrite -H4 -addn1 addnC (iter_compose R 1 k.-1) iter1_id => -[z [H1 H1']].
-         right. exists z. split. by [].
-         have H6: `I_n.+1 k.-1. admit.
-         apply: (@bigcup_sup _ _ k.-1 `I_n.+1 (fun n => R^(n))).
-         by [].
-         by [].
-         move: H1;rewrite P1 -addn1 addnC (iter_compose R 1 n) iter1_id => -[z [H1 H1']].
-         right.  exists z. split. by [].
-         have H6: `I_n.+1 n. admit.
-         apply: (@bigcup_sup _ _ n `I_n.+1 (fun n => R^(n))).
-         by [].
-         by [].
-    + 
-  Admitted.
-   *) 
-
-  Definition sumRk3 (T: Type) (R: relation T) n : relation T := [set xy | exists k, k < n.+1 /\ R^(k) xy].
-  
-  Lemma sumRk03 R: sumRk3 R 0 = 'Δ.
+  Lemma iterU0 R: iterU R 0 = 'Δ.
   Proof. by rewrite predeqE => -[x y];split => [[k] |/DeltaP ->];[rewrite ltnS leqn0 => -[/eqP -> H1]|exists 0]. Qed.
 
-  Lemma sumRk3_split R n: sumRk3 R (n.+1) = 'Δ `|`  (R `;` (sumRk3 R n)).
+  Lemma iterU_split R n: iterU R (n.+1) = 'Δ `|`  (R `;` (iterU R n)).
   Proof. 
     rewrite predeqE => -[x y]. split.
     + move => [k [H1 H2]].
@@ -785,15 +749,15 @@ Section Relation_Facts.
       by exists k.+1;split;[| rewrite iter_compose1l;exists z].
   Qed.
   
-  Lemma sumRk3_inc_clos_refl_trans R: forall (n : nat), (sumRk3 R n) `<=` R.*.
+  Lemma iterU_inc_clos_refl_trans R: forall (n : nat), (iterU R n) `<=` R.*.
   Proof.
-    elim => [|n Hr];first by rewrite sumRk03 => [[x y] ?];exists 0.
-    rewrite sumRk3_split  RTclos_dec;apply: setUS;move => -[x y] [z [? /Hr]].
+    elim => [|n Hr];first by rewrite iterU0 => [[x y] ?];exists 0.
+    rewrite iterU_split  RTclos_dec;apply: setUS;move => -[x y] [z [? /Hr]].
     by rewrite RTclos_dec => -[/DeltaP /= <- | H2];[apply: TclosSu| apply: clos_t_composer;exists z].
   Qed.
   
-  Lemma clos_rt_sumRk3 R (x y:T): R.* (x, y) -> exists (n:nat), (sumRk3 R n) (x,y).
-  Proof. by rewrite RTclos_dec => -[/DeltaP -> | [n H1 H2]];[(exists 0);rewrite sumRk03| exists n;exists n].
+  Lemma clos_rt_iterU R (x y:T): R.* (x, y) -> exists (n:nat), (iterU R n) (x,y).
+  Proof. by rewrite RTclos_dec => -[/DeltaP -> | [n H1 H2]];[(exists 0);rewrite iterU0| exists n;exists n].
   Qed.
 
   (* transitive (reflexive closure) = (reflexive (transitive closure)) *)
@@ -1126,17 +1090,17 @@ Section Relation_Facts.
     by  rewrite Fset_D Union_Setminus -Fset_DCE Fset_comp.
   Qed.
   
-  Lemma Fset_sumRk3 R Y n: (sumRk3 R n)#Y = (sumRk3 ( Δ_(Y.^c) `;` R) n)#Y.
+  Lemma Fset_iterU R Y n: (iterU R n)#Y = (iterU ( Δ_(Y.^c) `;` R) n)#Y.
   Proof.
-    elim:n => [ | n' H'];first by rewrite 2!sumRk03.
-    by rewrite 2!sumRk3_split -2!FsetUl -[in RHS]Fset_comp
+    elim:n => [ | n' H'];first by rewrite 2!iterU0.
+    by rewrite 2!iterU_split -2!FsetUl -[in RHS]Fset_comp
             -[in RHS]H' [in RHS]Fset_comp [in RHS]composeA E30.
   Qed.
   
-  Lemma Fset_n R Y n: (sumRk3 R n)#Y `<=` (Δ_(Y.^c) `;` R).*#Y.
+  Lemma Fset_n R Y n: (iterU R n)#Y `<=` (Δ_(Y.^c) `;` R).*#Y.
   Proof.
-    rewrite Fset_sumRk3.
-    apply: Fset_inc. apply: sumRk3_inc_clos_refl_trans.
+    rewrite Fset_iterU.
+    apply: Fset_inc. apply: iterU_inc_clos_refl_trans.
   Qed.
   
   Lemma Fset_rt R Y: (Δ_(Y.^c) `;` R).*#Y = R.*#Y.
@@ -1145,8 +1109,8 @@ Section Relation_Facts.
     by apply: Fset_inc; apply: (clos_refl_trans_inc (@DeltaCsubset _ Y.^c)).
     have E29_2:  R.*#Y `<=` (Δ_(Y.^c) `;` R).*#Y.
     move => x [z [H1 H2]];
-           suff: exists n : nat, sumRk3 R n (x, z); last by apply: clos_rt_sumRk3.
-    by move => [n H3];(suff: (Fset (sumRk3 R n) Y) x; 
+           suff: exists n : nat, iterU R n (x, z); last by apply: clos_rt_iterU.
+    by move => [n H3];(suff: (Fset (iterU R n) Y) x; 
                       first by move => H; apply Fset_n in H);
               exists z; split.
     by [].
