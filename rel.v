@@ -462,7 +462,7 @@ Section Relation_Facts.
     have H1: (Δ_(X)`;`R)^(1) = Δ_(X)`;`(Δ_(X)`;`R)^(1)
       by rewrite iter1_id -composeA DsetK.
     case => [//| n _].
-    by rewrite -addn1 addnC (iter_compose (Δ_(X)`;`R) 1 n) -[RHS]composeA -H1.
+    by rewrite -addn1 addnC (iter_compose (Δ_(X)`;`R) 1 n) -[in RHS]composeA -H1.
   Qed.
   
   Lemma bigcup_iter0 R: \bigcup_(i < 1) R^(i) = 'Δ. 
@@ -728,14 +728,49 @@ Section Relation_Facts.
   
   Lemma clos_rt_r_clos_t R: R.* `;` R = R.+.
   Proof. by rewrite -DuT_eq_Tstar composeDr Delta_idem_l clos_t_decomp_rt_r. Qed.
-    
+  
   (* sumRk R n = 'Δ `|` R `|` R^(2) `|` R^(n) = ('Δ `|` R)^(n). *)
+
+  Definition sumRk'' (T: Type) (R: relation T) n := \bigcup_( n' < n.+1) (iter R 'Δ n').
+  
+  Lemma sumRk0'' R: sumRk'' R 0 = 'Δ.
+  Proof.  by rewrite predeqE => -[x y];split => [[n]|?];[rewrite II1 => -> /DeltaP ->|exists 0]. Qed.
+  
+  Lemma sumRk_kp1_l'' R n: sumRk'' R (n.+1) = 'Δ `|`  (R `;` (sumRk'' R n)).
+  Proof. 
+    rewrite predeqE => -[x y]. split.
+    + move => [k P1 H1].
+      case H2: (n == 0). move: H2 P1 => /eqP -> P1.
+      ++ move: P1;rewrite IIS II1 => /mem_set;rewrite in_setU =>/orP [/inP/= P1 |/inP/= P1].
+         by left;rewrite P1 in H1.
+         right;rewrite P1 iter1_id in H1.
+         rewrite sumRk0''. exists y. by rewrite DeltaP.
+      ++ move: H2 => /neq0_lt0n H2.
+         move: P1;rewrite IIS => /mem_set;rewrite in_setU =>/orP [/inP/= P1 |/inP/= P1].
+         case H3: (k == 0). move: H3 H1 => /eqP -> H1. by left.
+         move: H3 => /neq0_lt0n H3.
+         have H4: k.-1.+1 = k by apply: ltn_predK H3. 
+         move: H1;rewrite -H4 -addn1 addnC (iter_compose R 1 k.-1) iter1_id => -[z [H1 H1']].
+         right. exists z. split. by [].
+         have H6: `I_n.+1 k.-1. admit.
+         apply: (@bigcup_sup _ _ k.-1 `I_n.+1 (fun n => R^(n))).
+         by [].
+         by [].
+         move: H1;rewrite P1 -addn1 addnC (iter_compose R 1 n) iter1_id => -[z [H1 H1']].
+         right.  exists z. split. by [].
+         have H6: `I_n.+1 n. admit.
+         apply: (@bigcup_sup _ _ n `I_n.+1 (fun n => R^(n))).
+         by [].
+         by [].
+    + 
+  Admitted.
+  
   Fixpoint sumRk (T:Type) (R: relation T) (n : nat) : relation T :=
     match n with 
     | 0 => 'Δ
     | n'.+1 => 'Δ `|` (R `;` (sumRk R n'))
     end.
-    
+  
   Lemma sumRk_0 R: sumRk R 0 = 'Δ.
   Proof. by rewrite predeqE => -[x y];split => [/DeltaP -> |]. Qed.
     
@@ -762,7 +797,7 @@ Section Relation_Facts.
   
   Local Lemma sumRk_composel R (n: nat): sumRk R (n.+1) =('Δ `|` R) `;` (sumRk R n). 
   Proof.
-    rewrite [RHS]composeDr Delta_idem_l eqEsubset.
+    rewrite [in RHS]composeDr Delta_idem_l eqEsubset.
     split; first by rewrite sumRk_kp1_l;apply/setSU/Delta_inc_sumRk.
     by apply: union_inc_b;[apply: sumRk_inc_sumRkp1|apply: RsumRk_inc_sumRkp1].
   Qed.
@@ -1144,7 +1179,7 @@ Section Relation_Facts.
     have H1: ('Δ `|` R)#Y = ('Δ `|` (Δ_(Y.^c) `;` R))#Y by rewrite -!FsetUl -E30.
     rewrite -!Fset_comp -H1.
   Admitted.
-      
+
   Lemma Fset_n R Y: forall (n : nat), (sumRk R n)#Y `<=` (Δ_(Y.^c) `;` R).*#Y.
   Proof.
     move => n x H.
@@ -1530,7 +1565,7 @@ Section WIP.
 
     Lemma sumRk_composel' n: sumRk' (n.+1) =(S `|` R) `;` (sumRk' n). 
     Proof.
-      rewrite [RHS]composeDr SRsumk' eqEsubset.
+      rewrite [in RHS]composeDr SRsumk' eqEsubset.
       split; first by rewrite sumRk_kp1_l';apply/setSU/Delta_inc_sumRk'.
       by apply: union_inc_b;[apply: sumRk_inc_sumRkp1'|apply: RsumRk_inc_sumRkp1'].
     Qed.
