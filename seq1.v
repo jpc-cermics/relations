@@ -208,68 +208,51 @@ End Seq_utilities.
 
 Section Lift_props. 
   (** * properties of the Lift mapping *)
-  Variables (T: Type).
-  
-  Lemma Lift_c: forall (st:seq T) (x y: T),
-      Lift [::x,y & st] = [::(x,y) & Lift [::y & st]].
-  Proof.
-    by move => st x y; split.
-  Qed.
 
-  Lemma Lift_crc: forall (st:seq T) (x y: T),
-      Lift (x::(rcons st y)) = (x,(head y st))::(Lift (rcons st y)).
-  Proof.
-    by move => st x y; rewrite headI Lift_c. 
-  Qed.
+  Context {T : Type}.
+  Implicit Types (T : Type) (st: seq T) (x y z: T) (spt: seq (T*T)).
   
-  Lemma Lift_rcrc: forall (st:seq T) (x y: T),
+  Lemma Lift_c st x y:  Lift [::x,y & st] = [::(x,y) & Lift [::y & st]].
+  Proof.  by split. Qed.
+
+  Lemma Lift_crc st x y:
+    Lift (x::(rcons st y)) = (x,(head y st))::(Lift (rcons st y)).
+  Proof. by rewrite headI Lift_c. Qed.
+  
+  Lemma Lift_rcrc st x y:
       Lift (rcons (rcons st x) y) =  rcons (Lift (rcons st x)) (x,y).
   Proof.
     have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
-    elim => [ x y // | z st Hr x y ].
+    elim:st => [// | z st Hr ].
     rewrite [in RHS]rcons_cons [in RHS]Lift_crc [in RHS]rcons_cons -[in RHS]Hr.
     by rewrite ![in LHS]rcons_cons [in LHS]Lift_crc H1. 
   Qed.
   
-  Lemma Lift_rcc: forall (st:seq T) (x y: T),
-      Lift (rcons (x::st) y) = rcons (Lift (x::st)) (last x st,y).
-  Proof.
-    by move => st x y;rewrite lastI Lift_rcrc.
-  Qed.
+  Lemma Lift_rcc st x y: Lift (rcons (x::st) y) = rcons (Lift (x::st)) (last x st,y).
+  Proof. by rewrite lastI Lift_rcrc. Qed.
   
-  Lemma Lift_last: forall (st:seq T) (pt: T*T) (x y: T),
-      last pt (Lift (x::(rcons st y))) = (last x st, y).
+  Lemma Lift_last st (pt: T*T) x y: last pt (Lift (x::(rcons st y))) = (last x st, y).
   Proof.
-    elim/last_ind => [pt x y // | st z _ pt x y ].
+    elim/last_ind: st => [ // | st z _ ].
     by rewrite -2!rcons_cons Lift_rcrc 2!last_rcons.
   Qed.
 
-  Lemma Lift_head: forall (st:seq T) (pt: T*T) (x y: T),
-      head pt (Lift (x::(rcons st y))) = (x,head y st).
+  Lemma Lift_head st pt x y: head pt (Lift (x::(rcons st y))) = (x,head y st).
   Proof.
     have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
-    elim/last_ind => [pt x y // | st z _ pt x y].
-    by rewrite Lift_crc H1 /=.
+    by elim/last_ind: st => [// | st z _ ];rewrite Lift_crc H1 /=.
   Qed.
   
-  Lemma head_Lift: forall (st:seq T) (pt: T*T),
-      size(st) > 1 -> (head pt (Lift st)).1 = head pt.1 st.
+  Lemma head_Lift st pt: size(st) > 1 -> (head pt (Lift st)).1 = head pt.1 st.
   Proof.
-    elim => [pt // | z st _ pt H3].
-    have H4: size st > 0 by rewrite /size in H3;apply leq_ltn_trans with 0. 
-    clear H3.
-    elim: st z H4 => [z // | u st _ z H2].
-    by rewrite Lift_c /=.
+    elim:st => [// | z st _];rewrite ltnS -/size => H1.
+    by elim: st z H1 => [z // | u st _ z H2];rewrite Lift_c /=.
   Qed.
   
-  Lemma last_Lift: forall (st:seq T) (pt: T*T),
-      size(st) > 1 -> (last pt (Lift st)).2 = last pt.1 st.
+  Lemma last_Lift st pt: size(st) > 1 -> (last pt (Lift st)).2 = last pt.1 st.
   Proof.
-    elim/last_ind => [pt // | st z _ pt H3].
-    have H4: size st > 0 by rewrite size_rcons in H3;apply leq_ltn_trans with 0. 
-    clear H3.
-    elim/last_ind: st z H4 => [ z // | st u _ z H2].
-    by rewrite Lift_rcrc 2!last_rcons. 
+    elim/last_ind:st => [//| st z _ ];rewrite size_rcons ltnS => H1.
+    by elim/last_ind: st z H1 => [z //|st u _ z H2];rewrite Lift_rcrc 2!last_rcons. 
   Qed.
   
   Lemma Lift_cat_rc: forall (st st':seq T) (y z: T),
@@ -293,12 +276,10 @@ Section Lift_props.
     by rewrite Lift_crc [in RHS]cat_cons -Lift_cat_rc.
   Qed.
   
-  Lemma Lift_rev: forall (st:seq T), 
-      Lift (rev st) = map (fun tt =>(tt.2, tt.1)) (rev (Lift st)). 
+  Lemma Lift_rev st: Lift (rev st) = map (fun tt =>(tt.2, tt.1)) (rev (Lift st)). 
   Proof.
-    elim => [// | x st Hr ];elim: st x Hr => [// | x' st _ x H1].
-    by rewrite rev_cons rev_cons Lift_rcrc 
-       -rev_cons H1 Lift_c rev_cons map_rcons.
+    elim:st => [// | x st Hr ];elim: st x Hr => [// | x' st _ x H1].
+    by rewrite rev_cons rev_cons Lift_rcrc -rev_cons H1 Lift_c rev_cons map_rcons.
   Qed.
   
   (** Left inverse of Lift *)
@@ -308,17 +289,12 @@ Section Lift_props.
     | [::(t1,t2) & spt1 ] => [::t1 & UnLift spt1 t2]
     end.
   
-  Lemma UnLift_c: forall (spt: seq (T*T)) (x y z: T),
-      UnLift ((x, y) :: spt) z = [::x & UnLift spt y].
-  Proof.
-    by [].
-  Qed.
+  Lemma UnLift_c spt x y z: UnLift ((x, y) :: spt) z = [::x & UnLift spt y].
+  Proof. by []. Qed.
 
-  Lemma UnLift_sz: forall (spt: seq (T*T)) (z: T),
-      size (UnLift spt z) = size (spt) +1.
+  Lemma UnLift_sz spt z: size (UnLift spt z) = size (spt) +1.
   Proof.
-    elim => [z // | [t t'] spt Hr z].
-    by rewrite UnLift_c /= Hr 2!addn1.
+    by elim:spt z => [// z | [t t'] spt Hr z];rewrite UnLift_c /= Hr 2!addn1.
   Qed.
 
   Lemma Lift_inv1: forall (st : seq T) (x y z: T),
@@ -327,124 +303,78 @@ Section Lift_props.
     by elim => [// | y st Hr x' x z]; rewrite Lift_c UnLift_c Hr.
   Qed.
 
-  Lemma UnLift_left: forall (t:T) (st : seq T),
-      size (st) > 1 -> UnLift (Lift st) t = st.
+  Lemma UnLift_left x st: size (st) > 1 -> UnLift (Lift st) x = st.
+  Proof. by move => /seq_crc [q [x' [y H2]]];rewrite H2;apply Lift_inv1. Qed.
+  
+  Lemma Lift_inv2 st x:  st <> [::] ->  UnLift (Lift st) (head x st) = st.
   Proof.
-    move => t st H1.
-    pose proof (seq_crc H1) as [q [x [y H2]]]. 
-    rewrite H2. apply Lift_inv1. 
+    pose proof seq_cases st as [-> | [[x' ->] | [r [x' [y ->]]]]];rewrite //. 
+    by move => _; apply Lift_inv1.
   Qed.
   
-  Lemma Lift_inv2: forall (st : seq T) (x: T),
-      st <> [::] ->  UnLift (Lift st) (head x st) = st.
+  Lemma Lift_inv_sz2 st: size(st) > 1 -> (forall (x:T), UnLift (Lift st) x = st).
   Proof.
-    move => st x'.
-    pose proof seq_cases st as [H1 | [[x H1] | [r [x [y H1]]]]];rewrite H1 //;
-      by move => _; apply Lift_inv1.
-  Qed.
-  
-  Lemma Lift_inv_sz2: forall (st : seq T),
-      (size(st) > 1) -> (forall (x:T), UnLift (Lift st) x = st).
-  Proof.
-    move => st.
-    pose proof seq_cases st as [H1 | [[x H1] | [r [x [y H1]]]]];rewrite H1 //.
+    pose proof seq_cases st as [-> | [[x -> ] | [r [x [y ->]]]]];rewrite //.
     by move => _ x1; apply Lift_inv1.
   Qed.
   
-  Lemma Lift_inv: forall (st: seq T) (x y z: T),
-      UnLift (Lift [::x,y & st]) z = [::x,y & st].
-  Proof.
-    by move => p x y z; apply Lift_inv_sz2.
-  Qed.
+  Lemma Lift_inv st x y z:  UnLift (Lift [::x,y & st]) z = [::x,y & st].
+  Proof.  by apply Lift_inv_sz2. Qed.
   
-  Lemma Lift_bc: forall (st: seq T) (x:T) (y: T*T) (spt: seq (T*T)),
-      Lift (x :: st) = y :: spt -> x = y.1.
+  Lemma Lift_bc st x (y:T*T) spt : Lift (x :: st) = y :: spt -> x = y.1.
   Proof.
-    move => st x' [y1 y2] q.
-    by pose proof seq_cases st as [H1 | [[x H1] | [r [x [y H1]]]]];
+    move: y => [y1 y2].
+    by pose proof seq_cases st as [H1 | [[x' H1] | [r [x' [y' H1]]]]];
     rewrite H1; [ | rewrite /= => [[?]] |rewrite Lift_c => [[?] _ _]].
   Qed.
   
-  Lemma Lift_sz: forall (st:seq T),
-      size(st) > 1 -> size (Lift st) = (size st) -1.
+  Lemma Lift_sz st: size(st) > 1 -> size (Lift st) = (size st) -1.
   Proof.
-    move => st H1;pose proof seq_cc H1 as [q [x [y H2]]];rewrite H2;clear H2. 
+    move => H1;pose proof seq_cc H1 as [q [x [y H2]]];rewrite H2;clear H2. 
     elim: q x y => [x y // | z q Hr x y].
     have H2: size ((x, y) :: Lift [:: y, z & q]) = 1+ size(Lift [:: y, z & q]) by [].
     by rewrite Hr in H2;rewrite Lift_c H2 /= addnC [RHS]subn1 subn1 addn1 /=.
   Qed.
 
-  Lemma Lift_sz2: forall (st:seq T),
-      size(Lift st) > 0 <-> size (st) > 1.
-  Proof.
-    by elim => [// | x st ]; elim: st x => [// | x st Hr y H1 // H2].
-  Qed.
+  Lemma Lift_sz2 st: size(Lift st) > 0 <-> size (st) > 1.
+  Proof. by elim:st => [// | x st ]; elim: st x => [// | x st Hr y H1 // H2]. Qed.
 
 End Lift_props. 
 
 Section allset.
   (** * utilities for st [\in] X, X: set T *)
 
-  Variables (T: Type).
-
-  (* begin snippet Sn:: no-out *)  
-  (* Definition Sn (n: nat) (D: set T):= [set st| st [\in] D/\size(st)=n]. *)
-  (* end snippet Sn *)
-  
-  Lemma allsetP: forall (X: set T) (st: seq T) (x:T),
-      X x /\ st [\in] X <-> (x \in X) && (st [\in] X).
-  Proof.
-    by split => [[/mem_set -> ->] // | /andP [/set_mem H1 H2]].
-  Qed.
-  
-  Lemma allset_consb: forall (X: set T) (st: seq T) (x:T),
-      ((x::st) [\in] X) <-> (x \in X) && st [\in] X.
-  Proof. by split. Qed.
-
-  Lemma allset_cons: forall (X: set T) (st: seq T) (x:T),
-      ((x::st) [\in]  X) <->  X x /\ st [\in] X.
-  Proof.
-    by move=> X st x;rewrite allset_consb allsetP.
-  Qed.
-  
-  Lemma allset_subset: forall (X Y: set T) (st: seq T), 
-      (X `<=` Y) -> (st [\in]  X) -> (st [\in] Y).
-  Proof.
-    move => X Y;elim => [ // | x' st' H1 H2 /andP [H3 H4]]. 
-    apply/andP;split.
-    by apply: mem_set;apply: H2; apply set_mem. 
-    by apply H1.
-  Qed.
-  
-  Lemma allset_rcons: forall (X: set T) (st: seq T) (x:T),
-      (rcons st x) [\in] X <-> st [\in] X /\ X x.
-  Proof.
-    by move => X st x;rewrite all_rcons andC allsetP.
-  Qed. 
+  Context {T : Type}.
+  Implicit Types (T : Type) (X Y: set T) (st: seq T) (x:T).
     
-  Lemma allset_rev: forall (X: set T) (st: seq T),
-      st [\in] X <->  (rev st) [\in] X.
-  Proof.
-    by move => X st;rewrite all_rev.
-  Qed. 
+  Lemma allsetP X st x: X x /\ st [\in] X <-> (x \in X) && (st [\in] X).
+  Proof. by split => [[/mem_set -> ->] // | /andP [/set_mem H1 H2]].  Qed.
   
-  Lemma allset_cat: forall (X: set T) (st st': seq T),
-      (st++st') [\in] X <-> st [\in] X /\ st' [\in] X.
+  Lemma allset_consb X st x: ((x::st) [\in] X) <-> (x \in X) && st [\in] X.
+  Proof. by split. Qed.
+  
+  Lemma allset_cons  X st x: ((x::st) [\in]  X) <->  X x /\ st [\in] X.
+  Proof. by rewrite allset_consb allsetP. Qed.
+  
+  Lemma allset_subset X Y st: (X `<=` Y) -> (st [\in]  X) -> (st [\in] Y).
   Proof.
-    by move=> X st q;rewrite all_cat;split => [/andP | [-> ->]].
+    elim:st => [// | x' st' H1 H2 /andP [H3 H4]]. 
+    by apply/andP;split;[apply/mem_set/H2/set_mem |apply: H1].
   Qed.
+  
+  Lemma allset_rcons X st x: (rcons st x) [\in] X <-> st [\in] X /\ X x.
+  Proof. by rewrite all_rcons andC allsetP.  Qed. 
+    
+  Lemma allset_rev X st: st [\in] X <->  (rev st) [\in] X.
+  Proof. by rewrite all_rev. Qed. 
+  
+  Lemma allset_cat X st st': (st++st') [\in] X <-> st [\in] X /\ st' [\in] X.
+  Proof. by rewrite all_cat;split => [/andP | [-> ->]].  Qed.
 
-  Lemma allset_I: forall (X Y: set T) (st: seq T),
-    st [\in] (X `&` Y) <-> st [\in] X && st [\in] Y. 
+  Lemma allset_I X Y st: st [\in] (X `&` Y) <-> st [\in] X && st [\in] Y. 
   Proof.
-    move => X Y st.
-    have H1: (X `&` Y) `<=` X by apply: subIsetl. 
-    have H2: (X `&` Y) `<=` Y by apply: subIsetr. 
-    split => [H3 | ]. 
-    by apply/andP;split;[apply: (allset_subset H1 H3)
-                        | apply: (allset_subset H2 H3)].
-    elim: st => [// |  x spa Hr /andP H3].
-    move: H3; rewrite !allset_cons => [[[H3 H4] [H5 H6]]].
+    split => [H3 | ];first by apply/andP;split;apply: (allset_subset _ H3).
+    elim: st => [// | x spa Hr /andP];rewrite !allset_cons => [[[? ?] [? ?]]].
     by split;[rewrite /setI /mkset | apply Hr;apply/andP].
   Qed.
   
