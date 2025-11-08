@@ -12,34 +12,34 @@
 (******************************************************************************)
 (* some operations on sequences which are usefull for dealing with graph paths*)
 (* when the graph is described by a relation (relation as sets (set T*T))     *)
-(*    p [\in] X    ==  all the elements of a node path p are in X              *)
-(*    spt [\in] R  ==  all the elements of an edge path spt satisfy relation R *)
-(*    p [Suc\in] R ==  the successive elements of the node paths p satisfy     *)
+(*    p [\in] X    ==  all the elements of a node path p are in X               *)
+(*    spt [\in] R  ==  all the elements of an edge path spt satisfy relation R  *)
+(*    p [Suc\in] R ==  the successive elements of the node paths p satisfy      *)
 (*                  relation R. Just for sanity check and replaced by         *)
-(*                  p [L\in]  R in practice.                                   *)
+(*                  p [L\in]  R in practice.                                    *)
 (*    Lift st     == an edge path built from a node path                      *)
-(*    p [L\in]  R  == same as (p [Suc\in] R) but using a Lift                   *)
+(*    p [L\in]  R  == same as (p [Suc\in] R) but using a Lift                     *)
 (*    UnLift spt  == Left inverse of Lift (spt: seq (T*T))                    *)
 (* Seq_utilities: some utilities for sequences                                *)
 (* Lift_props: properties of the Lift mapping                                 *)
-(* allset: utilities for st [\in] X, X: set T                                  *)
-(* allset2: utilities for spt [\in] R, R: relation T                           *)
-(* Lift_in: properties of [L\in]                                               *)
-(* allset_Lifted: properties of st [L\in] R for st: seqT                       *) 
+(* allset: utilities for st [\in] X, X: set T                                   *)
+(* allset2: utilities for spt [\in] R, R: relation T                            *)
+(* Lift_in: properties of [L\in]                                                *)
+(* allset_Lifted: properties of st [L\in] R for st: seqT                        *) 
 (*                with specified endpoints                                    *)
-(* Suc_as_Lift: st [L\in] R <-> st [Suc\in] R                                   *)
+(* Suc_as_Lift: st [L\in] R <-> st [Suc\in] R                                     *)
 (* Lift_bijective: Lift is a bijection between                                *)
 (*                 D:= [set p:seq T | size(p) > 1] and Lift D                 *)
 (* Endpoints_and_Deployment: endpoints and Deployments                        *)
-(* seq_subsets: properties of p: seq T, p [\in] X and p [L\in] R]               *)
-(* seq_pairs_subsets: p: seq (T*T), p [\in] E and p [L\in] R]                   *)
-(* PathRel: transitive closure and paths                                     *)
-(* pair: sequences in  seq (T*T*O)                                           *)
-(* pair_lift1: pair combined with Lift                                       *)
-(* Seq_lifto: Lifto that is LiftO with constant orientation along the path   *)
-(* Active_relation: D_U and active relation                                  *)
-(* Active: The D_separated and Active relation as a relation on TxT          *)
-(* PathRel_Examples: Utilities                                               *)
+(* seq_subsets: properties of p: seq T, p [\in] X and p [L\in] R]                 *)
+(* seq_pairs_subsets: p: seq (T*T), p [\in] E and p [L\in] R]                     *)
+(* PathRel: transitive closure and paths                                      *)
+(* pair: sequences in  seq (T*T*O)                                            *)
+(* pair_lift1: pair combined with Lift                                        *)
+(* Seq_lifto: Lifto that is LiftO with constant orientation along the path    *)
+(* Active_relation: D_U and active relation                                   *)
+(* Active: The D_separated and Active relation as a relation on TxT           *)
+(* PathRel_Examples: Utilities                                                *)
 (******************************************************************************)
 
 Set Warnings "-parsing -coercions".
@@ -48,7 +48,7 @@ From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
 Set Warnings "parsing coercions".
 
-From RL Require Import ssrel rel. 
+From RL Require Import rel. 
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -98,7 +98,7 @@ Section Suc_def.
   (** * we later prove that: s [L\in] R <-> s [Suc\in] R *)
     
   Variables (T: Type).
-
+  
   Inductive RPath (R: relation T): seq T -> Prop :=
   | pp_void : RPath R [::]
   | pp_two (t: T) (st: seq T) : 
@@ -377,120 +377,76 @@ Section allset.
     elim: st => [// | x spa Hr /andP];rewrite !allset_cons => [[[? ?] [? ?]]].
     by split;[rewrite /setI /mkset | apply Hr;apply/andP].
   Qed.
-  
 End allset.
 
 Section allset2.
   (** * extra utilities for spt [\in] R, R: relation T *)
-  Variables (T: Type).
+  Context {T: Type}.
+  Implicit Types (T : Type) (R: relation T) (X Y: set T) (spt: seq (T*T)) (x y:T).
   
-  Lemma allset_inv: forall (E: relation T) (spt: seq (T*T)), 
-      spt [\in] E <-> (map (fun tt => (tt.2,tt.1)) spt) [\in] E^-1. 
+  Lemma allset_inv R spt: spt [\in] R <-> (map (fun tt => (tt.2,tt.1)) spt) [\in] R^-1. 
+  Proof. by elim:spt  => [ // | [x y] spt Hr];rewrite map_cons !allset_cons Hr. Qed.
+  
+  Lemma allset_Rr X x y st: (Lift (x::(rcons st y))) [\in] R_(X) <-> (rcons st y) [\in] X.
   Proof.
-    move => E;elim => [ // | [x y] spt Hr].
-    by rewrite map_cons !allset_cons Hr.
+    elim: st x => [| z st Hr x];last first.
+    by rewrite rcons_cons Lift_c 2!allset_cons;split => [[? /Hr ?] // | [H1 /Hr H2]].
+    rewrite /= /Rr;split => [/andP [/inP/=/mem_set -> _ //] | /andP [/inP H1 _]].
+    by rewrite andbT;apply/inP. 
   Qed.
   
-  Lemma allset_Rr: forall (X: set T) (x y: T) (st: seq T),
-      (Lift (x::(rcons st y))) [\in] R_(X) <-> (rcons st y) [\in] X.
+  Lemma allset_Lr X x y st: (Lift (x::(rcons st y))) [\in] L_(X) <-> (x::st) [\in] X.
   Proof.
-    move => X x y st.
-    elim: st x. 
-    - rewrite /= /Rr; split => [/andP [/inP H1 _] | /andP [/inP H1 _]].
-      by rewrite /mkset /= in H1;apply mem_set in H1;rewrite H1.
-      by apply/andP;split;[ apply/inP;rewrite /mkset /= |].
-    - move => z st Hr x; rewrite rcons_cons Lift_c 2!allset_cons.
-      split => [ [? /Hr ?] // | [? ?]].
-      by split;[| apply Hr].
+    elim: st x => [| z st Hr x];last first.
+    by rewrite rcons_cons Lift_c 2!allset_cons;split => [[? /Hr ?] //|[? /Hr ?]].
+    rewrite /= /Lr; split => [/andP [/inP/=/mem_set -> _ //] | /andP [/inP H1 _]].
+    by rewrite andbT;apply/inP. 
   Qed.
+  
+  Lemma allset_Dl X R x y st: (Lift (x::(rcons st y))) [\in] (Δ_(X)`;`R) -> (x::st) [\in] X.
+  Proof. by rewrite DeltaLco allset_I => /andP [/allset_Lr H1 _]. Qed.
 
-  Lemma allset_Lr: forall (X: set T) (x y: T) (st: seq T),
-      (Lift (x::(rcons st y))) [\in] L_(X) <-> (x::st) [\in] X.
-  Proof.
-    move => X x y st.
-    elim: st x. 
-    - rewrite /= /Lr; split => [/andP [/inP H1 _] | /andP [/inP H1 _]].
-      by rewrite /mkset /= in H1;apply mem_set in H1;rewrite H1.
-      by apply/andP;split;[ apply/inP;rewrite /mkset /= |].
-    - move => z st Hr x; rewrite rcons_cons Lift_c 2!allset_cons.
-      split => [ [? /Hr ?] // | [? ?]].
-      by split;[| apply Hr].
-  Qed.
-  
-  Lemma allset_Dl: forall (X: set T) (E: relation T) (x y: T) (st: seq T),
-      (Lift (x::(rcons st y))) [\in] (Δ_(X)`;`E) -> (x::st) [\in] X.
-  Proof.
-    by move => X E x y st;rewrite DeltaLco allset_I => /andP [/allset_Lr H1 _].
-  Qed.
-
-  Lemma allset_Dr: forall (X: set T) (E: relation T) (x y: T) (st: seq T),
-      (Lift (x::(rcons st y))) [\in] (E`;`Δ_(X)) -> (rcons st y) [\in] X.
-  Proof.
-    by move => X E x y st;rewrite DeltaRco allset_I => /andP [_ /allset_Rr H1].
-  Qed.
+  Lemma allset_Dr X R x y st: (Lift (x::(rcons st y))) [\in] (R`;`Δ_(X)) -> (rcons st y) [\in] X.
+  Proof. by rewrite DeltaRco allset_I => /andP [_ /allset_Rr H1]. Qed.
 
 End allset2.
 
 Section Lift_in. 
   (** * properties of [L\in] *)
-  
-  Variables (T: Type) (R R': relation T).
 
-  Lemma Lift_in_F: forall (S: relation T) (st: seq T) (y: T),
-        (rcons st y) [L\in] S -> st [\in] (S.+)#_(y).
+  Context {T: Type}.
+  Implicit Types (T : Type) (R S: relation T) (X Y: set T) (st: seq T) (x y:T).
+
+  Lemma Lift_in_F R st y: (rcons st y) [L\in] R -> st [\in] (R.+)#_(y).
   Proof.
-    move => S.
-    elim => [ // | x st Hr y].
-    rewrite rcons_cons. 
-    elim: st Hr.
-    - by move => _;rewrite /= => /andP [/inP H1 _];
-                               rewrite andbT inP;apply Fset_t1 in H1.
-    - move => z st Hr' H1. 
-      rewrite Lift_crc 2!allset_cons => [[H2 /H1 H3]].
-      split; last by [].
-      move: H3; rewrite allset_cons => [[H3 /inP H4]].
-      by apply Fset_t2;exists z.
+    elim: st y  => [// | x st Hr y];rewrite rcons_cons. 
+    elim: st Hr => [_ | z st Hr' H1].
+    by rewrite /= => /andP [/inP /(@Fset_t1 _ R)/inP -> _].
+    rewrite Lift_crc 2!allset_cons => [[H2 /H1 H3]].
+    move: (H3); rewrite allset_cons => [[H4 H5]].
+    by split;[apply Fset_t2; exists z|].
   Qed.
   
-  Lemma Lift_in_FF: forall (st: seq T) (x y: T),
-      (rcons st y) [L\in] R -> y \in R.+#_(x) -> st [\in] R.+#_(x).
-  Proof.
-    move => st x y H1 H2.
-    pose proof Lift_in_F H1 as H3.
-    have H4:  R.+#_(y) `<=` R.+#_(x) by apply Fset_t5. 
-    by apply allset_subset with R.+#_(y). 
+  Lemma Lift_in_FF R st x y:
+    (rcons st y) [L\in] R -> y \in R.+#_(x) -> st [\in] R.+#_(x).
+  Proof. by move => /Lift_in_F H2 /(@Fset_t5 _ R) H4;apply: (@allset_subset _ _ _ _ H4 H2). Qed.
+  
+  Lemma Lift_in_rev R st: st [L\in] R <-> (rev st) [L\in] R^-1. 
+  Proof. by rewrite allset_rev allset_inv Lift_rev. Qed.
+  
+  Lemma Lift_in_A R st x: (x::st) [L\in] R -> st [\in] (x)_:#R.+.
+  Proof. by rewrite Lift_in_rev rev_cons => /Lift_in_F H1;rewrite allset_rev /Aset TclosIv.
   Qed.
   
-  Lemma Lift_in_rev: forall (st: seq T),
-      st [L\in] R <-> (rev st) [L\in] R^-1. 
+  Lemma Lift_in_AA R st x y: (y::st) [L\in] R -> y \in (x)_:#R.+ -> st [\in] (x)_:#R.+.
   Proof.
-    by move => st;rewrite allset_rev allset_inv Lift_rev.
-  Qed.
-  
-  Lemma Lift_in_A: forall (st: seq T) (x: T),
-      (x::st) [L\in] R -> st [\in] (x)_:#R.+.
-  Proof.
-    move => st x. 
-    rewrite Lift_in_rev rev_cons => /Lift_in_F H1.
-    by rewrite allset_rev /Aset TclosIv.
-  Qed.
-  
-  Lemma Lift_in_AA: forall (st: seq T) (x y: T),
-      (y::st) [L\in] R -> y \in (x)_:#R.+ -> st [\in] (x)_:#R.+.
-  Proof.
-    move => st x y H1 H2.
-    pose proof Lift_in_A H1 as H3.
-    have H4: (y)_:#R.+ `<=` (x)_:#R.+. 
-    rewrite /Aset TclosIv. apply: Fset_t5.
-    by rewrite inP -TclosIv -inP.
+    move => /[dup] H1 /Lift_in_A H2 H3. 
+    have H4: (y)_:#R.+ `<=` (x)_:#R.+ by rewrite /Aset TclosIv;apply: Fset_t5;rewrite -TclosIv.
     by apply allset_subset with (y)_:#R.+.
   Qed.
   
-  Lemma Lift_inI: forall (st: seq T),
-      st [L\in] R /\ st [L\in] R' <-> st [L\in] (R `&` R').
-  Proof.
-    by move => st;rewrite allset_I;split;move => /andP H1.
-  Qed.
+  Lemma Lift_inI R S st: st [L\in] R /\ st [L\in] S <-> st [L\in] (R `&` S).
+  Proof. by rewrite allset_I;split;move => /andP H1. Qed.
   
 End Lift_in. 
 

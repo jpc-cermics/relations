@@ -15,7 +15,7 @@ From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
 Set Warnings "parsing coercions".
 
-From RL Require Import  ssrel rel paper_relations paper_tcs_facts.
+From RL Require Import rel paper_relations paper_tcs_facts.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

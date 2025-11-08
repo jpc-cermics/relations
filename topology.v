@@ -17,7 +17,7 @@ From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets order topology.
 Set Warnings "parsing coercions".
 
-From RL Require Import  ssrel rel mypreorder.
+From RL Require Import  rel mypreorder.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

@@ -18,9 +18,7 @@ From mathcomp Require Import all_ssreflect seq order boolp classical_sets.
 From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
 
-From RL Require Import  seq1 ssrel rel.
-
-(* Require Import ClassicalChoice. *)
+From RL Require Import  seq1 rel.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

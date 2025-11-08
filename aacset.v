@@ -19,7 +19,7 @@ From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
 Set Warnings "parsing coercions".
 
-From RL Require Import ssrel rel.
+From RL Require Import rel.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -88,12 +88,12 @@ Section AAC_eq_ops.
   
   (* .+ *) 
   #[export] Instance aac_clos_trans_eq_compat T :
-    Proper (eq ==> eq) (@clos_trans T).
+    Proper (eq ==> eq) (@Tclos T).
   Proof. by move => R S ->. Qed. 
 
   (* .* *) 
   #[export] Instance aac_clos_refl_trans_eq_compat T :
-    Proper (eq ==> eq) (@clos_refl_trans T).
+    Proper (eq ==> eq) (@RTclos T).
   Proof. by move => R S ->. Qed. 
 
 End AAC_eq_ops.

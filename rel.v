@@ -1300,7 +1300,8 @@ End Relation_Facts.
 
 Section Restrict_to_subset.
   
-  (* La preuve qui suit nécessite un eqType ou bien proof_irrelevance *)
+  (** * Considering (R: relation S) with (S: set T) *)
+
   Context (T: eqType).
   Implicit Types (R S: relation T) (X: set T).
 

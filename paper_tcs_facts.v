@@ -17,7 +17,7 @@ From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
 Set Warnings "parsing coercions".
 
-From RL Require Import  ssrel rel  aacset paper_relations. 
+From RL Require Import rel aacset paper_relations. 
 
 Set Implicit Arguments.
 Unset Strict Implicit.

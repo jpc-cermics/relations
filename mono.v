@@ -13,7 +13,7 @@ From mathcomp Require Import all_ssreflect seq order boolp classical_sets.
 From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
 
-From RL Require Import  seq1 seq2 ssrel rel.
+From RL Require Import  seq1 seq2 rel.
 
 (* Require Import ClassicalChoice. *)
 
@@ -295,26 +295,23 @@ Section Infinite_paths_X.
       (exists (v0:T), (v0 \in X)) -> ~ (iic (Asym S)) -> (Rloop S).
   Proof. by move => X S /setTypeP H0; apply: notiic_rloop. Qed. 
   
-  Definition Restrict (T:Type) (R: relation T) (X: set T) : relation X := 
-    [set xy : X*X | R ((sval xy.1),(sval xy.2))].
-  
   Lemma test67 : forall (X: set T) (R: relation T),
-      (iic (@Restrict T (Asym R) X)) -> (iic (Asym R)).
+      (iic (@Restrict' T X (Asym R))) -> (iic (Asym R)).
   Proof.
     by move => X R [f // H1];exists (fun n => (sval (f n))).
   Qed.
 
   Lemma test68: forall (X: set T) (R: relation T),
       ~ (iic (Asym R)) -> (exists (v0:T), (v0 \in X))
-      -> (Rloop (@Restrict T R X)).
+      -> (Rloop (@Restrict' T X R)).
   Proof.
     move => X R H1 H0.
-    have H2:  ~ (iic (Asym R)) -> ~ (iic (@Restrict T (Asym R) X))
+    have H2:  ~ (iic (Asym R)) -> ~ (iic (@Restrict' T X (Asym R)))
       by apply contraPP;rewrite notE notE; apply: test67.
     move: H1 => /H2 H1.
     by apply: (notiic_rloop_sub H0 H1).
   Qed.
-    
+  
   Lemma test68': forall (X: set T) (R: relation T),
        ~ (iic (Asym R)) ->(exists (v0:T), (v0 \in X))
       -> (exists (v:T), v \in X /\ forall w, w \in X -> R (v,w) -> R (w,v)).
