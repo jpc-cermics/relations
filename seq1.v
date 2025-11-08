@@ -371,8 +371,9 @@ Section allset.
   Lemma allset_cat X st st': (st++st') [\in] X <-> st [\in] X /\ st' [\in] X.
   Proof. by rewrite all_cat;split => [/andP | [-> ->]].  Qed.
 
+  (** XXX faire les liens avec les predicats  all_predI all_predT *) 
   Lemma allset_I X Y st: st [\in] (X `&` Y) <-> st [\in] X && st [\in] Y. 
-  Proof.
+  Proof. 
     split => [H3 | ];first by apply/andP;split;apply: (allset_subset _ H3).
     elim: st => [// | x spa Hr /andP];rewrite !allset_cons => [[[? ?] [? ?]]].
     by split;[rewrite /setI /mkset | apply Hr;apply/andP].
