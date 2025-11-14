@@ -82,7 +82,7 @@ Section Tcs.
         R = R `;`  Δ_(W) -> R =  Δ_(W) `;` R -> ( Δ_(W) `|` R.+) `;` ( Δ_(W) `|` R) = ( Δ_(W) `|` R.+).
     Proof. 
       move => R H1 H2.
-      rewrite composeDr !composeDl Dset_compose_same -H2.
+      rewrite composeDr !composeDl DsetK -H2.
       rewrite L14_E38c2 //. 
       rewrite -setUA [in (R `|` _)]setUA [in (R `|` _)]setUC.
       rewrite -[in (R .+ `|` R `|` R .+ `;` R)]setUA.
@@ -94,7 +94,7 @@ Section Tcs.
         R = R `;`  Δ_(W) -> R =  Δ_(W) `;` R -> ( Δ_(W) `|` R.+) `;` ( Δ_(W) `|` R.+) = ( Δ_(W) `|` R.+).
     Proof.
       move => R H1 H2.
-      rewrite composeDr !composeDl Dset_compose_same.
+      rewrite composeDr !composeDl DsetK.
       rewrite L14_E38c2 // L14_E38c3 //.
       by rewrite clos_t_decomp_2 -setUA setUid.
     Qed.
@@ -103,15 +103,15 @@ Section Tcs.
     Lemma L14_E38c : (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw. 
     Proof.
       have H1: DKD `;`  Δ_(W) = DKD
-        by rewrite /DKD composeA Dset_compose_same.
+        by rewrite /DKD composeA DsetK.
       have H2:  Δ_(W) `;` DKD = DKD
-        by rewrite /DKD -composeA -composeA Dset_compose_same.
+        by rewrite /DKD -composeA -composeA DsetK.
       rewrite L14_E38c1.
       rewrite {1}Cw_ends.
       rewrite composeA. 
       rewrite -{1}[in ( Δ_(W) `;` (( Δ_(W) `|` Kw `;`  Δ_(W)) `;` Cw))]composeA. 
       rewrite [in  Δ_(W) `;` ( Δ_(W) `|` Kw `;`  Δ_(W))]composeDl.
-      rewrite Dset_compose_same.
+      rewrite DsetK.
       rewrite -[in  Δ_(W) `;` (Kw `;`  Δ_(W))]composeA.
       rewrite /Cw -/DKD. 
       rewrite [in (DKD .+ `|`  Δ_(W))]setUC.
@@ -126,7 +126,7 @@ Section Tcs.
       rewrite Cw_ends.
       rewrite composeA [in( 'Δ `|` Bmw `;` Δ_(W.^c) `|` Kw) `;` Δ_(W.^c)]composeDr.
       rewrite [in ('Δ `|` Bmw `;` Δ_(W.^c)) `;` Δ_(W.^c)]composeDr.
-      rewrite [in  Bmw `;` Δ_(W.^c) `;` Δ_(W.^c)]composeA Dset_compose_same.
+      rewrite [in  Bmw `;` Δ_(W.^c) `;` Δ_(W.^c)]composeA DsetK.
       rewrite [in LHS]composeA composeDl [in ( Δ_(W) `;` _)]composeDl.
       rewrite Delta_idem_l DeltaW_Wc  DeltaC_union_ideml. 
       rewrite -[in ( Δ_(W) `;` _ `|`  Δ_(W) `;` _)]composeDl.

@@ -208,13 +208,6 @@ Section Relation_Facts.
   
   Lemma union_inc_b (R S U:relation T): S `<=` U -> R `<=` U -> (S `|` R) `<=` U.
   Proof. by move => H1 H2;(have <- : U `|` R = U by apply setUidPl);apply setSU. Qed.
-  
-  (** XXXX doit exister dans classical_sets *)
-  Lemma WWcI X: X `&` X.^c = set0.
-  Proof. by rewrite predeqE => x;split => [[?]|?];[rewrite /setC mksetE|]. Qed.
-  
-  Lemma WWcU X: X `|` X.^c = setT.
-  Proof. by rewrite predeqE => x;split => _;[rewrite -in_setE in_setT|apply: lem]. Qed.
 
   Lemma Union_Setminus X Y: X `|` Y = X `|` (Y `\` X). 
   Proof.
@@ -225,11 +218,8 @@ Section Relation_Facts.
   
   (** *  Inverse of a relation *)
   
-  Lemma inverseK R:  R^-1^-1 = R.
-  Proof. by rewrite predeqE /= => -[x y]. Qed.
-
-  (** XXX *)
-  Lemma inverseK': involutive (@inverse T). 
+  (**  R^-1^-1 = R *)
+  Lemma inverseK: involutive (@inverse T). 
   Proof. by move => R; rewrite predeqE /= => -[x y]. Qed.
   
   Lemma inverse_sym R: R^-1 = R <-> symmetric R.
@@ -296,31 +286,24 @@ Section Relation_Facts.
   Lemma DsetS X Y: X `<=` Y -> Δ_(X) `<=` Δ_(Y).
   Proof. by move =>  H [x y] [H1 /= <-];split;[apply: H|]. Qed.
 
-  Lemma Dset_compose X Y: Δ_(X) `;` Δ_(Y) = Δ_(X `&` Y).
+  Lemma DsetC X Y: Δ_(X) `;` Δ_(Y) = Δ_(X `&` Y).
   Proof. by rewrite predeqE
          => -[x y];split=>[[z [[? /= <-][? /= <-]]]|[[? ?] /= <-]];[|exists x]. Qed.
   
   Lemma DsetK X:  Δ_(X) `;` Δ_(X) = Δ_(X).
-  Proof. by rewrite Dset_compose setIid. Qed.
+  Proof. by rewrite DsetC setIid. Qed.
 
   Lemma DsetIv X: Δ_(X)^-1 = Δ_(X). 
   Proof. by rewrite predeqE /inverse => -[x y] /=;split;move => [H1 /= <-]. Qed.
 
   Lemma DsetU X Y: Δ_(X) `|` Δ_(Y) = Δ_(X `|` Y).
   Proof.
-    rewrite predeqE => -[x y];split.
+    rewrite predeqE => -[x y];split;last by  move => [[? | ?] /= <-];[left|right].
     by move => [|] [/= ? /= <-];apply/DsetE;split;[left| |right| ].
-    by move => [[? | ?] /= <-];[left|right].
   Qed.
   
-  Lemma Dset_compZ X: Δ_(X) `|` Δ_(X.^c) = 'Δ.
-  Proof. by rewrite DsetU WWcU. Qed.
+  (** * Delta relation  *)
   
-  Lemma Dset_compose_same X: Δ_(X) `;` Δ_(X) = Δ_(X).
-  Proof. by rewrite Dset_compose setIid.  Qed.
-  
-  (** * Delta *)
-
   Lemma DeltaP (x y: T): 'Δ (x,y) <-> x = y.
   Proof. by split => [[_ ? //]| ->]. Qed.
 
@@ -370,7 +353,7 @@ Section Relation_Facts.
   Qed.
   
   Lemma DeltaWc_W X: Δ_(X.^c) `;` Δ_(X) = 'Δc.
-  Proof. by rewrite Dset_compose setIC WWcI Delta0. Qed.
+  Proof. by rewrite DsetC setIC -setDE setDv Delta0. Qed.
   
   Lemma DeltaC_union_ideml R: 'Δc `|` R = R.
   Proof.

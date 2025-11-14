@@ -213,7 +213,7 @@ Section CwCw_s_facts.
   (* could be derived from below as Cw is a transitive closure *)
   Lemma C_transitive (X: set T) : (C X) `;` (C X) = (C X).
   Proof.
-    rewrite {1 2}/C composeDr composeDl composeDl Dset_compose_same.
+    rewrite {1 2}/C composeDr composeDl composeDl DsetK.
     have -> : ((D X).+ `;` Δ_(X) =(D X).+)
       by rewrite {1}/D -Delta_clos_trans_ends -/D.
     have -> : ( Δ_(X) `;` (D X).+ ) = (D X).+

@@ -454,43 +454,32 @@ End Lift_in.
 Section allset_Lifted.
   (** * properties of st [L\in] R for st: seq T  *)
   (** * with specified endpoints *)
-  
-  Variables (T: Type) (E: relation T).
 
+  Context {T: Type}.
+  Implicit Types (T : Type) (R: relation T) (X Y: set T) (st: seq T) (x y:T).
+  
   (* begin snippet allL:: no-out *)  
-  Definition allL (R: relation T) st x y := (x::(rcons st y)) [L\in] R.
+  Definition allL R st x y := (x::(rcons st y)) [L\in] R.
   (* end snippet allL *)    
 
-  Lemma allL0 : forall (x y : T),
-      allL E [::] x y = ((x,y) \in E).
-  Proof.
-    by move => x y;rewrite /allL Lift_c /andP /= andbT. 
-  Qed.
+  Lemma allL0 R x y:  allL R [::] x y = ((x,y) \in R).
+  Proof. by rewrite /allL Lift_c /andP /= andbT. Qed.
 
-  Lemma allL0' : forall (x y : T),
-      allL E [::] x y <-> E (x,y).
-  Proof.
-    by move => x y;rewrite allL0;split=> [/set_mem H1 // | /inP H1]. 
-  Qed.
+  Lemma allL0' R x y:  allL R [::] x y <-> R (x,y).
+  Proof. by rewrite allL0;split=> [/set_mem H1 // | /inP H1]. Qed.
+  
+  Lemma allL_c R st x y z: allL R (z::st) x y <-> ((x, z) \in R) && allL R st z y.
+  Proof. by split;[rewrite /allL rcons_cons Lift_c allset_cons |]. Qed.
 
-  Lemma allL_c: forall (st: seq T) (x y z: T),
-      allL E (z::st) x y <-> ((x, z) \in E) && allL E st z y.
+  Lemma allL_rc R st x y z: allL R (rcons st z) x y <-> ((z,y) \in R) && allL R st x z.
   Proof.
-    by move => st x y z;split;[rewrite /allL rcons_cons Lift_c allset_cons |].
-  Qed.
-
-  Lemma allL_rc: forall (st: seq T) (x y z: T),
-      allL E (rcons st z) x y <-> ((z,y) \in E) && allL E st x z.
-  Proof.
-    move => st x y z;split.
+    split.
     by rewrite /allL -rcons_cons Lift_rcc allset_rcons last_rcons;move => [-> /inP ->].
     by move => /andP [/inP ? ?];rewrite /allL -rcons_cons Lift_rcc allset_rcons last_rcons. 
   Qed.
 
-  Lemma allL_split: forall (st: seq T) (x y: T),
-     allL E st x y <-> (x::st) [L\in] E /\ E ((last x st), y).
+  Lemma allL_split R st x y:  allL R st x y <-> (x::st) [L\in] R /\ R ((last x st), y).
   Proof.
-    move => st x y.
     split. 
     - elim: st x;first by move=> x;rewrite allL0 inP.
       move => x' st /(_ x') Hn x.
@@ -499,81 +488,55 @@ Section allset_Lifted.
     - elim: st x; first by move => x [_ ?];rewrite allL0 inP.
       move => x' st /(_ x') Hn x [H1 H2].
       move: H1; rewrite Lift_c allset_consb => /andP [H1 H1']. 
-      move: H2. rewrite last_cons => H2.
-      rewrite allL_c H1 /=. apply: Hn. by split. 
+      move: H2; rewrite last_cons => H2.
+      rewrite allL_c H1 /=; apply: Hn; by split. 
   Qed.
     
-  Lemma allL_cat: forall (st st': seq T) (x y z: T),
-      allL E ((rcons st y) ++ st') x z <-> allL E st x y && allL E st' y z.
+  Lemma allL_cat R st st' x y z: 
+    allL R ((rcons st y) ++ st') x z <-> allL R st x y && allL R st' y z.
   Proof.
-    move => st st' x y z.
     rewrite /allL cat_rcons rcons_cat rcons_cons -cat_rcons Lift_cat_crc allset_cat.
     by split => [ [? ?] | /andP [? ?]];[apply/andP |].
   Qed.
   
-  Lemma allL_subset: forall (S R: relation T) (st: seq T) (x y: T),
-      (S `<=` R) -> allL S st x y -> allL R st x y.
-  Proof.
-    by move => S R st x y H1 H2;apply allset_subset with S.
-  Qed.
+  Lemma allL_subset S R st x y: (S `<=` R) -> allL S st x y -> allL R st x y.
+  Proof. by move => ? ? ;apply allset_subset with S. Qed.
   
-  Lemma allL_WS_iff: forall (W:set T) (st: seq T) (x y: T),
-      allL (Δ_(W.^c) `;` E) st x y <-> (x::st) [\in] W.^c && allL E st x y.
+  Lemma allL_WS_iff R X st x y: allL (Δ_(X) `;` R) st x y <-> (x::st) [\in] X && allL R st x y.
   Proof.
-    move => W st x y.
-    have H1: (L_(W.^c) `&` E) `<=` E by apply: subIsetr.
-    have H2: (L_(W.^c) `&` E) `<=` L_(W.^c) by apply: subIsetl.
-    pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) L_(W.^c)) as H3.
-    pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) E) as H4.    
+    have H1: (L_(X) `&` R) `<=` R by apply: subIsetr.
+    have H2: (L_(X) `&` R) `<=` L_(X) by apply: subIsetl.
+    pose proof (@allset_subset (T*T) (L_(X) `&` R) L_(X)) as H3.
+    pose proof (@allset_subset (T*T) (L_(X) `&` R) R) as H4.    
     rewrite DeltaLco /allL allset_I.
     by split => /andP [/allset_Lr H5 H6];[apply /andP | apply /andP].
   Qed.
   
-  Lemma allL_SW_iff: forall (W:set T) (st: seq T) (x y: T),
-      allL (E `;` Δ_(W.^c)) st x y <-> (rcons st y) [\in] W.^c && allL E st x y.
+  Lemma allL_SW_iff R X st x y: allL (R `;` Δ_(X)) st x y <-> (rcons st y) [\in] X && allL R st x y.
   Proof.
-    move => W st x y.
-    have H1: (E `&` L_(W.^c)) `<=` E by apply: subIsetl.
-    have H2: (E `&` L_(W.^c)) `<=` L_(W.^c) by apply: subIsetr.
-    pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) L_(W.^c)) as H3.
-    pose proof (@allset_subset (T*T) (L_(W.^c) `&` E) E) as H4.    
+    have H1: (R `&` L_(X)) `<=` R by apply: subIsetl.
+    have H2: (R `&` L_(X)) `<=` L_(X) by apply: subIsetr.
+    pose proof (@allset_subset (T*T) (L_(X) `&` R) L_(X)) as H3.
+    pose proof (@allset_subset (T*T) (L_(X) `&` R) R) as H4.    
     rewrite DeltaRco /allL allset_I; split => /andP [H5 H6]. 
     by rewrite allset_Rr in H6; apply /andP; split. 
     by apply /andP; split;[| rewrite allset_Rr].
   Qed.
   
-  Lemma allL_rev: forall (st: seq T) (x y: T),
-      allL E st x y <->  allL E^-1 (rev st) y x.
-  Proof.
-    by move => st x y;rewrite Lift_in_rev rev_cons rev_rcons. 
-  Qed.
+  Lemma allL_rev R st x y: allL R st x y <->  allL R^-1 (rev st) y x.
+  Proof. by rewrite Lift_in_rev rev_cons rev_rcons. Qed.
   
-  Lemma allL_All (R: relation T) : forall (st: seq T) (x y: T),
-      allL R st x y -> (x::st) [\in] (R.+)#_(y).
-  Proof.
-    by move => st x y;rewrite /allL -rcons_cons; apply: Lift_in_F.
-  Qed.
+  Lemma allL_All R st x y: allL R st x y -> (x::st) [\in] (R.+)#_(y).
+  Proof. by rewrite /allL -rcons_cons; apply: Lift_in_F.  Qed.
 
-  Lemma allL_AllA: forall (st: seq T) (x y: T),
-      allL E st x y -> (rcons st y) [\in] (x)_:#(E.+).
-  Proof.
-    move => st x y;rewrite allL_rev => /allL_All.
-    by rewrite /Aset TclosIv -all_rev rev_cons revK.
-  Qed.
+  Lemma allL_AllA R st x y: allL R st x y -> (rcons st y) [\in] (x)_:#(R.+).
+  Proof. by rewrite allL_rev => /allL_All;rewrite /Aset TclosIv -all_rev rev_cons revK. Qed.
 
-  Lemma allL_Lift_in_rc: forall (st: seq T) (x y: T),
-      allL E st x y -> (rcons st y) [L\in] E.
-  Proof.
-    elim => [x y // | x' st _ x y].
-    by rewrite allL_c rcons_cons => /andP [_ ?].
-  Qed.
+  Lemma allL_Lift_in_rc R st x y: allL R st x y -> (rcons st y) [L\in] R.
+  Proof. by elim:st x y => [x y // | x' st _ x y];rewrite allL_c rcons_cons => /andP [_ ?]. Qed.
 
-  Lemma allL_Lift_in_c: forall (st: seq T) (x y: T),
-      allL E st x y -> (x:: st) [L\in] E.
-  Proof.
-    elim/last_ind => [x y // | st x' Hr x y].
-    by rewrite allL_rc => /andP [_ H1].
-  Qed.
+  Lemma allL_Lift_in_c R st x y: allL R st x y -> (x:: st) [L\in] R.
+  Proof. by elim/last_ind: st x y => [x y // | st x' Hr x y];rewrite allL_rc => /andP [_ H1]. Qed.
 
 End allset_Lifted.
 
@@ -652,10 +615,7 @@ Section seq_subsets.
     =   [set st | st = [::]] 
           `|` [set st | size(st) = 1 /\ (st [\in] X) ] 
           `|` [set st | size(st) > 1 /\ st [L\in] ((X `*` X)`&`R)]. 
-  Proof.
-    rewrite -[RHS]setUA -[in RHS]Rpath_iff1 -[in RHS]Rpath_iff2.
-    by [].
-  Qed.
+  Proof. by rewrite -[RHS]setUA -[in RHS]Rpath_iff1 -[in RHS]Rpath_iff2. Qed.
 
 End seq_subsets.
 
@@ -937,7 +897,6 @@ Section Endpoints_and_Deployment.
   Qed.
   
 End Endpoints_and_Deployment.
-
 
 Section seq_pairs_subsets.
   (** * p: seq (T*T), p [\in] E and p [L\in] R] *)
