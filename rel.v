@@ -506,7 +506,7 @@ Section Relation_Facts.
   Proof.
     by move => [n H1 ?];exists (n.-1);have ->: n.-1.+1 = n by apply: ltn_predK H1. 
   Qed.
-
+  
   Lemma TclosT R: transitive R.+.
   Proof. by move => x y z /clos_t_iterk [n1 H1] /clos_t_iterk [n2 H2];
                    exists (n1.+1 + n2.+1);[|rewrite iter_compose;exists y].

@@ -986,35 +986,23 @@ Section PathRel.
   Lemma TCP' (R: relation T) : R.+ = [set vp | exists p, (Lift (vp.1::(rcons p vp.2))) [\in] R].
   (* end snippet TCP' *)  
   Proof.
-    rewrite /mkset predeqE => [[x y]].
-    split => [H1 | [p H1]].
-    - apply clos_t_iterk in H1.
-      move: H1 => [n H1].
-      rewrite  Itern_iff_PathReln /PathRel_n in H1.
-      move: H1 => [p [H1 H2]].
-      by (exists p).
-    - have H2:  PathRel_n R (size p) (x, y) by (exists p).
-      rewrite -Itern_iff_PathReln in H2.
-      by apply iterk_inc_clos_trans in H2.
+    rewrite predeqE => -[x y];split => [/(@clos_t_iterk T) [n] | [p H1]].
+    by rewrite  Itern_iff_PathReln /PathRel_n => -[p [H1 H2]];(exists p).
+    have: PathRel_n R (size p) (x, y) by (exists p).
+    by rewrite -Itern_iff_PathReln;apply: iterk_inc_clos_trans.
   Qed.
 
   (* begin snippet TCP:: no-out *) 
   Lemma TCP (R: relation T) : R.+ = [set vp| exists p, size(p) > 1 /\ Pe ptv p = vp /\ p [L\in] R].
   (* end snippet TCP *)  
   Proof.
-    rewrite /mkset /Pe predeqE => [[x y]].
-    split => [H1 | [p [H1 [H2 H3]]]].
-    - apply clos_t_iterk in H1.
-      move: H1 => [n H1].
-      rewrite  Itern_iff_PathReln /PathRel_n in H1.
-      move: H1 => [p [H1 H2]].
-      exists (x::(rcons p y)).
-      by split;[rewrite /= size_rcons|split;[rewrite /= last_rcons |]].
-    - pose proof seq_crc H1 as [q [x' [y' H4]]].
-      move: H2; rewrite H4 /= last_rcons => [[<- <-]].
-      have H5:  PathRel_n R (size q) (x', y') by (exists q);rewrite /allL -H4. 
-      rewrite -Itern_iff_PathReln in H5.
-      by apply iterk_inc_clos_trans in H5.
+    rewrite predeqE => -[x y];split => [/(@clos_t_iterk T) [n] | [p [H1 [H2 H3]]]].
+    + rewrite  Itern_iff_PathReln /PathRel_n => -[p [H1 H2]];(exists (x::(rcons p y))).
+      by split;[rewrite /= size_rcons|split;[rewrite /Pe /= last_rcons |]].
+    + pose proof seq_crc H1 as [q [x' [y' H4]]].
+      move: H2; rewrite H4 /Pe /= last_rcons => [[<- <-]].
+      have:  PathRel_n R (size q) (x', y') by (exists q);rewrite /allL -H4. 
+      rewrite -Itern_iff_PathReln;apply: iterk_inc_clos_trans. 
   Qed.
   
   Lemma allL_to_clos_t  (R: relation T) : forall (st: seq T) x y, allL R st x y -> R.+ (x,y).
