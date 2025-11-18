@@ -31,7 +31,11 @@
 (* y_:#R       : Afterset of the subset [set y] by relation R                 *)
 (* Clos(Y|R,W) : closure of Y for the relation Δ_(W.^c) `;` R                 *)
 (* Clos_(y|R,W): closure of [set y] for the relation Δ_(W.^c) `;` R           *)
-(* XXXX Rajouter ce qui est a la fin *)
+(* Restrict'   : from relation T to relation X where X is a set T             *)
+(*               [set xy : X*X | R ((sval xy.1),(sval xy.2))].                *)
+(* Partition induced by and Equivalence Relation                              *)
+(* Asym        : Asymmetric part of a relation, [set xy | R xy /\ ~ (R^-1 xy)] *)
+(* Independent sets with respect to a relation                                *)
 (******************************************************************************)
 
 Set Warnings "-parsing -coercions".
