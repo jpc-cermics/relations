@@ -1296,9 +1296,6 @@ Section Restrict_to_subset.
   Lemma Inset X (v: X) : ((sval v) \in X).
   Proof. by rewrite inP; apply: set_valP. Qed.
 
-  Lemma Inset' X (v: X) : ((sval v) \in X).
-  Proof. by move: v => [v' H] /=. Qed.
-    
   Lemma setIn X v: (v \in X) -> exists v' : X, v = sval v'.
   Proof. by move => H0;exists (exist _ v H0). Qed.
   
