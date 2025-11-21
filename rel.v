@@ -318,27 +318,18 @@ Section Relation_Facts.
   Proof. by apply:  DsetIv. Qed.
 
   Lemma Delta_idem_l R: 'Δ `;` R = R.  
-  Proof.
-    rewrite predeqE => -[x y];split=> [[z [/DeltaP <- ?]]| ?];first exact.
-    by exists x;split;[rewrite DeltaP |].
-  Qed.
+  Proof. by rewrite predeqE => -[x y];split=> [[z [/DeltaP <- ?]] //| ?];exists x;split. Qed.
 
-  Lemma Delta_idem_r R: R `;` 'Δ = R.  
-  Proof.
-    rewrite predeqE => -[x y];split => [[z [? /DeltaP /= <-]] |];first exact.
-    by move => ?; exists y; split;[| apply DeltaP].
-  Qed.
-
-  (** XXXX *)
-  Lemma DeltaIr: right_id ('Δ: relation T) (@compose _). 
-  Proof. by move => R; rewrite Delta_idem_r. Qed.
-  
-  (** XXX: proposition de renommage *)
+  (* 'Δ `;` R = R.  *)
   Lemma DeltaCl: left_id 'Δ (@compose T). 
-  Proof. by move => R;apply: Delta_idem_l. Qed.
+  Proof. by move => R;rewrite predeqE => -[x y];split=> [[z [/DeltaP <- ?]] //| ?];exists x;split. Qed.
+  
+  Lemma Delta_idem_r R: R `;` 'Δ = R.  
+  Proof. rewrite predeqE => -[x y];split => [[z [? /DeltaP /= <-]]// |];by move => ?; exists y; split.  Qed.
 
+  (* R `;` 'Δ = R.   *)
   Lemma DeltaCr: right_id 'Δ (@compose T). 
-  Proof. by move => R;apply: Delta_idem_r. Qed.
+  Proof. by move => R;rewrite predeqE => -[x y];split => [[z [? /DeltaP /= <-]]// | ?];exists y;split.  Qed.
   
   Lemma DeltaLco X R: Δ_(X) `;` R = L_(X) `&` R.
   Proof. by rewrite predeqE /= => [[x y]] /=;split => [[z [[? /= <-] ?]]|[? ?]];[|exists x].  Qed.
