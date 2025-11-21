@@ -96,7 +96,7 @@ Section Bw_facts.
 
   Lemma E_incl_Bw : E `<=` Bw.
   Proof.
-    by rewrite -[E]Delta_idem_r; apply: composeSl; apply: RTclos_containsD.
+    by rewrite -[E]DeltaCr; apply: composeSl; apply: RTclos_containsD.
   Qed.
 
   Lemma EDwE_in_Bw: E `;` Δ_(W.^c) `;` E `<=` Bw.
@@ -118,7 +118,7 @@ Section Bmw_facts.
   Proof.
     have H1: Bmw = (Emw.* `;` E^-1)
       by rewrite /Bmw /Bw /Emw /Ew composeIv RTclosIv.
-    by rewrite H1 -{1}[E^-1]Delta_idem_l;apply: composeSr;
+    by rewrite H1 -{1}[E^-1]DeltaCl;apply: composeSr;
     apply: RTclos_containsD.
   Qed.
   
@@ -323,11 +323,11 @@ Section Cw_facts.
   
   Lemma Cw_Ewrt_Cw : (Cw `;` Ew.* `;` Cw) = Cw.
   Proof.
-    rewrite -DuT_eq_Tstar -Ew_t_starts composeDl Delta_idem_r.
+    rewrite -DuT_eq_Tstar -Ew_t_starts composeDl DeltaCr.
     rewrite {2}Cw_ends.
     have H1: Cw `;` Δ_(W) `;` (Δ_(W.^c) `;` Ew.+) =  Cw `;` (Δ_(W) `;` Δ_(W.^c)) `;` Ew.+
       by aac_reflexivity.
-    rewrite H1 DeltaW_Wc DeltaC_compose_absorbr DeltaC_compose_absorbl.
+    rewrite H1 DeltaCc DeltaC_compose_absorbr DeltaC_compose_absorbl.
     by rewrite DeltaC_union_idemr Cw_transitive.
   Qed.
 
@@ -529,7 +529,7 @@ End Aw_sm_facts.
 (** already in E_incl_Bw *)
 Lemma E9b1 : E `<=` Bw.
 Proof.
-  by rewrite -[E]Delta_idem_r; apply: composeSl; apply: RTclos_containsD.
+  by rewrite -[E]DeltaCr; apply: composeSl; apply: RTclos_containsD.
 Qed.
 
 (* Equation (9c) *)
@@ -608,7 +608,7 @@ Section Key_Lemma_W_s.
                   (V `;` Δ_(X) `;` S `;` R)^(n.+1) `;` V `;` Δ_(X)).
     elim: n => [| n' H]; 
               first by rewrite /iter 
-                         -!['Δ `;` (_)]composeA Delta_idem_l Delta_idem_l -!composeA.
+                         -!['Δ `;` (_)]composeA DeltaCl DeltaCl -!composeA.
     rewrite /iter -/iter; rewrite /iter -/iter in H.
     rewrite -composeA H composeA. 
     rewrite -[Δ_( X) `;` (Δ_( X) `;` S `;` R `;` V `;` Δ_( X))]composeA.

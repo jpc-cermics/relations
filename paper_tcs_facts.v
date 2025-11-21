@@ -37,17 +37,17 @@ Section Tcs.
         by rewrite /Bw -composeA -/Ew r_clos_rt_clos_t.
       have L14_E38a2 : Emw.+ = Bmw `;` Δ_(W.^c)
         by rewrite -TclosIv L14_E38a1 composeIv -/Bmw DsetIv.
-      by rewrite L1 !composeDr !composeDl !Delta_idem_r !Delta_idem_l setUA -E9e;
+      by rewrite L1 !composeDr !composeDl !DeltaCr !DeltaCl setUA -E9e;
       rewrite -L14_E38a2 -L14_E38a1.
     Qed.
 
     Lemma L14_E38b : Cw `;` (Emw.* ) `;` (Ew .* ) = Cw `;` ('Δ `|` (Bmw `;` Δ_(W.^c)) `|` Kw).
     Proof.
       have H1: ( Δ_(W) `;` (Δ_(W.^c) `;` Bw)) = 'Δc
-        by rewrite -composeA DeltaW_Wc DeltaC_compose_absorbl.
+        by rewrite -composeA DeltaCc DeltaC_compose_absorbl.
       rewrite composeA L14_E38a {1}Cw_ends composeA !composeDl H1.
       rewrite DeltaC_compose_absorbr.
-      rewrite !Delta_idem_r -Cw_ends.
+      rewrite !DeltaCr -Cw_ends.
       rewrite -composeA -Cw_ends.
       rewrite -{1}composeA -{1}composeA -{1}composeA -Cw_ends.
       by rewrite DeltaC_union_idemr.
@@ -57,12 +57,12 @@ Section Tcs.
     Local Lemma L14_E38c1 : (Cw `;` (Emw.* ) `;` (Ew.* )) `;` Cw  = Cw `;` ((Δ_(W) `|` Kw `;` Δ_(W)) `;` Cw).
     Proof.
       have H1: Δ_(W.^c) `;` Cw = 'Δc
-        by rewrite Cw_starts -composeA DeltaWc_W DeltaC_compose_absorbl.
+        by rewrite Cw_starts -composeA DeltacC DeltaC_compose_absorbl.
       have H2: Bmw `;` Δ_(W.^c) `;` Cw = 'Δc
         by rewrite composeA H1 DeltaC_compose_absorbr.
       have H3:  Δ_(W) `;` Cw `|` Kw `;` ( Δ_(W) `;` Cw) = ( Δ_(W) `|` Kw `;`  Δ_(W)) `;` Cw
         by rewrite -[(Kw) `;` (_ `;` _)]composeA -composeDr.
-      by rewrite L14_E38b composeA composeDr composeDr H2 DeltaC_union_idemr Delta_idem_l
+      by rewrite L14_E38b composeA composeDr composeDr H2 DeltaC_union_idemr DeltaCl
            {2 3}Cw_starts H3.
     Qed.
     
@@ -128,7 +128,7 @@ Section Tcs.
       rewrite [in ('Δ `|` Bmw `;` Δ_(W.^c)) `;` Δ_(W.^c)]composeDr.
       rewrite [in  Bmw `;` Δ_(W.^c) `;` Δ_(W.^c)]composeA DsetK.
       rewrite [in LHS]composeA composeDl [in ( Δ_(W) `;` _)]composeDl.
-      rewrite Delta_idem_l DeltaW_Wc  DeltaC_union_ideml. 
+      rewrite DeltaCl DeltaCc  DeltaC_union_ideml. 
       rewrite -[in ( Δ_(W) `;` _ `|`  Δ_(W) `;` _)]composeDl.
       rewrite -[in (_ `;` Δ_(W.^c) `|` _ `;` Δ_(W.^c))]composeDr.
       rewrite -[in LHS]composeA -Cw_ends.
@@ -193,11 +193,11 @@ Section Tcs.
       rewrite L14_E38a.
       rewrite composeDl composeDl composeDl composeDr composeDr composeDr.
       have -> : Δ_(W) `;` 'Δ `;` Δ_(W) = Δ_(W)
-        by rewrite  Delta_idem_r DsetK.
+        by rewrite  DeltaCr DsetK.
       have -> : Δ_(W) `;` (Δ_(W.^c) `;` Bw) `;` Δ_(W) = 'Δc
-        by rewrite -composeA DeltaW_Wc !DeltaC_compose_absorbl.
+        by rewrite -composeA DeltaCc !DeltaC_compose_absorbl.
       have -> : Δ_(W) `;` (Bmw `;` Δ_(W.^c)) `;` Δ_(W) = 'Δc
-        by rewrite composeA [(Bmw `;` Δ_(W.^c) `;` Δ_(W))]composeA DeltaWc_W
+        by rewrite composeA [(Bmw `;` Δ_(W.^c) `;` Δ_(W))]composeA DeltacC
              !DeltaC_compose_absorbr.
       by rewrite !DeltaC_union_idemr.
     Qed.
@@ -298,11 +298,11 @@ Section Tcs.
       have H2:  (Δ_(W.^c) `;` (Bmw `;` Δ_(W.^c)) `;` Δ_(W.^c))
                 = (Δ_(W.^c) `;` Bmw `;` (Δ_(W.^c) `;` Δ_(W.^c)))
         by aac_reflexivity.
-      rewrite H1 L14_E38a composeDl composeDl composeDl Delta_idem_r.
+      rewrite H1 L14_E38a composeDl composeDl composeDl DeltaCr.
       rewrite -[Δ_(W.^c) `;` (Δ_(W.^c) `;` Bw)]composeA DsetK.
       rewrite composeDr composeDr composeDr  DsetK.
       rewrite H2  DsetK.
-      rewrite [in RHS]composeDl [in RHS]composeDl [in RHS]composeDl Delta_idem_r.
+      rewrite [in RHS]composeDl [in RHS]composeDl [in RHS]composeDl DeltaCr.
       rewrite [in RHS]composeDr [in RHS]composeDr [in RHS]composeDr DsetK.
       by [].
     Qed.
@@ -341,7 +341,7 @@ Section Tcs.
     Lemma L15: (Δ_(W.^c) `;` Smw `;`  Emw.* `;` Ew.* `;` Sw `;` Δ_(W.^c))
                = Δ_(W.^c) `;` Aw `;`  Δ_(W.^c).
     Proof.
-      rewrite /Smw /Sw composeDl composeDl !composeDr !Delta_idem_r.
+      rewrite /Smw /Sw composeDl composeDl !composeDr !DeltaCr.
       rewrite -[(Bw `;` Cw `|` Kw `;` Cw)]composeDr.
       rewrite -[(DKD.+ `;` (Bmw `|` Kw) `|` Δ_(W) `;` (Bmw `|` Kw))]composeDr -/Cw.
       (* now we have 4 terms as in the math proof *)
@@ -594,7 +594,7 @@ Section Tcs.
     Proof.
       move => n X Y x y R.
       elim: n x y => [x y [H1 [H2 H3]] | n H0 y y' ].
-      by (exists x; exists y; rewrite /iter Delta_idem_l in H3).
+      by (exists x; exists y; rewrite /iter DeltaCl in H3).
       rewrite /iter -/iter.
       move => [H2 [H3 [H4 [H5 [z [/= H6  H7]]]]]].
       pose proof lem (X z) as [Hz | Hz].

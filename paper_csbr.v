@@ -51,7 +51,7 @@ Section Csbr.
     Lemma D_L16_E42b :  (Aw_sm `;` Δ_(W.^c) `;` E) `<=`  Aw_sp.
     Proof.
       rewrite /Aw_sm.
-      have H: Bmw = 'Δ `;` Bmw by rewrite Delta_idem_l.
+      have H: Bmw = 'Δ `;` Bmw by rewrite DeltaCl.
       set R1 := (Bw `|` Kw) `;` Cw_s .
       rewrite {1}[Bmw]H -composeDr. 
       set R2 := ('Δ `|` R1) `;` Bmw `;` Δ_( W .^c).
@@ -59,14 +59,14 @@ Section Csbr.
       suff H2: (R2 `;` Bw) `<=` Aw_sp by apply: subset_trans H1 H2.
       rewrite /R2 composeA composeA.
       rewrite -[(Bmw `;` (_ `;` Bw))]composeA -/Kw composeDr. 
-      rewrite Delta_idem_l /R1 /Aw_sp -[Bw `|` Kw `|` _]setUA.
+      rewrite DeltaCl /R1 /Aw_sp -[Bw `|` Kw `|` _]setUA.
       by apply: subsetUr.
     Qed.
     
     Lemma D_L16_E42c :  (Aw_sp `;` Δ_(W_s) `;` Em) `<=`  Aw_sm.
     Proof.
       have E21c1: E^-1 `<=` Bmw
-        by rewrite E9d -{1}[E^-1]Delta_idem_l;apply: composeSr;
+        by rewrite E9d -{1}[E^-1]DeltaCl;apply: composeSr;
         apply: RTclos_containsD.
       have E21c2: Δ_(W_s) `<=` Cw_s by rewrite /Cw_s;apply: subsetUr.
       have H1: (Δ_(W_s) `;` E^-1) `<=` (Cw_s `;` E^-1) by apply composeSr; apply: E21c2.

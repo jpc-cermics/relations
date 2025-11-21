@@ -72,7 +72,7 @@ Section AAC_eq_relC.
   Proof. by move => R S U; rewrite composeA. Qed.
   #[export] Instance aac_delta_compose_eq_Unit T :
     Unit eq (@compose T) ('Δ).
-  Proof. by split => R;[apply: Delta_idem_l | apply: Delta_idem_r]. Qed.
+  Proof. by split => R;[apply: DeltaCl | apply: DeltaCr]. Qed.
   #[export] Instance aac_compose_eq_compat T :
     Proper (eq ==> eq ==> eq) (@compose T).
   Proof. by move => R S H1 U V H2; rewrite H1 H2. Qed.

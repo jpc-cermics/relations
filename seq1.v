@@ -927,11 +927,11 @@ Section PathRel.
   Lemma Itern_iff_PathReln  (R: relation T) : forall (n:nat), R^(n.+1) =  PathRel_n R n.
   Proof.
     elim => [ | n' H].
-    - rewrite /iter /PathRel_n Delta_idem_l /mkset predeqE => [[x y]].
+    - rewrite /iter /PathRel_n DeltaCl /mkset predeqE => [[x y]].
       split => [ H | ].
       by (exists [::]); rewrite allL0' /=.
       by move => [p [/size0nil -> /allL0' H2]].
-    - rewrite -add1n iter_compose H /iter Delta_idem_l /mkset predeqE => [[x y]].
+    - rewrite -add1n iter_compose H /iter DeltaCl /mkset predeqE => [[x y]].
       split => [[z [/= /inP H1 [p [H2 /= H3]]]] |[p [H1 H2]]];
                 first by (exists (z::p));rewrite -H2 allL_c H3 andbT H1. 
       elim: p H1 H2 => [ // | z p' _ H1].
