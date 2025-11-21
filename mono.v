@@ -9,7 +9,7 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 Set Warnings "-parsing -coercions".
-From mathcomp Require Import all_ssreflect seq order boolp classical_sets. 
+From mathcomp Require Import all_boot seq order boolp classical_sets. 
 From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
 

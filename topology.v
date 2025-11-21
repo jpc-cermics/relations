@@ -12,7 +12,7 @@
 From HB Require Import structures.
 
 Set Warnings "-parsing -coercions".
-From mathcomp Require Import all_ssreflect order contra.
+From mathcomp Require Import all_boot order contra.
 From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets order topology.
 Set Warnings "parsing coercions".

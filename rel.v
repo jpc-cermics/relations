@@ -39,7 +39,7 @@
 (******************************************************************************)
 
 Set Warnings "-parsing -coercions".
-From mathcomp Require Import all_ssreflect order. 
+From mathcomp Require Import all_boot order. 
 From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
 Set Warnings "parsing coercions".
@@ -100,11 +100,11 @@ Notation "L_( X )" := (@Lr _ X)
 Notation "R_( X )" := (@Rr _ X)
                         (at level 2, no associativity, format "R_( X )").
 Notation "X .^c" := (~` X) 
-                      (at level 2, left associativity, format "X .^c").
+                      (at level 2, right associativity, format "X .^c").
 
 Notation "'Δc" := (DeltaC setT) (at level 2, no associativity).
 Notation "R ^( n )" := (@iter _ R 'Δ n) 
-                         (at level 2, left associativity, format "R ^( n )").
+                         (at level 2, right associativity, format "R ^( n )").
 Notation "R .+" := (Tclos R) (at level 1, left associativity, format "R .+").
 Notation "R .*" := (RTclos R) (at level 1, left associativity, format "R .*").
 
