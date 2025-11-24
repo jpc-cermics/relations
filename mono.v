@@ -1091,8 +1091,7 @@ Section Hn4.
       allL R st x y -> ~ R.+ (y, last x st) -> (Asym R.+) (x, y).
   Proof.
     move => st x y H1 H2.
-    split;first by move: H1 => /(@allL_to_clos_t T) H1.
-    move => H3. 
+    split => [|H3];first by apply: (allL_to_clos_t H1).
     case H4: (st == [::]); first by move: H4 H2 => /eqP H4;rewrite H4 /= => H5.
     move: H4 => /eqP/(@last0' T) => /(_ x) H4.
     have H5: (last x st) \in (rcons st y) by rewrite in_rcons; apply/orP; left. 

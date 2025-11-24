@@ -416,8 +416,14 @@ Section Lift_in.
   (** * properties of [L\in] *)
 
   Context {T: Type}.
-  Implicit Types (T : Type) (R S: relation T) (X Y: set T) (st: seq T) (x y:T).
-
+  Implicit Types (T : Type) (R S: relation T) (X Y: set T) (st: seq T) (x y z:T).
+  
+  Lemma Lift_in_c R st x: (x::st) [L\in] R -> st [L\in] R.
+  Proof. by elim: st x => [// | y st Hr x];rewrite Lift_c allset_cons => -[_ ?] //. Qed.
+  
+  Lemma Lift_in_rc R st y: (rcons st y) [L\in] R -> st [L\in] R.
+  Proof. by elim/last_ind: st y => [// | y st Hr x];rewrite Lift_rcrc allset_rcons => -[_ ?] //. Qed.
+  
   Lemma Lift_in_F R st y: (rcons st y) [L\in] R -> st [\in] (R.+)#_(y).
   Proof.
     elim: st y  => [// | x st Hr y];rewrite rcons_cons. 
@@ -428,8 +434,7 @@ Section Lift_in.
     by split;[apply Fset_t2; exists z|].
   Qed.
   
-  Lemma Lift_in_FF R st x y:
-    (rcons st y) [L\in] R -> y \in R.+#_(x) -> st [\in] R.+#_(x).
+  Lemma Lift_in_FF R st y z:  (rcons st y) [L\in] R -> y \in R.+#_(z) -> st [\in] R.+#_(z).
   Proof. by move => /Lift_in_F H2 /(@Fset_t5 _ R) H4;apply: (@allset_subset _ _ _ _ H4 H2). Qed.
   
   Lemma Lift_in_rev R st: st [L\in] R <-> (rev st) [L\in] R^-1. 
@@ -491,7 +496,7 @@ Section allset_Lifted.
       move: H2; rewrite last_cons => H2.
       rewrite allL_c H1 /=; apply: Hn; by split. 
   Qed.
-    
+  
   Lemma allL_cat R st st' x y z: 
     allL R ((rcons st y) ++ st') x z <-> allL R st x y && allL R st' y z.
   Proof.

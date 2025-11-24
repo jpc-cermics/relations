@@ -121,51 +121,48 @@ End nat_util.
 
 Section Seq1_plus. 
   (** * extensions of results from seq1 and rel using eqType *)
-  Variables (T:eqType) (R: relation T).
-
-  Implicit Types x y z : T.
-  Implicit Type s : seq T.
+  
+  Context (T:eqType).
+  
+  Implicit Types (R: relation T) (s sl sr: seq T) (x y z : T) (X : set T).
 
   Definition uniq_path s x y :=  (~ x \in s /\ ~ y \in s /\ uniq s).
   
-  Lemma in_rcons s (x y:T): 
-      (x \in rcons s y) = (x \in s) || (x == y).
+  Lemma in_rcons s x y:  (x \in rcons s y) = (x \in s) || (x == y).
   Proof. by rewrite -cats1 mem_cat mem_seq1. Qed.
   
-  Lemma last0' s t:
-      ~ ( s = [::]) -> (last t s) \in s.
-  Proof. elim/last_ind: s t => [// | s x Hr t _ /=].
+  Lemma last0' s x: ~ ( s = [::]) -> (last x s) \in s.
+  Proof. elim/last_ind: s x => [// | s x' Hr x _ /=].
          by rewrite last_rcons in_rcons;apply/orP;right;apply:eq_refl.
   Qed.
 
-  Lemma mem_last x s : last x s \in x :: s.
+  Lemma mem_last s x: last x s \in x :: s.
   Proof. by rewrite lastI mem_rcons mem_head. Qed.
  
-  Lemma poo s : ~ ( s = [::]) <-> 0 < size s.
+  Lemma poo s: ~ ( s = [::]) <-> 0 < size s.
   Proof. 
     split. 
     by move: (leq0n (size s));rewrite leq_eqVlt eq_sym=> /orP [/nilP|? _].
     by move => + /nilP/eqP H1;rewrite H1. 
   Qed.
   
-  Lemma poo1 s : ( s = [::]) <-> size s == 0.
+  Lemma poo1 s: ( s = [::]) <-> size s == 0.
   Proof. by split => [/nilP|/nilP]. Qed.
 
-  Lemma head0 s x:
-      ~ ( s = [::]) -> (head x s) \in s.
+  Lemma head0 s x: ~ ( s = [::]) -> (head x s) \in s.
   Proof. by elim: s x => [//| x s _ ? _ /=];rewrite in_cons eq_refl. Qed.
    
-  Lemma head_in s (x y:T): size(s) > 0 -> head x (rcons s y) \in s.
+  Lemma head_in s x y: size(s) > 0 -> head x (rcons s y) \in s.
   Proof.
     by elim: s x y => [x y //| z s Hr x y _ /=];rewrite in_cons eq_refl orbC orbT.
   Qed.
-
-  Lemma in_non0 s (x:T): x \in s -> size(s) > 0.
+  
+  Lemma in_non0 s x: x \in s -> size(s) > 0.
   Proof.
     by case H3: (size s);[apply size0nil in H3;rewrite H3 in_nil|].
   Qed.
   
-  Lemma nth_dv (s: seq T) x y i: i < size s -> nth x s i = nth y s i.
+  Lemma nth_dv s x y i: i < size s -> nth x s i = nth y s i.
   Proof.
     elim/last_ind: s x y i => [// | s z Hr x y i].
     rewrite size_rcons ltnS leq_eqVlt 2!nth_rcons => /orP [/eqP H1 | H1].
@@ -173,19 +170,19 @@ Section Seq1_plus.
     by rewrite H1; apply: Hr.
   Qed.
   
-  Lemma last_dv (s: seq T) x y i: i < size s -> last x s = last y s.
+  Lemma last_dv s x y i: i < size s -> last x s = last y s.
   Proof.
     elim/last_ind: s x y i => [// | s z Hr x y i].
     by rewrite size_rcons ltnS leq_eqVlt 2!last_rcons => /orP [/eqP ?|?].
   Qed.
   
-  Lemma allL_lastR s x y z i: i < size s -> allL R s x y -> R (last z s, y).
+  Lemma allL_lastR R s x y z i: i < size s -> allL R s x y -> R (last z s, y).
   Proof.
     move => H1;rewrite allL_split => -[_ H2].
     by have <- : last x s = last z s by apply: last_dv;apply:H1. 
   Qed.
   
-  Lemma allL_nth s x y:
+  Lemma allL_nth R s x y:
       allL R s x y -> forall i, i <= size s -> R (nth (last x s) s i, nth y s i.+1).
   Proof.
     elim/last_ind: s x y => [/= x y + i | s x0 Hr x y H1 i H2];
@@ -209,20 +206,19 @@ Section Seq1_plus.
          +++ have H9: i.+1 = size s by pose proof @P7 (size s) i H5 H6.
              have H10: (i = (size s).-1)%N by pose proof @P11 (size s) i H5 H9.
              rewrite H9 H10 nth_last eq_refl.
-             by pose proof (@allL_lastR s x x0 x0 i H5 H3).
+             by pose proof (@allL_lastR R s x x0 x0 i H5 H3).
   Qed.
   
-  Lemma allL_nth' s x y:
+  Lemma allL_nth' R s x y:
       allL R s x y -> forall i, i < size s -> R (nth y s i, nth y s i.+1).
   Proof.
     move => H0 i H1.
     have H2:  i <= size s by rewrite leq_eqVlt H1 orbT. 
-    pose proof (@allL_nth s x y H0 i H2) as H3.
+    pose proof (@allL_nth R s x y H0 i H2) as H3.
     by pose proof (@nth_dv s y (last x s) i H1) as ->.
   Qed.
   
-  Lemma uniq_subseq (s s': seq T) (x:T):
-      uniq (x :: s) -> subseq s' s -> uniq (x:: s').
+  Lemma uniq_subseq s s' x: uniq (x :: s) -> subseq s' s -> uniq (x:: s').
   Proof.
     rewrite cons_uniq => /andP [H2 H3] H4.
     rewrite cons_uniq;move: (subseq_uniq H4 H3) => ->;rewrite andbT.
@@ -231,7 +227,7 @@ Section Seq1_plus.
     by apply: H6.
   Qed.
 
-  Lemma uniq_cat (sl sr: seq T):
+  Lemma uniq_cat sl sr: 
       uniq(sl) -> uniq(sr) -> (forall x, x \in sl -> x \in sr -> False) 
       -> uniq(sl ++ sr).
   Proof.
@@ -242,7 +238,7 @@ Section Seq1_plus.
     by apply: contra_notF.
   Qed.
 
-  Lemma uniq_catE (sl sr: seq T):
+  Lemma uniq_catE sl sr:
       uniq(sl ++ sr) <-> 
       uniq(sl) /\ uniq(sr) /\ (forall x, x \in sl -> x \in sr -> False).
   Proof.
@@ -253,7 +249,7 @@ Section Seq1_plus.
     by have H5:  s \in sr /\ s \in sl by [].
   Qed.
   
-  Lemma uniq_subseq' (sr sl sl': seq T):
+  Lemma uniq_subseq' sr sl sl':
       uniq (sl ++ sr) -> subseq sl' sr -> uniq (sl ++ sl').
   Proof.
     move => /uniq_catE [H1 [H2 H3]] H4.
@@ -267,16 +263,14 @@ Section Seq1_plus.
     by pose proof (H3 x H8 H7).
   Qed.
   
-  Lemma allset_in (s: seq T) (x:T) (X:set T):
-      x \in s -> s [\in] X -> x \in X.
+  Lemma allset_in  s x X:  x \in s -> s [\in] X -> x \in X.
   Proof.
     elim: s x X => [ x X // | y s Hr x X ].
     rewrite in_cons allset_cons.
     move => /orP [/eqP -> | H1] [/inP H2 H3];[exact | by apply: Hr].
   Qed.
     
-  Lemma in_rev (s: seq T) (x:T): 
-      x \in s <-> x \in (rev s).
+  Lemma in_rev s x: x \in s <-> x \in (rev s).
   Proof.
     have Impl: forall s', (x \in s') -> (x \in (rev s')).
     move => s1;elim: s1 x =>  [ x // | z s2 H1 x ].
@@ -287,40 +281,35 @@ Section Seq1_plus.
     by split;[ apply Impl | move => /Impl H2; rewrite revK in H2].
   Qed.
  
-  Lemma Lxx: forall (s: seq T) (y z: T),
-      y \in s -> (rcons s z) [L\in] R -> R.+ (y, z).
+  Lemma Lxx R s y z: y \in s -> (rcons s z) [L\in] R -> R.+ (y, z).
   Proof.
-    move => s y z H1 H2;move: (Lift_in_F H2) => H3. 
+    move => H1 H2;move: (Lift_in_F H2) => H3. 
     by move: (allset_in H1 H3);rewrite inP Fset_t0.
   Qed.
   
-  Lemma Lxx'': forall (s: seq T) (x y z: T),
-      y \in (x::s) -> (x::(rcons s z)) [L\in] R -> R.+ (y, z).
+  Lemma Lxx'' R s x y z: y \in (x::s) -> (x::(rcons s z)) [L\in] R -> R.+ (y, z).
   Proof.
-    move => s x y z;rewrite in_cons => /orP [/eqP -> H1| H1 H2].
+    rewrite in_cons => /orP [/eqP -> H1| H1 H2].
     by move: (allL_to_clos_t H1).
     by move: (Lxx H1 (allL_Lift_in_rc H2)). 
   Qed.
   
-  Lemma Lxx_head: forall (s: seq T) (x y: T),
-      y \in s -> (x::s) [L\in] R -> R.+ (x, y).
+  Lemma Lxx_head R s x y: y \in s -> (x::s) [L\in] R -> R.+ (x, y).
   Proof.
-    move => s y z H1 H2;move: (Lift_in_A H2) => H3. 
+    move => H1 H2;move: (Lift_in_A H2) => H3. 
     by move: (allset_in H1 H3);rewrite inP /Aset -Fset_t0.
   Qed.
   
-  Lemma Lxx_head': forall (s: seq T) (x y z: T),
-      y \in (rcons s z) -> (x::(rcons s z)) [L\in] R -> R.+ (x, y).
+  Lemma Lxx_head' R s x y z: y \in (rcons s z) -> (x::(rcons s z)) [L\in] R -> R.+ (x, y).
   Proof.
-    move => s x y z. rewrite in_rcons => /orP [ H1 H2 | /eqP <-].
+    rewrite in_rcons => /orP [ H1 H2 | /eqP <-].
     by move: (Lxx_head H1 (allL_Lift_in_c H2)).     
     by apply:allL_to_clos_t.
   Qed.
 
-  Lemma uniq_crc: forall (s: seq T) x y,
-      uniq (x::(rcons s y)) <-> uniq_path s x y /\ ~ (x = y).
+  Lemma uniq_crc s x y: uniq (x::(rcons s y)) <-> uniq_path s x y /\ ~ (x = y).
   Proof.
-    move => s x y;split => [ | [[H1 [H2 H3]] H4]].
+    split => [ | [[H1 [H2 H3]] H4]].
     + by rewrite cons_uniq in_rcons rcons_uniq =>
         /andP [/orP/not_orP [H1 /negP/eqP  H3] /andP [/negP H4 H5]].
     + rewrite cons_uniq;apply/andP; split. 
@@ -328,15 +317,15 @@ Section Seq1_plus.
       by rewrite rcons_uniq;apply/andP;split;[apply/negP |].
   Qed.
   
-  Lemma nth_in_take: forall s j y, j.+1 < size s -> nth y s j \in take j.+1 s.
+  Lemma nth_in_take s j y: j.+1 < size s -> nth y s j \in take j.+1 s.
   Proof.
-    move => s j y H1;move: (@nth_take j.+1 T y j (ltnSn j) s) => <-.
+    move => H1;move: (@nth_take j.+1 T y j (ltnSn j) s) => <-.
     by apply: mem_nth;rewrite size_take H1 ltnSn.
   Qed.
   
-  Lemma nth_in_drop:  forall (s: seq T) i y, i < size s -> nth y s i \in drop i s.  
+  Lemma nth_in_drop s i y: i < size s -> nth y s i \in drop i s.  
   Proof.
-    move => s i y H1.
+    move => H1.
     move: (@nth_drop i T y s 1);rewrite addn1 => ?.
     move: (@drop_nth T y i s H1) => H3.
     by rewrite H3 in_cons eq_refl orTb.
@@ -359,14 +348,13 @@ Section Seq1_plus.
     by rewrite -H4.
   Qed.
   
-  Lemma uniq_nth:  forall (s: seq T) x y, 
-      uniq (x :: rcons s y) -> 
-      forall i, i < size s -> ~ (nth y s i = nth y s i.+1).
+  Lemma uniq_nth s x y:
+    uniq (x :: rcons s y) -> forall i, i < size s -> ~ (nth y s i = nth y s i.+1).
   Proof.
     have P11: forall n i, i < n -> i.+1 = n -> (i = n.-1)%N.
     move => n i H0 H1; pose proof (ltn_predK H0) as H2.
     by move: H1; rewrite -{1}H2 => /eqP H1; move: H1; rewrite eqSS => /eqP H1.
-    move => s x y;rewrite uniq_crc => -[[H1 [H2 H3]] _] i H4 H5.
+    rewrite uniq_crc => -[[H1 [H2 H3]] _] i H4 H5.
     case H6: (i == (size s).-1)%N.
     + move: H6 => /eqP H6.
       have H7: (size s).-1.+1 = (size s) by apply: (ltn_predK H4).
@@ -403,11 +391,11 @@ Section Seq1_plus.
       by move: H15 => /(_ (nth y s i) H12 H16) H15.
   Qed.
     
-  Lemma uniq_nth'':  forall (s: seq T) x y, 
+  Lemma uniq_nth'' s x y:
       uniq (x :: rcons s y) -> 
       forall i j, j < i -> i < size s -> ~ (nth y s j = nth y s i).
   Proof.
-    move => s x y;rewrite uniq_crc => -[[H1 [H2 H3]] _] i j H4 H5 H6.
+    rewrite uniq_crc => -[[H1 [H2 H3]] _] i j H4 H5 H6.
     
     have H7: uniq (take j.+1 s ++ drop j.+1 s)
       by move: H3;pose proof (cat_take_drop j.+1 s) as ->.
@@ -421,11 +409,11 @@ Section Seq1_plus.
     by apply: H15.
   Qed.
   
-  Lemma uniq_nth': forall (s: seq T) x y, 
+  Lemma uniq_nth' s x y:
       uniq (x :: rcons s y) -> 
       forall i, i < size s -> ~ (x = nth y s i) /\ ~ (y = nth y s i).
   Proof.
-    move => s x y /uniq_crc [[? [? _]] _] i H3.
+    move => /uniq_crc [[? [? _]] _] i H3.
     by pose proof mem_nth y H3 as H4;split;move => H5;rewrite -H5 in H4. 
   Qed.
   
@@ -438,7 +426,7 @@ Section allL_uniq.
 
   Implicit Types x y z : T.
   Implicit Type s : seq T.
-
+  
   Lemma allL_drop: forall s (x y z:T),
       z \in s -> allL R s x y -> allL R (drop ((index z s).+1) s) z y.
   Proof.
@@ -470,29 +458,19 @@ Section allL_uniq.
       by move: (Hr t y z H4 H2').
   Qed.
   
-  
   Lemma allL_last: forall s (x y:T),
       allL R s x y ->  (rcons (belast x s) (last x s)) [L\in] R.
+  Proof. by move => s x y /allL_split [+ _]; rewrite lastI. Qed.
+  
+  Lemma in_belast s x z: z \in s -> ~ (z = (last x s)) -> z \in (belast x s).
   Proof.
-    elim/last_ind => [ // | s z _ x y H2].
-    rewrite belast_rcons rcons_cons. 
-    by move: H2; rewrite allL_rc last_rcons => /andP [_ H2].
+    move => H1 ?; have: z \in  x :: s by rewrite in_cons H1 orbT.
+    by rewrite lastI in_rcons => /orP [ // | /eqP //].
   Qed.
   
-  Lemma in_belast: forall s (x z:T),
-      z \in s -> ~ (z = (last x s)) -> z \in (belast x s).
+  Lemma belast_head s x: ~(s = [::]) -> (belast x s) = x::(drop 1 (belast x s)).
   Proof.
-    elim/last_ind => [x z // | s y Hr x z H1 H2].
-    move: H1; rewrite in_rcons => /orP [ H1 | /eqP H1].
-    by rewrite belast_rcons in_cons H1 orbT.
-    by move: H2; rewrite H1 last_rcons.
-  Qed.
-  
-  Lemma belast_head: forall s x,
-    ~(s = [::]) -> (belast x s) = x::(drop 1 (belast x s)).
-  Proof.
-    elim/last_ind => [x // | s y Hr x _].
-    by rewrite belast_rcons drop1 /behead.
+    by elim/last_ind: s x => [x // | s y Hr x _];rewrite belast_rcons drop1 /behead.
   Qed.
   
   Lemma allL_belast: forall s (x z y:T),
@@ -508,6 +486,40 @@ Section allL_uniq.
     by pose proof (allL_to_clos_t (allL_drop H9 H6)).
   Qed.
 
+
+  Lemma nth_in: forall x j s, j >= 0 -> j < size s -> nth x s j \in s.
+  Proof.
+    move => x j s. elim: s j => [// | y s Hr j H0 H1].
+    case H2: (j == 0).
+    + move: H2 => /eqP -> /=. by rewrite in_cons eq_refl orTb.
+    + move: H2 => /neq0_lt0n H2.
+      have H3: j.-1.+1 = j by apply: ltn_predK. 
+      rewrite -H3 ltnS in H2.
+      case H4: (j.-1 == size s). move: H4 => /eqP H4.
+      rewrite -H3 H4. 
+  Admitted.
+  
+  Lemma allL_belast': forall s (x z y:T),
+      z \in s -> ~ (z = (last x s)) -> allL R s x y
+      -> R.+ (z, (last x s)).
+  Proof.
+    move => s x z y H1 H2 H3.
+    pose proof allL_drop H1 H3 as H4.
+    have H5: last x s \in (drop (index z s).+1 s). admit. 
+    pose proof allL_take H5 H4 as H6. 
+
+    pose m := (size s).-1.
+    pose p := (index z s).+1.
+    have P1: last x s =  nth x s m. by rewrite -nth_last.
+    have P3: nth x (drop p s) (m-p) = nth x s (p + (m-p)). by rewrite nth_drop.
+    have P4: p + (m-p)= m. admit.
+    have P5: last x s = nth x (drop p s) (m-p). by rewrite P3 P4 -nth_last.
+    have P6: last x s \in (drop p s). rewrite P5.
+    have P7: forall j, j >= 0 -> j < size s -> nth x s j \in s. 
+    pose proof (allL_to_clos_t (allL_take H5 H4)).
+  Admitted.
+  
+  
   Lemma in_behead: forall s (x z:T),
       z \in s -> ~ (z = (head x s)) -> z \in (behead s).
   Proof.
