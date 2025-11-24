@@ -26,24 +26,24 @@ Local Open Scope classical_set_scope.
 Reserved Notation "A [<=] B" (at level 4, no associativity). 
 Reserved Notation "A [<= R ] S" (at level 4, no associativity). 
 
+(* begin snippet leset:: no-out *)    
+Definition leSet T R: relation (set T) := 
+  [set AB |forall (a:T), (a \in AB.1) -> exists b, b \in AB.2 /\ ( a = b \/ R (a,b)) ].
+
+Notation "A [<= R ] B" := (leSet R (A,B)).
+(* end snippet leset *)       
+
+Definition leSet' T R: relation (set T) := [set AB | AB.1 `<=` ('Δ  `|` R)#AB.2]. 
+
 Section Set_relation. 
   (** * A relation on sets induced by a relation on elements *)
 
-  Variables (T: eqType) (R: relation T).
+  Context (T : eqType).
+  Implicit Types (T : eqType) (R S: relation T) (A B: set T).
   
-  (* begin snippet leset:: no-out *)    
-  Definition leSet (R: relation T): relation (set T) := 
-    [set AB |forall (a:T), (a \in AB.1) -> exists b, b \in AB.2 /\ ( a = b \/ R (a,b)) ].
-  
-  Notation "A [<= R ] B" := (leSet R (A,B)).
-  (* end snippet leset *)       
-  
-  Definition leSet' (R: relation T): relation (set T) :=
-    [set AB | AB.1 `<=` ('Δ  `|` R)#AB.2]. 
-  
-  Lemma lesetE : forall (R: relation T), leSet R = leSet' R. 
+  Lemma lesetE R: leSet R = leSet' R. 
   Proof.
-    move => R';rewrite predeqE => -[A B];split. 
+    rewrite predeqE => -[A B];split. 
     - move => H1 a /inP/H1 [b [/inP H2 [->| H3]]]; first by (exists b);split;[left|].
       by (exists b);split;[right|].
     - rewrite /leSet' /mkset /= -FsetUl Fset_D.
@@ -52,48 +52,45 @@ Section Set_relation.
       by exists b; split;[ | right].
   Qed.
   
-  Lemma Ile: forall (A B: set T), A `<=` B -> A [<= R] B.
-  Proof. by move => A B H1 /= a /inP/H1 ?;exists a;split;[rewrite inP|left]. Qed.
+  Lemma Ile R A B: A `<=` B -> A [<= R] B.
+  Proof. by move => H1 /= a /inP/H1 ?;exists a;split;[rewrite inP|left]. Qed.
 
-  Lemma leI: forall (Q R: relation T), Q `<=` R -> (leSet Q)  `<=` (leSet R).
+  Lemma leI R S: S `<=` R -> (leSet S)  `<=` (leSet R).
   Proof.
-    move => R' V H1;rewrite lesetE lesetE => [[A B]] H2.
-    have H3: ('Δ  `|` R')#B `<=` ('Δ  `|` V)#B by apply: Fset_inc; apply: setUS.
-    by apply: subset_trans H2 H3.
+    move => H1;rewrite 2!lesetE => [[A B]] H2.
+    by apply: subset_trans H2 _;apply: Fset_inc; apply: setUS.
   Qed.
-   
+  
 End Set_relation.
 
-(** Notation for the set order we use *)
-Notation "A [<= R ] B" := (leSet R (A,B)).
 
 Section Set_order. 
   (** * the previous relation [<= R] is an order relation on R-independent sets *)
-  
-  Variables (T: eqType) (R: relation T). 
 
+  Context (T : eqType).
+  Implicit Types (T : eqType) (R S: relation T) (A B: set T).
+  
   Axiom proof_irrelevance: forall (P : Prop) (p q : P), p = q.
   
   Section Util.
     (** ingredients *)
-    Lemma le_trans_if_tr (U: relation T): transitive U -> transitive (leSet U).
+    Lemma le_trans_if_tr R: transitive R -> transitive (leSet R).
     Proof.
       rewrite lesetE => /clos_t_iff H0 A B C /= H1 H2.
-      have : ('Δ  `|` U)#B `<=` ('Δ  `|` U)#(('Δ  `|` U)#C) by apply: Fset_inc1.
+      have : ('Δ  `|` R)#B `<=` ('Δ  `|` R)#(('Δ  `|` R)#C) by apply: Fset_inc1.
       rewrite Fset_comp H0 DuT_eq_Tstar compose_rt_rt -DuT_eq_Tstar -H0 => H3.
       by apply: subset_trans H1 H3.
     Qed.
 
-    Lemma le_refl (U: relation T): reflexive (leSet U).
+    Lemma le_refl  R: reflexive (leSet R).
     Proof. by move => A r H1;exists r;split;[| left]. Qed.
     
-    Lemma le_antisym_if_sp' (U: relation T): 
-      sporder U -> 
-      forall A B, (RelIndep U A) -> A [<= U] B -> B  [<= U] A -> A `<=` B.
+    Lemma le_antisym_if_sp' R: 
+      sporder R -> forall A B, (RelIndep R A) -> A [<= R] B -> B  [<= R] A -> A `<=` B.
     Proof.
       move => [Ir H0] A B H1 H2 H3 a H4.
       pose proof (sporder_antisym H0 Ir) as Asy.
-      have H0': Asym U = U by rewrite -AsymE.
+      have H0': Asym R = R by rewrite -AsymE.
       move: H2 H3; rewrite -H0' => H2 H3.
       move: (H4) => /inP /H2 [b [/inP /= H5 [-> // | [H6 H6']]]]. 
       move: (H5) => /inP /H3 /= [c [/inP H8 H9]].
@@ -104,14 +101,14 @@ Section Set_order.
         by have: False by move: H4 H8 => /inP H4 /inP H8;apply: (H1 a b). 
       - move: H12 H9 => /eqP H12 [H9 // | [H9 H9']].
         case H13: (a == c); first by move: H13 H9' => /eqP <- H9'.
-        have H14: U (a,c) by apply: H0 H6 H9.
+        have H14: R (a,c) by apply: H0 H6 H9.
         by have: False by move: H13 H4 H8 => /eqP H13 /inP H4 /inP H8; apply: (H1 a c). 
     Qed.
     
-    Lemma le_antisym_if_sp (U: relation T): 
-      sporder U ->
-      forall A B, (RelIndep U A) -> (RelIndep U B) 
-             -> A [<= U] B -> B  [<= U] A -> A = B.
+    Lemma le_antisym_if_sp R: 
+      sporder R ->
+      forall A B, (RelIndep R A) -> (RelIndep R B) 
+             -> A [<= R] B -> B  [<= R] A -> A = B.
     Proof.
       move => Hsp A B H1 H2 H3 H4.
       by move: (le_antisym_if_sp' Hsp H1 H3 H4)
@@ -119,8 +116,8 @@ Section Set_order.
     Qed.
   
   End Util.
-
-  Lemma leSet2_porder: 
+  
+  Lemma leSet2_porder R: 
     sporder R -> 
     @porder {S: set T| RelIndep R S} [set AB | (sval AB.1) [<= R] (sval AB.2)].
   Proof.
@@ -137,27 +134,27 @@ End Set_order.
 
 Section Infinite_paths.
   (** * Definitions around infinite paths *)
-  Variables (T:Type).
 
+  Context (T : Type).
+  Implicit Types (T : Type) (R S: relation T) (A B: set T).
+  
   (* total (or left total)  *) 
   Definition total_rel (R: relation T) := forall x, exists y, R (x,y).
   
   Definition total_rel' (R: relation T) := exists f : T -> T, forall x, R (x, f x). 
   
   (* choice from boolp version for relation T *)
-  Lemma choice': forall (R: relation T), total_rel R -> total_rel' R.
+  Lemma choice' R: total_rel R -> total_rel' R.
   Proof.
-    move => S H1.
-    have H2: forall x : T, exists y : T, (curry S) x y
+    move => H1.
+    have H2: forall x : T, exists y : T, (curry R) x y
         by move => x;move: H1 => /(_ x) [y H1];exists y.
     move: H2 => /choice [f H2].
     by exists f => x; move: H2 => /(_ x).
   Qed.
   
-  Lemma total_rel_iff: forall (R: relation T),  total_rel R <-> total_rel' R.
-  Proof.
-    by move => R; split =>[| [f H1] x];[apply: choice' | exists (f x)].
-  Qed.
+  Lemma total_rel_iff R: total_rel R <-> total_rel' R.
+  Proof. by split =>[| [f H1] x];[apply: choice' | exists (f x)].  Qed.
   
   Definition total_rel'' (R: relation T) := 
     (forall x, exists f : nat -> T, f 0 = x /\ forall n, R ((f n),(f (S n)))).
@@ -171,31 +168,25 @@ Section Infinite_paths.
   Lemma iterP: forall k f x, iter f x k.+1 = f (iter f x k).
   Proof. by elim. Qed.
   
-  Lemma total_rel'_to_total_rel'' (R: relation T):
-    total_rel' R -> total_rel'' R.
+  Lemma total_rel'_to_total_rel'' R:  total_rel' R -> total_rel'' R.
   Proof. by move => [f H1] x;exists (iter f x). Qed.
   
   Definition iic (R: relation T) := exists f : nat -> T, forall n, R ((f n),(f (S n))).  
   
-  Lemma total_rel''_to_iic (R: relation T): 
-    (exists (v0:T), (v0 \in setT)) ->  total_rel'' R -> iic R. 
-  Proof.
-    by move => -[v0 H1] /(_ v0) [f [H2 H3]]; exists f.
-  Qed.
+  Lemma total_rel''_to_iic R: (exists (v0:T), (v0 \in setT)) ->  total_rel'' R -> iic R. 
+  Proof. by move => -[v0 H1] /(_ v0) [f [H2 H3]]; exists f. Qed.
   
   (** * DC as a lemma deduced from choice *)
-  Lemma DC: forall (R: relation T),
-      (exists (v0:T), (v0 \in setT)) ->  total_rel R -> iic R. 
+  Lemma DC R:  (exists (v0:T), (v0 \in setT)) ->  total_rel R -> iic R. 
   Proof.
-    by move => R H0 /total_rel_iff/total_rel'_to_total_rel''/(total_rel''_to_iic H0) H1.
+    by move => H0 /total_rel_iff/total_rel'_to_total_rel''/(total_rel''_to_iic H0) H1.
   Qed.
   
   (* begin snippet Rloop:: no-out *)    
-  Definition Rloop (S: relation T) := exists v, forall w,  S (v,w) -> S (w,v).
+  Definition Rloop (R: relation T) := exists v, forall w,  R (v,w) -> R (w,v).
   (* end snippet Rloop *)
   
-  Lemma test (S: relation T):
-    (antisymmetric S /\ irreflexive S /\ Rloop S) -> (~ (total_rel S)).
+  Lemma test R: (antisymmetric R /\ irreflexive R /\ Rloop R) -> (~ (total_rel R)).
   Proof.
     move => [H1 [H1' [v H2]]].
     rewrite -existsNP; exists v; rewrite -forallNE => x /[dup] H3 /H2 H4.
@@ -203,33 +194,29 @@ Section Infinite_paths.
     by move: H3; rewrite H5 => /H1'.
   Qed.
   
-  Lemma test1 (S: relation T): (~ (total_rel S)) -> exists v, (forall x : T, ~ S (v, x)).
+  Lemma test1 R: (~ (total_rel R)) -> exists v, (forall x : T, ~ R (v, x)).
   Proof. by rewrite -existsNP => -[v H1];exists v;move: H1; rewrite -forallNE. Qed. 
 
-  Lemma test2 (S: relation T): (exists v, (forall x : T, ~ S (v, x)))-> Rloop S.
+  Lemma test2 R: (exists v, (forall x : T, ~ R (v, x)))-> Rloop R.
   Proof. by move => -[v H1];exists v => y /H1 H2. Qed. 
 
-  Lemma test3 (S: relation T): ~ (Rloop S) -> total_rel (Asym S).
+  Lemma test3 R: ~ (Rloop R) -> total_rel (Asym R).
   Proof. 
     by rewrite -forallNE => H1 v;move: H1 => /(_ v)/existsNP [w /not_implyP H1];exists w.
   Qed.
 
-  Lemma test4 (S: relation T): (Rloop S) -> Rloop (Asym S).
+  Lemma test4 R: (Rloop R) -> Rloop (Asym R).
   Proof.
     by move => [v H1];exists v => w [H2 H3];split;[apply: H1| move: H2 => /H1 H2].
   Qed.
 
-  Lemma test5 (S: relation T):
-    (Rloop S) -> let Sa:= (Asym S) in exists v, (forall x : T, ~ (Sa (v, x))).
+  Lemma test5 R: (Rloop R) -> exists v, (forall x : T, ~ ((Asym R) (v, x))).
   Proof. by move => [v H1];exists v => w [/H1 H2 H3]. Qed.
   
-  Lemma notiic_rloop: forall (S: relation T),
-      (exists (v0:T), (v0 \in setT)) -> ~ (iic (Asym S)) -> (Rloop S).
-  Proof. 
-    by move => S H0; apply contraPP => /test3/(DC H0) H1.
-  Qed.
+  Lemma notiic_rloop R: (exists (v0:T), (v0 \in setT)) -> ~ (iic (Asym R)) -> (Rloop R).
+  Proof. by move => H0; apply contraPP => /test3/(DC H0) H1.  Qed.
 
-  Lemma AsymInf (f : nat -> T) (R: relation T): 
+  Lemma AsymInf (f : nat -> T) R:
     (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
      forall p n, 0 < p -> (Asym R.+) (f n, f (n + p)). 
   Proof.
@@ -245,7 +232,7 @@ Section Infinite_paths.
     by rewrite -addn1 -[p.+1]addn1 addnA.
   Qed.
   
-  Lemma AsymInf' (f : nat -> T) (R: relation T): 
+  Lemma AsymInf' (f : nat -> T) R:
     (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
     forall p n, 0 < p -> ~ (f n) = f (n + p). 
   Proof.
@@ -266,7 +253,7 @@ Section Infinite_paths.
          by rewrite -addn1 H7 -addnA addn1.
   Qed.
   
-  Lemma AsymInf'' (f : nat -> T) (R: relation T): 
+  Lemma AsymInf'' (f : nat -> T) R:
     (forall n, (Asym R.+) ((f n),(f (S n)))) -> injective f.
   Proof.
     move => /AsymInf' Hi p q;apply contraPP => H1.
@@ -281,42 +268,39 @@ End Infinite_paths.
 
 Section Infinite_paths_X.
   (** * Assumptions on infinite paths *)
-  Variables (T:Type).
   
-  Lemma setTypeP (X: set T):
-    (exists v : X, v \in [set: X]) <-> (exists (v:T), (v \in X)).
+  Context (T : Type).
+  Implicit Types (T : Type) (R: relation T) (X: set T).
+
+  Lemma setTypeP X: (exists v : X, v \in [set: X]) <-> (exists (v:T), (v \in X)).
   Proof.
     split => [[v H0] |[v H0]].
     by (exists (sval v));rewrite inP; apply: set_valP. 
     by (exists (exist _ v H0));rewrite inP.
   Qed.
   
-  Lemma notiic_rloop_sub: forall (X: set T) (S: relation X),
-      (exists (v0:T), (v0 \in X)) -> ~ (iic (Asym S)) -> (Rloop S).
-  Proof. by move => X S /setTypeP H0; apply: notiic_rloop. Qed. 
+  Lemma notiic_rloop_sub X (S: relation X):
+    (exists (v0:T), (v0 \in X)) -> ~ (iic (Asym S)) -> (Rloop S).
+  Proof. by move => /setTypeP H0; apply: notiic_rloop. Qed. 
   
-  Lemma test67 : forall (X: set T) (R: relation T),
-      (iic (@Restrict' T X (Asym R))) -> (iic (Asym R)).
-  Proof.
-    by move => X R [f // H1];exists (fun n => (sval (f n))).
-  Qed.
+  Lemma test67 X R: (iic (@Restrict' T X (Asym R))) -> (iic (Asym R)).
+  Proof.  by move => [f // ?];exists (fun n => (sval (f n))). Qed.
 
-  Lemma test68: forall (X: set T) (R: relation T),
-      ~ (iic (Asym R)) -> (exists (v0:T), (v0 \in X))
-      -> (Rloop (@Restrict' T X R)).
+  Lemma test68 X R:
+    ~ (iic (Asym R)) -> (exists (v0:T), (v0 \in X)) -> (Rloop (@Restrict' T X R)).
   Proof.
-    move => X R H1 H0.
+    move => H1 H0.
     have H2:  ~ (iic (Asym R)) -> ~ (iic (@Restrict' T X (Asym R)))
       by apply contraPP;rewrite notE notE; apply: test67.
     move: H1 => /H2 H1.
     by apply: (notiic_rloop_sub H0 H1).
   Qed.
   
-  Lemma test68': forall (X: set T) (R: relation T),
-       ~ (iic (Asym R)) ->(exists (v0:T), (v0 \in X))
-      -> (exists (v:T), v \in X /\ forall w, w \in X -> R (v,w) -> R (w,v)).
+  Lemma test68' X R:
+    ~ (iic (Asym R)) ->(exists (v0:T), (v0 \in X))
+    -> (exists (v:T), v \in X /\ forall w, w \in X -> R (v,w) -> R (w,v)).
   Proof.
-    move => X R Ninf H0.
+    move => Ninf H0.
     move: (test68 Ninf H0) => [v H1].
     exists (sval v).
     split; first  by rewrite inP; apply: set_valP.
@@ -405,8 +389,7 @@ Section Paper.
       apply: proof_irrelevance.
     Qed.
     
-    Lemma leSet1_porder: 
-      @porder SType leSet1. 
+    Lemma leSet1_porder: @porder SType leSet1. 
     Proof.
       pose proof sporderAst as H_sp.
       split => [ [A ?] | [A Ha] [B Hb] H1 H2 | [A ?] [B ?] [C ?]].

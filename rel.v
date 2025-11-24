@@ -306,25 +306,6 @@ Section Relation_Facts.
     by move => [|] [/= ? /= <-];apply/DsetE;split;[left| |right| ].
   Qed.
   
-  (** * Delta relation  *)
-  
-  Lemma DeltaP (x y: T): 'Δ (x,y) <-> x = y.
-  Proof. by split => [[_ ? //]| ->]. Qed.
-
-  Lemma DeltaS X: Δ_(X) `<=` 'Δ.
-  Proof. by apply: DsetS. Qed.
-  
-  Lemma DeltaIv: 'Δ^-1 = ('Δ : relation T).
-  Proof. by apply:  DsetIv. Qed.
-
-  (* 'Δ `;` R = R.  *)
-  Lemma DeltaCl: left_id 'Δ (@compose T). 
-  Proof. by move => R;rewrite predeqE => -[x y];split=> [[z [/DeltaP <- ?]] //| ?];exists x;split. Qed.
-  
-  (* R `;` 'Δ = R.   *)
-  Lemma DeltaCr: right_id 'Δ (@compose T). 
-  Proof. by move => R;rewrite predeqE => -[x y];split => [[z [? /DeltaP /= <-]]// | ?];exists y;split.  Qed.
-  
   Lemma DeltaLco X R: Δ_(X) `;` R = L_(X) `&` R.
   Proof. by rewrite predeqE /= => [[x y]] /=;split => [[z [[? /= <-] ?]]|[? ?]];[|exists x].  Qed.
 
@@ -343,6 +324,25 @@ Section Relation_Facts.
   
   Lemma DeltacC X: Δ_(X.^c) `;` Δ_(X) = 'Δc.
   Proof. by rewrite DsetC setIC -setDE setDv Delta0. Qed.
+  
+  (** * Delta relation  *)
+  
+  Lemma DeltaP (x y: T): 'Δ (x,y) <-> x = y.
+  Proof. by split => [[_ ? //]| ->]. Qed.
+
+  Lemma DeltaS X: Δ_(X) `<=` 'Δ.
+  Proof. by apply: DsetS. Qed.
+  
+  Lemma DeltaIv: 'Δ^-1 = ('Δ : relation T).
+  Proof. by apply:  DsetIv. Qed.
+
+  (* 'Δ `;` R = R.  *)
+  Lemma DeltaCl: left_id 'Δ (@compose T). 
+  Proof. by move => R;rewrite predeqE => -[x y];split=> [[z [/DeltaP <- ?]] //| ?];exists x;split. Qed.
+  
+  (* R `;` 'Δ = R.   *)
+  Lemma DeltaCr: right_id 'Δ (@compose T). 
+  Proof. by move => R;rewrite predeqE => -[x y];split => [[z [? /DeltaP /= <-]]// | ?];exists y;split.  Qed.
   
   Lemma DeltaC_union_ideml R: 'Δc `|` R = R.
   Proof.
@@ -404,7 +404,7 @@ Section Relation_Facts.
     rewrite -addn1 (iter_compose R n 1) => -[z [/H3 H4 /H2' H5]];apply: (Ht x z y H4 H5). 
   Qed. 
   
-  Lemma inverse_iter R (n: nat) : R^(n)^-1 = (R^-1)^(n).
+  Lemma iterIv R (n: nat) : R^(n)^-1 = (R^-1)^(n).
   Proof.
     elim: n =>[| n H1];first  by rewrite /iter DsetIv.
     by rewrite -addn1 (iter_compose R n 1) composeIv
@@ -512,8 +512,8 @@ Section Relation_Facts.
   Lemma TclosIv R: R.+^-1 = R^-1.+ .
   Proof.
     rewrite predeqE => -[x y] /=;split => [[n ? ?]| [n H1]].
-    by (exists n);[ exact|rewrite -inverse_iter].
-    by rewrite -inverse_iter => ?;exists n.
+    by (exists n);[ exact|rewrite -iterIv].
+    by rewrite -iterIv => ?;exists n.
   Qed.
   
   Lemma clos_t_sym R: symmetric R -> symmetric R.+.
