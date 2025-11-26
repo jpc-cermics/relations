@@ -1115,49 +1115,49 @@ Section Hn4.
   Qed.
   
   Lemma allL_asym_l: forall st x s y,
-      s \in st -> ~(s = x) -> allL R st x y -> ~ R.+ (y, last x st) 
+      s \in st -> allL R st x y -> ~ R.+ (y, last x st) 
       -> (Asym R.+) (s, y).
   Proof.
-    move => st x s y H1 H2 H4 H5.
+    move => st x s y H1 H4 H5.
     split; first by move: (allL_to_clos_t (allL_drop H1 H4)) => H6.
     case H3: (s == (last x st)); first by move: H3 => /eqP ->.
     have H6: ~ ( s = (last x st)). by move => H7; rewrite -H7 eq_refl in H3.
-    pose proof (allL_belast H1 H2 H6 H4) as H7.
+    pose proof (allL_belast H1 H6 H4) as H7.
     by move => H8;have H9: R.+ (y, last x st) by apply: (TclosT H8 H7).
   Qed.
   
   Lemma allL_asym_r: forall st x s y,
-      s \in st -> ~(s = y) -> allL R st x y -> ~ R.+ (head y st, x) 
+      s \in st -> allL R st x y -> ~ R.+ (head y st, x) 
       -> (Asym R.+) (x, s).
   Proof.
-    move => st x s y H1 H2 H4 H5.
+    move => st x s y H1 H4 H5.
     split;first by move: (allL_to_clos_t (allL_take H1 H4)). 
     case H3: (s == (head y st)); first by move: H3 => /eqP ->.
     have H6: ~ ( s = (head y st)). by move => H7; rewrite -H7 eq_refl in H3.
-    pose proof (allL_behead H1 H2 H6 H4) as H7.
+    pose proof (allL_behead H1 H6 H4) as H7.
     by move => H8;have H9: R.+ (head y st,x) by apply: (TclosT H7 H8).
   Qed.
   
   Lemma allL_asym_lr: forall st st' x s y s' z,
-      s \in st -> ~(s = x) -> allL R st x y -> ~ R.+ (y, last x st) 
+      s \in st -> allL R st x y -> ~ R.+ (y, last x st) 
       -> s' \in st'  -> allL R st' y z
       -> (Asym R.+) (s, s').
   Proof.
-    move => st st' x s y s' z H1 H2 H3 H4 H5 H6.
-    pose proof (allL_asym_l H1 H2 H3 H4) as H7.
+    move => st st' x s y s' z H1 H3 H4 H5 H6.
+    pose proof (allL_asym_l H1 H3 H4) as H7.
     have H8: s' \in (rcons st' z) by rewrite in_rcons H5 orTb. 
     pose proof (Lxx_head' H8 H6) as H9. 
     have H10: (Asym(R.+) `;` R.+) (s,s') by (exists y).
     by move: H10 => /AsymIncr H10.
   Qed.
-
+  
   Lemma allL_asym_rl: forall st st' x s y s' z,
       s \in st -> allL R st x y 
-      -> s' \in st' ->  ~(s' = z) -> allL R st' y z -> ~ R.+ (head z st', y) 
+      -> s' \in st' -> allL R st' y z -> ~ R.+ (head z st', y) 
       -> (Asym R.+) (s, s').
   Proof.
-    move => st st' x s y s' z H1 H2 H3 H4 H5 H6.
-    pose proof (allL_asym_r H3 H4 H5 H6) as H7.
+    move => st st' x s y s' z H1 H2 H3 H5 H6.
+    pose proof (allL_asym_r H3 H5 H6) as H7.
     have H8: s \in (x::st) by rewrite in_cons H1 orbT. 
     pose proof (Lxx'' H8 H2) as H9. 
     have H10: (R.+  `;` Asym(R.+)) (s,s') by (exists y).
@@ -1199,8 +1199,7 @@ Section Hn4.
     move: H2 => /uniq_crc [[K1 [K2 K3]] K4].
     move: H5 => /uniq_crc [[J1 [J2 J3]] J4].
     move => s H9 H10.
-    have H11: ~(s = x) by move => H12; rewrite H12 in H10.
-    pose proof allL_asym_lr H10 H11 H1 H3 H9 H4 as H12. 
+    pose proof allL_asym_lr H10 H1 H3 H9 H4 as H12. 
     by pose proof Asym_irreflexive H12.
   Qed.
   
@@ -1428,7 +1427,8 @@ Section Hn4.
           
           have H21: forall s : T, s <> z -> s \in stlr -> s \in str1 -> False.
           move: H11 => [H11 H11'] s H18 H19 H20.
-          by pose proof (allL_asym_rl H19 H15 H20 H18 H11 H14) as [H notH]. 
+          (** * ZZZZ H18 non used *)
+          by pose proof (allL_asym_rl H19 H15 H20 H11 H14) as [H notH]. 
       
           have H17: allL R ((rcons stlr yr) ++ str1) yl z.
           by move: H11 => [H11' H11'']; by rewrite allL_cat; apply/andP. 
@@ -1483,13 +1483,12 @@ Section Hn4.
           have H28: (forall s : T, s \in stl1 -> s \in drop (index yl str1).+1 str1 -> False).
           move => s H29 H28. 
           have H30: s \in str1 by pose proof (in_subseq' H22 H28).
-          have H31: ~ (s = x) by move => H32;rewrite H32 in H29.
-          have H32: (s \in (rcons stlr yr) ++ str1)
+           have H32: (s \in (rcons stlr yr) ++ str1)
             by rewrite mem_cat; apply/orP; right.
           
           have H33: allL R ((rcons stlr yr) ++ str1) yl z
             by rewrite allL_cat; apply/andP. 
-          by pose proof (allL_asym_lr H29 H31 H7'' H10 H32 H33) as [H notH].
+          by pose proof (allL_asym_lr H29 H7'' H10 H32 H33) as [H notH].
           (* end of H28 *)
           
           by pose proof (uniq_cat K3 H24 H28).
@@ -1532,10 +1531,8 @@ Section Hn4.
          move: (H7) (H11)  => [H7' H8] [H9' H10].
          have H12: forall s, s \in stl1 -> s \in (rcons str1 yr ++ stlr) -> False.
          move => s H13 H14. 
-         have H15: ~(s = x) 
-           by move: H8 => /uniq_crc   [[K1 _] _] H16;rewrite -H16 in K1.
-         by move: (allL_asym_lr H13 H15 H7' H9 H14 H9') => [H notH].
-      
+         by move: (allL_asym_lr H13 H7' H9 H14 H9') => [H notH].
+         
          move: H8 => /uniq_crc [[_ [_ H8]] _].
          move: H10 => /uniq_crc [[_ [_ H10]] _].
          

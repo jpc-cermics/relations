@@ -139,7 +139,7 @@ Section Seq1_plus.
   Lemma mem_last s x: last x s \in x :: s.
   Proof. by rewrite lastI mem_rcons mem_head. Qed.
  
-  Lemma poo s: ~ ( s = [::]) <-> 0 < size s.
+  Lemma size0P s: ~ ( s = [::]) <-> 0 < size s.
   Proof. 
     split. 
     by move: (leq0n (size s));rewrite leq_eqVlt eq_sym=> /orP [/nilP|? _].
@@ -422,12 +422,29 @@ End Seq1_plus.
 Section allL_uniq.
   (** * The aim of this section is to prove allL_uniq *)
 
-  Variables (T:eqType) (R: relation T).
+  Context (T:eqType).
 
-  Implicit Types x y z : T.
-  Implicit Type s : seq T.
+  Implicit Types  (R: relation T) (s: seq T) (x y z : T).
+
+  Lemma last_in_drop s z x:
+    z \in s -> ~ (z = (last x s)) -> (last x s) \in (drop ((index z s).+1) s).
+  Proof.
+    move => /[dup] H1 /(nth_index z) H2 H3.
+    pose m := (size s).-1; pose p := (index z s).+1.
+    have H4: (index z s) < size s by rewrite index_mem.
+    move: H4; rewrite leq_eqVlt => /orP [/eqP H4 | H4].
+    + have P1': (index z s) = (size s).-1 -> z = (last x s)
+        by move => H10; rewrite -H2 H10 nth_last;
+                  apply: (@last_dv _ s z x 0);apply: (@in_non0 _ s z). 
+      by have H5: z = last x s by apply: P1';rewrite -H4.
+    + have P4: p + (m-p)= m by lia. 
+      have P5: last x s = nth x (drop p s) (m-p) by rewrite nth_drop P4 -nth_last.
+      have P8: m - p < size (drop p s) by rewrite size_drop /m; lia.
+      by have P6: last x s \in (drop p s)
+        by rewrite P5;apply: (@mem_nth _ x (drop p s) (m-p)).
+  Qed.
   
-  Lemma allL_drop: forall s (x y z:T),
+  Lemma allL_drop R: forall s (x y z:T),
       z \in s -> allL R s x y -> allL R (drop ((index z s).+1) s) z y.
   Proof.
     elim => [x y z ? ? // | t s Hr x y z H1 H2].
@@ -442,7 +459,7 @@ Section allL_uniq.
       ++ by move: H2; rewrite allL_c => /andP [_ H2]. 
   Qed.
  
-  Lemma allL_take: forall s (x y z:T),
+  Lemma allL_take R: forall s (x y z:T),
       z \in s -> allL R s x y -> allL R (take (index z s) s) x z.
   Proof.
     elim => [x y z ? ? // | t s Hr x y z H1 H2].
@@ -458,89 +475,31 @@ Section allL_uniq.
       by move: (Hr t y z H4 H2').
   Qed.
   
-  Lemma allL_last: forall s (x y:T),
-      allL R s x y ->  (rcons (belast x s) (last x s)) [L\in] R.
-  Proof. by move => s x y /allL_split [+ _]; rewrite lastI. Qed.
-  
-  Lemma in_belast s x z: z \in s -> ~ (z = (last x s)) -> z \in (belast x s).
-  Proof.
-    move => H1 ?; have: z \in  x :: s by rewrite in_cons H1 orbT.
-    by rewrite lastI in_rcons => /orP [ // | /eqP //].
-  Qed.
-  
-  Lemma belast_head s x: ~(s = [::]) -> (belast x s) = x::(drop 1 (belast x s)).
-  Proof.
-    by elim/last_ind: s x => [x // | s y Hr x _];rewrite belast_rcons drop1 /behead.
-  Qed.
-  
-  Lemma allL_belast: forall s (x z y:T),
-      z \in s -> ~(z = x) -> ~ (z = (last x s)) -> allL R s x y
-      -> R.+ (z, (last x s)).
-  Proof.
-    move => s x z y H1 H2 H3 H4;move: (in_belast H1 H3) => H5;move: (allL_last H4) => H6.
-    have H7:  ~(s = [::]) by move => H8; rewrite H8 in H1.
-    have H8:  (belast x s) = x::(drop 1 (belast x s)) 
-      by apply: belast_head.
-    move: H5; rewrite H8 in_cons => /orP [/eqP H9 // | H9].
-    move: H6; rewrite H8 rcons_cons => H6.
-    by pose proof (allL_to_clos_t (allL_drop H9 H6)).
-  Qed.
-
-
-  Lemma nth_in: forall x j s, j >= 0 -> j < size s -> nth x s j \in s.
-  Proof.
-    move => x j s. elim: s j => [// | y s Hr j H0 H1].
-    case H2: (j == 0).
-    + move: H2 => /eqP -> /=. by rewrite in_cons eq_refl orTb.
-    + move: H2 => /neq0_lt0n H2.
-      have H3: j.-1.+1 = j by apply: ltn_predK. 
-      rewrite -H3 ltnS in H2.
-      case H4: (j.-1 == size s). move: H4 => /eqP H4.
-      rewrite -H3 H4. 
-  Admitted.
-  
-  Lemma allL_belast': forall s (x z y:T),
-      z \in s -> ~ (z = (last x s)) -> allL R s x y
-      -> R.+ (z, (last x s)).
+  Lemma allL_belast R: forall s (x z y:T),
+      z \in s -> ~ (z = (last x s)) -> allL R s x y -> R.+ (z, (last x s)).
   Proof.
     move => s x z y H1 H2 H3.
     pose proof allL_drop H1 H3 as H4.
-    have H5: last x s \in (drop (index z s).+1 s). admit. 
+    have H5: last x s \in (drop (index z s).+1 s). by apply: last_in_drop.
     pose proof allL_take H5 H4 as H6. 
-
-    pose m := (size s).-1.
-    pose p := (index z s).+1.
-    have P1: last x s =  nth x s m. by rewrite -nth_last.
-    have P3: nth x (drop p s) (m-p) = nth x s (p + (m-p)). by rewrite nth_drop.
-    have P4: p + (m-p)= m. admit.
-    have P5: last x s = nth x (drop p s) (m-p). by rewrite P3 P4 -nth_last.
-    have P6: last x s \in (drop p s). rewrite P5.
-    have P7: forall j, j >= 0 -> j < size s -> nth x s j \in s. 
-    pose proof (allL_to_clos_t (allL_take H5 H4)).
-  Admitted.
-  
-  
-  Lemma in_behead: forall s (x z:T),
-      z \in s -> ~ (z = (head x s)) -> z \in (behead s).
-  Proof.
-    elim => [x z // | y s Hr x z H1 /= H2].
-    by move: H1; rewrite in_cons => /orP [/eqP H1 //| H1 //].
-  Qed.
-
-  Lemma behead_head: forall s (x:T),
-    ~(s = [::]) ->  s = (head x s)::(behead s).
-  Proof. by elim => [// | y s Hr x _ /=]. Qed.
-    
-  Lemma allL_behead: forall s (x z y:T),
-      z \in s -> ~(z = y) -> ~ (z = (head y s)) -> allL R s x y
-      -> R.+ ((head y s),z).
-  Proof.
-    move => s x z y H1 H2 H3 H4.
-    move: (in_behead H1 H3) => H5.
-    have H7: ~(s = [::]) by move => H8; rewrite H8 in H1.
-    have H8: s = (head y s)::(behead s) by apply: behead_head;exact.
-    move: H4; rewrite H8 allL_c => /andP [_ H4].
+    pose proof (@cat_take_drop (index z s).+1 T s ) as H8.
     by pose proof (allL_to_clos_t (allL_take H5 H4)).
+  Qed.
+  
+  Lemma in_behead s x z: z \in s -> ~ (z = (head x s)) -> z \in (behead s).
+  Proof.
+    by elim: s x z => [x z //| y s _ x z + /= ?];rewrite in_cons => /orP [/eqP ? | ? ].
+  Qed.
+  
+  Lemma behead_head s x z:  z \in s ->  s = (head x s)::(behead s).
+  Proof. by elim: s x => [| y s _ x _ ] //. Qed.
+  
+  Lemma allL_behead R s x z y: 
+    z \in s  -> ~ (z = (head y s)) -> allL R s x y -> R.+ ((head y s),z).
+  Proof.
+    move => H1 H3; move: (in_behead H1 H3) => H5.
+    rewrite (@behead_head s x z H1) allL_c => /andP [_ H4].
+    by apply: (allL_to_clos_t (allL_take H5 H4)).
   Qed.
   
   Lemma drop_cons': forall (s: seq T) (x:T),
@@ -567,38 +526,28 @@ Section allL_uniq.
     move => /andP [H2 H3]; by pose proof (Hr x) H1 H3. 
   Qed.
   
-  Lemma allL_uniq_tail: forall (U: relation T) (s: seq T) (x y: T),
-      allL U s x y -> exists s', subseq s' s /\  ~( y \in s') /\ allL U s' x y.
+  Lemma allL_uniq_tail R s x y:
+    allL R s x y -> exists s', subseq s' s /\  ~( y \in s') /\ allL R s' x y.
   Proof.
-    move => U.
-    elim => [// x y H1 | a s H1 x y]; first by (exists [::]).
-    case H2: (y == a).
-    + move: (H2) => /eqP H2'.
-      rewrite allL_c -H2' => /andP [H3 _].
-      by (exists [::]); rewrite allL0.
-    + rewrite allL_c => /andP [H3 /H1 [s' [ H4 [H5 H6]]]].
-      exists [::a & s'].
-      split. 
-      by rewrite -cat1s -[a::s]cat1s; rewrite subseq_cat2l.
-      rewrite in_cons H2 /=.
-      split. 
-      by [].
-      by rewrite allL_c H3 H6.
+    elim: s x y => [// x y ? | a s Hr x y]; first by (exists [::]).
+    case H2: (y == a). 
+    by move: H2 => /eqP H2;rewrite allL_c -H2 => /andP [H3 _];(exists [::]);rewrite allL0.
+    rewrite allL_c => /andP [H3 /Hr [s' [H4 [H5 H6]]]].
+    exists [::a & s'];split; first by rewrite -cat1s -[a::s]cat1s; rewrite subseq_cat2l.
+    by rewrite in_cons H2 /=;split;[ |rewrite allL_c H3 H6].
   Qed.
   
-  Lemma allL_uniq_head: forall (s: seq T) (x y: T),
+  Lemma allL_uniq_head R s x y:
       allL R s x y -> exists s', subseq s' s /\ ~( x \in s') /\ allL R s' x y.
   Proof.
-    move => s x y; rewrite allL_rev => H1.
+    rewrite allL_rev => H1.
     pose proof allL_uniq_tail H1 as [s' H2].
     move: H2; rewrite  allL_rev inverseK => [[H2 [H3 H4]]].
-    exists (rev s');split. 
-    have H5: s = (rev (rev s)) by rewrite revK.
-    by rewrite H5 subseq_rev.
-    by rewrite in_rev revK. 
+    exists (rev s');split;last by  rewrite in_rev revK.
+    by (have H5: s = (rev (rev s)) by rewrite revK); rewrite H5 subseq_rev.
   Qed.
 
-  Lemma allL_uniq_internals: forall (s: seq T) (x y: T),
+  Lemma allL_uniq_internals R: forall (s: seq T) (x y: T),
       allL R s x y -> exists s', subseq s' s /\  @uniq T s' /\ allL R s' x y.
   Proof.
     elim => [// x y H1 | a s H1 x y]; first by (exists [::]).
@@ -664,7 +613,7 @@ Section allL_uniq.
   Qed.
   
   
-  Lemma allL_uniq: forall (s: seq T) (x y: T),
+  Lemma allL_uniq R: forall (s: seq T) (x y: T),
       allL R s x y -> 
       exists s', subseq s' s /\ ~( x \in s') /\  ~(y \in s')
              /\  @uniq T s' /\ allL R s' x y. 
@@ -679,7 +628,7 @@ Section allL_uniq.
     by exists s4;pose proof (subseq_trans (subseq_trans S4 S3) S2).
   Qed.
   
-  Lemma TCP_uniq: forall (x y:T), 
+  Lemma TCP_uniq R: forall (x y:T), 
       R.+ (x,y) <-> exists s, uniq_path s x y /\ allL R s x y. 
   Proof.
     move => x y;split. 
@@ -688,7 +637,7 @@ Section allL_uniq.
     - by move => [s [_ H1]]; move: H1;apply: allL_to_clos_t. 
   Qed.
   
-  Lemma TCP_uniq'': forall (x y:T), 
+  Lemma TCP_uniq'' R: forall (x y:T), 
       R.+ (x,y) /\ ~ (x = y) 
       <-> exists s, uniq (x::(rcons s y)) /\ (x::(rcons s y)) [L\in] R.
   Proof.
@@ -699,7 +648,7 @@ Section allL_uniq.
     + by move => [s [/uniq_crc [_ H1] /(@allL_to_clos_t T)  H2]].
   Qed.
   
-  Lemma TCP_uniq': forall (x y:T), 
+  Lemma TCP_uniq' R: forall (x y:T), 
       (Asym R.+)(x,y) 
       -> exists s, uniq (x::(rcons s y)) /\ (x::(rcons s y)) [L\in] R.
   Proof.
@@ -708,11 +657,9 @@ Section allL_uniq.
     by rewrite -TCP_uniq''.
   Qed.
 
-  Definition allLu (R: relation T) s x y :=
-    (x::(rcons s y)) [L\in] R /\ uniq (x :: rcons s y).
+  Definition allLu R s x y := (x::(rcons s y)) [L\in] R /\ uniq (x :: rcons s y).
   
-  Lemma TCP_uniq1 (x y:T):
-      (Asym R.+)(x,y) <-> (exists s, allLu R s x y) /\ ~ R.+ (y,x).
+  Lemma TCP_uniq1 R x y: (Asym R.+)(x,y) <-> (exists s, allLu R s x y) /\ ~ R.+ (y,x).
   Proof. split. 
     by move => /[dup] /TCP_uniq' [s [H1 H2]] [_ H4];split;[exists s;split |].
     by move => [[s [H1 H2]] H3];split;[apply: allL_to_clos_t; apply: H1|].

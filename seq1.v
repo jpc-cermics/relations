@@ -220,7 +220,7 @@ Section Lift_props.
   Proof. by rewrite headI Lift_c. Qed.
   
   Lemma Lift_rcrc st x y:
-      Lift (rcons (rcons st x) y) =  rcons (Lift (rcons st x)) (x,y).
+    Lift (rcons (rcons st x) y) =  rcons (Lift (rcons st x)) (x,y).
   Proof.
     have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
     elim:st => [// | z st Hr ].
