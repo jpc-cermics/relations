@@ -64,21 +64,50 @@ Reserved Notation "p [Suc\in] R" (at level 4, no associativity).
 Notation "p [\in] X" := (all (fun x => x \in X) p). 
 (* end snippet allnotation *)  
 
+(* begin snippet Lift:: no-out *)  
+Fixpoint Lift (T: Type) (st: seq T): seq (T*T) := 
+  match st with 
+  | x :: [:: y & st] as st1 => (x,y)::(Lift st1)
+  | _ => Nil (T*T)
+  end.
+(* end snippet Lift *)  
+
+(* begin snippet Liftnota:: no-out *)
+Notation "s [L\in] R" := (Lift s) [\in] R.
+(* end snippet Liftnota *)
+
+(* another equivalent definition *)
+Definition Lift' (T: Type) (t:T) (st: seq T) := 
+  (behead (pairmap (fun x y => (x,y)) t st)).
+
+(** * s [Suc\in] R: consecutive elements of s satisfy relation R *)
+(** * we later prove that: s [L\in] R <-> s [Suc\in] R *)
+  
+Inductive RPath (T: Type) (R: relation T): seq T -> Prop :=
+| pp_void : RPath R [::]
+| pp_two (t: T) (st: seq T) : 
+  RPath R st ->
+  st = [::] \/ (exists (t': T), exists (st': seq T), st = [::t' & st'] /\ R (t,t'))
+  -> RPath R ([:: t & st]).
+  
+(* begin snippet RPath:: no-out *)  
+Notation "s [Suc\in] R" := (RPath R s).
+(* end snippet RPath *)  
+
+(** Left inverse of Lift *)
+Fixpoint UnLift (T: Type) (spt: seq (T*T)) (t: T):= 
+  match spt with 
+  | [::] => [::t]
+  | [::(t1,t2) & spt1 ] => [::t1 & UnLift spt1 t2]
+  end.
+  
+(* begin snippet allL:: no-out *)  
+Definition allL (T: Type) (R:relation T) st x y := (x::(rcons st y)) [L\in] R.
+(* end snippet allL *)    
+
 Section Lift_def.
   (** * Lift operation on sequences *) 
-  Variables (T: Type).
-  
-  (* begin snippet Lift:: no-out *)  
-  Fixpoint Lift (st: seq T): seq (T*T) := 
-    match st with 
-    | x :: [:: y & st] as st1 => (x,y)::(Lift st1)
-    | _ => Nil (T*T)
-    end.
-  (* end snippet Lift *)  
-  
-  (* another equivalent definition *)
-  Definition Lift' (t:T) (st: seq T) := 
-    (behead (pairmap (fun x y => (x,y)) t st)).
+  Context (T: Type).
   
   Lemma Lift_eq: forall (t:T) (st:seq T), Lift st = Lift' t st.
   Proof.
@@ -88,29 +117,6 @@ Section Lift_def.
   Qed.
 
 End Lift_def.
-
-(* begin snippet Liftnota:: no-out *)
-Notation "s [L\in] R" := (Lift s) [\in] R.
-(* end snippet Liftnota *)
-
-Section Suc_def.
-  (** * s [Suc\in] R: consecutive elements of s satisfy relation R *)
-  (** * we later prove that: s [L\in] R <-> s [Suc\in] R *)
-    
-  Variables (T: Type).
-  
-  Inductive RPath (R: relation T): seq T -> Prop :=
-  | pp_void : RPath R [::]
-  | pp_two (t: T) (st: seq T) : 
-    RPath R st ->
-    st = [::] \/ (exists (t': T), exists (st': seq T), st = [::t' & st'] /\ R (t,t'))
-    -> RPath R ([:: t & st]).
-      
-End Suc_def. 
-
-(* begin snippet RPath:: no-out *)  
-Notation "s [Suc\in] R" := (RPath R s).
-(* end snippet RPath *)  
 
 Section Seq_utilities.
   (** * some utilities for sequences *)
@@ -200,9 +206,7 @@ Section Seq_utilities.
   Qed.
 
   Lemma last_rev s t: last t (rev s) = head t s.
-  Proof.
-    by elim: s t => [// | t1 st1 Hr t];rewrite rev_cons last_rcons /= .
-  Qed.
+  Proof. by elim: s t => [//| t1 st1 _ t];rewrite rev_cons last_rcons /=.  Qed.
 
 End Seq_utilities.
 
@@ -282,13 +286,6 @@ Section Lift_props.
     by rewrite rev_cons rev_cons Lift_rcrc -rev_cons H1 Lift_c rev_cons map_rcons.
   Qed.
   
-  (** Left inverse of Lift *)
-  Fixpoint UnLift (spt: seq (T*T)) (t: T):= 
-    match spt with 
-    | [::] => [::t]
-    | [::(t1,t2) & spt1 ] => [::t1 & UnLift spt1 t2]
-    end.
-  
   Lemma UnLift_c spt x y z: UnLift ((x, y) :: spt) z = [::x & UnLift spt y].
   Proof. by []. Qed.
 
@@ -353,10 +350,10 @@ Section allset.
   Lemma allset_consb X st x: ((x::st) [\in] X) <-> (x \in X) && st [\in] X.
   Proof. by split. Qed.
   
-  Lemma allset_cons  X st x: ((x::st) [\in]  X) <->  X x /\ st [\in] X.
+  Lemma allset_cons  X st x: ((x::st) [\in]  X) <-> X x /\ st [\in] X.
   Proof. by rewrite allset_consb allsetP. Qed.
   
-  Lemma allset_subset X Y st: (X `<=` Y) -> (st [\in]  X) -> (st [\in] Y).
+  Lemma allset_subset X Y st: (X `<=` Y) -> (st [\in] X) -> (st [\in] Y).
   Proof.
     elim:st => [// | x' st' H1 H2 /andP [H3 H4]]. 
     by apply/andP;split;[apply/mem_set/H2/set_mem |apply: H1].
@@ -423,14 +420,24 @@ Section Lift_in.
   
   Lemma Lift_in_rc R st y: (rcons st y) [L\in] R -> st [L\in] R.
   Proof. by elim/last_ind: st y => [// | y st Hr x];rewrite Lift_rcrc allset_rcons => -[_ ?] //. Qed.
+
+  Lemma Lift_in_head R st x y: 0 < size (st) -> (x::st) [L\in] R -> R (x, head y st).
+  Proof.  by move => /seq_c [s' [x' ->]];rewrite /head allset_cons => -[? _]. Qed.
+
+  Lemma Lift_in_last R st x y: 0 < size (st) -> (rcons st y) [L\in] R -> R (last x st,y).
+  Proof.  by move => /seq_rc [s' [x' ->]];rewrite last_rcons Lift_rcrc allset_rcons => -[_ ?]. Qed.
+
+  Lemma Lift_in_splitl R st x y: 0 < size (st) -> (x::st) [L\in] R -> R (x, head y st) /\ st [L\in] R. 
+  Proof.  by move => ? ?;split;[apply: Lift_in_head | apply: (@Lift_in_c R st x)]. Qed.
+
+  Lemma Lift_in_splitr R st x y: 0 < size (st) -> (rcons st y) [L\in] R -> st [L\in] R /\ R (last x st,y).
+  Proof.  by move => ? ?;split;[apply: (@Lift_in_rc R st y) | apply: Lift_in_last]. Qed.
   
   Lemma Lift_in_F R st y: (rcons st y) [L\in] R -> st [\in] (R.+)#_(y).
   Proof.
     elim: st y  => [// | x st Hr y];rewrite rcons_cons. 
-    elim: st Hr => [_ | z st Hr' H1].
-    by rewrite /= => /andP [/inP /(@Fset_t1 _ R)/inP -> _].
-    rewrite Lift_crc 2!allset_cons => [[H2 /H1 H3]].
-    move: (H3); rewrite allset_cons => [[H4 H5]].
+    elim: st Hr => [_ | z st _ H1];first by rewrite /= => /andP [/inP /(@Fset_t1 _ R)/inP -> _].
+    rewrite Lift_crc 2!allset_cons => [[? /H1 /[dup] ?]];rewrite allset_cons => -[? ?].
     by split;[apply Fset_t2; exists z|].
   Qed.
   
@@ -461,12 +468,8 @@ Section allset_Lifted.
   (** * with specified endpoints *)
 
   Context {T: Type}.
-  Implicit Types (T : Type) (R: relation T) (X Y: set T) (st: seq T) (x y:T).
+  Implicit Types (T : Type) (R: relation T) (X Y: set T) (st: seq T) (x y z:T).
   
-  (* begin snippet allL:: no-out *)  
-  Definition allL R st x y := (x::(rcons st y)) [L\in] R.
-  (* end snippet allL *)    
-
   Lemma allL0 R x y:  allL R [::] x y = ((x,y) \in R).
   Proof. by rewrite /allL Lift_c /andP /= andbT. Qed.
 
@@ -484,17 +487,10 @@ Section allset_Lifted.
   Qed.
 
   Lemma allL_split R st x y:  allL R st x y <-> (x::st) [L\in] R /\ R ((last x st), y).
-  Proof.
-    split. 
-    - elim: st x;first by move=> x;rewrite allL0 inP.
-      move => x' st /(_ x') Hn x.
-      rewrite allL_c => /andP [H1 /Hn [H2 H3]].
-      by rewrite Lift_c allset_consb H1 H2 last_cons; split.
-    - elim: st x; first by move => x [_ ?];rewrite allL0 inP.
-      move => x' st /(_ x') Hn x [H1 H2].
-      move: H1; rewrite Lift_c allset_consb => /andP [H1 H1']. 
-      move: H2; rewrite last_cons => H2.
-      rewrite allL_c H1 /=; apply: Hn; by split. 
+  Proof. 
+    split;first by rewrite /allL -rcons_cons => H1;apply: (@Lift_in_splitr _ R (x::st) x y). 
+    elim/last_ind: st x y => [x y [_ ?] // | st x' Hr x y [H1 +]];first  by rewrite allL0'.
+    by rewrite /allL -rcons_cons Lift_rcc last_rcons allset_rcons.
   Qed.
   
   Lemma allL_cat R st st' x y z: 

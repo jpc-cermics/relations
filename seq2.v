@@ -111,7 +111,7 @@ Section nat_util.
     by move: (leq_ltn_trans H2 H1);rewrite ltnn.
   Qed.
   
-  Lemma P11': forall n i, i < n -> i.+1 = n -> (i = n.-1)%N.
+  Lemma P11': forall n i, i < n -> i.+1 = n -> (i = n.-1).
   Proof.
     move => n i H0 H1; pose proof (ltn_predK H0) as H2.
     by move: H1; rewrite -{1}H2 => /eqP H1; move: H1; rewrite eqSS => /eqP H1.
@@ -217,7 +217,7 @@ Section Seq1_plus.
     pose proof (@allL_nth R s x y H0 i H2) as H3.
     by pose proof (@nth_dv s y (last x s) i H1) as ->.
   Qed.
-  
+
   Lemma uniq_subseq s s' x: uniq (x :: s) -> subseq s' s -> uniq (x:: s').
   Proof.
     rewrite cons_uniq => /andP [H2 H3] H4.
