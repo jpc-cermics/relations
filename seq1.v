@@ -434,14 +434,70 @@ Section Lift_in.
   
   Lemma Lift_inI R S st: st [L\in] R /\ st [L\in] S <-> st [L\in] (R `&` S).
   Proof. by rewrite allset_I;split;move => /andP H1. Qed.
-End Lift_in. 
 
-Section allset2.
-  (** * extra utilities for spt [\in] R, R: relation T *)
-  Context {T: Type}.
-  Implicit Types (T : Type) (R: relation T) (X Y: set T) (st: seq T) (x y:T).
+
+  (** * properties of  p: seq T, p [\in] X and p [L\in] R] *)
+
+  Lemma all2lift st X: st [\in] X -> st [L\in] (X `*` X). 
+  Proof.
+    elim: st => [// | x'];elim => [// | x st _ H1 /allset_cons [? /[dup] /allset_cons [? _] /H1 ?]]. 
+    by rewrite Lift_cc allset_cons.
+  Qed.
+
+  Lemma lift2all st X x x': [::x, x' & st] [L\in] (X `*` X) -> [::x, x' & st] [\in] X.
+  Proof.
+    elim: st x x' => [x x' // | x st Hr y y'].
+    by rewrite Lift_cc allset_cons => -[/= [/inP -> /inP ->] _].
+    by rewrite Lift_cc allset_cons => -[[H1 _] /Hr H2];rewrite allset_cons.
+  Qed.
+
+  (* begin snippet RpathLone:: no-out *)  
+  Lemma Rpath_L1 st X: st [\in] X -> st [L\in] (X `*` X). 
+  (* end snippet RpathLone *)  
+  Proof. by apply: all2lift. Qed.
   
-End allset2.
+  Lemma Rpath_L2 st X: size(st) > 1 /\ st [L\in] (X `*` X) -> st [\in] X.
+  Proof. by move => [/seq_cc [st' [x [y ->]]] +];apply: lift2all. Qed.
+  
+  Lemma Rpath_L3 st X R: st [\in] X /\ st [L\in] R -> st [L\in] ((X `*` X)`&`R) . 
+  Proof. by move => [/Rpath_L1 H1 H2];apply allset_I; rewrite H1 H2. Qed.
+
+  Lemma Rpath_L4 st X R: size(st) > 1 /\ st [L\in] ((X `*` X)`&`R) -> st [\in] X /\ st [L\in] R.
+  Proof. by rewrite allset_I;move => [H1 /andP [H2 H3]];split;[apply: Rpath_L2|]. Qed.
+  
+  Lemma Rpath_iff1 X R: 
+    [set st | size(st) > 0 /\ st [\in] X /\ st [L\in] R]
+    = [set st | size(st) = 1 /\ (st [\in] X) ] `|` [set st | size(st) > 1 /\ st [L\in] ((X `*` X)`&`R)]. 
+  Proof.
+    rewrite /setU /mkset predeqE => [p].
+    split.
+    - elim: p => [[? _] // | t p _ ]. 
+      elim: p => [[_ [H1 _]] // | t' q Hr [H1 [H2 H3]]];first by left.
+      right. split. by []. by apply Rpath_L3.
+    - elim: p => [ [[? _] // | [? _] //] | t p _].
+      elim: p => [ [[_ H1] // | [? _] //] | t' p'' _ [[? _]// | [_ ?]]].
+      split. by [].
+      by apply Rpath_L4.
+  Qed.
+  
+  Lemma Rpath_iff2 X R: 
+    [set st | st [\in] X /\ st [L\in] R] 
+    = [set st | st = [::]] `|` [set st | size(st) > 0 /\ st [\in] X /\ st [L\in] R].
+  Proof.
+    rewrite /setU /mkset predeqE => [st].
+    split.
+    by elim: st => [[? _] // | t st _ ];[left | right].
+    elim: st => [[_ /= // | [? _] //] | t st _ [? // | [_ [? ?]] //]].
+  Qed.
+
+  Lemma Rpath_iff X R:
+    [set st | st [\in] X /\ st [L\in] R]
+    =   [set st | st = [::]] 
+          `|` [set st | size(st) = 1 /\ (st [\in] X) ] 
+          `|` [set st | size(st) > 1 /\ st [L\in] ((X `*` X)`&`R)]. 
+  Proof. by rewrite -[RHS]setUA -[in RHS]Rpath_iff1 -[in RHS]Rpath_iff2. Qed.
+
+End Lift_in. 
 
 Section allset_Lifted.
   (** * properties of st [L\in] R for st: seq T  *)
@@ -543,88 +599,18 @@ Section allset_Lifted.
 
 End allset_Lifted.
 
-Section seq_subsets.
-  (** * properties of  p: seq T, p [\in] X and p [L\in] R] *)
-  
-  Context {T : Type}.
-  Implicit Types (T : Type) (X: set T) (R: relation T) (st: seq T) (x y z: T).
-  
-  (** * XXXX cette partie est a bouger dans Lift plus haut *)
-
-  Lemma all2lift st X: st [\in] X -> st [L\in] (X `*` X). 
-  Proof.
-    elim: st => [// | x'];elim => [// | x st _ H1 /allset_cons [? /[dup] /allset_cons [? _] /H1 ?]]. 
-    by rewrite Lift_cc allset_cons.
-  Qed.
-
-  Lemma lift2all st X x x': [::x, x' & st] [L\in] (X `*` X) -> [::x, x' & st] [\in] X.
-  Proof.
-    elim: st x x' => [x x' // | x st Hr y y'].
-    by rewrite Lift_cc allset_cons => -[/= [/inP -> /inP ->] _].
-    by rewrite Lift_cc allset_cons => -[[H1 _] /Hr H2];rewrite allset_cons.
-  Qed.
-
-  (* begin snippet RpathLone:: no-out *)  
-  Lemma Rpath_L1 st X: st [\in] X -> st [L\in] (X `*` X). 
-  (* end snippet RpathLone *)  
-  Proof. by apply: all2lift. Qed.
-  
-  Lemma Rpath_L2 st X: size(st) > 1 /\ st [L\in] (X `*` X) -> st [\in] X.
-  Proof. by move => [/seq_cc [st' [x [y ->]]] +];apply: lift2all. Qed.
-  
-  Lemma Rpath_L3 st X R: st [\in] X /\ st [L\in] R -> st [L\in] ((X `*` X)`&`R) . 
-  Proof. by move => [/Rpath_L1 H1 H2];apply allset_I; rewrite H1 H2. Qed.
-
-  Lemma Rpath_L4 st X R: size(st) > 1 /\ st [L\in] ((X `*` X)`&`R) -> st [\in] X /\ st [L\in] R.
-  Proof. by rewrite allset_I;move => [H1 /andP [H2 H3]];split;[apply: Rpath_L2|]. Qed.
-  
-  Lemma Rpath_iff1 X R: 
-    [set st | size(st) > 0 /\ st [\in] X /\ st [L\in] R]
-    = [set st | size(st) = 1 /\ (st [\in] X) ] `|` [set st | size(st) > 1 /\ st [L\in] ((X `*` X)`&`R)]. 
-  Proof.
-    rewrite /setU /mkset predeqE => [p].
-    split.
-    - elim: p => [[? _] // | t p _ ]. 
-      elim: p => [[_ [H1 _]] // | t' q Hr [H1 [H2 H3]]];first by left.
-      right. split. by []. by apply Rpath_L3.
-    - elim: p => [ [[? _] // | [? _] //] | t p _].
-      elim: p => [ [[_ H1] // | [? _] //] | t' p'' _ [[? _]// | [_ ?]]].
-      split. by [].
-      by apply Rpath_L4.
-  Qed.
-  
-  Lemma Rpath_iff2 X R: 
-    [set st | st [\in] X /\ st [L\in] R] 
-    = [set st | st = [::]] `|` [set st | size(st) > 0 /\ st [\in] X /\ st [L\in] R].
-  Proof.
-    rewrite /setU /mkset predeqE => [st].
-    split.
-    by elim: st => [[? _] // | t st _ ];[left | right].
-    elim: st => [[_ /= // | [? _] //] | t st _ [? // | [_ [? ?]] //]].
-  Qed.
-
-  Lemma Rpath_iff X R:
-    [set st | st [\in] X /\ st [L\in] R]
-    =   [set st | st = [::]] 
-          `|` [set st | size(st) = 1 /\ (st [\in] X) ] 
-          `|` [set st | size(st) > 1 /\ st [L\in] ((X `*` X)`&`R)]. 
-  Proof. by rewrite -[RHS]setUA -[in RHS]Rpath_iff1 -[in RHS]Rpath_iff2. Qed.
-
-End seq_subsets.
-
 Section Suc_as_Lift. 
   (** * st [L\in] R <-> st [Suc\in] R *)
   (* st [Suc\in] R is more natural to define a path and st [L\in] R is more computational 
    * for sanity check we prove that the two are equivalent
    *)
-
-  Variables (T: Type) (R:relation T).
-
+  Context {T: Type}.
+  Implicit Types (T : Type) (R: relation T) (X Y: set T) (st: seq T) (x y z:T).
+  
   (* begin snippet RPathequiv:: no-out *)  
-  Lemma RPath_equiv: forall (st: seq T), st [L\in] R <-> st [Suc\in] R.
+  Lemma RPath_equiv st R: st [L\in] R <-> st [Suc\in] R.
   (* end snippet RPathequiv *)  
   Proof.
-    move => st.
     (* we use seq_cases to explore the three cases *)
     pose proof seq_cases st as [H1 | [[x H1] | [q [x [y H1]]]]];rewrite H1.
     by split => H;[apply pp_void | ].
@@ -644,7 +630,9 @@ End Suc_as_Lift.
 
 Section Lift_bijective.
   (** * Lift is a bijection between D:= [set p:seq T | size(p) > 1] and Lift D *)
-  Variables (T: Type).
+
+  Context {T: Type}.
+  Implicit Types (T : Type) (R: relation T) (X Y: set T) (st: seq T) (x y z:T) (spt: seq (T*T)).
   
   (* A relation on (T*T) (Ch for Chain) *)
   (* begin snippet Chrel:: no-out *)  
@@ -673,28 +661,26 @@ Section Lift_bijective.
                                                       /\ spt [L\in] Chrel].
   (* end snippet DI *)
   
-  Lemma Lift_image: forall (st: seq T),
-      st \in Lift_Dom -> (Lift st) \in Lift_Im.
+  Lemma Lift_image st: st \in Lift_Dom -> (Lift st) \in Lift_Im.
   Proof.
-    rewrite /Lift_Dom /Lift_Im /mkset; move => st /inP H1;rewrite inP Lift_sz2.
+    rewrite /Lift_Dom /Lift_Im /mkset => /inP H1;rewrite inP Lift_sz2.
     by split;[ | apply Lift_Lift].
   Qed.
   
-  Lemma UnLift_image: forall (spt: seq (T*T)),
-      spt \in Lift_Im -> (forall (z:T), (UnLift spt z) \in Lift_Dom).
+  Lemma UnLift_image (spt: seq (T*T)): 
+    spt \in Lift_Im -> (forall (z:T), (UnLift spt z) \in Lift_Dom).
   Proof.
-    move => st /inP [H1 _] z; apply inP.
+    move => /inP [H1 _] z; apply inP.
     rewrite /Lift_Dom /mkset.
-    elim: st H1 => [// | [x y] st _ /= _].
-    elim: st y => [ // | [x' y'] st' _ z'].
+    elim: spt H1 => [// | [x y] spt _ /= _].
+    elim: spt y => [ // | [x' y'] st' _ z'].
     by rewrite UnLift_c /=. 
   Qed.
-
-  Lemma Lift_UnLift: forall (spt: seq (T*T)),
-      spt \in Lift_Im -> (forall (z:T), Lift (UnLift spt z) = spt).
+  
+  Lemma Lift_UnLift spt: spt \in Lift_Im -> (forall (z:T), Lift (UnLift spt z) = spt).
   Proof.
-    move => st /inP [H1 H2] z; apply inP.
-    elim: st H1 H2 => [// | [x y] st Hr H1 H2].
+    move => /inP [H1 H2] z; apply inP.
+    elim: spt H1 H2 => [// | [x y] st Hr H1 H2].
     rewrite UnLift_c.
     elim: st y x Hr H1 H2 => [y x _ _ _ /= // | [x' y'] st Hr y x H1 H2 H3].
     by apply inP.
@@ -709,48 +695,44 @@ Section Lift_bijective.
   Qed.
   
   (* begin snippet Liftinj:: no-out *) 
-  Lemma Lift_inj: forall (st st': seq T),
-      st \in Lift_Dom -> Lift st = Lift st' -> st = st'.
+  Lemma Lift_inj st st': st \in Lift_Dom -> Lift st = Lift st' -> st = st'.
   (* end snippet Liftinj *) 
   Proof.
     rewrite /Lift_Dom /mkset.
-    move => st q /inP H1 H2.
+    move => /inP H1 H2.
     move: (H1) => /Lift_sz2 H3. 
-    have H4: size(q) > 1. by rewrite -Lift_sz2 -H2. 
+    have H4: size(st') > 1  by rewrite -Lift_sz2 -H2. 
     pose proof seq_crc H1 as [r [x [y H5]]].
     pose proof Lift_inv_sz2 H1 as H6.
     pose proof Lift_inv_sz2 H4 as H7.
     by rewrite -(H6 x) -(H7 x) H2. 
   Qed.
   
-  Lemma Lift_inj': forall (st st': seq T),
-      st \in Lift_Dom -> st' \in Lift_Dom -> Lift st = Lift st' -> st = st'.
+  Lemma Lift_inj' st st': st \in Lift_Dom -> st' \in Lift_Dom -> Lift st = Lift st' -> st = st'.
   Proof.
-    move => st q /inP H1 /inP H2 H3.
+    move => /inP H1 /inP H2 H3.
     pose proof seq_crc H1 as [_ [x _]].
-    have H4: UnLift (Lift st) x = UnLift (Lift q) x by rewrite H3.
+    have H4: UnLift (Lift st) x = UnLift (Lift st') x by rewrite H3.
     pose proof (UnLift_left x H1) as H5.
     pose proof (UnLift_left x H2) as H6.
     by rewrite -H5 -H6 H4.
   Qed.
   
   (* begin snippet Liftsurj:: no-out *) 
-  Lemma Lift_surj: forall (spt: seq (T*T)), 
-      spt \in Lift_Im -> exists st, st\in Lift_Dom /\ Lift st=spt. 
+  Lemma Lift_surj spt: spt \in Lift_Im -> exists st, st\in Lift_Dom /\ Lift st=spt. 
   (* end snippet Liftsurj *) 
   Proof.
-    move => st H0; move: (H0);rewrite /Lift_Im /mkset => /inP [H1 H2].
+    move => H0; move: (H0);rewrite /Lift_Im /mkset => /inP [H1 H2].
     pose proof (seq_c H1) as [_ [[x _] _]].
     pose proof Lift_UnLift H0 x as H3.
     pose proof UnLift_image H0 x as H4.
-    by exists (UnLift st x). 
+    by exists (UnLift spt x). 
   Qed.
   
   (* a surjectivy result on a larger set *)
-  Lemma Lift_Chrel: forall (spt : seq (T*T)),
-      (Lift spt) [\in] Chrel <-> exists st: seq T, Lift st = spt.
+  Lemma Lift_Chrel spt: (Lift spt) [\in] Chrel <-> exists st: seq T, Lift st = spt.
   Proof.
-    elim => [ | [x y] spt _ ];first by split => ?;[(exists [::]) |].
+    elim:spt => [ | [x y] spt _ ];first by split => ?;[(exists [::]) |].
     have H1: size ((x, y) :: spt) > 0 by [].
     split => [H2 |].
     - have H5: ((x, y) :: spt) \in Lift_Im by rewrite inP /Lift_Im /mkset.  
@@ -935,7 +917,8 @@ Section PathRel.
   
   (* R.+ =  PathRel R *)
   (* begin snippet TCP':: no-out *)  
-  Lemma TCP' (R: relation T) : R.+ = [set vp | exists p, (Lift (vp.1::(rcons p vp.2))) [\in] R].
+  (* Lemma TCP' (R: relation T) : R.+ = [set vp | exists p, (Lift (vp.1::(rcons p vp.2))) [\in] R]. *)
+  Lemma TCP' (R: relation T) : R.+ = [set vp | exists p, allL R p vp.1 vp.2 ].
   (* end snippet TCP' *)  
   Proof.
     rewrite predeqE => -[x y];split => [/(@clos_t_iterk T) [n] | [p H1]].
@@ -943,9 +926,9 @@ Section PathRel.
     have: PathRel_n R (size p) (x, y) by (exists p).
     by rewrite -Itern_iff_PathReln;apply: iterk_inc_clos_trans.
   Qed.
-
+  
   (* begin snippet TCP:: no-out *) 
-  Lemma TCP (R: relation T) : R.+ = [set vp| exists p, size(p) > 1 /\ Pe ptv p = vp /\ p [L\in] R].
+  Lemma TCP_UNUSED (R: relation T) : R.+ = [set vp| exists p, size(p) > 1 /\ Pe ptv p = vp /\ p [L\in] R].
   (* end snippet TCP *)  
   Proof.
     rewrite predeqE => -[x y];split => [/(@clos_t_iterk T) [n] | [p [H1 [H2 H3]]]].
