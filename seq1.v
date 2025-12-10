@@ -545,50 +545,40 @@ End allset_Lifted.
 
 Section seq_subsets.
   (** * properties of  p: seq T, p [\in] X and p [L\in] R] *)
-
-  Variables (T: Type) (R: relation T) (X: set T).
   
+  Context {T : Type}.
+  Implicit Types (T : Type) (X: set T) (R: relation T) (st: seq T) (x y z: T).
+  
+  (** * XXXX cette partie est a bouger dans Lift plus haut *)
+
+  Lemma all2lift st X: st [\in] X -> st [L\in] (X `*` X). 
+  Proof.
+    elim: st => [// | x'];elim => [// | x st _ H1 /allset_cons [? /[dup] /allset_cons [? _] /H1 ?]]. 
+    by rewrite Lift_cc allset_cons.
+  Qed.
+
+  Lemma lift2all st X x x': [::x, x' & st] [L\in] (X `*` X) -> [::x, x' & st] [\in] X.
+  Proof.
+    elim: st x x' => [x x' // | x st Hr y y'].
+    by rewrite Lift_cc allset_cons => -[/= [/inP -> /inP ->] _].
+    by rewrite Lift_cc allset_cons => -[[H1 _] /Hr H2];rewrite allset_cons.
+  Qed.
+
   (* begin snippet RpathLone:: no-out *)  
-  Lemma Rpath_L1: forall (st: seq T), st [\in] X -> st [L\in] (X `*` X). 
+  Lemma Rpath_L1 st X: st [\in] X -> st [L\in] (X `*` X). 
   (* end snippet RpathLone *)  
-  Proof.
-    have H1: forall (n:nat) (p': seq T),
-        size(p') = n -> ( p' [\in] X -> p' [L\in] (X `*` X)).
-    elim => [p /size0nil -> //| n Hr p H1].
-    pose proof (seq_n H1) as [q [x [H2 H3]]].
-    rewrite H2 allset_cons.
-    elim: q x H2 H3 => [// | y r _ x' H2 H3 [H4 H5]].
-    rewrite Lift_cc allset_cons.
-    move: (H5);rewrite allset_cons => [[H6 _]].
-    by split;[ | apply Hr].
-
-    by move => p; apply H1 with (size p).
-  Qed.
+  Proof. by apply: all2lift. Qed.
   
-  Lemma Rpath_L2: forall (st: seq T), size(st) > 1 /\ st [L\in] (X `*` X) -> st [\in] X.
-  Proof.
-    move => p [H1 H2].
-    pose proof (seq_cc H1) as [q [x [y H3]]]. 
-    move: H2; rewrite H3 Lift_cc 2!allset_cons.
-    clear H3.
-    elim: q y => [y [[H2 H3] _] | z q Hr y [[H2 H2'] H3]];first by rewrite allset_cons;split.  
-    move: H3; rewrite Lift_cc allset_cons => [[[ H3 H3'] H4]].
-    have [H5 H6]: X x /\ [:: z & q] [\in] X by apply Hr.
-    by rewrite allset_cons.
-  Qed.
-
-  Lemma Rpath_L3: forall (st: seq T), st [\in] X /\ st [L\in] R -> st [L\in] ((X `*` X)`&`R) . 
-  Proof.
-    move => st [/Rpath_L1 H1 H2].
-    by apply allset_I; rewrite H1 H2.
-  Qed.
-
-  Lemma Rpath_L4: forall (st: seq T), size(st) > 1 /\ st [L\in] ((X `*` X)`&`R) -> st [\in] X /\ st [L\in] R.
-  Proof.
-    by move => st;rewrite allset_I;move => [H1 /andP [H2 H3]];split;[apply: Rpath_L2|].
-  Qed.
+  Lemma Rpath_L2 st X: size(st) > 1 /\ st [L\in] (X `*` X) -> st [\in] X.
+  Proof. by move => [/seq_cc [st' [x [y ->]]] +];apply: lift2all. Qed.
   
-  Lemma Rpath_iff1 : 
+  Lemma Rpath_L3 st X R: st [\in] X /\ st [L\in] R -> st [L\in] ((X `*` X)`&`R) . 
+  Proof. by move => [/Rpath_L1 H1 H2];apply allset_I; rewrite H1 H2. Qed.
+
+  Lemma Rpath_L4 st X R: size(st) > 1 /\ st [L\in] ((X `*` X)`&`R) -> st [\in] X /\ st [L\in] R.
+  Proof. by rewrite allset_I;move => [H1 /andP [H2 H3]];split;[apply: Rpath_L2|]. Qed.
+  
+  Lemma Rpath_iff1 X R: 
     [set st | size(st) > 0 /\ st [\in] X /\ st [L\in] R]
     = [set st | size(st) = 1 /\ (st [\in] X) ] `|` [set st | size(st) > 1 /\ st [L\in] ((X `*` X)`&`R)]. 
   Proof.
@@ -603,7 +593,7 @@ Section seq_subsets.
       by apply Rpath_L4.
   Qed.
   
-  Lemma Rpath_iff2 : 
+  Lemma Rpath_iff2 X R: 
     [set st | st [\in] X /\ st [L\in] R] 
     = [set st | st = [::]] `|` [set st | size(st) > 0 /\ st [\in] X /\ st [L\in] R].
   Proof.
@@ -613,7 +603,7 @@ Section seq_subsets.
     elim: st => [[_ /= // | [? _] //] | t st _ [? // | [_ [? ?]] //]].
   Qed.
 
-  Lemma Rpath_iff :
+  Lemma Rpath_iff X R:
     [set st | st [\in] X /\ st [L\in] R]
     =   [set st | st = [::]] 
           `|` [set st | size(st) = 1 /\ (st [\in] X) ] 
@@ -1338,7 +1328,7 @@ Section Extended_Oriented_Paths.
   Proof.
     by move => E R;rewrite -[RHS]Rpath_iff.
   Qed.
-
+  
   Lemma REopath_iff2: forall (E: set (T*T*O)) (R: relation (T*T*O)),
       [set p:seq (T*T*O) | p [\in] E /\ p [L\in] (ChrelO  `&` R)]
       = [set p | p [\in] E /\ p [L\in] ChrelO /\ p [L\in] R].
