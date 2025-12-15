@@ -559,7 +559,7 @@ Section allset_Lifted.
     elim: st x y => [x y [? _] // | x' st Hr x y [ H1 H2]];first by rewrite allL0'.
     by rewrite /allL  Lift_crc allset_cons.
   Qed.
-   
+  
   Lemma allL_cat R st st' x y z: 
     allL R ((rcons st y) ++ st') x z <-> allL R st x y && allL R st' y z.
   Proof.
@@ -1896,8 +1896,7 @@ Section Active_relation.
   Qed.
   
   Lemma Active_path_cc_ht R X p: forall (eo1 eo2: T*T*O) (x y: T),
-      Active_path X R [:: eo1, eo2 & p] x y -> 
-      x = eo1.1.1 /\ y = (last eo2 p).1.2.
+      Active_path X R [:: eo1, eo2 & p] x y -> x = eo1.1.1 /\ y = (last eo2 p).1.2.
   Proof. by move => eo1 eo2 x y [H1 [H2 _]]. Qed. 
   
   Lemma Active_path_cc R X:  forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (x y: T),
@@ -1935,14 +1934,10 @@ Section Active_relation.
     by elim: p H2 => [ //= | a p _ //=]; rewrite last_rcons.
   Qed.
   
-  (** * maybe useless XXXXX *)
-  Lemma Active_path_crc_a R X:  forall  (p: seq (T*T*O)) (eo1 eo2: T*T*O),
+  Lemma Active_path_crc_a R X p (eo1 eo2: T*T*O): 
       Active_path X R (eo1::(rcons p eo2))  eo1.1.1 eo2.1.2
       ->  ActiveOe X R (eo1, (head eo2 p)) /\  ActiveOe X R ((last eo1 p), eo2).
-  Proof.
-    move  => p eo1 eo2 /Active_path_crc' H1.
-    by move: H1 => /[dup] /allL_splitl [_ H2] /allL_splitr [H3 _].
-  Qed.
+  Proof. by move  => /Active_path_crc' /[dup] /allL_splitl [_ H2] /allL_splitr [H3 _].  Qed.
   
   Lemma Active_path_crc R X: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (x y: T),
       Active_path X R (eo1::(rcons p eo2)) x y
@@ -2027,10 +2022,7 @@ Section Active_relation.
     rewrite H2' in H1.
     by rewrite Active_path_cc H2'. 
   Qed.
-  
-  (** * END of New *)
-  
-
+    
   Lemma Active_path_split R X : forall (p q: seq (T*T*O)) (eop eoq: T*T*O) (x y: T),
       Active_path X R ((rcons p eop)++ eoq::q) x y
       -> Active_path X R (rcons p eop) x eop.1.2
@@ -2055,7 +2047,7 @@ Section Active_relation.
       ActiveOe X R (eop, eoq)
       /\ Active_path X R (rcons p eop) x y 
       /\ Active_path X R (eoq::q) y z
-      -> Active_path X R (rcons p eop++ eoq::q) x z.
+      -> Active_path X R (rcons p eop ++ eoq::q) x z.
   Proof.
     elim. 
     - move => q eop eoq x y z [H1 [H2 H3]].
