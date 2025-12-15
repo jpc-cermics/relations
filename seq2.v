@@ -178,7 +178,7 @@ Section Seq1_plus.
   
   Lemma allL_lastR R s x y z i: i < size s -> allL R s x y -> R (last z s, y).
   Proof.
-    move => H1;rewrite allL_split => -[_ H2].
+    move => H1;rewrite allL_splitl => -[_ H2].
     by have <- : last x s = last z s by apply: last_dv;apply:H1. 
   Qed.
   
@@ -191,7 +191,7 @@ Section Seq1_plus.
     move: H2;rewrite size_rcons leq_eqVlt => /orP [/eqP H2 | H2].
     + have H4: size (rcons s x0) = i by rewrite size_rcons -H2.
       rewrite -H4 nth_rcons nth_rcons /= H4 H2 // P6 P8 P9 P10.
-      by move: H1;rewrite (@allL_split T R (rcons s x0) x y) => -[_ H1].
+      by move: H1;rewrite (@allL_splitl T R (rcons s x0) x y) => -[_ H1].
     + rewrite nth_rcons.
       case H4: (i == size s).
       ++ move: H4 => /eqP H4.

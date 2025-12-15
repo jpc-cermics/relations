@@ -184,7 +184,7 @@ Section Bw_implies_active_path.
     move => x y [x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
     pose proof (clos_t_to_paths_l H2) as [p [H3 [H4 H5]]].
     exists (x1::p);split. 
-    apply Deployment_to_Active_path.
+    apply New_Deployment_to_Active_path.
     split. by []. 
     rewrite /R_o allL_c H4 andbT. by apply mem_set.
     by [].
@@ -198,7 +198,7 @@ Section Bw_implies_active_path.
     move => x y H1.
     pose proof C_L10 H1 as [p [H2 _]].
     rewrite -rcons_cons Lifto_rcc in H2.
-    pose proof Active_path_rc_hto H2 as [_ [_ [H5 _]]].
+    pose proof New_Active_path_rc_hto H2 as [_ [_ [H5 _]]].
     by exists (Lifto (x :: p) P), (last x p).
   Qed.
   
@@ -229,7 +229,7 @@ Section Bmw_implies_active_path.
     apply allL_rev in H4.
     move: H3 => /allset_cons [H3 H3'].
     exists (rcons (rev p) x1); split.
-    apply Deployment_to_Active_path.
+    apply New_Deployment_to_Active_path.
     split. 
     by rewrite allset_rcons -allset_rev.
     by rewrite /R_o allL_rev rev_rcons revK inverseK allL_c;
@@ -245,7 +245,7 @@ Section Bmw_implies_active_path.
     move => x y H1.
     pose proof C_L11 H1 as [p [H2 _]].
     rewrite Lifto_crc in H2.
-    pose proof Active_path_c_hto H2 as [_ [_ [H5 _]]].
+    pose proof New_Active_path_c_hto H2 as [_ [_ [H5 _]]].
     by exists (Lifto (rcons p y) N), (head y p).
   Qed.
   
@@ -282,10 +282,10 @@ Section Kw_implies_active_path.
                 x t by rewrite -H9.
     have H14: Active_path W E ((t, head y q, P):: Lifto (rcons q y) P) 
                 t y by rewrite -H10.
-    pose proof Active_path_rc_hto H13 as [_ [_ [H15 _]]].
-    pose proof Active_path_c_hto H14 as [_ [_ [H16 _]]].
+    pose proof New_Active_path_rc_hto H13 as [_ [_ [H15 _]]].
+    pose proof New_Active_path_c_hto H14 as [_ [_ [H16 _]]].
     exists p,q,t;split; last by [].
-    apply Active_path_cat' with t;split; last by [].
+    apply New_Active_path_cat' with t;split; last by [].
     by exists (Lifto (x :: p) N),(Lifto (rcons q y) P),(last x p, t, N),(t, head y q, P). 
   Qed.
   
@@ -298,7 +298,8 @@ Section Kw_implies_active_path.
     pose proof C_L12 H1 as [p [q [t [H2 _]]]].
     pose proof @Lift_o_start_end T p q x y t as [x' [y' [r H3]]].
     rewrite H3 in H2. clear H3.
-    pose proof Active_path_crc_a H2 as H3. 
+    pose proof (@New_Active_path_crc_a T E W).
+    pose proof New_Active_path_crc_a H2 as H3. 
     move: H3; rewrite ActiveOe_iff => [[[H3 _] [_ [H4 _]]]].
     by exists r, x', y'.
   Qed.
@@ -323,7 +324,7 @@ Section Cw_s_implies_active_path.
     pose proof C_L12 H2 as [p1 [q1 [t1 [H6 [H7 H8]]]]].
     pose proof (Lift_o_start_end p1 q1 x z t1) as [x1 [z1 [r1 H12]]].
     rewrite H12 in H6.
-    pose proof Active_path_crc_a H6 as H14. 
+    pose proof New_Active_path_crc_a H6 as H14. 
     move: H14; rewrite ActiveOe_iff => [[[H14' _] [_ [H14 _]]]].
     by exists r1, ((x, x1, N) :: rcons r1 (z1, z, P)), x1, z1.
   Qed.
@@ -346,7 +347,7 @@ Section Cw_s_implies_active_path.
       move: H5 => /C_L13_I1 [r2 [q [z2 [y2 [H5 [H6 [H7 H8]]]]]]].
       exists ((rcons r1 (z1,z,P)) ++ (z,z2,N)::r2),(p ++ q), x1, y2.
       split. 
-      by apply Active_path_cat' with z;
+      by apply New_Active_path_cat' with z;
       split;[exists ((x, x1, N) :: r1), (rcons r2 (y2, y, P)), (z1, z, P), (z, z2, N) | ].
       by split;[rewrite H2 H6 !rcons_cat rcons_cons | split].
   Qed.
@@ -416,10 +417,10 @@ Section Dw_path.
       have H14: Active_path W E
                   (rcons p1 (y', t, P) ++ (t, t', N)::(rcons p2 (z', z, P)))
                   x z
-        by apply Active_path_cat with t;rewrite -H8.
+        by apply New_Active_path_cat with t;rewrite -H8.
       exists ((rcons p1 (y', t, P) ++ (t, t', N) :: rcons p2 (z', z, P)) ++ ((z, z'', N) :: p4)).
       rewrite -rcons_cons -rcons_cat.
-      apply Active_path_cat with z.
+      apply New_Active_path_cat with z.
       rewrite rcons_cat rcons_cons.
       by [].
     + move: H4 => [H1 /= H4];rewrite -H4 in H5;clear H4.
@@ -427,7 +428,7 @@ Section Dw_path.
       pose proof C_L14_2 H5 as [p4 [t' [H9 Ho4]]].
       have H12: ActiveOe' W E ((y', t, P), (t, t', N)) by [].
       exists ((rcons p1 (y', t, P))++ ((t, t', N) :: p4)).
-      by apply Active_path_cat with t.
+      by apply New_Active_path_cat with t.
   Qed.
 
 End Dw_path.
@@ -498,10 +499,10 @@ Section Active_path_implies_Aw_s.
       have H3: (1 < size p) by rewrite H1.
       rewrite seq_rcrc0 in H1;move: H1 => [[[u v] o1] [[[z t] o2] H4]].
       rewrite H4 in H2.
-      pose proof Active_path_cc_ht H2 as [H5 H6].
+      pose proof New_Active_path_cc_ht H2 as [H5 H6].
       rewrite /last /= in H5 H6.
       rewrite H5 H6.
-      pose proof Active_path_cc_a H2 as H7. 
+      pose proof New_Active_path_cc_a H2 as H7. 
       move: H7; rewrite ActiveOe_iff => [[H7 [H8 [H9 H10]]]].
       rewrite /ChrelO /mkset /fst /snd in H9.
       rewrite H9 H5 H6 in H2 *.
@@ -514,9 +515,9 @@ Section Active_path_implies_Aw_s.
       have H3: 1 < size p by rewrite H1. 
       pose proof seq_rcrc H3 as [q [[[u v] o1] [[[z t] o2] H4]]].
       rewrite H4 in H2.
-      pose proof Active_path_rcrc_ht H2 as [H5 H6].
+      pose proof New_Active_path_rcrc_ht H2 as [H5 H6].
       rewrite H5 H6 in H2.
-      rewrite Active_path_rcrc in H2.
+      rewrite Active_path_rcrc' in H2.
       move: H2 => [H2 H7].
       pose proof H1 as H8.
       rewrite H4 size_rcons in H8.
