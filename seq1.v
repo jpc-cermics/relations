@@ -435,8 +435,7 @@ Section Lift_in_facts.
   
   Lemma Lift_inI R S st: st [L\in] R /\ st [L\in] S <-> st [L\in] (R `&` S).
   Proof. by rewrite allset_I;split;move => /andP H1. Qed.
-
-
+  
   (** * properties of  p: seq T, p [\in] X and p [L\in] R] *)
 
   Lemma all2lift st X: st [\in] X -> st [L\in] (X `*` X). 
@@ -760,6 +759,89 @@ Section Lift_bijective.
   Qed.
 
 End Lift_bijective.
+
+Section PathRel.
+  (** * transitive closure and paths
+   * the main result here is that the relation in TxT obtained 
+   * by fun (x y : T) => (exists (p: seq T), AllL E p x y)
+   * is the relation E.+ the transitive closure of E 
+   *)
+
+  Variables (T: Type).
+  
+  (* relation based on paths: take care that the path p depends on (x,y) *)
+  Definition PathRel_n (R: relation T) (n:nat) :=
+    [set x | (exists (p: seq T), size(p)=n /\ allL R p x.1 x.2)].
+
+  (* composition and existence of paths coincide *)
+  Lemma Itern_iff_PathReln  (R: relation T) : forall (n:nat), R^(n.+1) =  PathRel_n R n.
+  Proof.
+    elim => [ | n' H].
+    - rewrite /iter /PathRel_n DeltaCl /mkset predeqE => [[x y]].
+      split => [ H | ].
+      by (exists [::]); rewrite allL0' /=.
+      by move => [p [/size0nil -> /allL0' H2]].
+    - rewrite -add1n iter_compose H /iter DeltaCl /mkset predeqE => [[x y]].
+      split => [[z [/= /inP H1 [p [H2 /= H3]]]] |[p [H1 H2]]];
+                first by (exists (z::p));rewrite -H2 allL_c H3 andbT H1. 
+      elim: p H1 H2 => [ // | z p' _ H1].
+      move: H1;rewrite /size -/size -/addn1 => /succn_inj H1.
+      rewrite allL_c /= => [/andP [/inP H2 H3]].
+      by exists z;split;[ | exists p'].
+  Qed.
+  
+  (* R.+ =  PathRel R *)
+  (* begin snippet TCP':: no-out *)  
+  (* Lemma TCP' (R: relation T) : R.+ = [set vp | exists p, (Lift (vp.1::(rcons p vp.2))) [\in] R]. *)
+  Lemma TCP' (R: relation T) : R.+ = [set vp | exists p, allL R p vp.1 vp.2 ].
+  (* end snippet TCP' *)  
+  Proof.
+    rewrite predeqE => -[x y];split => [/(@clos_t_iterk T) [n] | [p H1]].
+    by rewrite  Itern_iff_PathReln /PathRel_n => -[p [H1 H2]];(exists p).
+    have: PathRel_n R (size p) (x, y) by (exists p).
+    by rewrite -Itern_iff_PathReln;apply: iterk_inc_clos_trans.
+  Qed.
+  
+  Lemma allL_to_clos_t  (R: relation T) : forall (st: seq T) x y, allL R st x y -> R.+ (x,y).
+  Proof. by move => st x y; rewrite TCP'; exists st. Qed.
+  
+  Lemma TCP'' (R: relation T) (X: set T): 
+    (Δ_(X) `;` R).+ = [set vp | exists p, (vp.1::p) [\in] X /\ allL R p vp.1 vp.2 ].
+  Proof.
+    rewrite {1}TCP' predeqE => -[x y].
+    split; first by move => [p /allL_WS_iff /andP [H1 H2]];(exists p).
+    by move => [p /andP/allL_WS_iff ZZ];(exists p).
+  Qed.
+
+  Lemma clos_t_to_paths_l R (X: set T) st x y:
+    allL (Δ_(X) `;` R) st x y <-> (x::st) [\in] X /\ allL R st x y /\ (x :: st) [\in] (Δ_(X) `;` R).+#_(y).
+  Proof.
+    split;last by rewrite allL_WS_iff => -[-> [-> _]].
+    by move => /[dup] /allL_WS_iff/andP [? ?] /(@allL_All _ (Δ_(X) `;` R) st x y) ?. 
+  Qed.
+  
+  Lemma clos_t_to_paths_l' R (X: set T) st x y:
+      allL (Δ_(X) `;` R) st x y <-> (x::st) [\in] X /\ allL R st x y /\ (x :: st) [\in] R.+#_(y).
+  Proof.
+    split;last by rewrite allL_WS_iff => -[-> [-> _]].
+    by move => /allL_WS_iff/andP [? +] => /[dup] ? /(@allL_All _ R st x y) ?. 
+  Qed.
+
+  Lemma clos_t_to_paths_r R (X: set T) st x y:
+    allL (R `;` Δ_(X)) st x y <-> (rcons st y) [\in] X /\ allL R st x y /\ ((rcons st y) [\in] x _:#(R `;` Δ_(X)).+). 
+  Proof.
+    split;last by rewrite allL_SW_iff => -[-> [-> _]].
+    by move => /[dup] /allL_SW_iff/andP [? ?] /(@allL_AllA _ (R `;` Δ_(X)) st x y) ?. 
+  Qed.
+  
+  Lemma clos_t_to_paths_r' R (X: set T) st x y:
+    allL (R `;` Δ_(X)) st x y <-> (rcons st y) [\in] X /\ allL R st x y /\ ((rcons st y) [\in] x _:#R.+). 
+  Proof.
+    split; first by move => /allL_SW_iff/andP [? +] => /[dup] ? /(@allL_AllA _ R st x y) ?. 
+    by rewrite allL_SW_iff => -[-> [-> _]].
+  Qed.
+  
+End PathRel.
 
 (* orientation  *)
 (* begin snippet OO:: no-out *)
@@ -1448,10 +1530,8 @@ Section Active_paths_simple.
       <-> Active_path W E (Lifto (x::(rcons p y)) o) x y.
   Proof.
     split.
-    + elim: p x y => [x y [_ /allL0' /R_o' _] // | ]. 
-      move => x1 p _ x y. 
-      rewrite allset_consb allL_c. 
-      move => [ /andP [H2 H'2] /andP [/inP H3 H4]].
+    + elim: p x y => [x y [_ /allL0' /R_o' _] // | x1 p _ x y]. 
+      rewrite allset_consb allL_c => -[ /andP [H2 H'2] /andP [/inP H3 H4]].
       rewrite Lifto_crc Lifto_rcc Active_path_crc' /=. 
       elim: p x x1 H3 H2 H'2 H4 => [x x1 H3 /inP H1 _ /allL0' H4 // | ].  
       ++ by rewrite allL0 /=; apply mem_set; split;case: o H3 H4 => /R_o' H3 /R_o' H4.
@@ -1479,14 +1559,14 @@ Section Active_paths_simple.
       split.
         rewrite allset_cons andC. 
         rewrite ActiveOe_iff in H4.
-          split;[ | move: H4 => [_ [_ [_ H4]]]].
+        split;[ | move: H4 => [_ [_ [_ H4]]]].
         by elim: o H2 H4 H5 => _ H4 H5.
         by elim: o H2 H4 H5 => _ /= H4 H5.
         rewrite ActiveOe_iff in H4.
         rewrite allL_c H5 andbT.
         by elim: o H2 H4 H5 => _ [/= /inP H4 _] _ /=.
   Qed.
-
+  
 End Active_paths_simple.  
 
 Section Endpoints_and_Deployment.
@@ -1622,88 +1702,6 @@ Section seq_pairs_subsets.
   
 End seq_pairs_subsets.
   
-Section PathRel.
-  (** * transitive closure and paths
-   * the main result here is that the relation in TxT obtained 
-   * by fun (x y : T) => (exists (p: seq T), AllL E p x y)
-   * is the relation E.+ the transitive closure of E 
-   *)
-
-  Variables (T: Type) (ptv: T*T).
-  
-  (* relation based on paths: take care that the path p depends on (x,y) *)
-  Definition PathRel_n (R: relation T) (n:nat) :=
-    [set x | (exists (p: seq T), size(p)=n /\ allL R p x.1 x.2)].
-
-  (* composition and existence of paths coincide *)
-  Lemma Itern_iff_PathReln  (R: relation T) : forall (n:nat), R^(n.+1) =  PathRel_n R n.
-  Proof.
-    elim => [ | n' H].
-    - rewrite /iter /PathRel_n DeltaCl /mkset predeqE => [[x y]].
-      split => [ H | ].
-      by (exists [::]); rewrite allL0' /=.
-      by move => [p [/size0nil -> /allL0' H2]].
-    - rewrite -add1n iter_compose H /iter DeltaCl /mkset predeqE => [[x y]].
-      split => [[z [/= /inP H1 [p [H2 /= H3]]]] |[p [H1 H2]]];
-                first by (exists (z::p));rewrite -H2 allL_c H3 andbT H1. 
-      elim: p H1 H2 => [ // | z p' _ H1].
-      move: H1;rewrite /size -/size -/addn1 => /succn_inj H1.
-      rewrite allL_c /= => [/andP [/inP H2 H3]].
-      by exists z;split;[ | exists p'].
-  Qed.
-  
-  (* R.+ =  PathRel R *)
-  (* begin snippet TCP':: no-out *)  
-  (* Lemma TCP' (R: relation T) : R.+ = [set vp | exists p, (Lift (vp.1::(rcons p vp.2))) [\in] R]. *)
-  Lemma TCP' (R: relation T) : R.+ = [set vp | exists p, allL R p vp.1 vp.2 ].
-  (* end snippet TCP' *)  
-  Proof.
-    rewrite predeqE => -[x y];split => [/(@clos_t_iterk T) [n] | [p H1]].
-    by rewrite  Itern_iff_PathReln /PathRel_n => -[p [H1 H2]];(exists p).
-    have: PathRel_n R (size p) (x, y) by (exists p).
-    by rewrite -Itern_iff_PathReln;apply: iterk_inc_clos_trans.
-  Qed.
-  
-  Lemma allL_to_clos_t  (R: relation T) : forall (st: seq T) x y, allL R st x y -> R.+ (x,y).
-  Proof. by move => st x y; rewrite TCP'; exists st. Qed.
-  
-  Lemma TCP'' (R: relation T) (X: set T): 
-    (Δ_(X) `;` R).+ = [set vp | exists p, (vp.1::p) [\in] X /\ allL R p vp.1 vp.2 ].
-  Proof.
-    rewrite {1}TCP' predeqE => -[x y].
-    split; first by move => [p /allL_WS_iff /andP [H1 H2]];(exists p).
-    by move => [p /andP/allL_WS_iff ZZ];(exists p).
-  Qed.
-
-  Lemma clos_t_to_paths_l R (X: set T) st x y:
-    allL (Δ_(X) `;` R) st x y <-> (x::st) [\in] X /\ allL R st x y /\ (x :: st) [\in] (Δ_(X) `;` R).+#_(y).
-  Proof.
-    split;last by rewrite allL_WS_iff => -[-> [-> _]].
-    by move => /[dup] /allL_WS_iff/andP [? ?] /(@allL_All _ (Δ_(X) `;` R) st x y) ?. 
-  Qed.
-  
-  Lemma clos_t_to_paths_l' R (X: set T) st x y:
-      allL (Δ_(X) `;` R) st x y <-> (x::st) [\in] X /\ allL R st x y /\ (x :: st) [\in] R.+#_(y).
-  Proof.
-    split;last by rewrite allL_WS_iff => -[-> [-> _]].
-    by move => /allL_WS_iff/andP [? +] => /[dup] ? /(@allL_All _ R st x y) ?. 
-  Qed.
-
-  Lemma clos_t_to_paths_r R (X: set T) st x y:
-    allL (R `;` Δ_(X)) st x y <-> (rcons st y) [\in] X /\ allL R st x y /\ ((rcons st y) [\in] x _:#(R `;` Δ_(X)).+). 
-  Proof.
-    split;last by rewrite allL_SW_iff => -[-> [-> _]].
-    by move => /[dup] /allL_SW_iff/andP [? ?] /(@allL_AllA _ (R `;` Δ_(X)) st x y) ?. 
-  Qed.
-  
-  Lemma clos_t_to_paths_r' R (X: set T) st x y:
-    allL (R `;` Δ_(X)) st x y <-> (rcons st y) [\in] X /\ allL R st x y /\ ((rcons st y) [\in] x _:#R.+). 
-  Proof.
-    split; first by move => /allL_SW_iff/andP [? +] => /[dup] ? /(@allL_AllA _ R st x y) ?. 
-    by rewrite allL_SW_iff => -[-> [-> _]].
-  Qed.
-  
-End PathRel.
 
 Section Extended_Oriented_Paths.
       
@@ -2169,8 +2167,6 @@ Section Extended_Oriented_Paths.
   
 End Extended_Oriented_Paths.
 
-
-
 Section Active. 
   (** * The D_separated and Active relation as a relation on TxT *)
   Variables (T: Type). 
@@ -2185,77 +2181,26 @@ Section Active.
    (exists (p: seq (T*T*O)), Active_path W E p x y).
   (* end snippet Active *)  
 
-  Lemma Deployment_to_Active_path:
-    forall (W: set T) (E: relation T) (p: seq T) (x y: T) (o:O),
-      p [\in] W.^c /\ allL (R_o E o) p x y 
-      <-> Active_path W E (Lifto (x::(rcons p y)) o) x y.
-  Proof.
-    split.
-    + elim: p x y => [x y [_ /allL0' /R_o' _] // | ]. 
-      move => x1 p _ x y. 
-      rewrite allset_consb allL_c. 
-      move => [ /andP [H2 H'2] /andP [/inP H3 H4]].
-      rewrite Lifto_crc Lifto_rcc Active_path_crc' /=. 
-      elim: p x x1 H3 H2 H'2 H4 => [x x1 H3 /inP H1 _ /allL0' H4 // | ].  
-      ++ by rewrite allL0 /=; apply mem_set; split;case: o H3 H4 => /R_o' H3 /R_o' H4.
-      ++ move => z p H1 x1 x H3 /inP H2 /allset_cons [H4 H4'] /allL_c/andP [/inP H5 H6] /=. 
-         rewrite Lifto_c allL_c;apply /andP;split; last first. 
-         by apply: (H1 x z H5 _ H4' H6); apply mem_set. 
-         clear H1 H6;apply mem_set;rewrite ActiveOe_o /Oedge.
-         by case: o H3 H5 => /R_o' H3 /R_o' H5. 
-    + elim: p x y;
-        first by move => x y //= [_ [_ H]];
-                        split; elim: o H => H;[ | | apply /allL0'/R_o' | apply /allL0'/R_o'].
-      
-      move => z p H1 x y; rewrite Lift_o_cons;elim: p x y H1. 
-      move => x y H1 /Active_path_cc_old H2. 
-      move: H2; rewrite ActiveOe_iff => [[H2 [H3 [H4 [H5 H6]]]]].
-      elim: o H1 H2 H3 H4 H5 H6 => /= H1 H2 H3 H4 H5 H6.
-      rewrite andbT.
-      split. apply mem_set. by []. rewrite /allL /=.
-      by move: H3 => /inP ->;move: H4 => /inP ->.
-      rewrite andbT.
-      split. apply mem_set. by []. rewrite /allL /=.
-      by move: H3 => /inP ->;move: H4 => /inP ->.
-      (* size p >= 2 *)
-      move => t p _ x y H2;rewrite Lift_o_cons;move => /Active_path_cc_old [/H2 [H3 H5] H4].
-      split.
-        rewrite allset_cons andC. 
-        rewrite ActiveOe_iff in H4.
-          split;[ | move: H4 => [_ [_ [_ H4]]]].
-        by elim: o H2 H4 H5 => _ H4 H5.
-        by elim: o H2 H4 H5 => _ /= H4 H5.
-        rewrite ActiveOe_iff in H4.
-        rewrite allL_c H5 andbT.
-        by elim: o H2 H4 H5 => _ [/= /inP H4 _] _ /=.
-  Qed.
-  
   Lemma Deployment_to_Active: forall (W: set T) (E: relation T) (p: seq T) (x y: T),
       p [\in] W.^c /\ allL E p x y -> Active W E x y.
   Proof.
     move => W E p x y [H1 H2].
-    by exists (Lifto (x::(rcons p y)) P); apply Deployment_to_Active_path;split.
+    by exists (Lifto (x::(rcons p y)) P); apply Active_path_simple;split.
   Qed.
 
   Lemma Deployment_inv_to_Active: forall (W: set T) (E: relation T) (p: seq T) (x y: T),
       p [\in] W.^c /\ allL E^-1 p x y -> Active W E x y.
   Proof.
     move => W E p x y [H1 H2].
-    by exists (Lifto (x::(rcons p y)) N); apply Deployment_to_Active_path;split.
+    by exists (Lifto (x::(rcons p y)) N); apply Active_path_simple;split.
   Qed.
 
 End Active. 
 
-Section PathRel_Examples.
-  (** * Utilities *)
-  
-  Variables (T: Type) (E: relation T) (W: set T).
-  
-End PathRel_Examples.
-
 Section Active_path_unique. 
   
-  (* 
+  Variables (T: Type). 
+
     (** * If there exists an active path from x to y there exists a walk from x to y
         we just prove that when a variable is repeated twice we can shorten the
         active path * to prove the general property, we have maybe to switch from
@@ -2369,22 +2314,18 @@ Section Active_path_unique.
     Proof. 
       move => p x y z u w H1.
       move: (H1) => /Active_path_shorten_L2 H2.
-      pose proof Active_path_cc_a H1 as H3. 
-      move : H3; rewrite ActiveOe_iff => [[H3 _]].
+      move: (Active_path_cc_a H1);rewrite ActiveOe_iff => [[H3 _]].
       move: (H1); rewrite -rcons_cons -rcons_cons -rcons_cons -rcons_cons. 
-      move => /Active_path_rcrc_a H4. 
-      move: H4; rewrite ActiveOe_iff =>[[_ [H4 _]]].
-      by [].
+      by move => /(@Active_path_rcrc_a T R X);rewrite ActiveOe_iff =>[[_ [H4 _]]].
     Qed.
-
+    
     Lemma Active_path_shorten R X: forall (p: seq (T*T*O)) (x y z u w: T) (o1 o2 o3 o4:O) ,
         Active_path X R [::(x,y,o1),(y,z,o2) & (rcons (rcons p (u,y,o3)) (y,w,o4))] x w
         -> ActiveOe' X R ((x,y,o1), (y,w,o4)).
     Proof. 
       move => p x y z u w o1 o2 o3 o4 H1. 
       move: (H1); rewrite -rcons_cons -rcons_cons -rcons_cons -rcons_cons. 
-      move => /Active_path_rcrc_a H2. 
-      move: H2; rewrite ActiveOe_iff => [[_ [H2 [_ H3]]]].
+      move => /(@Active_path_rcrc_a T R X);rewrite ActiveOe_iff => [[_ [H2 [_ H3]]]].
       move: o1 o2 o3 o4 H1 H2 H3.
       case; case; case; case;
         move => H1 H2 H3;
@@ -2393,6 +2334,6 @@ Section Active_path_unique.
                move: H5 => //= H5;move: H3 => //= H3.
       by apply Active_path_shorten_L3 with p z u.
     Qed.
-*) 
     
-  End Active_path_unique. 
+    
+End Active_path_unique. 
