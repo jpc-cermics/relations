@@ -182,12 +182,9 @@ Section Bw_implies_active_path.
   Proof.
     rewrite /Bw -DuT_eq_Tstar /mkset .
     move => x y [x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
-    pose proof (clos_t_to_paths_l H2) as [p [H3 [H4 H5]]].
-    exists (x1::p);split. 
-    apply Deployment_to_Active_path.
-    split. by []. 
-    rewrite /R_o allL_c H4 andbT. by apply mem_set.
-    by [].
+    move: H2; rewrite {1}TCP' => -[p /clos_t_to_paths_l [H3 [H4 H5]]].
+    exists (x1::p);split;last by [].
+    by apply Deployment_to_Active_path;split;[ | rewrite /R_o allL_c H4 andbT;apply: mem_set].
   Qed.
   
   (** simplified version for right composition *)
@@ -225,8 +222,7 @@ Section Bmw_implies_active_path.
   Proof.
     rewrite /Bmw /inverse /Bw -DuT_eq_Tstar.
     move => x y [x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
-    pose proof (clos_t_to_paths_l H2) as [p [H3 [H4 H5]]].  
-    apply allL_rev in H4.
+    move: H2; rewrite {1}TCP' => -[p /clos_t_to_paths_l [H3 [/allL_rev H4 H5]]].
     move: H3 => /allset_cons [H3 H3'].
     exists (rcons (rev p) x1); split.
     apply Deployment_to_Active_path.
