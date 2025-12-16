@@ -443,13 +443,8 @@ Section Active_path_implies_Aw_s.
   
   Lemma D_L17_1: forall (o1 o2:O) (x y t: T), 
       Active_path W E [::(x,t,o1);(t,y,o2)] x y
-      -> ( ((let R:= E^-1 `;` Δ_(W.^c) `;` E in R (x, y))
-            \/ (let R:= E `;` Δ_(W.^c) `;` E in R (x, y)))
-           /\ o2 = P) 
-         \/ 
-           ( ((let R:= E `;` Δ_(W_s) `;` E^-1 in R (x, y))
-              \/ (let R:= E^-1 `;` Δ_(W.^c) `;` E^-1 in R (x, y)))
-             /\ o2 = N).
+      -> ( ( (E^-1 `;` Δ_(W.^c) `;` E) (x, y)  \/ (E `;` Δ_(W.^c) `;` E) (x, y)) /\ o2 = P)
+        \/ (((E `;` Δ_(W_s) `;` E^-1) (x, y)  \/ (E^-1 `;` Δ_(W.^c) `;` E^-1) (x, y)) /\ o2 = N).
   Proof.
     move => o1 o2 x y t. 
     elim: o2 => [|] [H1 [H2 H3]].

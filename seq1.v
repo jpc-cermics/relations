@@ -900,6 +900,18 @@ Definition O_rev (o:O) := match o with | P => N | N => P end.
 Definition R_o {T: Type} (R: relation T) (o:O):= 
   match o with | P => R | N=> R^-1 end.
 
+(** * The D_separated and Active relation as a relation on TxT *)
+  
+(* begin snippet Dseparated:: no-out *)  
+Definition D_separated {T: Type} (W: set T) (E: relation T) (x y: T) := 
+  ~(exists (p: seq (T*T*O)), Active_path W E p x y).
+(* end snippet Dseparated *)  
+
+(* begin snippet Active:: no-out *)  
+Definition Active {T: Type} (W: set T) (E: relation T) (x y: T) :=
+  (exists (p: seq (T*T*O)), Active_path W E p x y).
+(* end snippet Active *)  
+
 Section ActiveOe_relation.
   (** * Properties of ActiveOe *)
   
@@ -1569,6 +1581,7 @@ Section Active_paths_simple.
   
 End Active_paths_simple.  
 
+(* 
 Section Endpoints_and_Deployment.
   (** * endpoints  *)
   
@@ -2166,41 +2179,17 @@ Section Extended_Oriented_Paths.
   Qed.
   
 End Extended_Oriented_Paths.
+*)
 
-Section Active. 
-  (** * The D_separated and Active relation as a relation on TxT *)
-  Variables (T: Type). 
-  
-  (* begin snippet Dseparated:: no-out *)  
-  Definition D_separated (W: set T) (E: relation T) (x y: T) := 
-    ~(exists (p: seq (T*T*O)), Active_path W E p x y).
-  (* end snippet Dseparated *)  
-
-  (* begin snippet Active:: no-out *)  
-  Definition Active (W: set T) (E: relation T) (x y: T) :=
-   (exists (p: seq (T*T*O)), Active_path W E p x y).
-  (* end snippet Active *)  
-
-  Lemma Deployment_to_Active: forall (W: set T) (E: relation T) (p: seq T) (x y: T),
-      p [\in] W.^c /\ allL E p x y -> Active W E x y.
-  Proof.
-    move => W E p x y [H1 H2].
-    by exists (Lifto (x::(rcons p y)) P); apply Active_path_simple;split.
-  Qed.
-
-  Lemma Deployment_inv_to_Active: forall (W: set T) (E: relation T) (p: seq T) (x y: T),
-      p [\in] W.^c /\ allL E^-1 p x y -> Active W E x y.
-  Proof.
-    move => W E p x y [H1 H2].
-    by exists (Lifto (x::(rcons p y)) N); apply Active_path_simple;split.
-  Qed.
-
-End Active. 
 
 Section Active_path_unique. 
   
   Variables (T: Type). 
 
+  Lemma ChrelO_eq: forall (x y z t: T) (o1 o2:O),
+      ChrelO ((x,y,o1), (z,t,o2)) <-> y = z.
+  Proof. by []. Qed.
+  
     (** * If there exists an active path from x to y there exists a walk from x to y
         we just prove that when a variable is repeated twice we can shorten the
         active path * to prove the general property, we have maybe to switch from
