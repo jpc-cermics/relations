@@ -891,7 +891,7 @@ Definition Active_path
   | [::eo1] => eo1.1.1 = x /\  eo1.1.2 = y /\  Oedge R eo1 
   | eo1 :: [:: eo2 & p]
     => eo1.1.1 = x /\ (last eo2 p).1.2 = y 
-      /\ allL (ActiveOe X R) (belast eo2 p) eo1 (last eo2 p)
+      /\ allL (ActiveOe' X R) (belast eo2 p) eo1 (last eo2 p)
   end.
 (* end snippet Aeop *)
 
@@ -969,10 +969,10 @@ Section Active_paths.
   (** * case [:: eo1, eo2 & p] *)
   Lemma Active_path_cc' R X: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) ,
       Active_path X R [:: eo1, eo2 & p] eo1.1.1 (last eo2 p).1.2
-      <-> Active_path X R [:: eo2 & p] eo2.1.1 (last eo2 p).1.2 /\ ActiveOe X R (eo1, eo2).
+      <-> Active_path X R [:: eo2 & p] eo2.1.1 (last eo2 p).1.2 /\ ActiveOe' X R (eo1, eo2).
   Proof.
     elim => [ | eo3 p _] eo1 eo2.
-    - split;first by move => [_ [/= _ /allL0' /[dup] ? /ActiveOe_Oedge [_ /= ?]]].
+    - split;first by move => [_ [/= _ /allL0' /[dup] ?] [H1 [H2 _]]]. 
       by move => [[_ [<- H3]] /inP H4] /=; rewrite allL0.
     - split;first by move => [? [/= ? /= /allL_c/andP [/inP ? ?]]].
       by move => [[_ [H3 H4]] /inP H5] /=;rewrite allL_c;split;[|split;[|apply /andP]].
@@ -986,7 +986,7 @@ Section Active_paths.
       Active_path X R [:: eo1, eo2 & p] x y
       <-> (x = eo1.1.1 /\ y = (last eo2 p).1.2) 
         /\ Active_path X R [:: eo2 & p] eo2.1.1 y 
-        /\ ActiveOe X R (eo1, eo2).
+        /\ ActiveOe' X R (eo1, eo2).
   Proof.
     move => p eo1 eo2 x y;split.
     by move => /[dup] /Active_path_cc_ht [-> ->] /Active_path_cc' [H3 H4].
@@ -994,15 +994,15 @@ Section Active_paths.
   Qed.
 
   Lemma Active_path_cc_a R X: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (x y: T),
-      Active_path X R [:: eo1, eo2 & p] x y -> ActiveOe X R (eo1, eo2) .
+      Active_path X R [:: eo1, eo2 & p] x y -> ActiveOe' X R (eo1, eo2) .
   Proof. by move => p eo1 eo2 x y /Active_path_cc [_ [_ ?]]. Qed.
   
-
+  
   (** * case (eo1::(rcons p eo2)) *)
 
   Lemma Active_path_crc' R X: forall  (p: seq (T*T*O)) (eo1 eo2: T*T*O),
       Active_path X R (eo1::(rcons p eo2)) eo1.1.1 eo2.1.2
-      <-> allL (ActiveOe X R) p eo1 eo2.
+      <-> allL (ActiveOe' X R) p eo1 eo2.
   Proof.
     elim => [ | eo p H1] eo1 eo2;first by split;[move => [_ [_ /= ?]] |move => ?].
     split; rewrite rcons_cons.
@@ -1019,12 +1019,12 @@ Section Active_paths.
   
   Lemma Active_path_crc_a R X p (eo1 eo2: T*T*O): 
       Active_path X R (eo1::(rcons p eo2))  eo1.1.1 eo2.1.2
-      ->  ActiveOe X R (eo1, (head eo2 p)) /\  ActiveOe X R ((last eo1 p), eo2).
+      ->  ActiveOe' X R (eo1, (head eo2 p)) /\  ActiveOe' X R ((last eo1 p), eo2).
   Proof. by move  => /Active_path_crc' /[dup] /allL_splitl [_ H2] /allL_splitr [H3 _].  Qed.
   
   Lemma Active_path_crc R X: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (x y: T),
       Active_path X R (eo1::(rcons p eo2)) x y
-      <-> (x = eo1.1.1 /\ y= eo2.1.2) /\ allL (ActiveOe X R) p eo1 eo2.
+      <-> (x = eo1.1.1 /\ y= eo2.1.2) /\ allL (ActiveOe' X R) p eo1 eo2.
   Proof. 
     move => p eo1 eo2 x y.
     split;last by move => [[-> ->] /Active_path_crc' H3].
@@ -1036,11 +1036,11 @@ Section Active_paths.
   
   Lemma Active_path_rcrc' R X: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O),
       Active_path X R (rcons (rcons p eo1) eo2) (head eo1 p).1.1 eo2.1.2
-      <-> Active_path X R (rcons p eo1) (head eo1 p).1.1 eo1.1.2 /\ ActiveOe X R (eo1, eo2).
+      <-> Active_path X R (rcons p eo1) (head eo1 p).1.1 eo1.1.2 /\ ActiveOe' X R (eo1, eo2).
   Proof.
     elim => [ | eo p H1] eo1 eo2.
     - split; last by  move => [_ H2] /=;rewrite allL0'.
-      by move => [_ [_ /= /allL0' H3]];move: (H3) => /ActiveOe_Oedge [H4 _ /=].
+      by move => [_ [_ /= /allL0' H3]];move: (H3) => [H1 _].  
     - rewrite !rcons_cons Active_path_crc'.
       split; first by move => /allL_rc/andP [/inP H2 H3];rewrite Active_path_crc.
       by rewrite Active_path_crc'  => -[H2 /inP H3]; rewrite allL_rc;apply/andP.
@@ -1056,7 +1056,7 @@ Section Active_paths.
 
   Lemma Active_path_rcrc_a R X: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (x y: T),
       Active_path X R (rcons (rcons p eo1) eo2) x y 
-      -> ActiveOe X R (eo1, eo2).
+      -> ActiveOe' X R (eo1, eo2).
   Proof.
     move => p eo1 eo2 x y /[dup] /Active_path_rcrc_ht [H2 H3].
     by rewrite H2 H3; move => /Active_path_rcrc' [_ H1].
@@ -1065,7 +1065,7 @@ Section Active_paths.
   Lemma Active_path_rcrc R X: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (x y:T),
       Active_path X R (rcons (rcons p eo1) eo2) x y
       <-> (x = (head eo1 p).1.1 /\ y= eo2.1.2)
-        /\ Active_path X R (rcons p eo1) (head eo1 p).1.1 eo1.1.2 /\ ActiveOe X R (eo1, eo2).
+        /\ Active_path X R (rcons p eo1) (head eo1 p).1.1 eo1.1.2 /\ ActiveOe' X R (eo1, eo2).
   Proof.
     move => p eo1 eo2 x y;split.
     by move => /[dup] /Active_path_rcrc_ht [-> ->] /Active_path_rcrc' [H3 H4].
@@ -1081,7 +1081,7 @@ Section Active_paths.
     elim => [eo1 x y [H2 [H3 H4]] // | eo1 p _ eo2 x y]. 
     move => /Active_path_crc [[H1 H2] H3].
     move: H3 => /[dup] /allL_splitl [_ +] /allL_splitr [+ _].
-    by rewrite  ActiveOe_iff => -[_ [/= H4 _]] -[/= H5 _].
+    by move  => -[_ [/= H4 _]] -[/= H5 _].
   Qed.
   
   Lemma Active_path_c_hto R X: forall (p: seq (T*T*O)) (eo1: T*T*O) (x y: T),
@@ -1091,13 +1091,13 @@ Section Active_paths.
   Proof.
     elim => [eo1 x y [H1 [H2 H3]] // | eo2 p Hr eo1 x y]. 
     move => /Active_path_cc [[H1 H2] [/Hr [_ [_ [_ H3]]] +]].
-    by rewrite  ActiveOe_iff => -[/= H4 _].
+    by move => -[/= H4 _].
   Qed.
 
   (* compatibility with old version *)
   Lemma Active_path_cc_old R X: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (y: T),
       Active_path X R [:: eo1, eo2 & p] eo1.1.1 y
-      <-> Active_path X R [:: eo2 & p] eo2.1.1 y /\ ActiveOe X R (eo1, eo2).
+      <-> Active_path X R [:: eo2 & p] eo2.1.1 y /\ ActiveOe' X R (eo1, eo2).
   Proof.
     move => p eo1 eo2 y. 
     split; first by move /Active_path_cc => [H1 [H2 H3]].
@@ -1113,21 +1113,23 @@ Section Active_paths.
         /\ ActiveOe' X R (eop, eoq).
   Proof.
     elim => [ q eop eoq x y // | z p Hr q eop eoq x y ].
-    + by rewrite cat_rcons cat0s => /Active_path_cc [[H1 H2] [H3 [[H4 H4'] H5]]].
+    + rewrite cat_rcons cat0s => /Active_path_cc [[H1 H2] [H3 H4]]. 
+      (* XXXX reprendre *)
+      by move: H4;rewrite -ActiveOe_iff => -[[H4 H4'] H5].
     + elim/last_ind: q Hr eop eoq x y.
       + move => _ eop eoq x y.
         rewrite -cat_rcons cats0 Active_path_rcrc => -[[-> ->] [H3 +]].
-        by rewrite ActiveOe_iff Active_path1 => /[dup] H4 [_ [H6 _]].
+        by rewrite Active_path1 => /[dup] H4 [_ [H6 _]].
       + move => q1 t _ H1 eo1 eo2 x y H3.
         rewrite rcons_cons cat_cons -rcons_cons -rcons_cat in H3.
         pose proof Active_path_crc_ht H3 as [H4 H5].
         move: H3; rewrite -H4 -H5.
         move => /Active_path_crc' /allL_cat/andP [H6 /allL_c/andP [/inP H7 H8]]. 
-        by rewrite rcons_cons Active_path_crc Active_path_crc -ActiveOe_iff .
+        by rewrite rcons_cons Active_path_crc Active_path_crc. 
   Qed.
 
   Lemma Active_path_cat R X: forall (p q: seq (T*T*O)) (eop eoq: T*T*O) (x y z: T),
-      ActiveOe X R (eop, eoq)
+      ActiveOe' X R (eop, eoq)
       /\ Active_path X R (rcons p eop) x y 
       /\ Active_path X R (eoq::q) y z
       -> Active_path X R (rcons p eop ++ eoq::q) x z.
@@ -1158,7 +1160,7 @@ Section Active_paths.
   
 
   Lemma Active_path_iff R X: forall (p q: seq (T*T*O)) (eop eoq: T*T*O) (x y z: T),
-      ActiveOe X R (eop, eoq)
+      ActiveOe' X R (eop, eoq)
       /\ Active_path X R (rcons p eop) x y 
       /\ Active_path X R (eoq::q) y z
       <-> Active_path X R (rcons p eop++ eoq::q) x z /\ y= eop.1.2.
@@ -1168,14 +1170,13 @@ Section Active_paths.
     - pose proof Active_path_rc_hto H2 as [_ [H4 _]].
       by split;[apply Active_path_cat with y | ].
     - pose proof Active_path_split H1 as [H3 [H4 H5]].
-      rewrite ActiveOe_iff.
       pose proof H5 as [_ [H7 [H8 _]]].
       by split;[ | split;[rewrite H2 | rewrite H2 H8]].
   Qed.
 
   Lemma Active_path_cat' R X: forall (p q: seq (T*T*O)) (x y z: T),
       (exists (p' q': seq (T*T*O)), exists (eop eoq: T*T*O),
-          p = rcons p' eop /\ q = eoq::q' /\  ActiveOe X R (eop, eoq))
+          p = rcons p' eop /\ q = eoq::q' /\  ActiveOe' X R (eop, eoq))
       /\ Active_path X R p x y 
       /\ Active_path X R q y z
       -> Active_path X R (p++q) x z.
@@ -1550,7 +1551,7 @@ Section Active_paths_simple.
       ++ move => z p H1 x1 x H3 /inP H2 /allset_cons [H4 H4'] /allL_c/andP [/inP H5 H6] /=. 
          rewrite Lifto_c allL_c;apply /andP;split; last first. 
          by apply: (H1 x z H5 _ H4' H6); apply mem_set. 
-         clear H1 H6;apply mem_set;rewrite ActiveOe_o /Oedge.
+         clear H1 H6;apply mem_set;rewrite -ActiveOe_iff ActiveOe_o /Oedge.
          by case: o H3 H5 => /R_o' H3 /R_o' H5. 
     + elim: p x y;
         first by move => x y //= [_ [_ H]];
@@ -1558,7 +1559,7 @@ Section Active_paths_simple.
       
       move => z p H1 x y; rewrite Lift_o_cons;elim: p x y H1. 
       move => x y H1 /Active_path_cc_old H2. 
-      move: H2; rewrite ActiveOe_iff => [[H2 [H3 [H4 [H5 H6]]]]].
+      move: H2;move => [H2 [H3 [H4 [H5 H6]]]].
       elim: o H1 H2 H3 H4 H5 H6 => /= H1 H2 H3 H4 H5 H6.
       rewrite andbT.
       split. apply mem_set. by []. rewrite /allL /=.
@@ -1570,11 +1571,9 @@ Section Active_paths_simple.
       move => t p _ x y H2;rewrite Lift_o_cons;move => /Active_path_cc_old [/H2 [H3 H5] H4].
       split.
         rewrite allset_cons andC. 
-        rewrite ActiveOe_iff in H4.
         split;[ | move: H4 => [_ [_ [_ H4]]]].
         by elim: o H2 H4 H5 => _ H4 H5.
         by elim: o H2 H4 H5 => _ /= H4 H5.
-        rewrite ActiveOe_iff in H4.
         rewrite allL_c H5 andbT.
         by elim: o H2 H4 H5 => _ [/= /inP H4 _] _ /=.
   Qed.
@@ -2213,7 +2212,7 @@ Section Active_path_unique.
         move => x y [[_ [_ H2]] H3].
         by apply Oedge_Fset with y.
       - move => z p Hr x y.
-        rewrite Lifto_c last_cons Active_path_cc ActiveOe_iff. 
+        rewrite Lifto_c last_cons Active_path_cc.
         move => [[[H1 H1'] [H2 H3]] H4].
         have H5: R.*#X y by apply Hr with z.
         move: H3 => [H3 _].
@@ -2228,7 +2227,7 @@ Section Active_path_unique.
       - rewrite /last /Lifto /pair_o /Lift.
         by move => x y [[_ [_ H2]] H3].
       - move => z p Hr x y.
-        rewrite Lifto_c last_cons Active_path_cc ActiveOe_iff.
+        rewrite Lifto_c last_cons Active_path_cc.
         move => [[[H1 H1'] [H2 H3]] H4].
         have H5: R.*#X z by apply Hr with y.
         move: H3 => [_ [H3 _]].
@@ -2243,28 +2242,27 @@ Section Active_path_unique.
       elim => [x y z u v w| ].
       - rewrite -rcons_cons -rcons_cons -rcons_cons -rcons_cons Active_path_rcrc'.
         have -> : [:: (x, y, P); (y, z, P)] = rcons [:: (x, y, P)]  (y, z, P) by [].
-        rewrite Active_path_rcrc' /head ActiveOe_iff.
+        rewrite Active_path_rcrc' /head.
         move => [[H1 [H'2 [H'3 [/ChrelO_eq H'4 H'5]]]] [H3 [H4 [_ H6]]]].
         by (exists [::z]).
       - move => [[t s] o] p Hr x y z u v w.
-        rewrite rcons_cons rcons_cons Active_path_cc_old ActiveOe_iff.
+        rewrite rcons_cons rcons_cons Active_path_cc_old.
         elim: p Hr.
         + move => Hr [H1 H2].
           move: (H1);
-            rewrite Active_path_cc_old ActiveOe_iff => [[_ [_ [_ [/ChrelO_eq H3 _]]]]];
+            rewrite Active_path_cc_old => [[_ [_ [_ [/ChrelO_eq H3 _]]]]];
                                                rewrite <- H3 in *.
           elim: o H1 => [ /Hr [q [H1 H4]] | ].
           ++ exists [:: z & q].
-             by rewrite Lifto_c Lifto_c Active_path_cc_old  -Lifto_c /last_cons 
-                                                           ActiveOe_iff.
+             by rewrite Lifto_c Lifto_c Active_path_cc_old  -Lifto_c /last_cons.
           ++ exists [::z].
              move: H1 => /Active_path_cc_old H1. 
-             move: H1; rewrite  ActiveOe_iff => [[H1 [_ [_ [_ H7]]]]].
+             move: H1;move => [H1 [_ [_ [_ H7]]]].
              move: (H2) => [H2' [H2'' _]].
-             rewrite !Lifto_c Active_path_cc_old -Lifto_c ActiveOe_iff /last.
+             rewrite !Lifto_c Active_path_cc_old -Lifto_c /last.
              by split.
         + move => [[a b] o2] p _ H1 H2.
-          move: (H2);rewrite Active_path_cc_old rcons_cons rcons_cons ActiveOe_iff ;
+          move: (H2);rewrite Active_path_cc_old rcons_cons rcons_cons;
             move => [[_ [_ [_ [/ChrelO_eq H6 _]]]] _].
           rewrite <- H6 in *; clear H6.
           elim: o H2 => [[H2 H3] | ].
@@ -2272,18 +2270,18 @@ Section Active_path_unique.
              exists [::z].
              move: H2;rewrite Lifto_c => [[H2 H4]].
              rewrite /Lifto /Lift /pair_o.
-             rewrite Active_path_cc_old last_cons /last ActiveOe_iff .
+             rewrite Active_path_cc_old last_cons /last.
              move: (H3) => [H5 [H6 _]].
              specialize Active_path_Fset' with R X q y z => H7.
              by split;[split | apply H7].
           ++ move => [H2 H3].
              pose proof H2 as H5.
-             rewrite Active_path_cc_old  ActiveOe_iff in H2.
+             rewrite Active_path_cc_old in H2.
              rewrite Active_path_crc in H2.
-             move: H2; rewrite ActiveOe_iff => [[H2 [_ [_ [_ H8 ]]]]].
+             move: H2;move => [H2 [_ [_ [_ H8 ]]]].
              exists [::z];rewrite last_cons /last.
              split. 
-             by rewrite /= allL0' ActiveOe_iff.
+             by rewrite /= allL0'.
              by [].
     Qed.
 
@@ -2303,9 +2301,9 @@ Section Active_path_unique.
     Proof. 
       move => p x y z u w H1.
       move: (H1) => /Active_path_shorten_L2 H2.
-      move: (Active_path_cc_a H1);rewrite ActiveOe_iff => [[H3 _]].
+      move: (Active_path_cc_a H1) => [H3 _].
       move: (H1); rewrite -rcons_cons -rcons_cons -rcons_cons -rcons_cons. 
-      by move => /(@Active_path_rcrc_a T R X);rewrite ActiveOe_iff =>[[_ [H4 _]]].
+      by move => /(@Active_path_rcrc_a T R X) =>[[_ [H4 _]]].
     Qed.
     
     Lemma Active_path_shorten R X: forall (p: seq (T*T*O)) (x y z u w: T) (o1 o2 o3 o4:O) ,
@@ -2313,16 +2311,90 @@ Section Active_path_unique.
         -> ActiveOe' X R ((x,y,o1), (y,w,o4)).
     Proof. 
       move => p x y z u w o1 o2 o3 o4 H1. 
-      move: (H1); rewrite -rcons_cons -rcons_cons -rcons_cons -rcons_cons. 
-      move => /(@Active_path_rcrc_a T R X);rewrite ActiveOe_iff => [[_ [H2 [_ H3]]]].
-      move: o1 o2 o3 o4 H1 H2 H3.
-      case; case; case; case;
-        move => H1 H2 H3;
-               pose proof Active_path_cc_a H1 as H4;
-               move: H4; rewrite ActiveOe_iff =>[[H4 [_ [_ H5]]]];
-               move: H5 => //= H5;move: H3 => //= H3.
+      move: (H1); rewrite -4!rcons_cons.
+      move => /(@Active_path_rcrc_a T R X) => H2. 
+      move: o1 o2 o3 o4 H1 H2.
+      case;case;case;case.
+      move => H1 [/= H4' [H5' [H6' /= H7']]].
+      pose proof Active_path_cc_a H1 as H4.
+      move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
+      by [].
+      
+      move => H1 [/= H4' [H5' [H6' /= H7']]].
+      pose proof Active_path_cc_a H1 as H4.
+      move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
+      by [].
+
+      move => H1 [/= H4' [H5' [H6' /= H7']]].
+      pose proof Active_path_cc_a H1 as H4.
+      move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
+      by [].
+
+      move => H1 [/= H4' [H5' [H6' /= H7']]].
+      pose proof Active_path_cc_a H1 as H4.
+      move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
       by apply Active_path_shorten_L3 with p z u.
+
+      move => H1 [/= H4' [H5' [H6' /= H7']]].
+      pose proof Active_path_cc_a H1 as H4.
+      move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
+      by []. 
+      
+      move => H1 [/= H4' [H5' [H6' /= H7']]].
+      pose proof Active_path_cc_a H1 as H4.
+      move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
+      by []. 
+      
+      move => H1 [/= H4' [H5' [H6' /= H7']]].
+      pose proof Active_path_cc_a H1 as H4.
+      move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
+      by []. 
+      
+      move => H1 [/= H4' [H5' [H6' /= H7']]].
+      pose proof Active_path_cc_a H1 as H4.
+      move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
+      by []. 
+      
+     move => H1 [/= H4' [H5' [H6' /= H7']]].
+      pose proof Active_path_cc_a H1 as H4.
+      move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
+      by []. 
+      
+      move => H1 [/= H4' [H5' [H6' /= H7']]].
+      pose proof Active_path_cc_a H1 as H4.
+      move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
+      by []. 
+      
+     move => H1 [/= H4' [H5' [H6' /= H7']]].
+      pose proof Active_path_cc_a H1 as H4.
+      move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
+      by []. 
+      
+     move => H1 [/= H4' [H5' [H6' /= H7']]].
+      pose proof Active_path_cc_a H1 as H4.
+      move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
+      by []. 
+      
+     move => H1 [/= H4' [H5' [H6' /= H7']]].
+      pose proof Active_path_cc_a H1 as H4.
+      move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
+      by []. 
+      
+     move => H1 [/= H4' [H5' [H6' /= H7']]].
+      pose proof Active_path_cc_a H1 as H4.
+      move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
+      by []. 
+      
+     move => H1 [/= H4' [H5' [H6' /= H7']]].
+      pose proof Active_path_cc_a H1 as H4.
+      move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
+      by []. 
+      
+     move => H1 [/= H4' [H5' [H6' /= H7']]].
+     pose proof Active_path_cc_a H1 as H4.
+     move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
+     by []. 
     Qed.
     
-    
+   
 End Active_path_unique. 
