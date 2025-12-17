@@ -918,9 +918,6 @@ Section Active_paths.
   Context {T: Type}.
   Implicit Types (W X: set T) (R: relation T) (o: O) (p: seq (T*T*O)).
 
-  Lemma R_o' R o (xy: T*T): 
-      R_o R o xy <-> match o with | P => R xy | N=> R^-1 xy end.
-  Proof. by case: o. Qed.
   
   Lemma Active_path1 R X:  forall (eo1: T*T*O), 
     Active_path X R [::eo1] eo1.1.1 eo1.1.2 <-> Oedge R eo1. 
@@ -1142,6 +1139,15 @@ Section Active_paths.
   Proof.
     move => p q x y z [[p1 [q1 [eop [eoq [H1 [H2 H3]]]]]] [H4 H5]].
     by rewrite H1 H2; apply Active_path_cat with y; rewrite -H1 -H2.
+  Qed.
+
+  Lemma Active_path_cat'' R X: forall (p q: seq (T*T*O)) (x y z: T) (eo: T*T*O),
+      0 < size p -> 0 < size (q) -> Active_path X R p x y -> Active_path X R q y z 
+      -> ActiveOe' X R ((last eo p), (head eo q)) 
+      -> Active_path X R (p++q) x z.
+  Proof.
+    move => p' q' x y z eo /seq_rc [p [eop ->]] /seq_c [q [eoq ->]] H1 H2. 
+    by rewrite last_rcons /= => H3;apply: (@Active_path_cat R X _ _ _ _ _ y _). 
   Qed.
 
 End Active_paths.
@@ -1497,6 +1503,10 @@ Section Active_paths_simple.
   Context {T: Type}.
   Implicit Types (T : Type) (W: set T) (E: relation T) (p: seq T) (x y: T) (o:O).
   
+  Lemma R_o' R o (xy: T*T): 
+      R_o R o xy <-> match o with | P => R xy | N=> R^-1 xy end.
+  Proof. by case: o. Qed.
+
   Lemma Active_path_simple E W: forall (p: seq T) (x y: T) (o:O),
       p [\in] W.^c /\ allL (R_o E o) p x y 
       <-> Active_path W E (Lifto (x::(rcons p y)) o) x y.
