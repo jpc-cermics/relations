@@ -918,35 +918,21 @@ Section ActiveOe_relation.
   Context {T: Type}.
   Implicit Types (W X: set T) (R: relation T) (o: O) (p: seq (T*T*O)).
   Implicit Types (eo : (T*T*O) * (T*T*O)).
-
-  Lemma ActiveOe_iff W E:  ActiveOe W E = ActiveOe' W E.
-  Proof.
-    rewrite /ActiveOe' /A_tr /ActiveOe /setI /setX /mkset predeqE => [[eo1 eo2]].
-    by split => [[[H1 H2] [H3 H4]] | [H1 [H2 [H3 H4]]]]. 
-  Qed.
   
   Lemma ActiveOe_Oedge W E eo: (ActiveOe W E) eo -> Oedge E eo.1 /\ Oedge E eo.2.
   Proof. by move => [H1 [H2 _]]. Qed.
   
-  Lemma ActiveOe_Compose W E eo:  eo \in (ActiveOe W E) -> ChrelO eo. 
-  Proof. by rewrite ActiveOe_iff => /inP [_ [_ [H3 _]]]. Qed.
-
   Lemma ActiveOe_ChrelO W E: (ActiveOe W E) `<=` ChrelO.
-  Proof. by rewrite /subset => s /inP H1;apply ActiveOe_Compose with W E. Qed.
+  Proof. by rewrite /subset => s [_ [H2 _]]. Qed.
   
   Lemma ActiveOe_o W E (x y z: T) o:
-    (ActiveOe W E) ((x,y,o),(y,z,o)) 
+    (ActiveOe' W E) ((x,y,o),(y,z,o)) 
     <-> (Oedge E (x,y,o)) /\ (Oedge E (y,z,o)) /\ W.^c y.
   Proof.
-    rewrite ActiveOe_iff /mkset /ChrelO /=;case: o.
+    rewrite /mkset /ChrelO /=;case: o.
     by split => [[? [? [_ ?]]] // | [? [? ?]]].
     by split => [[? [? [_ ?]]] // | [? [? ?]]].
   Qed.
-  
-  Lemma UNUSED_ActiveOe_rev W E: forall (e1 e2: T*T) (o:O),
-    (ActiveOe W E)^-1 ((e1,o), (e2,o)) 
-    <-> ActiveOe W E^-1 ((e2,O_rev o), (e1,O_rev o)).
-  Proof. by move => [x1 y1] [x2 y2] o; case: o. Qed.
 
 End ActiveOe_relation.
 
@@ -963,8 +949,6 @@ Section Active_paths.
   Lemma Active_path1 R X:  forall (eo1: T*T*O), 
     Active_path X R [::eo1] eo1.1.1 eo1.1.2 <-> Oedge R eo1. 
   Proof. by move => eo1;rewrite /Active_path;split => [[? [? ?]]// | //]. Qed.
-  
-  (** * NEW *)
   
   (** * case [:: eo1, eo2 & p] *)
   Lemma Active_path_cc' R X: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) ,
@@ -1114,8 +1098,7 @@ Section Active_paths.
   Proof.
     elim => [ q eop eoq x y // | z p Hr q eop eoq x y ].
     + rewrite cat_rcons cat0s => /Active_path_cc [[H1 H2] [H3 H4]]. 
-      (* XXXX reprendre *)
-      by move: H4;rewrite -ActiveOe_iff => -[[H4 H4'] H5].
+      by move: H4 => /[dup] ? [? _]. 
     + elim/last_ind: q Hr eop eoq x y.
       + move => _ eop eoq x y.
         rewrite -cat_rcons cats0 Active_path_rcrc => -[[-> ->] [H3 +]].
@@ -1551,7 +1534,7 @@ Section Active_paths_simple.
       ++ move => z p H1 x1 x H3 /inP H2 /allset_cons [H4 H4'] /allL_c/andP [/inP H5 H6] /=. 
          rewrite Lifto_c allL_c;apply /andP;split; last first. 
          by apply: (H1 x z H5 _ H4' H6); apply mem_set. 
-         clear H1 H6;apply mem_set;rewrite -ActiveOe_iff ActiveOe_o /Oedge.
+         clear H1 H6;apply mem_set.         
          by case: o H3 H5 => /R_o' H3 /R_o' H5. 
     + elim: p x y;
         first by move => x y //= [_ [_ H]];
@@ -2395,6 +2378,5 @@ Section Active_path_unique.
      move: H4 => [/= H4 [H5 [H6 /= H7]]]. 
      by []. 
     Qed.
-    
    
 End Active_path_unique. 
