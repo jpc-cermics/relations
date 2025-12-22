@@ -151,25 +151,21 @@ Section Seq_utilities.
   
   Lemma seq_rcrc0 s: size s = 2 <-> exists (x y:T), s = [::x;y].
   Proof.
-    split => [H1 |[x [y H1]]];last by rewrite H1.
-    have /seq_rcrc [q [x [y H3]]]: 1 < size s by rewrite -H1.
-    move: H1;rewrite H3 size_rcons size_rcons => /eqP H1.
-    have /nilP H4: size q == 0 by [].
-    by exists x,y;rewrite H4.
+    split => [/[dup] H1 | [x [y ->]] //]. 
+    have /seq_rcrc [q [x [y ->]]]: 1 < size s by rewrite -H1.
+    by rewrite !size_rcons => /succn_inj/succn_inj/size0nil -> /=;exists x, y.
   Qed.
-
+  
   Lemma seq_n n s: size s = n.+1 -> exists s',exists x, s = [::x & s'] /\ size(s') = n.
   Proof.
-    elim: n s => [| n Hn s H1].
-    by elim => [_ // | t s H1 /= /succn_inj/size0nil ->];exists [::], t.
-    have /seq_c [q [x H3]]: size(s) > 0  by rewrite H1. 
+    elim: n s => [[// | t s /=/succn_inj ? /= ] | n _ s H1];first by exists s, t. 
+    have /seq_c [q [x H3]]: 0 < size(s)  by rewrite H1. 
     by move: H1;rewrite H3 /= => /succn_inj H1;exists q, x. 
   Qed.
   
   Lemma seq_rcn n s: size s = n.+1 -> exists s',exists x, s = rcons s' x /\ size(s') = n.
   Proof.
-    elim: n s => [| n Hn s H1].
-    by elim => [_ // | t s _ /= /succn_inj/size0nil ->]; exists [::], t.
+    elim: n s => [[// | t s /= /succn_inj/size0nil ->] | n Hn s H1];first by exists [::], t.
     have /seq_rc [s' [x H3]]: size(s) > 0  by rewrite H1. 
     by move: H1; rewrite H3 size_rcons => /succn_inj H1;(exists s', x).
   Qed.
@@ -178,10 +174,9 @@ Section Seq_utilities.
       s=[::] \/ (exists x, s=[::x]) \/ exists (s':seq T), exists (x y:T), s=x::(rcons s' y).
   Proof.
     elim:s  => [| x s _]; first by left.
-    elim: s => [ | y s _]; first by right;left;(exists x).
-    right;right.
+    elim: s => [| y s _]; first by right;left;(exists x).
     have /seq_crc [q [x' [y' H2]]]: size([:: x, y & s]) > 1 by [].
-    by exists q;exists x';exists y';rewrite H2.
+    by right;right;exists q;exists x';exists y';rewrite H2.
   Qed.
 
   Lemma seq_cases1 s:
@@ -189,9 +184,8 @@ Section Seq_utilities.
   Proof.
     elim: s => [| x s _]; first by left.
     elim: s => [ | y s _]; first by right;left;(exists x).
-    right;right.
     have /seq_cc [q [x' [y' H2]]]: size([:: x, y & s]) > 1 by [].
-    by exists q;exists x';exists y';rewrite H2.
+    by right;right;exists q;exists x';exists y';rewrite H2.
   Qed.
 
   Lemma last_rev s t: last t (rev s) = head t s.
@@ -207,6 +201,9 @@ Section Seq_utilities.
     by rewrite -H3 -H4  cat_take_drop.
   Qed.
   
+  Lemma head_rcons s t t': head t (rcons s t') = head t' s.
+  Proof. by elim:s.  Qed.
+
 End Seq_utilities.
 
 Section allset.
@@ -282,10 +279,9 @@ Section Lift_facts.
   Lemma Lift_rcrc st x y:
     Lift (rcons (rcons st x) y) =  rcons (Lift (rcons st x)) (x,y).
   Proof.
-    have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
     elim:st => [// | z st Hr ].
     rewrite [in RHS]rcons_cons [in RHS]Lift_crc [in RHS]rcons_cons -[in RHS]Hr.
-    by rewrite ![in LHS]rcons_cons [in LHS]Lift_crc H1. 
+    by rewrite ![in LHS]rcons_cons [in LHS]Lift_crc head_rcons.
   Qed.
   
   Lemma Lift_rcc st x y: Lift (rcons (x::st) y) = rcons (Lift (x::st)) (last x st,y).
@@ -299,8 +295,7 @@ Section Lift_facts.
 
   Lemma Lift_head st pt x y: head pt (Lift (x::(rcons st y))) = (x,head y st).
   Proof.
-    have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
-    by elim/last_ind: st => [// | st z _ ];rewrite Lift_crc H1 /=.
+    by elim/last_ind: st => [// | st z _ ];rewrite Lift_crc head_rcons /=.
   Qed.
   
   Lemma head_Lift st pt: size(st) > 1 -> (head pt (Lift st)).1 = head pt.1 st.
@@ -319,15 +314,24 @@ Section Lift_facts.
       Lift ((rcons st y) ++ (rcons st' z)) =
         Lift (rcons st y) ++ Lift (y::rcons st' z).
   Proof.
-    have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim. 
     elim => [q y z // | t st Hr q y z].
     rewrite rcons_cons cat_cons -rcons_cat Lift_crc rcons_cat Hr. 
     have H2: head z (rcons st y ++ q) = head y st
       by elim/last_ind: q y z => [y z | q z' Hr' y z];
-                                [rewrite cats0 H1 | rewrite -rcons_cat H1 Hr'].
+                                [rewrite cats0 head_rcons | rewrite -rcons_cat head_rcons Hr'].
     by rewrite H2 -cat_cons -Lift_crc.
   Qed.
-  
+
+  Lemma Lift_cat_rc': forall (st st':seq T) (y z: T),
+      Lift ((rcons st y) ++ (rcons st' z)) =
+        Lift (rcons st y) ++ Lift (y::rcons st' z).
+  Proof.
+    elim => [q y z // | t st Hr q y z].
+    rewrite rcons_cons cat_cons -rcons_cat Lift_crc rcons_cat Hr. 
+    have ->: head z (rcons st y ++ q) = head y st by rewrite headI cat_cons /=.
+    by rewrite -cat_cons -Lift_crc.
+  Qed.
+
   Lemma Lift_cat_crc: forall (st st':seq T) (x y z: T),
       Lift (x::(rcons st y) ++ (rcons st' z)) =
         Lift(x::(rcons st y)) ++ Lift (y::rcons st' z).
@@ -362,7 +366,7 @@ Section Lift_facts.
   Lemma Lift_inv2 st x:  st <> [::] ->  UnLift (Lift st) (head x st) = st.
   Proof.
     pose proof seq_cases st as [-> | [[x' ->] | [r [x' [y ->]]]]];rewrite //. 
-    by move => _; apply Lift_inv1.
+    by move => _; apply: Lift_inv1.
   Qed.
   
   Lemma Lift_inv_sz2 st: size(st) > 1 -> (forall (x:T), UnLift (Lift st) x = st).
@@ -389,6 +393,13 @@ Section Lift_facts.
     by rewrite Hr in H2;rewrite Lift_cc H2 /= addnC [RHS]subn1 subn1 addn1 /=.
   Qed.
 
+  Lemma Lift_sz' st: size(st) > 1 -> size (Lift st) = (size st) -1.
+  Proof.
+    move => /seq_cc [q [x [y ->]]];elim: q x y => [x y // | z q Hr x y].
+    have H2: size ((x, y) :: Lift [:: y, z & q]) = 1+ size(Lift [:: y, z & q]) by [].
+    by rewrite Hr in H2;rewrite Lift_cc H2 /= addnC [RHS]subn1 subn1 addn1 /=.
+  Qed.
+
   Lemma Lift_sz2 st: size(Lift st) > 0 <-> size (st) > 1.
   Proof. by elim:st => [// | x st ]; elim: st x => [// | x st Hr y H1 // H2]. Qed.
 
@@ -407,16 +418,16 @@ Section Lift_in_facts.
   Proof. by elim/last_ind: st y => [// | y st Hr x];rewrite Lift_rcrc allset_rcons => -[_ ?] //. Qed.
 
   Lemma Lift_in_head R st x y: 0 < size (st) -> (x::st) [L\in] R -> R (x, head y st).
-  Proof.  by move => /seq_c [s' [x' ->]];rewrite /head allset_cons => -[? _]. Qed.
+  Proof. by move => /seq_c [s' [x' ->]];rewrite /head allset_cons => -[? _]. Qed.
 
   Lemma Lift_in_last R st x y: 0 < size (st) -> (rcons st y) [L\in] R -> R (last x st,y).
-  Proof.  by move => /seq_rc [s' [x' ->]];rewrite last_rcons Lift_rcrc allset_rcons => -[_ ?]. Qed.
+  Proof. by move => /seq_rc [s' [x' ->]];rewrite last_rcons Lift_rcrc allset_rcons => -[_ ?]. Qed.
 
   Lemma Lift_in_splitl R st x y: 0 < size (st) -> (x::st) [L\in] R -> R (x, head y st) /\ st [L\in] R. 
-  Proof.  by move => ? ?;split;[apply: Lift_in_head | apply: (@Lift_in_c R st x)]. Qed.
+  Proof. by move => ? ?;split;[apply: Lift_in_head | apply: (@Lift_in_c R st x)]. Qed.
 
   Lemma Lift_in_splitr R st x y: 0 < size (st) -> (rcons st y) [L\in] R -> st [L\in] R /\ R (last x st,y).
-  Proof.  by move => ? ?;split;[apply: (@Lift_in_rc R st y) | apply: Lift_in_last]. Qed.
+  Proof. by move => ? ?;split;[apply: (@Lift_in_rc R st y) | apply: Lift_in_last]. Qed.
   
   Lemma Lift_in_F R st y: (rcons st y) [L\in] R -> st [\in] (R.+)#_(y).
   Proof.
@@ -425,18 +436,25 @@ Section Lift_in_facts.
     rewrite Lift_crc 2!allset_cons => [[? /H1 /[dup] ?]];rewrite allset_cons => -[? ?].
     by split;[apply Fset_t2; exists z|].
   Qed.
-
-  Lemma Lift_in_nth R st z: st [L\in] R -> (forall n, n.+1 < size st -> R ((nth z st n),(nth z st n.+1))). 
+  
+  Lemma Lift_in2nth R st z: st [L\in] R -> (forall n, n.+1 < size st -> R ((nth z st n),(nth z st n.+1))). 
   Proof.
     elim: st => [// | x [//| x' st Hr /Lift_in_splitl H1 n /=]]. 
-    have: 0 < size (x' :: st) by []; move => /(H1 z);rewrite /head => -[H2 /Hr H3].
+    have: 0 < size (x' :: st) by []; move => /(H1 z);rewrite /head => -[H2 /Hr/(_ n.-1) H3].
     case H4: (n== 0);first by move :H4 => /eqP -> _ /=.
-    move: H4 => /neq0_lt0n H4.
-    have H5: n.-1.+1 = n by apply: ltn_predK H4. 
-    move: H3 => /(_ n.-1); rewrite H5 => H6 H7.
+    move: H4 => /neq0_lt0n /[dup] H4 /ltn_predK H5.
+    move: H3; rewrite H5 => H6 H7.
     rewrite -{1}H5 -nth_behead /=.
-    have: n < size (x' :: st) by []; move => /H6 H8.
-    by [].
+    by have: n < size (x' :: st) by []; move => /H6 H8.
+  Qed.
+  
+  Lemma nth2Lift_in R st z: (forall n, n.+1 < size st -> R ((nth z st n),(nth z st n.+1))) -> st [L\in] R.
+  Proof.
+    elim: st => [// | x st _ H1];elim: st x H1  => [ // | x' st' /(_ x') Hr x H1].
+    rewrite Lift_cc allset_cons.
+    split; first by move: H1 => /(_ 0) /= H1; apply: H1.
+    apply: Hr => n. 
+    by move: H1 => /(_ n.+1);rewrite -nth_behead /= => H1 /H1 H2.
   Qed.
   
   Lemma Lift_in_FF R st y z:  (rcons st y) [L\in] R -> y \in R.+#_(z) -> st [\in] R.+#_(z).
@@ -576,8 +594,7 @@ Section allset_Lifted.
 
   Lemma allL_splitr R st x y:  allL R st x y <-> R (x, head y st) /\ (rcons st y) [L\in] R. 
   Proof. 
-    have H0: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim.
-    split;first by move: (@Lift_in_splitl _ R (rcons st y) x y);rewrite H0 size_rcons => H2;apply: H2.
+    split;first by move: (@Lift_in_splitl _ R (rcons st y) x y);rewrite head_rcons size_rcons => H2;apply: H2.
     elim: st x y => [x y [? _] // | x' st Hr x y [ H1 H2]];first by rewrite allL0'.
     by rewrite /allL  Lift_crc allset_cons.
   Qed.
@@ -840,7 +857,7 @@ Section PathRel.
   Proof.
     rewrite {1}TCP' predeqE => -[x y].
     split; first by move => [p /allL_WS_iff /andP [H1 H2]];(exists p).
-    by move => [p /andP/allL_WS_iff ZZ];(exists p).
+    by move => [p /andP/allL_WS_iff ?];(exists p).
   Qed.
 
   Lemma clos_t_to_paths_l R (X: set T) st x y:
@@ -1497,10 +1514,8 @@ Section Seq_lifto.
   Lemma Lifto_head1: forall (p:seq T) (o:O) (x z: T),
       head (last x p, z ,o) (Lifto (x::p) o) = (x, head z p, o).
   Proof.
-    have H1: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q
-        by elim. 
     elim/last_ind => [o x y // | p t Hr o x z].
-    by rewrite /Lifto Lift_crc H1. 
+    by rewrite /Lifto Lift_crc head_rcons. 
   Qed.
   
   Lemma Lift_o_cons: forall (p:seq T) (o:O) (x y z: T),
