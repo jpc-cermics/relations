@@ -596,6 +596,14 @@ Section allset_Lifted.
     by rewrite /allL  Lift_crc allset_cons.
   Qed.
   
+  Lemma allL_split R st x y: allL R st x y <-> R (x, head y st) /\ st [L\in] R /\ R ((last x st), y).
+  Proof.
+    split;first by move => /[dup] /allL_splitr [? _] /allL_splitl [/(@Lift_in_c T R) ? ?].
+    move => [H1 [H2 H3]];rewrite allL_splitl;split; last by [].
+    elim/last_ind: st x y H1 H2 H3 => [// | s y _ x' y']. 
+    by rewrite head_rcons last_rcons allL_splitr => ? ? _.
+  Qed.
+  
   Lemma allL_cat R st st' x y z: 
     allL R ((rcons st y) ++ st') x z <-> allL R st x y && allL R st' y z.
   Proof.
@@ -641,7 +649,7 @@ Section allset_Lifted.
 
   Lemma allL_Lift_in_c R st x y: allL R st x y -> (x:: st) [L\in] R.
   Proof. by elim/last_ind: st x y => [x y // | st x' Hr x y];rewrite allL_rc => /andP [_ H1]. Qed.
-  
+
 End allset_Lifted.
 
 Section Suc_as_Lift. 
