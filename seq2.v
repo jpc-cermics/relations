@@ -74,19 +74,14 @@ Section nat_util.
   Lemma P7 n i: i < n -> (i.+1 < n) = false -> i.+1 = n. Proof. by lia. Qed.
   Lemma P11 n i: i < n -> i.+1 = n -> (i = n.-1)%N. Proof. by lia. Qed.
   
-  Lemma P6': forall n, n.+1 < n = false.
-      by move => n;apply/negP => H6;move: (leq_ltn_trans (leqnSn n) H6);
-                               rewrite ltnn. 
-  Qed.
+  Lemma P6' n : n.+1 < n = false.
+  Proof. by apply/negP => H6;move: (leq_ltn_trans (leqnSn n) H6);rewrite ltnn. Qed.
   
-  Lemma P8': forall n, (n.+1 == n) = false.
-    by move => n;apply/negP => /eqP H0;move: (ltnSn n);rewrite -{1}H0 ltnn.
-  Qed.
+  Lemma P8' n: (n.+1 == n) = false.
+  Proof. by apply/negP => /eqP H0;move: (ltnSn n);rewrite -{1}H0 ltnn. Qed.
   
-  Lemma P9': forall n, n.+2 < n = false.
-  Proof. 
-    by move => n;apply/negP => H9;move: (leq_ltn_trans (leqnSn n.+1) H9);
-                             rewrite P6.
+  Lemma P9' n: n.+2 < n = false.
+  Proof. by apply/negP => H9;move: (leq_ltn_trans (leqnSn n.+1) H9);rewrite P6.
   Qed.
   
   Lemma P10': forall n, n.+2 == n = false.
@@ -95,17 +90,16 @@ Section nat_util.
                               rewrite [X in n.+1 < X]H0 P6. 
   Qed.
   
-  Lemma P4': forall n i, i.+1 < n.+1 -> i < n. 
-  Proof. by move => n i; rewrite ltnS. Qed. 
+  Lemma P4' n i: i.+1 < n.+1 -> i < n. 
+  Proof. by rewrite ltnS. Qed. 
 
-  Lemma P5': forall n i, i < n.+1 -> (i == n) = false -> i < n.
-  Proof. 
-    by move => n i;rewrite leq_eqVlt eqSS => /orP [-> // | ? _];apply: P4.
+  Lemma P5' n i: i < n.+1 -> (i == n) = false -> i < n.
+  Proof. by rewrite leq_eqVlt eqSS => /orP [-> // | ? _];apply: P4.
   Qed.
   
-  Lemma P7': forall n i, i < n -> (i.+1 < n) = false -> i.+1 = n.
+  Lemma P7' n i: i < n -> (i.+1 < n) = false -> i.+1 = n.
   Proof.
-    move => n i H1 /negP/negP H2; move: H2; rewrite -ltnNge => H2.
+    move => H1 /negP/negP H2; move: H2; rewrite -ltnNge => H2.
     case H3: (i.+1 == n);first by move: H3 =>/eqP H3.
     move: H2;rewrite ltnS leq_eqVlt ltnS => /orP [/eqP -> // | H2].
     by move: (leq_ltn_trans H2 H1);rewrite ltnn.
@@ -217,7 +211,7 @@ Section Seq1_plus.
     pose proof (@allL_nth R s x y H0 i H2) as H3.
     by pose proof (@nth_dv s y (last x s) i H1) as ->.
   Qed.
-
+  
   Lemma uniq_subseq s s' x: uniq (x :: s) -> subseq s' s -> uniq (x:: s').
   Proof.
     rewrite cons_uniq => /andP [H2 H3] H4.
