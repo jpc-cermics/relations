@@ -111,7 +111,7 @@ Section Seq_utilities.
   (* XXXX headI permet de passer d'un rcons a un cons *)
 
   Context {T : Type}.
-  Implicit Types (T : Type) (s: seq T).
+  Implicit Types (T : Type) (s p q: seq T) (n: nat).
   
   Lemma seq_rc s: (0 < size s) -> exists s' x, s = (rcons s' x).
   Proof. by elim:s => [//| x s _ _];exists (belast x s), (last x s);rewrite lastI. Qed.
@@ -197,6 +197,16 @@ Section Seq_utilities.
   Lemma last_rev s t: last t (rev s) = head t s.
   Proof. by elim: s t => [//| t1 st1 _ t];rewrite rev_cons last_rcons /=.  Qed.
 
+  Lemma seq_split (x: T) (n:nat) s:
+    n.+1 < size s 
+    -> s = (rcons (take n s) (nth x s n)) ++ ((nth x s n.+1) :: (drop n.+2 s)).
+  Proof.
+    move => H1.
+    have H2: n < size s by apply: leq_ltn_trans;last first;[apply: H1|].
+    move: H2 H1 => /(@take_nth T x n s) H3 /(@drop_nth T x n.+1 s) H4.
+    by rewrite -H3 -H4  cat_take_drop.
+  Qed.
+  
 End Seq_utilities.
 
 Section allset.
@@ -415,6 +425,19 @@ Section Lift_in_facts.
     rewrite Lift_crc 2!allset_cons => [[? /H1 /[dup] ?]];rewrite allset_cons => -[? ?].
     by split;[apply Fset_t2; exists z|].
   Qed.
+
+  Lemma Lift_in_nth R st z: st [L\in] R -> (forall n, n.+1 < size st -> R ((nth z st n),(nth z st n.+1))). 
+  Proof.
+    elim: st => [// | x [//| x' st Hr /Lift_in_splitl H1 n /=]]. 
+    have: 0 < size (x' :: st) by []; move => /(H1 z);rewrite /head => -[H2 /Hr H3].
+    case H4: (n== 0);first by move :H4 => /eqP -> _ /=.
+    move: H4 => /neq0_lt0n H4.
+    have H5: n.-1.+1 = n by apply: ltn_predK H4. 
+    move: H3 => /(_ n.-1); rewrite H5 => H6 H7.
+    rewrite -{1}H5 -nth_behead /=.
+    have: n < size (x' :: st) by []; move => /H6 H8.
+    by [].
+  Qed.
   
   Lemma Lift_in_FF R st y z:  (rcons st y) [L\in] R -> y \in R.+#_(z) -> st [\in] R.+#_(z).
   Proof. by move => /Lift_in_F H2 /(@Fset_t5 _ R) H4;apply: (@allset_subset _ _ _ _ H4 H2). Qed.
@@ -604,6 +627,13 @@ Section allset_Lifted.
 
   Lemma allL_Lift_in_c R st x y: allL R st x y -> (x:: st) [L\in] R.
   Proof. by elim/last_ind: st x y => [x y // | st x' Hr x y];rewrite allL_rc => /andP [_ H1]. Qed.
+  
+  Lemma allL_nth  R st x y z: 
+    allL R st x y -> (forall n, n.+1 < size st -> R ((nth z st n),(nth z st n.+1))). 
+  Proof.
+    move => + n H2;pose proof ((@seq_split T z n st) H2) as H3.
+    by rewrite {1}H3 allL_cat => /andP [_ /allL_c /andP [/inP ? _]].
+  Qed.
 
 End allset_Lifted.
 
