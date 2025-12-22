@@ -437,24 +437,21 @@ Section Lift_in_facts.
     by split;[apply Fset_t2; exists z|].
   Qed.
   
-  Lemma Lift_in2nth R st z: st [L\in] R -> (forall n, n.+1 < size st -> R ((nth z st n),(nth z st n.+1))). 
+  Lemma Lift_in2nth R st z: st [L\in] R <-> (forall n, n.+1 < size st -> R ((nth z st n),(nth z st n.+1))). 
   Proof.
-    elim: st => [// | x [//| x' st Hr /Lift_in_splitl H1 n /=]]. 
-    have: 0 < size (x' :: st) by []; move => /(H1 z);rewrite /head => -[H2 /Hr/(_ n.-1) H3].
-    case H4: (n== 0);first by move :H4 => /eqP -> _ /=.
-    move: H4 => /neq0_lt0n /[dup] H4 /ltn_predK H5.
-    move: H3; rewrite H5 => H6 H7.
-    rewrite -{1}H5 -nth_behead /=.
-    by have: n < size (x' :: st) by []; move => /H6 H8.
-  Qed.
-  
-  Lemma nth2Lift_in R st z: (forall n, n.+1 < size st -> R ((nth z st n),(nth z st n.+1))) -> st [L\in] R.
-  Proof.
-    elim: st => [// | x st _ H1];elim: st x H1  => [ // | x' st' /(_ x') Hr x H1].
-    rewrite Lift_cc allset_cons.
-    split; first by move: H1 => /(_ 0) /= H1; apply: H1.
-    apply: Hr => n. 
-    by move: H1 => /(_ n.+1);rewrite -nth_behead /= => H1 /H1 H2.
+    split. 
+    + elim: st => [// | x [//| x' st Hr /Lift_in_splitl H1 n /=]]. 
+      have: 0 < size (x' :: st) by []; move => /(H1 z);rewrite /head => -[H2 /Hr/(_ n.-1) H3].
+      case H4: (n== 0);first by move :H4 => /eqP -> _ /=.
+      move: H4 => /neq0_lt0n /[dup] H4 /ltn_predK H5.
+      move: H3; rewrite H5 => H6 H7.
+      rewrite -{1}H5 -nth_behead /=.
+      by have: n < size (x' :: st) by []; move => /H6 H8.
+    + elim: st => [// | x st _ H1];elim: st x H1  => [ // | x' st' /(_ x') Hr x H1].
+      rewrite Lift_cc allset_cons.
+      split; first by move: H1 => /(_ 0) /= H1; apply: H1.
+      apply: Hr => n. 
+      by move: H1 => /(_ n.+1);rewrite -nth_behead /= => H1 /H1 H2.
   Qed.
   
   Lemma Lift_in_FF R st y z:  (rcons st y) [L\in] R -> y \in R.+#_(z) -> st [\in] R.+#_(z).
@@ -645,13 +642,6 @@ Section allset_Lifted.
   Lemma allL_Lift_in_c R st x y: allL R st x y -> (x:: st) [L\in] R.
   Proof. by elim/last_ind: st x y => [x y // | st x' Hr x y];rewrite allL_rc => /andP [_ H1]. Qed.
   
-  Lemma allL_nth  R st x y z: 
-    allL R st x y -> (forall n, n.+1 < size st -> R ((nth z st n),(nth z st n.+1))). 
-  Proof.
-    move => + n H2;pose proof ((@seq_split T z n st) H2) as H3.
-    by rewrite {1}H3 allL_cat => /andP [_ /allL_c /andP [/inP ? _]].
-  Qed.
-
 End allset_Lifted.
 
 Section Suc_as_Lift. 
@@ -964,7 +954,6 @@ Section Active_paths.
   
   Context {T: Type}.
   Implicit Types (W X: set T) (R: relation T) (o: O) (p: seq (T*T*O)).
-
   
   Lemma Active_path1 R X:  forall (eo1: T*T*O), 
     Active_path X R [::eo1] eo1.1.1 eo1.1.2 <-> Oedge R eo1. 
@@ -1187,7 +1176,7 @@ Section Active_paths.
     move => p q x y z [[p1 [q1 [eop [eoq [H1 [H2 H3]]]]]] [H4 H5]].
     by rewrite H1 H2; apply Active_path_cat with y; rewrite -H1 -H2.
   Qed.
-
+  
   Lemma Active_path_cat'' R X: forall (p q: seq (T*T*O)) (x y z: T) (eo: T*T*O),
       0 < size p -> 0 < size (q) -> Active_path X R p x y -> Active_path X R q y z 
       -> ActiveOe' X R ((last eo p), (head eo q)) 
@@ -1196,7 +1185,27 @@ Section Active_paths.
     move => p' q' x y z eo /seq_rc [p [eop ->]] /seq_c [q [eoq ->]] H1 H2. 
     by rewrite last_rcons /= => H3;apply: (@Active_path_cat R X _ _ _ _ _ y _). 
   Qed.
-
+  
+  Lemma Active_path2nth R X: forall (p: seq (T*T*O)) (x y: T) (eo: T*T*O),
+      Active_path X R p x y -> 
+      (forall n, n.+1 < size p -> ActiveOe' X R ((nth eo p n),(nth eo p n.+1))). 
+  Proof.
+    elim => [// | eo'' p _ ].
+    elim/last_ind: p eo'' => [// | p eo2 Hr eo1 y z eo' /Active_path_crc [H1 H2]].
+    by rewrite -Lift_in2nth.
+  Qed.
+  
+  Lemma nth2Active_path R X: forall (p: seq (T*T*O)) (eo: T*T*O),
+      ( 1 < size p) /\ (forall n, n.+1 < size p -> ActiveOe' X R ((nth eo p n),(nth eo p n.+1))) 
+      -> Active_path X R p (nth eo p 0).1.1 (nth eo p (size p).-1).1.2 .
+  Proof.
+    elim => [eo' [H1 H2] //| eo'' p _ eo].
+    elim/last_ind: p eo'' => [eo' [_ /(_ 0) ?] // | p eo'' Hr eo' [_ H1]].
+    rewrite Active_path_crc.
+    split;first by rewrite nth_last /= last_rcons /=.
+    by rewrite Lift_in2nth;apply: H1.
+  Qed.
+  
 End Active_paths.
 
 Section pair. 
