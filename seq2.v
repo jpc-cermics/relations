@@ -168,7 +168,7 @@ Section Seq1_plus.
     by pose proof (H3 x H8 H7).
   Qed.
   
-  Lemma allset_in  s x X:  x \in s -> s [\in] X -> x \in X.
+  Lemma allset_in  s x X: x \in s -> s [\in] X -> x \in X.
   Proof.
     elim: s x X => [ x X // | y s Hr x X ].
     rewrite in_cons allset_cons.
@@ -206,103 +206,65 @@ Section Seq1_plus.
       by rewrite rcons_uniq;apply/andP;split;[apply/negP |].
   Qed.
   
-  Lemma nth_in_take s j y: j.+1 < size s -> nth y s j \in take j.+1 s.
-  Proof.
-    move => H1;move: (@nth_take j.+1 T y j (ltnSn j) s) => <-.
-    by apply: mem_nth;rewrite size_take H1 ltnSn.
+  Lemma nth_in_take s y i j: i < j -> j < size s -> nth y s i \in take j s. 
+  Proof. 
+    move => /[dup] H1 /(@nth_take j T y i) <- H3.
+    have H4: size (take j s) = j by apply: size_takel;lia.
+    by apply: mem_nth;rewrite H4.
   Qed.
   
-  Lemma nth_in_drop s i y: i < size s -> nth y s i \in drop i s.  
+  Lemma nth_in_drop s y i j: i <= j -> j < size s  -> nth y s j \in drop i s.  
   Proof.
-    move: (@nth_drop i T y s 1) => + H1;rewrite addn1 => ?.
-    move: (@drop_nth T y i s H1) => ->.
-    by rewrite in_cons eq_refl orTb.
+    pose proof nth_drop.
+    move => H1 H2;pose proof (@nth_drop i T y s (j-i)) as H3.
+    have H4: size (drop i s) = size s - i by apply: size_drop.
+    have [H5 [H6 <-]]: 0 <= j -i /\  (j-i) < size(drop i s) /\ (i + (j - i)) = j 
+      by rewrite H4;lia.
+    have H8: nth y (drop i s) (j -i) \in (drop i s) by apply: mem_nth.
+    by rewrite -H3.
   Qed.
   
-  Lemma nth_in_drop':  forall i (s: seq T) j y, i <= j -> j < size s  -> nth y s j \in drop i s.  
-  Proof.
-    elim => [s j y _ H1 // | ]. rewrite drop0. by apply: mem_nth.
-    move => i Hr s j y H1 H2.
-    rewrite -addn1 -drop_drop.    
-    have H3:  nth y (drop 1 s) j.-1 \in drop i (drop 1 s).
-    apply: Hr.
-    by lia.
-    rewrite size_drop. by lia.
-    have H4: nth y (drop 1 s) j.-1 =  nth y s j. 
-
-    move: (@nth_drop 1 T y s j.-1);rewrite add1n.
-    have -> : j.-1.+1 = j by apply: ltn_predK H1. 
-    by move => ->. 
-    by rewrite -H4.
+  Lemma uniq_nth3 s y: uniq s <-> forall i j, i < j -> j < size s -> ~ (nth y s j = nth y s i).
+  Proof. 
+    split. 
+    + move => + i j H2 H3. 
+      pose proof (nth_in_take y H2 H3) as H4.
+      rewrite -{1}(cat_take_drop j s) => /uniq_catE [_ [_ /(_ (nth y s i)) H7]] H8.
+      have H9: nth y s i \in drop j s by rewrite -H8;apply: nth_in_drop.
+      by apply: H7. 
+    + elim: s => [// | x s Hr H1].
+      rewrite /=; apply/andP. 
+      split; last first.
+      ++ apply: Hr => i j H2 H3.
+         move: H1 => /(_ i.+1 j.+1) /= H1 .
+         apply: H1. lia. lia. 
+      ++ apply/negP => H2.
+         have H3:  (nth y s (index x s)) = x by apply: nth_index.
+         move:H2;rewrite -index_mem => H2.
+         have H4: (index x s).+1 < size (x::s) by [].
+         have H5: nth y (x :: s) (index x s).+1 = x by [].
+         have H6: nth y (x :: s) 0 = x by [].
+         move: H1 => /(_ 0 (index x s).+1) H1.
+         have H7: nth y (x :: s) (index x s).+1 <> nth y (x :: s) 0 by apply: H1.
+         have H8: nth y (x :: s) (index x s).+1 = nth y (x :: s) 0 by rewrite H5 H6.
+         by [].
   Qed.
   
-  Lemma uniq_nth s x y:
-    uniq (x :: rcons s y) -> forall i, i < size s -> ~ (nth y s i = nth y s i.+1).
-  Proof.
-    have P11: forall n i, i < n -> i.+1 = n -> (i = n.-1)%N.
-    move => n i H0 H1; pose proof (ltn_predK H0) as H2.
-    by move: H1; rewrite -{1}H2 => /eqP H1; move: H1; rewrite eqSS => /eqP H1.
-    rewrite uniq_crc => -[[H1 [H2 H3]] _] i H4 H5.
-    case H6: (i == (size s).-1)%N.
-    + move: H6 => /eqP H6.
-      have H7: (size s).-1.+1 = (size s) by apply: (ltn_predK H4).
-      have H8: nth y s (size s) = y by apply: nth_default.
-      move: H5;rewrite H6 H7  nth_last H8 /= => H5.
-      have: (last y s) \in s by apply: last0' => H10;rewrite H10 /= in H4. 
-      by rewrite H5.
-    + have H9: (i.+1 == size s) || (i.+1 < size s) by rewrite -leq_eqVlt.
-      move: H9 => /orP [/eqP H9 | H9];
-                 first by pose proof (P11 (size s) i H4 H9) as H0;rewrite -H0 eq_refl in H6.
-      
-      pose proof (cat_take_drop i.+1 s) as H10.
-       
-      have H11: nth y (take i.+1 s) i \in take i.+1 s
-          by apply: mem_nth;rewrite size_take H9 ltnSn.
-
-      pose proof (@nth_take i.+1 T y i (ltnSn i) s) as H11'.
-      
-      have H12:  nth y s i \in   take i.+1 s by rewrite -H11'. 
-
-      pose proof (@nth_drop i T y s 1) as H13'.
-      rewrite addn1 in H13'.
-      
-      have H13:  nth y (drop i s) 1 \in  drop i.+1 s
-          by pose proof (@drop_nth T y i.+1 s H9) as ->;rewrite H13' in_cons eq_refl orTb.
-      
-      have H14: uniq(take i.+1 s ++ drop i.+1 s) by rewrite H10.
-      
-      have H15: (forall x, x \in take i.+1 s -> x \in drop i.+1 s -> False).
-      by move: H14 => /uniq_catE [_ [_ H14]].
-
-      have H16:  nth y s i \in drop i.+1 s by rewrite H5 -H13'.
-      
-      by move: H15 => /(_ (nth y s i) H12 H16) H15.
-  Qed.
-    
-  Lemma uniq_nth'' s x y:
-      uniq (x :: rcons s y) -> 
-      forall i j, j < i -> i < size s -> ~ (nth y s j = nth y s i).
-  Proof.
-    rewrite uniq_crc => -[[H1 [H2 H3]] _] i j H4 H5 H6.
-    
-    have H7: uniq (take j.+1 s ++ drop j.+1 s)
-      by move: H3;pose proof (cat_take_drop j.+1 s) as ->.
-    have H8: j.+1 < (size s) by lia. 
-    pose proof (@nth_in_take s j y H8) as H10.
-    pose proof (@nth_in_drop' j.+1 s i y H4 H5) as H11.
-    
-    have H15: (forall x, x \in take j.+1 s -> x \in drop j.+1 s -> False)
-      by move: H7 => /uniq_catE [_ [_ H14]].
-    move: H15 => /(_ (nth y s j) H10);rewrite H6 H11 => H15.
-    by apply: H15.
+  Lemma uniq_nth2 s x y: ~ x \in s <-> forall i, i < size s -> ~ (x = nth y s i).
+  Proof. 
+    split => [H1 i /(mem_nth y) + H4 | H1 H2];first by rewrite -H4 => ?.
+    have H3: (nth y s (index x s)) = x by apply: nth_index.
+    by move:H2;rewrite -index_mem => /H1; rewrite H3.
   Qed.
   
-  Lemma uniq_nth' s x y:
-      uniq (x :: rcons s y) -> 
-      forall i, i < size s -> ~ (x = nth y s i) /\ ~ (y = nth y s i).
+  Lemma uniqE  s x y z: 
+    uniq (x :: rcons s y) <-> (forall i, i < size s -> ~ (x = nth z s i))
+                           /\ (forall i, i < size s -> ~ (y = nth z s i))
+                           /\ (forall i j, i < j -> j < size s -> ~ (nth z s j = nth z s i))
+                           /\ ~ ( x = y).
   Proof.
-    move => /uniq_crc [[? [? _]] _] i H3.
-    by pose proof mem_nth y H3 as H4;split;move => H5;rewrite -H5 in H4. 
+    rewrite -2!uniq_nth2 -uniq_nth3 uniq_crc /uniq_path. 
+    split => [[[H1 [H2 H3]] H4]| [H1 [H2 [H3 H4]]]] //.
   Qed.
   
 End Seq1_plus. 
