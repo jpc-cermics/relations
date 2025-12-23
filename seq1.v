@@ -191,6 +191,12 @@ Section Seq_utilities.
   Lemma last_rev s t: last t (rev s) = head t s.
   Proof. by elim: s t => [//| t1 st1 _ t];rewrite rev_cons last_rcons /=.  Qed.
 
+  Lemma last_dv s x y i: i < size s -> last x s = last y s.
+  Proof.
+    elim/last_ind: s x y i => [// | s z Hr x y i].
+    by rewrite size_rcons ltnS leq_eqVlt 2!last_rcons => /orP [/eqP ?|?].
+  Qed.
+  
   Lemma seq_split (x: T) (n:nat) s:
     n.+1 < size s 
     -> s = (rcons (take n s) (nth x s n)) ++ ((nth x s n.+1) :: (drop n.+2 s)).
@@ -429,14 +435,6 @@ Section Lift_in_facts.
   Lemma Lift_in_splitr R st x y: 0 < size (st) -> (rcons st y) [L\in] R -> st [L\in] R /\ R (last x st,y).
   Proof. by move => ? ?;split;[apply: (@Lift_in_rc R st y) | apply: Lift_in_last]. Qed.
   
-  Lemma Lift_in_F R st y: (rcons st y) [L\in] R -> st [\in] (R.+)#_(y).
-  Proof.
-    elim: st y  => [// | x st Hr y];rewrite rcons_cons. 
-    elim: st Hr => [_ | z st _ H1];first by rewrite /= => /andP [/inP /(@Fset_t1 _ R)/inP -> _].
-    rewrite Lift_crc 2!allset_cons => [[? /H1 /[dup] ?]];rewrite allset_cons => -[? ?].
-    by split;[apply Fset_t2; exists z|].
-  Qed.
-  
   Lemma Lift_in2nth R st z: st [L\in] R <-> (forall n, n.+1 < size st -> R ((nth z st n),(nth z st n.+1))). 
   Proof.
     split. 
@@ -452,6 +450,14 @@ Section Lift_in_facts.
       split; first by move: H1 => /(_ 0) /= H1; apply: H1.
       apply: Hr => n. 
       by move: H1 => /(_ n.+1);rewrite -nth_behead /= => H1 /H1 H2.
+  Qed.
+
+  Lemma Lift_in_F R st y: (rcons st y) [L\in] R -> st [\in] (R.+)#_(y).
+  Proof.
+    elim: st y  => [// | x st Hr y];rewrite rcons_cons. 
+    elim: st Hr => [_ | z st _ H1];first by rewrite /= => /andP [/inP /(@Fset_t1 _ R)/inP -> _].
+    rewrite Lift_crc 2!allset_cons => [[? /H1 /[dup] ?]];rewrite allset_cons => -[? ?].
+    by split;[apply Fset_t2; exists z|].
   Qed.
   
   Lemma Lift_in_FF R st y z:  (rcons st y) [L\in] R -> y \in R.+#_(z) -> st [\in] R.+#_(z).
@@ -578,7 +584,7 @@ Section allset_Lifted.
   
   Lemma allset_Dl X R x y st: (Lift (x::(rcons st y))) [\in] (Δ_(X)`;`R) -> (x::st) [\in] X.
   Proof. by rewrite DeltaLco allset_I => /andP [/allset_Lr H1 _]. Qed.
-
+  
   Lemma allset_Dr X R x y st: (Lift (x::(rcons st y))) [\in] (R`;`Δ_(X)) -> (rcons st y) [\in] X.
   Proof. by rewrite DeltaRco allset_I => /andP [_ /allset_Rr H1]. Qed.
   
@@ -588,7 +594,7 @@ Section allset_Lifted.
     elim/last_ind: st x y => [x y [_ ?] // | st x' Hr x y [H1 +]];first  by rewrite allL0'.
     by rewrite /allL -rcons_cons Lift_rcc last_rcons allset_rcons.
   Qed.
-
+  
   Lemma allL_splitr R st x y:  allL R st x y <-> R (x, head y st) /\ (rcons st y) [L\in] R. 
   Proof. 
     split;first by move: (@Lift_in_splitl _ R (rcons st y) x y);rewrite head_rcons size_rcons => H2;apply: H2.
@@ -603,6 +609,13 @@ Section allset_Lifted.
     elim/last_ind: st x y H1 H2 H3 => [// | s y _ x' y']. 
     by rewrite head_rcons last_rcons allL_splitr => ? ? _.
   Qed.
+  
+  Lemma allL_nth R st x y z: 
+    allL R st x y 
+    <-> R (x, nth y st 0)
+      /\ (forall n, n.+1 < size st -> R ((nth z st n),(nth z st n.+1)))
+      /\ R (nth x st (size st).-1, y).
+  Proof. by rewrite allL_split (@Lift_in2nth T R st z) nth0 -nth_last. Qed.
   
   Lemma allL_cat R st st' x y z: 
     allL R ((rcons st y) ++ st') x z <-> allL R st x y && allL R st' y z.
@@ -649,6 +662,12 @@ Section allset_Lifted.
 
   Lemma allL_Lift_in_c R st x y: allL R st x y -> (x:: st) [L\in] R.
   Proof. by elim/last_ind: st x y => [x y // | st x' Hr x y];rewrite allL_rc => /andP [_ H1]. Qed.
+
+  Lemma allL_lastR R s x y z i: i < size s -> allL R s x y -> R (last z s, y).
+  Proof.
+    move => H1;rewrite allL_splitl => -[_ H2].
+    by have <- : last x s = last z s by apply: last_dv;apply:H1. 
+  Qed.
 
 End allset_Lifted.
 
