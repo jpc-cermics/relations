@@ -1095,7 +1095,7 @@ Section Hn4.
     case H4: (st == [::]); first by move: H4 H2 => /eqP H4;rewrite H4 /= => H5.
     move: H4 => /eqP/(@last0' T) => /(_ x) H4.
     have H5: (last x st) \in (rcons st y) by rewrite in_rcons; apply/orP; left. 
-    move: (Lxx_head' H5 H1) => H6. 
+    move: (Lxx_head H5 H1) => H6. 
     have H7: R.+ (y, last x st) by apply: TclosT H3 H6.
     exact.
   Qed.
@@ -1119,7 +1119,8 @@ Section Hn4.
       -> (Asym R.+) (s, y).
   Proof.
     move => st x s y H1 H4 H5.
-    split; first by move: (allL_to_clos_t (allL_drop H1 H4)) => H6.
+    pose proof (allL_take_drop H1 H4) as [_ H1'].
+    split; first by move: (allL_to_clos_t H1') => H6.
     case H3: (s == (last x st)); first by move: H3 => /eqP ->.
     have H6: ~ ( s = (last x st)). by move => H7; rewrite -H7 eq_refl in H3.
     pose proof (allL_belast H1 H6 H4) as H7.
@@ -1131,7 +1132,8 @@ Section Hn4.
       -> (Asym R.+) (x, s).
   Proof.
     move => st x s y H1 H4 H5.
-    split;first by move: (allL_to_clos_t (allL_take H1 H4)). 
+    pose proof (allL_take_drop H1 H4) as [H1' _].
+    split;first by move: (allL_to_clos_t H1').
     case H3: (s == (head y st)); first by move: H3 => /eqP ->.
     have H6: ~ ( s = (head y st)). by move => H7; rewrite -H7 eq_refl in H3.
     pose proof (allL_behead H1 H6 H4) as H7.
@@ -1146,7 +1148,7 @@ Section Hn4.
     move => st st' x s y s' z H1 H3 H4 H5 H6.
     pose proof (allL_asym_l H1 H3 H4) as H7.
     have H8: s' \in (rcons st' z) by rewrite in_rcons H5 orTb. 
-    pose proof (Lxx_head' H8 H6) as H9. 
+    pose proof (Lxx_head H8 H6) as H9. 
     have H10: (Asym(R.+) `;` R.+) (s,s') by (exists y).
     by move: H10 => /AsymIncr H10.
   Qed.
@@ -1159,7 +1161,7 @@ Section Hn4.
     move => st st' x s y s' z H1 H2 H3 H5 H6.
     pose proof (allL_asym_r H3 H5 H6) as H7.
     have H8: s \in (x::st) by rewrite in_cons H1 orbT. 
-    pose proof (Lxx'' H8 H2) as H9. 
+    pose proof (Lxx H8 H2) as H9. 
     have H10: (R.+  `;` Asym(R.+)) (s,s') by (exists y).
     by move: H10 => /AsymIncl H10.
   Qed.
@@ -1461,7 +1463,7 @@ Section Hn4.
           have H20: ~ (R.+ (z, yl)) 
             by move => H21; have H22: R.+ (z,yr) by apply: (TclosT H21 H15').
           
-          pose proof allL_drop H17 H11 as H21. 
+          pose proof allL_take_drop H17 H11 as [_ H21]. 
           
           have H22: subseq (drop (index yl str1).+1 str1) str1 by apply: drop_subseq.
           have H23: ~ yr \in drop (index yl str1).+1 str1 by apply: in_subseq H22 J1.
@@ -1698,7 +1700,7 @@ Section Infinite_path.
         forall n, allLu R (l n) (k n) (k n.+1) /\ ~ R.+ (k n.+1, k n)
              /\ uniq ((l n) ++ (l n.+1)).
   Proof.
-    move => /Asym2P4 [f [h [p0 [H0 H1]]]].  
+    move => /Asym2P4 [f [h [p0 [H0 H1]]]].
     exists (fun n => (iterh h p0 n).1.1.2).
     exists (fun n => (iterh h p0 n.+1).1.1.1).
     move => n. move: (H1) => /(_ n) H1'.
@@ -1712,6 +1714,9 @@ Section Infinite_path.
     by rewrite K2 K1 /=.
   Qed.
   
+  (** * a revoir avec allL_nth qui donne une équivalence *)
+
+  (* 
   Lemma Asym2P6: 
     (iic (Asym R.+)) -> exists k: nat -> T, exists l: nat -> seq T, exists l': nat -> nat -> T,
         forall n, (forall i, i < size (l n)
@@ -1731,6 +1736,7 @@ Section Infinite_path.
     pose proof (@uniq_nth' T (l n) (k n) (k n.+1) H0' i H1) as H4.
     exact. 
   Qed.
-  
+  *)
+
 
 End Infinite_path. 
