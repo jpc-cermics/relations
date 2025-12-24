@@ -80,8 +80,6 @@ Section Seq1_plus.
   Context {T:eqType}.
   
   Implicit Types (R: relation T) (s sl sr: seq T) (x y z : T) (X : set T).
-
-  Definition uniq_path s x y :=  (~ x \in s /\ ~ y \in s /\ uniq s).
   
   Lemma in_rcons s x y:  (x \in rcons s y) = (x \in s) || (x == y).
   Proof. by rewrite -cats1 mem_cat mem_seq1. Qed.
@@ -111,6 +109,12 @@ Section Seq1_plus.
   Proof.
     by elim: s x y => [x y //| z s Hr x y _ /=];rewrite in_cons eq_refl orbC orbT.
   Qed.
+  
+  Lemma in_subseq s1 s2 x: subseq s1 s2 -> (x \in s1) -> (x \in s2).
+  Proof. by move => /subseqP [m _ ->];apply: mem_mask. Qed.
+  
+  Lemma notin_subseq s1 s2 x: subseq s1 s2 -> ~ (x \in s2) -> ~ (x \in s1).
+  Proof. by move => H1; apply contraPP => /contrapT /(in_subseq H1) ? ?. Qed.
   
   Lemma in_non0 s x: x \in s -> 0 < size(s).
   Proof.
@@ -196,9 +200,10 @@ Section Seq1_plus.
     by move => H1 /(@Lift_in_A _ R) H3;move: (allset_in H1 H3);rewrite /Aset inP -Fset_t0.  
   Qed.
   
-  Lemma uniq_crc s x y: uniq (x::(rcons s y)) <-> uniq_path s x y /\ ~ (x = y).
+  Lemma uniq_crc s x y:
+    uniq (x::(rcons s y)) <-> ~ x \in s /\ ~ y \in s /\ uniq s /\ ~ (x = y).
   Proof.
-    split => [ | [[H1 [H2 H3]] H4]].
+    split => [ | [H1 [H2 [H3 H4]]]].
     + by rewrite cons_uniq in_rcons rcons_uniq =>
         /andP [/orP/not_orP [H1 /negP/eqP  H3] /andP [/negP H4 H5]].
     + rewrite cons_uniq;apply/andP; split. 
@@ -262,10 +267,7 @@ Section Seq1_plus.
                            /\ (forall i, i < size s -> ~ (y = nth z s i))
                            /\ (forall i j, i < j -> j < size s -> ~ (nth z s j = nth z s i))
                            /\ ~ ( x = y).
-  Proof.
-    rewrite -2!uniq_nth2 -uniq_nth3 uniq_crc /uniq_path. 
-    split => [[[H1 [H2 H3]] H4]| [H1 [H2 [H3 H4]]]] //.
-  Qed.
+  Proof. by rewrite -2!uniq_nth2 -uniq_nth3 uniq_crc. Qed.
   
 End Seq1_plus. 
 
@@ -331,28 +333,18 @@ Section allL_uniq.
     by apply: (allL_to_clos_t H6).
   Qed.
   
-  Lemma drop_cons': forall (s: seq T) (x:T),
-      x \in s -> x::(drop (index x s).+1 s) = (drop (index x s) s).
+  Lemma drop_index s x:
+    x \in s -> x::(drop (index x s).+1 s) = (drop (index x s) s).
   Proof.
-    elim => [// | y s Hr x H1].
-    case H2: (y == x);
-      first by move: H2 => /eqP ->; rewrite /= eq_refl drop0.
-    rewrite /drop /= H2 -/drop.
-    move: H1 H2; rewrite in_cons => /orP [/eqP -> H2 | H1 _].
-    by rewrite eq_refl in H2. 
-    by pose proof (Hr x) H1. 
+    move => /[dup] /(nth_index x) H1.
+    by rewrite -index_mem => /(@drop_nth T x);rewrite H1. 
   Qed.
   
-  Lemma drop_notin: forall (s: seq T) (x:T),
-      x \in s -> uniq s -> x \notin (drop (index x s).+1 s).
+  Lemma drop_notin s x:
+    x \in s -> uniq s -> x \notin (drop (index x s).+1 s).
   Proof.
-    elim => [// | y s Hr x H1].
-    case H2: (y == x);
-      first by move: H2 => /eqP ->;rewrite /= eq_refl drop0 => /andP [H3 _].
-    rewrite /drop /= H2 -/drop.
-    move: H1 H2; rewrite in_cons => /orP [/eqP -> H2 | H1 _].
-    by rewrite eq_refl in H2. 
-    move => /andP [H2 H3]; by pose proof (Hr x) H1 H3. 
+    move => /drop_index H0;rewrite -{1}(@cat_take_drop (index x s) _ s).
+    by rewrite uniq_catE -H0 cons_uniq => -[_ [/andP [+ _] _]].
   Qed.
   
   Lemma allL_uniq_tail R s x y:
@@ -383,65 +375,24 @@ Section allL_uniq.
     rewrite allL_c => /andP [H3 /H1 [s' [H4 [H5 H6]]]].
     case H2: (a \in s'); last first.
     + exists [::a&s'].
-      split. 
-      by rewrite -cat1s -[a::s]cat1s; rewrite subseq_cat2l.
-      split.
-      by rewrite /uniq -/uniq H2 H5.
-      by rewrite allL_c H3 H6.
+      split;first by rewrite -cat1s -[a::s]cat1s; rewrite subseq_cat2l.
+      by split;[rewrite /uniq -/uniq H2 H5 | rewrite allL_c H3 H6].
     + exists (drop (index a s') s').
       split.
-      have H7: subseq (drop (index a s') s') s' by apply drop_subseq.
-      have H8: subseq s' (a::s') by apply subseq_cons.
-      have H9: subseq (drop (index a s') s') (a :: s')
-        by apply subseq_trans with s'.
-      have H10: subseq (a:: s') (a::s)
-        by rewrite -cat1s -[a::s]cat1s; rewrite subseq_cat2l.      
-      by apply  subseq_trans with [::a &s'].
-      split.
-      by apply drop_uniq.
+      ++ have H7: subseq (drop (index a s') s') s' by apply drop_subseq.
+         have H8: subseq s' (a::s') by apply subseq_cons.
+         have H9: subseq (drop (index a s') s') (a :: s')
+           by apply subseq_trans with s'.
+         have H10: subseq (a:: s') (a::s)
+           by rewrite -cat1s -[a::s]cat1s; rewrite subseq_cat2l.      
+         by apply  subseq_trans with [::a &s'].
+      ++ split;first by apply drop_uniq.
       pose proof allL_take_drop H2 H6 as [_ H7].
-      have H8: a::(drop (index a s').+1 s') = (drop (index a s') s').
-      apply drop_cons'.
-      by [].
+      have H8: a::(drop (index a s').+1 s') = (drop (index a s') s')
+        by apply: drop_index. 
       by rewrite -H8 allL_c H3 H7.
   Qed.
-  
-  Lemma in_subseq_1: forall (s2 s1: seq T) (x:T),
-      subseq [::x & s1] s2 -> x \in s2.
-  Proof.
-    elim => [s x //| y s Hr s1 x H1].
-    case H2: (x == y);first by rewrite in_cons H2 orTb.
-    move: H1;rewrite /subseq H2 -/subseq => /Hr H1.
-    by rewrite in_cons H1 orbT.
-  Qed.
 
-  Lemma in_subseq': forall (s2 s1: seq T) (x:T),
-      subseq s1 s2 -> (x \in s1) -> (x \in s2).
-  Proof.
-    elim => [s1 x | y s1 Hr s2 x H1 H2].  
-    by rewrite subseq0 => /eqP -> H2.
-    elim: s2 H1 H2 Hr => [// |  z s2 Hr' H1 H2 H3].
-    case H4: (z == y);move: H1; rewrite /subseq H4 -/subseq => H1.
-    - move: (H4) => /eqP <-;rewrite in_cons. 
-      move: H2; rewrite in_cons => /orP [H2 | H2].
-      by rewrite H2 orbC orbT.
-      by (have ->:  x \in s1 by apply H3 with s2); rewrite orbT.
-    - move: H2; rewrite in_cons => /orP [/eqP H2 | H2].
-      move: H1 => /in_subseq_1 H1.
-      by rewrite in_cons H2 H1 orbT.
-      apply cons_subseq in H1. 
-      have H5: x \in s1 by apply: (H3 s2 x).
-      by rewrite in_cons H5 orbT. 
-  Qed.
-  
-  Lemma in_subseq: forall (s1 s2: seq T) (x:T),
-      subseq s1 s2 -> ~ (x \in s2) -> ~ (x \in s1).
-  Proof.
-    move => s1 s2 x ?; apply contraPP => /contrapT ? ?.
-    by have:  x \in s2 by apply in_subseq' with s1.  
-  Qed.
-  
-  
   Lemma allL_uniq R: forall (s: seq T) (x y: T),
       allL R s x y -> 
       exists s', subseq s' s /\ ~( x \in s') /\  ~(y \in s')
@@ -450,38 +401,32 @@ Section allL_uniq.
     move => s x y H1.
     pose proof allL_uniq_tail H1 as [s2 [S2 [I2 H2]]].
     pose proof allL_uniq_head H2 as [s3 [S3 [I3 H3]]].
-    have J3: ~ (y \in s3) by  apply in_subseq with s2.
+    have J3: ~ (y \in s3) by  apply notin_subseq with s2.
     pose proof allL_uniq_internals H3 as [s4 [S4 [K4 H4]]].
-    have J4: ~ (y \in s4) by apply in_subseq with s3.
-    have I4: ~ (x \in s4) by apply in_subseq with s3.
+    have J4: ~ (y \in s4) by apply notin_subseq with s3.
+    have I4: ~ (x \in s4) by apply notin_subseq with s3.
     by exists s4;pose proof (subseq_trans (subseq_trans S4 S3) S2).
   Qed.
   
-  Lemma TCP_uniq R: forall (x y:T), 
-      R.+ (x,y) <-> exists s, uniq_path s x y /\ allL R s x y. 
+  Lemma TCP_uniq R x y: R.+ (x,y) <-> exists s, ~ x \in s /\ ~ y \in s /\ uniq s /\ allL R s x y. 
   Proof.
-    move => x y;split. 
-    - rewrite TCP' /mkset => -[s /allL_uniq H1].
-      by move: H1 => [s' [H1 [H2 [H3 [H4 /= H5]]]]];(exists s').
-    - by move => [s [_ H1]]; move: H1;apply: allL_to_clos_t. 
+    split;last by move => [s [_ [_ [_ /(@allL_to_clos_t T R s) ?]]]].
+    by rewrite TCP' /mkset => -[s /allL_uniq H1];move: H1 => [s' /= [_ H1]];(exists s').
   Qed.
   
-  Lemma TCP_uniq'' R: forall (x y:T), 
+  Lemma TCP_uniq'' R x y:
       R.+ (x,y) /\ ~ (x = y) 
       <-> exists s, uniq (x::(rcons s y)) /\ (x::(rcons s y)) [L\in] R.
   Proof.
-    move => x y.
-    split => [[H1 H7] |].
-    + move: (H1) => /TCP_uniq [s [[H3 [H4 H5]] H6]].
-      by (exists s);rewrite uniq_crc.
-    + by move => [s [/uniq_crc [_ H1] /(@allL_to_clos_t T)  H2]].
+    split => [[H1 H7]|].
+    + by move: H1 => /TCP_uniq [s [? [? [? ?]]]];(exists s);rewrite uniq_crc.
+    + by move => [s [/uniq_crc -[_[_[_ ?]]] /(@allL_to_clos_t T) ?]].
   Qed.
   
-  Lemma TCP_uniq' R: forall (x y:T), 
-      (Asym R.+)(x,y) 
-      -> exists s, uniq (x::(rcons s y)) /\ (x::(rcons s y)) [L\in] R.
+  Lemma TCP_uniq' R x y: 
+    (Asym R.+)(x,y) -> exists s, uniq (x::(rcons s y)) /\ (x::(rcons s y)) [L\in] R.
   Proof.
-    move => x y /[dup] H0 [H1 H2]. 
+    move => /[dup] H0 [H1 H2]. 
     have H3: ~ (x = y) by move => H7;rewrite H7 in H1 H2.
     by rewrite -TCP_uniq''.
   Qed.
@@ -493,6 +438,6 @@ Section allL_uniq.
     by move => /[dup] /TCP_uniq' [s [H1 H2]] [_ H4];split;[exists s;split |].
     by move => [[s [H1 H2]] H3];split;[apply: allL_to_clos_t; apply: H1|].
   Qed.
-
+  
 End allL_uniq.
 

@@ -1198,8 +1198,8 @@ Section Hn4.
       -> (forall s, s \in str -> s \in stl -> False).
   Proof.
     move => x stl y str z [H1 H2] H3 [H4 H5].
-    move: H2 => /uniq_crc [[K1 [K2 K3]] K4].
-    move: H5 => /uniq_crc [[J1 [J2 J3]] J4].
+    move: H2 => /uniq_crc [K1 [K2 [K3 K4]]].
+    move: H5 => /uniq_crc [J1 [J2 [J3 J4]]].
     move => s H9 H10.
     pose proof allL_asym_lr H10 H1 H3 H9 H4 as H12. 
     by pose proof Asym_irreflexive H12.
@@ -1211,8 +1211,8 @@ Section Hn4.
       -> ~ ( z \in stlr)  /\ ~ (yl = z).
   Proof.
     move => yl stlr yr str z H1 H2 H3 H4.
-    move: H1 => [H1 /uniq_crc  [[J1 [J2 _]] _]].
-    move: H2 => [H2 /uniq_crc  [[K1 [K2 _]] _]].
+    move: H1 => [H1 /uniq_crc  [J1 [J2 _]]].
+    move: H2 => [H2 /uniq_crc  [K1 [K2 _]]].
     have H5: forall s, s \in stlr -> ~(s = yr)
         by move => s H6 H7; rewrite H7 in H6.
     split. 
@@ -1365,8 +1365,8 @@ Section Hn4.
     have H7: uniq (yl :: stlr)
       by move: H1;rewrite -rcons_cons rcons_uniq => /andP [_ H1].
 
-    move: H1 => /uniq_crc [[J1 [J2 J3]] J4].
-    move: (H2) => /uniq_crc [[K1 [K2 K3]] K4].
+    move: H1 => /uniq_crc [J1 [J2 [J3 J4]]].
+    move: (H2) => /uniq_crc [K1 [K2 [K3 K4]]].
     
 
     have H8: forall s, s = yr -> s = yl -> False by move => s H1 H2';rewrite -H1 -H2' in J4. 
@@ -1456,7 +1456,7 @@ Section Hn4.
           
           by right;left.
           
-       ++ move: H11 => [/[dup] H11 /(@allL_to_clos_t T) H11' /uniq_crc [[J1 [J2 J3]] J4]].
+       ++ move: H11 => [/[dup] H11 /(@allL_to_clos_t T) H11' /uniq_crc [J1 [J2 [J3 J4]]]].
           move: (H15) => /(@allL_to_clos_t T) H15'.
           have H12: ~ (yl =z) by move => H12;rewrite H12 in H15'.
       
@@ -1466,25 +1466,25 @@ Section Hn4.
           pose proof allL_take_drop H17 H11 as [_ H21]. 
           
           have H22: subseq (drop (index yl str1).+1 str1) str1 by apply: drop_subseq.
-          have H23: ~ yr \in drop (index yl str1).+1 str1 by apply: in_subseq H22 J1.
+          have H23: ~ yr \in drop (index yl str1).+1 str1 by apply: notin_subseq H22 J1.
           have H24: uniq (drop (index yl str1).+1 str1) by apply: subseq_uniq H22 J3.
           have H25: uniq (yl::(drop (index yl str1).+1 str1))
             by rewrite cons_uniq H24 andbT;apply: drop_notin. 
           have H26: uniq (yl::(rcons (drop (index yl str1).+1 str1) z)).
           rewrite -rcons_cons rcons_uniq H25 andbT. 
           rewrite in_cons. apply/orP.  move => [/eqP H27 | H27];first by rewrite H27 in H12.
-          by pose proof in_subseq' H22 H27. 
+          by pose proof in_subseq H22 H27. 
           
           have H27:  allLu R (drop (index yl str1).+1 str1) yl z by split.
             
           right;right.
           split. by []. split. by []. split. by []. split. by [].
           
-          move: (H7) => [H7'' /uniq_crc [[K1 [K2 K3]] K4]].
+          move: (H7) => [H7'' /uniq_crc [K1 [K2 [K3 K4]]]].
       
           have H28: (forall s : T, s \in stl1 -> s \in drop (index yl str1).+1 str1 -> False).
           move => s H29 H28. 
-          have H30: s \in str1 by pose proof (in_subseq' H22 H28).
+          have H30: s \in str1 by pose proof (in_subseq H22 H28).
            have H32: (s \in (rcons stlr yr) ++ str1)
             by rewrite mem_cat; apply/orP; right.
           
@@ -1510,7 +1510,7 @@ Section Hn4.
     move: H7 => [[H7 [H8 [H9' [H9 [H10 [H11 H12]]]]]] | ]. 
     + exists stl1;exists yl;exists stlr.
       have H13:  uniq (stl1 ++ stlr)
-        by move: H9 H11 => [_ /uniq_crc [[K1 [K2 K3]] K4]] [_ /uniq_crc [[J1 [J2 J3]] J4]];
+        by move: H9 H11 => [_ /uniq_crc [K1 [K2 [K3 K4]]]] [_ /uniq_crc [J1 [J2 [J3 J4]]]];
                           pose proof (uniq_cat K3 J3 H8).
       
       have: (~ R.+ (head z stlr, yl) \/ (exists s : T, s \in stlr /\ ~ R.+ (z, s)))
@@ -1535,15 +1535,15 @@ Section Hn4.
          move => s H13 H14. 
          by move: (allL_asym_lr H13 H7' H9 H14 H9') => [H notH].
          
-         move: H8 => /uniq_crc [[_ [_ H8]] _].
-         move: H10 => /uniq_crc [[_ [_ H10]] _].
+         move: H8 => /uniq_crc [_ [_ [H8 _]]].
+         move: H10 => /uniq_crc [_ [_ [H10 _]]].
          
          have H10': uniq (stl1 ++ rcons str1 yr ++ stlr) by pose proof (uniq_cat H8 H10 H12).
          
          have H16: ~ R.+ (z, yl).
          move: H11' => [s [K1 K2]].
          move: H11 => [H11 H11''].
-         move: H11'' => /uniq_crc [[_ [J2 _]] _].
+         move: H11'' => /uniq_crc [_ [J2 _]].
          have H14: ~ (z = s) by move => H15; rewrite H15 in J2.
          pose proof allL_asym_xx K1 H14 H11 K2 as [_ H16]. 
          exact.
