@@ -257,7 +257,7 @@ Section Seq1_plus.
                            /\ (forall i j, i < j -> j < size s -> ~ (nth z s j = nth z s i))
                            /\ ~ ( x = y).
   Proof. by rewrite -2!uniq_nth2 -uniq_nth3 uniq_crc. Qed.
-  
+
 End Seq1_plus. 
 
 Section allL_uniq.

@@ -1092,9 +1092,9 @@ Section Hn4.
   Proof.
     move => st x y H1 H2.
     split => [|H3];first by apply: (allL_to_clos_t H1).
-    case H4: (st == [::]); first by move: H4 H2 => /eqP H4;rewrite H4 /= => H5.
+    case H4: (st == [::]); first by move: H4 H2 => /eqP -> /= H5. 
     move: H4 => /eqP/(@last_in T) => /(_ x) H4.
-    have H5: (last x st) \in (rcons st y) by rewrite in_rcons; apply/orP; left. 
+    have H5: (last x st) \in (rcons st y) by rewrite in_rcons;apply/orP;left. 
     move: (Lxx_head H5 H1) => H6. 
     have H7: R.+ (y, last x st) by apply: TclosT H3 H6.
     exact.
@@ -1106,9 +1106,9 @@ Section Hn4.
     move => st x y H1 H2.
     split;first by move: H1 => /(@allL_to_clos_t T) H1.
     move => H3. 
-    case H4: (st == [::]); first by move: H4 H2 => /eqP H4;rewrite H4 /= => H5.
-    move: H4 => /eqP/(@head0 T) =>  /(_ y) H4.
-    have H5: (head y st) \in (x::st) by rewrite in_cons; apply/orP;right.
+    case H4: (st == [::]);first by move: H4 H2 => /eqP -> /= H5.
+    move: H4 => /eqP/(@head0 T) => /(_ y) H4.
+    have H5: (head y st) \in (x::st) by rewrite in_cons;apply/orP;right.
     move: (Lxx H5 H1) => H6. 
     have H7: R.+ (head y st,x) by apply: TclosT H6 H3.
     exact.
@@ -1270,7 +1270,7 @@ Section Hn4.
       have H14: uniq (x :: rcons st z) by apply: (uniq_subseq H1' H13).
       exact.
   Qed.
-  
+
   (* utility lemma *)
   Lemma RedBackR: forall (st:seq T) (y z:T),
       (y::(rcons st z)) [L\in] R
