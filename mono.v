@@ -1093,7 +1093,7 @@ Section Hn4.
     move => st x y H1 H2.
     split => [|H3];first by apply: (allL_to_clos_t H1).
     case H4: (st == [::]); first by move: H4 H2 => /eqP H4;rewrite H4 /= => H5.
-    move: H4 => /eqP/(@last0' T) => /(_ x) H4.
+    move: H4 => /eqP/(@last_in T) => /(_ x) H4.
     have H5: (last x st) \in (rcons st y) by rewrite in_rcons; apply/orP; left. 
     move: (Lxx_head H5 H1) => H6. 
     have H7: R.+ (y, last x st) by apply: TclosT H3 H6.

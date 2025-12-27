@@ -84,19 +84,18 @@ Section Seq1_plus.
   Lemma in_rcons s x y:  (x \in rcons s y) = (x \in s) || (x == y).
   Proof. by rewrite -cats1 mem_cat mem_seq1. Qed.
   
-  Lemma last0' s x: ~ ( s = [::]) -> (last x s) \in s.
-  Proof. elim/last_ind: s x => [// | s x' Hr x _ /=].
-         by rewrite last_rcons in_rcons;apply/orP;right;apply:eq_refl.
+  Lemma last_in s x: ~ ( s = [::]) -> (last x s) \in s.
+  Proof.
+    by elim/last_ind: s x => [//|s x' _ x _];rewrite last_rcons in_rcons eq_refl orbT.
   Qed.
-
+  
   Lemma mem_last s x: last x s \in x :: s.
   Proof. by rewrite lastI mem_rcons mem_head. Qed.
  
   Lemma size0P s: ~ ( s = [::]) <-> 0 < size s.
   Proof. 
-    split. 
+    split;last by move => + /nilP/eqP H1;rewrite H1.
     by move: (leq0n (size s));rewrite leq_eqVlt eq_sym=> /orP [/nilP|? _].
-    by move => + /nilP/eqP H1;rewrite H1. 
   Qed.
   
   Lemma ZZpoo1 s: ( s = [::]) <-> size s == 0.
@@ -109,8 +108,8 @@ Section Seq1_plus.
   Proof.
     by elim: s x y => [x y //| z s Hr x y _ /=];rewrite in_cons eq_refl orbC orbT.
   Qed.
-
-  Lemma behead_head s x z:  z \in s ->  s = (head x s)::(behead s).
+  
+  Lemma behead_head s x z:  z \in s -> s = (head x s)::(behead s).
   Proof. by elim: s x => [| y s _ x _ ] //. Qed.
   
   Lemma in_behead s x z: z \in s -> ~ (z = (head x s)) -> z \in (behead s).
@@ -138,21 +137,19 @@ Section Seq1_plus.
   
   Lemma in_rev s x: x \in s <-> x \in (rev s).
   Proof.
-    have Impl: forall s', (x \in s') -> (x \in (rev s')).
-    move => s1;elim: s1 x =>  [ x // | z s2 H1 x ].
-    rewrite in_cons rev_cons -cats1 mem_cat => /orP [ /eqP H2 | H2].
-    by rewrite -H2 mem_seq1;have /eqP -> : x = x by [];rewrite orbT.
-    by apply H1 in H2;rewrite H2 orbC orbT.
-    (* end Impl *)
+    have Impl s': (x \in s') -> (x \in (rev s'))
+      by elim: s' => [//| z s2 H1];
+                    rewrite in_cons rev_cons -cats1 mem_cat
+         => /orP [/eqP -> |/H1 ->];[rewrite mem_seq1 eq_refl orbT|rewrite orTb].
     by split;[ apply Impl | move => /Impl H2; rewrite revK in H2].
   Qed.
-
+  
   Lemma nth_dv s x y i: i < size s -> nth x s i = nth y s i.
   Proof.
-    elim/last_ind: s x y i => [// | s z Hr x y i].
-    rewrite size_rcons ltnS leq_eqVlt 2!nth_rcons => /orP [/eqP H1 | H1].
-    by rewrite -H1 eq_refl ltnn.
-    by rewrite H1; apply: Hr.
+    elim/last_ind: s x y i => [//| s z Hr x y i].
+    rewrite size_rcons ltnS leq_eqVlt 2!nth_rcons => /orP [/eqP <- | H1].
+    by rewrite eq_refl ltnn.
+    by rewrite H1;apply: Hr.
   Qed.
   
   Lemma uniq_subseq s s' x: uniq (x :: s) -> subseq s' s -> uniq (x:: s').
@@ -254,7 +251,7 @@ Section Seq1_plus.
     by move:H2;rewrite -index_mem => /H1; rewrite H3.
   Qed.
   
-  Lemma uniqE  s x y z: 
+  Lemma uniqE s x y z: 
     uniq (x :: rcons s y) <-> (forall i, i < size s -> ~ (x = nth z s i))
                            /\ (forall i, i < size s -> ~ (y = nth z s i))
                            /\ (forall i j, i < j -> j < size s -> ~ (nth z s j = nth z s i))
@@ -363,20 +360,14 @@ Section allL_uniq.
       by split;[rewrite /uniq -/uniq H2 H5 | rewrite allL_c H3 H6].
     + exists (drop (index a s') s').
       split.
-      ++ have H7: subseq (drop (index a s') s') s' by apply drop_subseq.
-         have H8: subseq s' (a::s') by apply subseq_cons.
-         have H9: subseq (drop (index a s') s') (a :: s')
-           by apply subseq_trans with s'.
-         have H10: subseq (a:: s') (a::s)
-           by rewrite -cat1s -[a::s]cat1s; rewrite subseq_cat2l.      
-         by apply  subseq_trans with [::a &s'].
+      ++ apply subseq_trans with [::a &s']; 
+           last by rewrite -cat1s -[a::s]cat1s; rewrite subseq_cat2l.
+         by apply subseq_trans with s';[apply drop_subseq|];apply subseq_cons.
       ++ split;first by apply drop_uniq.
-      pose proof allL_take_drop H2 H6 as [_ H7].
-      have H8: a::(drop (index a s').+1 s') = (drop (index a s') s')
-        by apply: drop_index. 
-      by rewrite -H8 allL_c H3 H7.
+         pose proof allL_take_drop H2 H6 as [_ H7].
+         by rewrite -(drop_index H2) allL_c H3 H7. 
   Qed.
-
+  
   Lemma allL_uniq R: forall (s: seq T) (x y: T),
       allL R s x y -> 
       exists s', subseq s' s /\ ~( x \in s') /\  ~(y \in s')
