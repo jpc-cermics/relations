@@ -13,7 +13,7 @@ From mathcomp Require Import all_boot seq order boolp classical_sets.
 From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
 
-From RL Require Import  seq1 seq2 rel.
+From RL Require Import  seq1 seq2 rel mono_f.
 
 (* Require Import ClassicalChoice. *)
 
@@ -1619,6 +1619,12 @@ Section Infinite_path.
 
   Hypothesis A1: (exists (v0:T), (v0 \in setT)).
   Definition T2 : Type := (seq T)*T*(seq T)*nat.
+
+  Fixpoint iterh (h: T2 -> T2) (p0:T2) n : T2 := 
+    match n with 
+    | 0 => p0
+    | S n => h (iterh h p0 n)
+    end.
   
   Definition Re1 (f: nat -> T) :=
     [set p: T2 | exists (stl: seq T) (x:T) (str:seq T) n,
@@ -1650,15 +1656,13 @@ Section Infinite_path.
     (iic (Asym R.+)) -> 
     exists f : nat -> T, exists g: T*T -> seq T, 
       (allLu R (g (f 0,f 1)) (f 0) (f 1) /\ ~ R.+ (f 1, f 0))
-      /\
-        forall (p : T2), Re1 f p -> exists (t: T2), Re2 f (p,t).
+      /\ forall (p : T2), Re1 f p -> exists (t: T2), Re2 f (p,t).
   Proof.
-    move => [f Hn]; exists f.
-    pose proof (@choose_Rseq T R) as [g H0]; exists g.
+    move: (@choose_Rseq T R) => [g H0] [f Hn];exists f;exists g.
     split; first by split;[apply: H0 | move: Hn => /(_ 0) [_ Hn]].
     move => [[stl0 x0] str0] [stl [x [str [n [-> [H1 [H2 H3]]]]]]].
     move: (Hn) => /(_ n.+1) Hn'.
-    pose proof (Asym2P H2 H3 Hn')  as [stl' [y' [str' [H4 [H5 [H6 [H7 [H8 H9]]]]]]]].
+    pose proof (Asym2P H2 H3 Hn') as [stl' [y' [str' [H4 [H5 [H6 [H7 [H8 H9]]]]]]]].
     have H10:  uniq (stl ++ stl') by apply: (uniq_subseq' H1 H4).
     by exists (stl',y', str',n.+1);exists stl; exists x; exists str;exists n; exists stl'; exists y'; exists str'; exists n.+1.
   Qed.
@@ -1668,8 +1672,7 @@ Section Infinite_path.
       (exists (p0: T2), Re1 f p0) 
       /\ exists h: T2 -> T2, forall (p : T2), Re1 f p -> Re2 f (p,h p).
   Proof.
-    move => /Asym2P1 [f [g [H0 H1]]]; exists f. 
-    move: H0 => [[H2' H3'] H4'].
+    move => /Asym2P1 [f [g [[[H2' H3'] H4'] H1]]]; exists f. 
     have H5': uniq (g (f 0,f 1))
       by move: H3';rewrite cons_uniq rcons_uniq => /andP [_ /andP [_ ] ].
     split;first by (exists ([::],f 0,g (f 0,f 1),0);exists [::]; exists (f 0); exists (g (f 0,f 1)); exists 0).
@@ -1677,21 +1680,13 @@ Section Infinite_path.
     by exists h.
   Qed.
   
-  Fixpoint iterh (h: T2 -> T2) (p0:T2) n : T2 := 
-    match n with 
-    | 0 => p0
-    | S n => h (iterh h p0 n)
-    end.
-  
   Lemma Asym2P4: 
     (iic (Asym R.+)) -> exists f : nat -> T, exists h: T2 -> T2, exists (p0: T2),
         Re1 f p0 /\ (forall n, Re2 f (iterh h p0 n, iterh h p0 n.+1)).
   Proof.
     move => /Asym2P3 [f [[p0 H0] [h H1]]]. 
-    exists f. exists h. exists p0. split. by []. 
-    elim; first by rewrite /iterh; apply: H1.
-    move => n Hn.
-    pose proof Re2_to_Re1 Hn as H2.
+    exists f;exists h;exists p0;split;first by []. 
+    elim => [ | n /Re2_to_Re1 Hn]; first by rewrite /iterh; apply: H1.
     by apply: H1.
   Qed.
   
@@ -1701,28 +1696,20 @@ Section Infinite_path.
              /\ uniq ((l n) ++ (l n.+1)).
   Proof.
     move => /Asym2P4 [f [h [p0 [H0 H1]]]].
-    exists (fun n => (iterh h p0 n).1.1.2).
-    exists (fun n => (iterh h p0 n.+1).1.1.1).
-    move => n. move: (H1) => /(_ n) H1'.
-    move: H1' => [stl [x [str [n1 [stl' [x' [str' [n1' /= [J1 [J2 [J3 HH]]]]]]]]]]]. 
-    move: HH => [H4 [H5 [H6 [H7 [H8 H9]]]]].
-    move: H1 => /(_ n.+1) H1.
-    move: H1 => [stl1 [x1 [str1 [n11 [stl1' [x1' [str1' [n11' /= [K1 [K2 [K3 HH']]]]]]]]]]].
-    move: HH' => [H4' [H5' [H6' [H7' [H8' H9']]]]].
-    split. by rewrite J2 J1 /=.
-    split. by rewrite J2 J1 /=.
-    by rewrite K2 K1 /=.
+    exists (fun n => (iterh h p0 n).1.1.2);exists (fun n => (iterh h p0 n.+1).1.1.1).
+    move => n;move: H1 => /[dup] /(_ n.+1) H1 /(_ n) H2. 
+    move: H2 => [stl [x [str [n1 [stl' [x' [str' [n1' /= [J1 [J2 [_ [H4 [H5 _]]]]]]]]]]]]].
+    move: H1 => [stl1 [x1 [str1 [n11 [stl1' [x1' [str1' [n11' /= [K1 [K2 [_ HH']]]]]]]]]]].
+    move: HH' => [_ [_ [_ [_ [_ H9']]]]].
+    by split;[rewrite J2 J1|split;[rewrite J2 J1|rewrite K2 K1]].
   Qed.
   
-  (** * a revoir avec allL_nth qui donne une équivalence *)
-
-  (* 
+  (** 
   Lemma Asym2P6: 
     (iic (Asym R.+)) -> exists k: nat -> T, exists l: nat -> seq T, exists l': nat -> nat -> T,
-        forall n, (forall i, i < size (l n)
-                   -> R ((l' n i), l' n i.+1)
-                     /\ ~ ((l' n i) = (l' n i.+1))
-                     /\ ~ (k n = l' n i) /\ ~ (k n.+1 =  l' n i))
+        forall n, (forall i, i < size (l n) -> R ((l' n i), l' n i.+1)
+                                    /\ ~ ((l' n i) = (l' n i.+1))
+                                    /\ ~ (k n = l' n i) /\ ~ (k n.+1 =  l' n i))
              /\ allLu R (l n) (k n) (k n.+1) /\ ~ R.+ (k n.+1, k n) /\ uniq ((l n) ++ (l n.+1)).
   Proof.
     move => /Asym2P5 [k [l H0]]. 
@@ -1736,7 +1723,7 @@ Section Infinite_path.
     pose proof (@uniq_nth' T (l n) (k n) (k n.+1) H0' i H1) as H4.
     exact. 
   Qed.
-  *)
 
+  *)
 
 End Infinite_path. 
