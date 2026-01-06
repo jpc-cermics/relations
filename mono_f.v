@@ -119,6 +119,29 @@ Section walk.
     -> decode_aux j (col - prefix_sum p j) p = decode_aux n (col - prefix_sum p n) p.
   Proof. by move => H1 H2 <-; apply: (decode_auxP2 H1). Qed.
 
+  Definition P (p: nat -> nat) n j col := 
+    decode_aux j (col - prefix_sum p j) p = decode_aux n (col - prefix_sum p n) p.
+  
+  Fixpoint Q (p: nat -> nat) n j col := 
+    match j with 
+    | 0 => P p n n col 
+    | j.+1 => if (j < n) then Q p n j col else (Q p n j col) /\ P p n (n - j.+1) col
+    end. 
+
+  Lemma Q_fact (p: nat -> nat) n j col: j < n -> Q p  n j col.
+    elim: j => [ _ | j Hr H1];first by rewrite /Q/P.
+    have -> : j < n by lia.
+    by rewrite /= H2;apply: Hr.
+    
+  
+                          
+                            
+
+
+
+
+
+
   (*   Require Import Arith Wellfounded Lia. *)
   (* 
 Definition Q (P: nat-> Prop) n := forall j, j  <= n -> P j.
