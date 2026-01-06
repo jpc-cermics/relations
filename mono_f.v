@@ -10,7 +10,6 @@
 (************************************************************************)
 
 (** * Utilities *)
-Require Import Arith. 
 
 Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_boot seq order boolp classical_sets. 
@@ -35,7 +34,7 @@ Section walk.
   Variables (T:choiceType).
   
   Equations? decode_aux (row col: nat) (p : nat -> nat) : nat* nat  by wf col lt :=
-    decode_aux row col p with dec  ((p row) < col) => {
+    decode_aux row col p with sumbool_of_bool  ((p row) < col) => {
       | left H0 => decode_aux (S row) (col - (p row).+1) p; 
       | right H0 => (row, col) ;
       }.
@@ -54,7 +53,8 @@ Section walk.
       else (row,col).
   Proof.
     (** other possibility: by funelim (decode_aux row col p);rewrite H0. *)
-    by rewrite decode_aux_equation_1 /decode_aux_unfold_clause_1;case H1: ((p row) < col);rewrite /= . 
+    by rewrite decode_aux_equation_1 
+         /decode_aux_unfold_clause_1;case H1: ((p row) < col);rewrite /= . 
   Qed.
 
   Fixpoint prefix_sum (p: nat -> nat) (n : nat) : nat :=
@@ -67,8 +67,8 @@ Section walk.
   Proof. by []. Qed.
 
   Lemma prefix_sum_strict_inc (p: nat -> nat): forall n, prefix_sum p n < prefix_sum p n.+1.
-  Proof. move => n;rewrite prefix_sumP;by lia. Qed.
-
+  Proof. move => n;rewrite /= ;by lia. Qed.
+  
   Lemma prefix_sum_inc (p: nat -> nat) i j : i <= j -> prefix_sum p i <= prefix_sum p j.
   Proof. 
     elim: j i => [i | n Hn i H1];first by rewrite leqn0 => /eqP ->.
@@ -85,151 +85,119 @@ Section walk.
     have H2:  j.+1 <= n.+2. by lia.
     by move: (prefix_sum_inc p H2); rewrite 2!prefix_sumP; lia. 
   Qed.
+
+  Lemma prefix_sumP2 (p: nat -> nat) n: 
+    prefix_sum p n + p n <  prefix_sum p n.+1 + p n.+1.
+  Proof. rewrite prefix_sumP. lia. Qed.
   
-  Lemma decode_auxP1 (p: nat -> nat) n col: 
-    decode_aux n (col - prefix_sum p n) p
-    = if p n < col - prefix_sum p n then 
-      decode_aux n.+1 (col - (prefix_sum p n.+1)) p 
-    else (n, col - prefix_sum p n).
+  Lemma decode_auxP1 (p: nat -> nat) j col: 
+    decode_aux j (col - prefix_sum p j) p
+    = if p j < col - prefix_sum p j then 
+      decode_aux j.+1 (col - (prefix_sum p j.+1)) p 
+    else (j, col - prefix_sum p j).
   Proof.
-    elim: n col => [col | n _ col];first by rewrite prefix_sumP /= subn0;apply: decode_auxP0.
+    elim: j col => [col | j _ col];first by rewrite prefix_sumP /= subn0;apply: decode_auxP0.
     rewrite decode_auxP0. 
-    have ->: col - prefix_sum p n.+2 = col - prefix_sum p n.+1 - (p n.+1).+1
+    have ->: col - prefix_sum p j.+2 = col - prefix_sum p j.+1 - (p j.+1).+1
       by  rewrite [in LHS]prefix_sumP;lia.
     exact.
   Qed.
-
+  
   Lemma decode_auxP2 (p: nat -> nat) n col: 
     prefix_sum p n + p n < col -> 
     forall j, j < n -> decode_aux j (col - prefix_sum p j) p = 
                    decode_aux j.+1 (col - prefix_sum p j.+1) p.
     move => H1 j H2.
     have H3: prefix_sum p j + p j < col.
-    apply: (leq_ltn_trans _ H1).
-    apply: prefix_sumP1.
-    by apply: ltnW.
-    rewrite decode_auxP1.
-    by have ->: p j < col - prefix_sum p j by lia.
+    by apply/(leq_ltn_trans _ H1)/prefix_sumP1/ltnW.
+    by rewrite decode_auxP1;have ->: p j < col - prefix_sum p j by lia.
   Qed.
-
-  Lemma decode_auxP3 (p: nat -> nat) n col j:
-    prefix_sum p n + p n < col -> 
-    j < n -> 
-    decode_aux j.+1 (col - prefix_sum p j.+1) p = decode_aux n (col - prefix_sum p n) p
-    -> decode_aux j (col - prefix_sum p j) p = decode_aux n (col - prefix_sum p n) p.
-  Proof. by move => H1 H2 <-; apply: (decode_auxP2 H1). Qed.
 
   Definition P (p: nat -> nat) n j col := 
     decode_aux j (col - prefix_sum p j) p = decode_aux n (col - prefix_sum p n) p.
   
-  Fixpoint Q (p: nat -> nat) n j col := 
-    match j with 
-    | 0 => P p n n col 
-    | j.+1 => if (j < n) then Q p n j col else (Q p n j col) /\ P p n (n - j.+1) col
-    end. 
-
-  Lemma Q_fact (p: nat -> nat) n j col: j < n -> Q p  n j col.
-    elim: j => [ _ | j Hr H1];first by rewrite /Q/P.
-    have -> : j < n by lia.
-    by rewrite /= H2;apply: Hr.
-    
+  Lemma decode_auxP3 (p: nat -> nat) n col j:
+    prefix_sum p n + p n < col -> j < n -> P p n j.+1 col -> P p n j col.
+  Proof. by rewrite /P;move => H1 H2 <-;apply: (decode_auxP2 H1). Qed.
   
-                          
-                            
-
-
-
-
-
-
-  (*   Require Import Arith Wellfounded Lia. *)
-  (* 
-Definition Q (P: nat-> Prop) n := forall j, j  <= n -> P j.
-
-Theorem downward_induction (P: nat-> Prop):
-  forall n,
-    (forall j, j < n -> P (S j) -> P j) ->
-    P n ->
-    forall j, j <= n -> P j.
-Proof.
-  move =>  n Hstep Hn.
-  pose proof (well_founded_induction lt_wf).
+  Lemma decode_auxP4 (p: nat -> nat) n col: P p n n col.
+  Proof. by []. Qed.
   
-
-  apply (well_founded_induction lt_wf).
-  + intros j IH j'.
-    case H1: (n < j). 
-    ++ move: IH => /(_ n) IH.
-       have H2:  forall j : nat, j <= n -> P j by apply: IH; lia.
-       apply: H2.
-    ++ have H2: j <= n by lia.
-       rewrite leq_eqVlt => /orP [/eqP -> // | H3].
-       case H4: (j' < j). 
-       +++ move: IH => /(_ j') IH.
-           have H5:  forall j : nat, j <= n -> P j by apply: IH; lia.
-           apply: H5. by lia.
-       +++ have H5: (j < n) by lia.
-           apply: Hstep. by [].
-           apply: IH.
-           
-       apply: IH. 
-       
-       move: IH => /(_ 0).
-       
-    destruct (Nat.eq_dec j n).
-    ++ subst j. 
-       rewrite leq_eqVlt => /orP [/eqP -> // | H4].
-       move: IH => /(_ j') IH.
-       have H5: forall j : nat, j <= n -> P j by apply: IH;lia.
-       by apply: H5; apply: ltnW.
-    ++  
-      rewrite leq_eqVlt => /orP [/eqP ? // | H4].
-      assert (j' < n) by lia.
-    apply Hstep.
-    + exact H.
-    + apply IH.
-      lia.
-Qed.
-
-  
-  Lemma down_coq (P: nat-> Prop):
-    forall n j,
-      j <= n ->
-      P n ->
-      (forall k, k < n -> P (S k) -> P k) ->
-      P j.
+  Lemma decode_auxP5 (p: nat -> nat) n col:
+    prefix_sum p n + p n < col -> ~ (P p n 0 col) -> forall j, j <= n -> ~(P p n j col).
   Proof.
-    move=> n j Hj Hn Hstep.
-    pose proof (lt_wf_ind n (fun j => j <= n -> P j)).
-    move=> k IH Hk.
-    have [->|Hlt] := Nat.eq_dec k n.
-    - exact Hn.
-    - apply Hstep; lia.
+    move => H1 H2.
+    elim => [// | j Hr H3 /(@decode_auxP3 p n col j H1 H3)H4].
+    by have H5: ~ P p n j col by apply: Hr;lia.
   Qed.
   
-  Lemma decode_auxP4 (p: nat -> nat) n col:
-    prefix_sum p n + p n < col -> 
-    forall j, j < n -> decode_aux j (col - prefix_sum p j) p = decode_aux n (col - prefix_sum p n) p.
-  Proof.
-    move => H1.
-    
-    
-    + move => col H1 j. rewrite leqn0 =>/eqP ->. rewrite decode_auxP0. 
-      by have ->: p 0 < col - prefix_sum p 0 = false by lia.
-    + move => n Hn col H1 j H2.
-      case H3: (j == n.+1).
-      ++ move: H3 => /eqP ->.
-         pose proof decode_auxP1 p n.+1 col as ->.
-         by have ->:  p n.+1 < col - prefix_sum p n.+1 = false by lia.
-      ++ have H4: j <= n by lia.
-  Admitted.
+  Lemma decode_auxP6 (p: nat -> nat) n col:
+    prefix_sum p n + p n < col -> ~ (P p n 0 col) -> False. 
+  Proof.  move => H1 H2; move: (decode_auxP5 H1 H2) => /(_ n) H3.
+          by (have /H3 H4: n <= n by lia);have H5: P p n n col by [].
+  Qed.
   
-*)
+  Lemma decode_auxP7 (p: nat -> nat) n col:
+    prefix_sum p n + p n < col -> (P p n 0 col). 
+  Proof.
+    by move => H1;move: (decode_auxP6 H1) => H2;apply: contrapT => /H2 ?.
+  Qed.
 
+  Lemma decode_auxP8 (p: nat -> nat) n col:
+    prefix_sum p n + p n < col ->
+    decode_aux 0 col p = decode_aux n (col - prefix_sum p n) p.
+  Proof. by move => H1;move: (decode_auxP7 H1);rewrite /P /= subn0. Qed.
+  
+  Lemma decode_auxP9 (p: nat -> nat) n col:
+    prefix_sum p n + p n < col -> col <= (prefix_sum p n.+1) + (p n.+1) 
+    -> decode_aux 0 col p = (n.+1, col - (prefix_sum p n.+1)).
+  Proof. 
+    rewrite prefix_sumP; move => H1 H2;move: (decode_auxP8 H1) => ->.
+    rewrite  decode_auxP0.
+    have ->: p n < col - prefix_sum p n by lia.
+    rewrite  decode_auxP0.
+    have ->: ( p n.+1 < col - prefix_sum p n - (p n).+1 )= false by lia.
+    have ->: col - prefix_sum p n - (p n).+1 = col - (prefix_sum p n + (p n).+1) by lia.
+    exact.
+  Qed.
+  
   Definition decode' (p : nat -> nat) (n : nat): nat * nat := decode_aux 0 n p.
-
+  
   Definition encode' (p : nat -> nat) (rc : nat * nat) : nat := (prefix_sum p rc.1 + rc.2).
   
+  Section exists_sandwich.
+    
+    Definition x (p : nat -> nat) (n : nat) := prefix_sum p n + p n.
+  
+    Lemma x_incr (p : nat -> nat) (n : nat): x p n < x p n.+1.
+    Proof. rewrite /x prefix_sumP. lia. Qed.
+
+    Lemma x_gt_id (p : nat -> nat) n : x p n >= n + x p 0.
+    Proof. by elim: n => [|n Hr];[rewrite add0n | move: x_incr => /(_ p n) H1;lia].
+    Qed.
+    
+    Theorem exists_sandwich (p : nat -> nat) n :
+      x p 0 < n -> exists j, (x p j < n) && (n <= x p j.+1).
+    Proof.
+      move=> H1.
+      have hex: exists k, n <= x p k
+          by (exists n);pose proof (x_gt_id p n) as H2;(have H3: n <= n + x p 0 by lia);
+                     apply: (leq_trans H3 H2).
+      pose  k0 := ex_minn hex.
+      have H2: ~(0 = k0)
+        by rewrite /k0; case: ex_minnP  => k H3 H4;move => H5;rewrite -H5 in H3;lia.
+      have H3: 0 < k0 by lia.
+      exists k0.-1.
+      have ->: k0.-1.+1 = k0 by lia.
+      move: H3. rewrite /k0. case: ex_minnP => // k -> H5 H6.
+      rewrite andbT. 
+      have H7: n <= x p k.-1 -> False by move => /H5 H7; lia.
+      by lia.
+    Qed.
+    
+  End exists_sandwich.
+  
+
   Definition p n := 
       match n with 
       | 0 => 3
