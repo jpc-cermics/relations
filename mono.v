@@ -138,84 +138,6 @@ Section Infinite_paths.
   Context (T : Type).
   Implicit Types (T : Type) (R S: relation T) (A B: set T).
   
-  (* total (or left total)  *) 
-  Definition total_rel (R: relation T) := forall x, exists y, R (x,y).
-  
-  Definition total_rel' (R: relation T) := exists f : T -> T, forall x, R (x, f x). 
-  
-  (* choice from boolp version for relation T *)
-  Lemma choice' R: total_rel R -> total_rel' R.
-  Proof.
-    move => H1.
-    have H2: forall x : T, exists y : T, (curry R) x y
-        by move => x;move: H1 => /(_ x) [y H1];exists y.
-    move: H2 => /choice [f H2].
-    by exists f => x; move: H2 => /(_ x).
-  Qed.
-  
-  Lemma total_rel_iff R: total_rel R <-> total_rel' R.
-  Proof. by split =>[| [f H1] x];[apply: choice' | exists (f x)].  Qed.
-  
-  Definition total_rel'' (R: relation T) := 
-    (forall x, exists f : nat -> T, f 0 = x /\ forall n, R ((f n),(f (S n)))).
-  
-  Fixpoint iter (f: T -> T) (x: T) k := 
-    match k with 
-    | 0 => x 
-    | S m => f (iter f x m)
-    end. 
-  
-  Lemma iterP: forall k f x, iter f x k.+1 = f (iter f x k).
-  Proof. by elim. Qed.
-  
-  Lemma total_rel'_to_total_rel'' R:  total_rel' R -> total_rel'' R.
-  Proof. by move => [f H1] x;exists (iter f x). Qed.
-  
-  Definition iic (R: relation T) := exists f : nat -> T, forall n, R ((f n),(f (S n))).  
-  
-  Lemma total_rel''_to_iic R: (exists (v0:T), (v0 \in setT)) ->  total_rel'' R -> iic R. 
-  Proof. by move => -[v0 H1] /(_ v0) [f [H2 H3]]; exists f. Qed.
-  
-  (** * DC as a lemma deduced from choice *)
-  Lemma DC R:  (exists (v0:T), (v0 \in setT)) ->  total_rel R -> iic R. 
-  Proof.
-    by move => H0 /total_rel_iff/total_rel'_to_total_rel''/(total_rel''_to_iic H0) H1.
-  Qed.
-  
-  (* begin snippet Rloop:: no-out *)    
-  Definition Rloop (R: relation T) := exists v, forall w,  R (v,w) -> R (w,v).
-  (* end snippet Rloop *)
-  
-  Lemma test R: (antisymmetric R /\ irreflexive R /\ Rloop R) -> (~ (total_rel R)).
-  Proof.
-    move => [H1 [H1' [v H2]]].
-    rewrite -existsNP; exists v; rewrite -forallNE => x /[dup] H3 /H2 H4.
-    have H5: x = v by apply: H1.
-    by move: H3; rewrite H5 => /H1'.
-  Qed.
-  
-  Lemma test1 R: (~ (total_rel R)) -> exists v, (forall x : T, ~ R (v, x)).
-  Proof. by rewrite -existsNP => -[v H1];exists v;move: H1; rewrite -forallNE. Qed. 
-
-  Lemma test2 R: (exists v, (forall x : T, ~ R (v, x)))-> Rloop R.
-  Proof. by move => -[v H1];exists v => y /H1 H2. Qed. 
-
-  Lemma test3 R: ~ (Rloop R) -> total_rel (Asym R).
-  Proof. 
-    by rewrite -forallNE => H1 v;move: H1 => /(_ v)/existsNP [w /not_implyP H1];exists w.
-  Qed.
-
-  Lemma test4 R: (Rloop R) -> Rloop (Asym R).
-  Proof.
-    by move => [v H1];exists v => w [H2 H3];split;[apply: H1| move: H2 => /H1 H2].
-  Qed.
-
-  Lemma test5 R: (Rloop R) -> exists v, (forall x : T, ~ ((Asym R) (v, x))).
-  Proof. by move => [v H1];exists v => w [/H1 H2 H3]. Qed.
-  
-  Lemma notiic_rloop R: (exists (v0:T), (v0 \in setT)) -> ~ (iic (Asym R)) -> (Rloop R).
-  Proof. by move => H0; apply contraPP => /test3/(DC H0) H1.  Qed.
-
   Lemma AsymInf (f : nat -> T) R:
     (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
      forall p n, 0 < p -> (Asym R.+) (f n, f (n + p)). 
@@ -223,12 +145,11 @@ Section Infinite_paths.
     move => Hi. 
     elim => [// | p Hr n' _].
     case H2: (p == 0); first by move: H2 => /eqP ->;rewrite addn1;apply: Hi. 
-    have: (0 < p ) by lia.
-    move => /(Hr n') H3.
+    move: H2 =>  /neq0_lt0n /(Hr n') H2.
     have H4: transitive (Asym R.+) by apply: Asym_preserve_transitivity;apply: TclosT.
     have H5: Asym R.+ (f (n' + p), f (n' + p).+1) by apply: Hi.
     rewrite /transitive in H4.
-    move: (H4 (f n') (f (n' + p)) (f (n'+p).+1) H3 H5).
+    move: (H4 (f n') (f (n' + p)) (f (n'+p).+1) H2 H5).
     by rewrite -addn1 -[p.+1]addn1 addnA.
   Qed.
   
@@ -243,9 +164,8 @@ Section Infinite_paths.
   Proof.
     elim => [// | n' Hr m' H1]. 
     case H2: (m' == n'.+1);first by move: H2=> /eqP H2; rewrite H2 ltnn in H1.
-    case H3: (m' == n'). 
-    + move: H3 => /eqP ->. exists 1. split. exact. by rewrite addn1.
-    + have H4:  m' <= n' by lia.
+    case H3: (m' == n');first by move: H3 => /eqP ->;(exists 1); split;[ |rewrite addn1].
+    have H4:  m' <= n' by lia.
       move: H4; rewrite leq_eqVlt => /orP [/eqP -> | H5].
       ++ exists 1. by rewrite addn1.
       ++ move: (Hr m' H5) => [p [H6 H7]].
@@ -263,7 +183,7 @@ Section Infinite_paths.
       pose proof (Hi p' q H3).
       by symmetry.
 Qed.
-  
+
 End Infinite_paths.
 
 Section Infinite_paths_X.
