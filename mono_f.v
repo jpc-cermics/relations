@@ -109,10 +109,15 @@ Section walk.
         by have H8: false by rewrite -(ltnn n).
     Qed.
     
-    Lemma csumI1 n j: 
-      ((csum j) <= n < csum j.+1)
-      -> if (n.+1 < csum j.+1) then (csumI n.+1) = j
-        else (csumI n.+1) = j.+1. 
+    Lemma csumI0 n j: ((csum j) <= n < csum j.+1) -> (csumI n) = j.
+    Proof.
+      move => H1;pose proof (exists_sandwich1 n) as H2.
+      by apply: (@uniq_sandwich n (csumI n) j).
+    Qed.
+
+    Lemma csumI1 n j: ((csum j) <= n < csum j.+1)
+                      -> if (n.+1 < csum j.+1) then (csumI n.+1) = j
+                        else (csumI n.+1) = j.+1. 
     Proof.
       move => /andP [H1 H2].
       case H3: (n.+1 < csum j.+1).
@@ -126,29 +131,32 @@ Section walk.
         by apply: (@uniq_sandwich n.+1 (csumI n.+1) j.+1).
     Qed.
     
-    Lemma csumI2 n: 
-      if (n.+1 < csum (csumI n).+1) then (csumI n.+1) = (csumI n) 
-      else (csumI n.+1) = (csumI n).+1.
+    Lemma csumI2 n: if (n.+1 < csum (csumI n).+1) then (csumI n.+1) = (csumI n) 
+                    else (csumI n.+1) = (csumI n).+1.
     Proof. by  move: (exists_sandwich1 n) => /csumI1. Qed.
-
+    
     Lemma csumI3 n: n.+1 = csum (csumI n).+1 -> (csumI n.+1) = (csumI n).+1.
     Proof.
       by move: (csumI2 n) => + H1;have ->: (n.+1 < csum (csumI n).+1) = false by lia.
     Qed.
 
     Definition decode0 n := (csumI n, n - (csum (csumI n))).
- 
-    Lemma decode_next n i j: 
-      (decode0 n) = (i,j) -> (decode0 n.+1) = if (n.+1 < csum i.+1) then (i, j.+1) else (i.+1,0).
+
+    Lemma decode0P n j: ((csum j) <= n < csum j.+1) -> (decode0 n)= (j, n -(csum j)).
+    Proof. by move => /(@csumI0 n j) <-. Qed.
+    
+    Lemma decode_next n j k: 
+      (decode0 n) = (j,k) 
+      -> (decode0 n.+1) = if (n.+1 < csum j.+1) then (j, k.+1) else (j.+1,0).
     Proof.
       rewrite /decode0 => -[H1 H2].
       pose proof (exists_sandwich1 n) as H3.
       move: H2 H3;rewrite H1 => H2 /[dup] /andP [H3 H3'] /csumI1. 
-      case H4: (n.+1 < csum i.+1). 
+      case H4: (n.+1 < csum j.+1). 
       + move => ->. 
-        by have ->: n.+1 - csum i = j.+1 by lia. 
+        by have ->: n.+1 - csum j = k.+1 by lia. 
       + move => ->.
-        case H5: (n.+1 == csum i.+1);last by lia.
+        case H5: (n.+1 == csum j.+1);last by lia.
         by move: H5 => /eqP H5;rewrite -H5 subnn.
     Qed.
     
@@ -208,30 +216,32 @@ Section walk.
   Section cum_sum1.
 
     (** we specialize previous section to the case when p is (fun n' => (size (g n')) *)
-
     Definition p := (fun n => (size (g n))).
-    Definition csum' := csum p. 
-    Definition decode :=  decode0 p. 
-    Definition csumI' := csumI p.
-
-    Definition val n := 
-      let (row,col):= decode n in 
-      if col == 0 then (f row) else nth (f row) (g row) col.-1.
     
-    Lemma valP1 n: n= csum p (csumI p n) -> val n = (f (csumI p n)).
+    Definition val n := 
+      let (row,col):= decode0 p n in 
+      if col == 0 then (f row) else nth (f row) (g row) col.-1.
+
+    Lemma valP3 n j: ((csum p j) <= n < csum p j.+1)
+                     -> val n = (if n - csum p j == 0
+                                then f j
+                                else nth (f j) (g j) (n - csum p j).-1).
+    Proof. by move => /(@csumI0 p n j) H1; rewrite  /val /decode0 H1. Qed.
+    
+    Lemma valP1 n j: n = csum p j -> val n = f j.
     Proof.
-      move => H1;rewrite /val.
-      by have -> : decode n = (csumI p n, 0) by rewrite /val /decode /decode0 -H1 subnn. 
+      move => H1.
+      have H2: ((csum p j) <= n < csum p j.+1) by rewrite H1 csumP; lia.
+      by move: (valP3 H2); rewrite -H1 subnn /=.
     Qed.
     
-    Lemma valP2 n:
-      ((csum p (csumI p n)) < n < csum p (csumI p n).+1)
-      -> val n = nth (f (csumI p n)) (g (csumI p n)) (n - (csum p (csumI p n))).-1.
+    Lemma valP2 n j: ((csum p j) < n < csum p j.+1)
+      -> val n = nth (f j) (g j) (n - (csum p j)).-1.
     Proof.
-      move => /andP [H1 H2].
-      pose col:= n - csum p (csumI p n).
-      rewrite -/col /val /decode /decode0 -/col. 
-      by have ->: col == 0 = false by lia.
+      move => H1. 
+      have H2: ((csum p j) <= n < csum p j.+1) by lia.
+      move: (valP3 H2).
+      by have ->: (n - csum p j == 0)= false by lia.
     Qed.
     
   End cum_sum1.
@@ -347,15 +357,17 @@ Section walk.
     
     Definition decode2 (p : nat -> nat) (n : nat): nat * nat := decode_aux 0 n p.
 
-    Lemma decodeP (p : nat -> nat) col: exists gamma: nat ->nat,  (decode2 p col) = (decode1 p gamma col).
+    (* 
+    Lemma decodeP (p : nat -> nat) col: exists gamma: nat ->nat,  (decode2 p col) = (decode0 p col).
     Proof.
       pose proof (gamma p) as [gamma H1]; exists gamma;rewrite /decode2 /decode1.
       by move: H1 => /(_ col) => /(@decode_auxP11 p (gamma col) col) ->.
     Qed.
+    *)
     
     Section Example.
       
-      Definition p n := 
+      Definition p' n := 
         match n with 
         | 0 => 3
         | 1 => 2
@@ -365,26 +377,28 @@ Section walk.
       
       (** we can preform computations with decode2 version *)
       
-      Compute (decode2 p 0).
-      Compute (decode2 p 1).
-      Compute (decode2 p 2).
-      Compute (decode2 p 3).
-      Compute (decode2 p 4).
-      Compute (decode2 p 5).
-      Compute (decode2 p 6).
-      Compute (decode2 p 7).
-      Compute (decode2 p 8).
-      Compute (decode2 p 9).
-      Compute (decode2 p 10).
-      Compute (decode2 p 11).
+      Compute (decode2 p' 0).
+      Compute (decode2 p' 1).
+      Compute (decode2 p' 2).
+      Compute (decode2 p' 3).
+      Compute (decode2 p' 4).
+      Compute (decode2 p' 5).
+      Compute (decode2 p' 6).
+      Compute (decode2 p' 7).
+      Compute (decode2 p' 8).
+      Compute (decode2 p' 9).
+      Compute (decode2 p' 10).
+      Compute (decode2 p' 11).
       
     End Example.
     
   End encode_decode. 
   
+  (*
+
   Definition decode' (g : nat -> seq T) (i : nat) : nat * nat := decode2 (fun n' => (size (g n'))) i.
 
-  Definition encode' (g : nat -> seq T) (rc : nat * nat) : nat := encode1 (fun n' => (size (g n'))) rc.
+  Definition encode' (g : nat -> seq T) (rc : nat * nat) : nat := encode0 (fun n' => (size (g n'))) rc.
   
   Definition val' (f: nat -> T) (g : nat -> seq T) n := 
     let (row,col):= decode' g n in 
@@ -441,5 +455,7 @@ Section walk.
     Compute (encode' g (decode' g 5)) == 5.
        
   End demo.
+  *)
+
 
 End walk.
