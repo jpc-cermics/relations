@@ -1624,7 +1624,7 @@ Section Infinite_path.
     by split;[rewrite J2 J1|split;[rewrite J2 J1|rewrite K2 K1]].
   Qed.
   
-  (** 
+(** 
   Lemma Asym2P6: 
     (iic (Asym R.+)) -> exists k: nat -> T, exists l: nat -> seq T, exists l': nat -> nat -> T,
         forall n, (forall i, i < size (l n) -> R ((l' n i), l' n i.+1)
