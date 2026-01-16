@@ -1214,7 +1214,7 @@ Section Relation_Facts.
     + by move: H5 H6 H7 => /inP -> /inP ->. 
   Qed.
   
-  (** * Partition induced by and Equivalence Relation *)
+  (** * Partition induced by an Equivalence Relation *)
   
   (* Définition de la classe d'équivalence de x *)
   Definition class_of R (x : T) := [set y: T| R (x,y)].
