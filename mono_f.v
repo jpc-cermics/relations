@@ -160,56 +160,6 @@ Section walk.
         by move: H5 => /eqP H5;rewrite -H5 subnn.
     Qed.
     
-    (** version obsolete avec gamma construite avec choix dependent *)
-    (** 
-    Theorem exists_sandwich' n:
-      exists j, ((csum j) <= n < csum j.+1).
-    Proof.
-      case H1: (n <= 0);
-        first by move: H1;rewrite /csum => H1;exists 0;rewrite /csum add0n;lia.
-      move: H1;rewrite leqNgt => /negP/negP H1.
-      have hex: exists k, n < csum k
-          by  (exists n.+1);apply: (leq_ltn_trans (csum_gt_id n) (csum_strict_inc n)).
-      pose  k0 := ex_minn hex.
-      have H2: ~(0 = k0) by rewrite /k0;case: ex_minnP  => k H3 ?;move => H5;rewrite -H5 in H3.
-      have H3: 0 < k0 by lia.
-      exists k0.-1.
-      have ->: k0.-1.+1 = k0 by lia.
-      move: H3. rewrite /k0. case: ex_minnP => // k -> H5 H6.
-      rewrite andbT. 
-      have H7: n < csum k.-1 -> False  by move => /H5 H7; lia.
-      by lia.
-    Qed.
-    
-
-    (** build a function using choice on exists_sandwich theorem *)
-    Lemma gamma: exists (gamma : nat -> nat), 
-      (forall n, ((csum (gamma n)) <= n < csum (gamma n).+1)) 
-      /\ (forall n j, (csum (gamma n)) <= j < csum (gamma n).+1
-                -> gamma j = gamma n).
-    Proof.
-      pose R:= [set ij | ((csum ij.2) <= ij.1) && (ij.1 < csum (ij.2).+1)].
-      have Tr: total_rel R by move => n;move: (exists_sandwich' n) => [j H1];exists j.
-      pose proof (choice'  Tr) as [gamma H1];exists gamma.
-      by split;[| move => n j;apply: uniq_sandwich; apply: H1].
-    Qed.
-
-    Definition decode1 (gamma:  nat -> nat) n := ((gamma n), n - (csum (gamma n))).
-    
-    Definition encode1 (rc : nat * nat) : nat := (csum rc.1 + rc.2).
-    
-    Lemma encode_decode (gamma' : nat -> nat) (n:nat): 
-      (n >= csum (gamma' n)) -> encode1 (decode1 gamma' n) = n.
-    Proof. by rewrite  /decode1 /encode1 /=;lia. Qed.
-
-    Lemma encode_decode':
-      exists (gamma : nat -> nat), forall n, encode1 (decode1 gamma n) = n.
-    Proof.
-      pose proof gamma as [gamma [H1 H1']].
-      by exists gamma;move => n;move: H1 => /(_ n) /andP [H1 H2];rewrite  /decode1 /encode1 /=;lia.
-    Qed.
-    
-     *)
 
   End cum_sum.
   
@@ -243,7 +193,28 @@ Section walk.
       move: (valP3 H2).
       by have ->: (n - csum p j == 0)= false by lia.
     Qed.
-    
+
+    Lemma test (R: relation T): 
+      (forall n, allL R (g n) (f n) (f n.+1))  -> forall n, R ((val n), (val n.+1)).
+    Proof.
+      move => H1 n.
+      move: (@exists_sandwich1 p n) => H2.
+      pose j:= (csumI p n);rewrite -/j in H2.
+      pose proof (@allL_nth T R (g j) (f j) (f j.+1) (f j)) as H3.
+      move: H1 => /(_ j) /H3 [H3' [H4 H5]].
+      clear H3.
+      case H6: (csum p j == n).
+      + move: H6 => /eqP H6.
+        have H7: (val n) = f j. by apply: valP1.
+        (** we have to explore n.+1 **)
+        admit.
+      + have H7: ((csum p j ) < n < csum p j.+1) by lia.
+        have H8: (val n) = nth (f j) (g j ) (n - (csum p j)).-1 
+          by apply: valP2.
+        admit.
+    Admitted.
+
+
   End cum_sum1.
   
   Section encode_decode. 
@@ -459,3 +430,54 @@ Section walk.
 
 
 End walk.
+
+    (** version obsolete avec gamma construite avec choix dependent *)
+    (** 
+    Theorem exists_sandwich' n:
+      exists j, ((csum j) <= n < csum j.+1).
+    Proof.
+      case H1: (n <= 0);
+        first by move: H1;rewrite /csum => H1;exists 0;rewrite /csum add0n;lia.
+      move: H1;rewrite leqNgt => /negP/negP H1.
+      have hex: exists k, n < csum k
+          by  (exists n.+1);apply: (leq_ltn_trans (csum_gt_id n) (csum_strict_inc n)).
+      pose  k0 := ex_minn hex.
+      have H2: ~(0 = k0) by rewrite /k0;case: ex_minnP  => k H3 ?;move => H5;rewrite -H5 in H3.
+      have H3: 0 < k0 by lia.
+      exists k0.-1.
+      have ->: k0.-1.+1 = k0 by lia.
+      move: H3. rewrite /k0. case: ex_minnP => // k -> H5 H6.
+      rewrite andbT. 
+      have H7: n < csum k.-1 -> False  by move => /H5 H7; lia.
+      by lia.
+    Qed.
+    
+
+    (** build a function using choice on exists_sandwich theorem *)
+    Lemma gamma: exists (gamma : nat -> nat), 
+      (forall n, ((csum (gamma n)) <= n < csum (gamma n).+1)) 
+      /\ (forall n j, (csum (gamma n)) <= j < csum (gamma n).+1
+                -> gamma j = gamma n).
+    Proof.
+      pose R:= [set ij | ((csum ij.2) <= ij.1) && (ij.1 < csum (ij.2).+1)].
+      have Tr: total_rel R by move => n;move: (exists_sandwich' n) => [j H1];exists j.
+      pose proof (choice'  Tr) as [gamma H1];exists gamma.
+      by split;[| move => n j;apply: uniq_sandwich; apply: H1].
+    Qed.
+
+    Definition decode1 (gamma:  nat -> nat) n := ((gamma n), n - (csum (gamma n))).
+    
+    Definition encode1 (rc : nat * nat) : nat := (csum rc.1 + rc.2).
+    
+    Lemma encode_decode (gamma' : nat -> nat) (n:nat): 
+      (n >= csum (gamma' n)) -> encode1 (decode1 gamma' n) = n.
+    Proof. by rewrite  /decode1 /encode1 /=;lia. Qed.
+
+    Lemma encode_decode':
+      exists (gamma : nat -> nat), forall n, encode1 (decode1 gamma n) = n.
+    Proof.
+      pose proof gamma as [gamma [H1 H1']].
+      by exists gamma;move => n;move: H1 => /(_ n) /andP [H1 H2];rewrite  /decode1 /encode1 /=;lia.
+    Qed.
+    
+     *)
