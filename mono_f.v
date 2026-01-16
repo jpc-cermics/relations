@@ -169,12 +169,12 @@ Section walk.
     
     Definition val n := 
       let (row,col):= decode0 p n in 
-      if col == 0 then (f row) else nth (f row) (g row) col.-1.
+      if col == 0 then (f row) else nth (f row.+1) (g row) col.-1.
 
     Lemma valP3 n j: ((csum p j) <= n < csum p j.+1)
                      -> val n = (if n - csum p j == 0
                                 then f j
-                                else nth (f j) (g j) (n - csum p j).-1).
+                                else nth (f j.+1) (g j) (n - csum p j).-1).
     Proof. by move => /(@csumI0 p n j) H1; rewrite  /val /decode0 H1. Qed.
     
     Lemma valP1 n j: n = csum p j -> val n = f j.
@@ -184,8 +184,22 @@ Section walk.
       by move: (valP3 H2); rewrite -H1 subnn /=.
     Qed.
     
+    Lemma valP1' n j: 
+      n = csum p j ->
+      if (n.+1 < csum p j.+1) then val n.+1 = nth (f j.+1) (g j) 0
+      else val n.+1 = f j.+1.
+    Proof.
+      move => H1.
+      have H2: ((csum p j) <= n < csum p j.+1) by rewrite H1 csumP; lia.
+      move: (H2) => /(@csumI0 p n j) H2'.
+      have H3: (decode0 p n = (j,0)) by rewrite /decode0 H2' -H1 subnn. 
+      move: H3 => /decode_next.
+      case H4: (n.+1 < csum p j.+1);
+        by move: (@csumI1 p n j H2) => /[!H4] H5 H6;rewrite /val H6 /=. 
+    Qed.
+    
     Lemma valP2 n j: ((csum p j) < n < csum p j.+1)
-      -> val n = nth (f j) (g j) (n - (csum p j)).-1.
+      -> val n = nth (f j.+1) (g j) (n - (csum p j)).-1.
     Proof.
       move => H1. 
       have H2: ((csum p j) <= n < csum p j.+1) by lia.
@@ -202,17 +216,18 @@ Section walk.
       pose proof (@allL_nth T R (g j) (f j) (f j.+1) (f j)) as H3.
       move: H1 => /(_ j) /H3 [H3' [H4 H5]].
       clear H3.
-      case H6: (csum p j == n).
-      + move: H6 => /eqP H6.
-        have H7: (val n) = f j. by apply: valP1.
-        (** we have to explore n.+1 **)
-        admit.
+      case H6: (n == csum p j).
+      + move: H6 => /eqP /[dup] H6 /valP1' H7. 
+        have H8: (val n) = f j by apply: valP1.
+        case H9: (n.+1 < csum p j.+1).
+        ++ by rewrite H9 in H7;rewrite H7 H8.
+        ++ admit. 
       + have H7: ((csum p j ) < n < csum p j.+1) by lia.
-        have H8: (val n) = nth (f j) (g j ) (n - (csum p j)).-1 
+        have H8: (val n) = nth (f j.+1) (g j ) (n - (csum p j)).-1 
           by apply: valP2.
         admit.
     Admitted.
-
+    
 
   End cum_sum1.
   
