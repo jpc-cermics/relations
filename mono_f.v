@@ -71,30 +71,27 @@ Section walk.
 
     Definition csumI n := (ex_minn (csum_up n)).-1.
 
-    Theorem exists_sandwich n j:
-      j = csumI n -> ((csum j) <= n < csum j.+1).
+    Lemma exists_sandwich n:
+      (csum (csumI n)) <= n < csum (csumI n).+1.
     Proof.
-      rewrite /csumI  => H0.
+      pose j:= (ex_minn (csum_up n)).-1; rewrite /csumI -/j. 
       case H1: (n <= p 0).
       + have H2: (ex_minn (csum_up n)).-1 = 0
           by case: ex_minnP => m _ /(_ 1);rewrite /csum add0n ltnS H1;lia.
-        by rewrite H0 H2 /= add0n ltnS H1.
+        by rewrite /j H2 /= add0n ltnS H1.
       + move: H1;rewrite leqNgt => /negP/negP H1.
         pose  k0 := (ex_minn (csum_up n)).
-        have H2: ~(0 = k0) by rewrite /k0;case: ex_minnP  => k H3 ?;move => H5;rewrite -H5 in H3.
+        have H2: ~(0 = k0) 
+          by rewrite /k0;case: ex_minnP  => k H3 ?;move => H5;rewrite -H5 in H3.
         have H3: 0 < k0 by lia.
         have H4: k0.-1.+1 = k0 by lia.
-        move: H3 H0 H4;rewrite /k0;case: ex_minnP => // k H3 H4 H5 -> ->.
+        move: H3 H4;rewrite /j /k0;case: ex_minnP => // k H3 H5 H6 ->. 
         rewrite H3 andbT. 
-        have H7: n < csum  k.-1 -> False by move => /H4 H7; lia.
+        have: n < csum  k.-1 -> False by move => /H5 H4; lia.
         by lia.
     Qed.
     
-    Theorem exists_sandwich1 n:
-      (csum (csumI n)) <= n < csum (csumI n).+1.
-    Proof. by apply: exists_sandwich. Qed.
-    
-    Theorem uniq_sandwich n j k:
+    Lemma uniq_sandwich n j k:
       ((csum j) <= n < csum j.+1) -> ((csum k) <= n < csum k.+1) ->  j = k.
     Proof.
       move => H1 H2.
@@ -111,9 +108,12 @@ Section walk.
     
     Lemma csumI0 n j: ((csum j) <= n < csum j.+1) -> (csumI n) = j.
     Proof.
-      move => H1;pose proof (exists_sandwich1 n) as H2.
+      move => H1;pose proof (exists_sandwich n) as H2.
       by apply: (@uniq_sandwich n (csumI n) j).
     Qed.
+    
+    Lemma csumI0' n j: ((csum j) < n < csum j.+1) -> (n - (csum j)).-1 < (p j).
+    Proof. by rewrite csumP => H1;lia. Qed.
 
     Lemma csumI1 n j: ((csum j) <= n < csum j.+1)
                       -> if (n.+1 < csum j.+1) then (csumI n.+1) = j
@@ -122,9 +122,9 @@ Section walk.
       move => /andP [H1 H2].
       case H3: (n.+1 < csum j.+1).
       + have H4: (csum j) <= n.+1 < (csum j.+1) by lia.
-        pose proof (exists_sandwich1 n.+1) as H5.
+        pose proof (exists_sandwich n.+1) as H5.
         by apply: (@uniq_sandwich n.+1 (csumI n.+1) j).
-      + pose proof (exists_sandwich1 n.+1) as H5.
+      + pose proof (exists_sandwich n.+1) as H5.
         have H6: csum j.+1 <= n.+1 by lia.
         have H7: n.+1 < csum j.+2 by rewrite csumP;lia.
         have H8: csum j.+1 <= n.+1 < csum j.+2 by rewrite H6 H7.
@@ -133,7 +133,7 @@ Section walk.
     
     Lemma csumI2 n: if (n.+1 < csum (csumI n).+1) then (csumI n.+1) = (csumI n) 
                     else (csumI n.+1) = (csumI n).+1.
-    Proof. by  move: (exists_sandwich1 n) => /csumI1. Qed.
+    Proof. by  move: (exists_sandwich n) => /csumI1. Qed.
     
     Lemma csumI3 n: n.+1 = csum (csumI n).+1 -> (csumI n.+1) = (csumI n).+1.
     Proof.
@@ -150,7 +150,7 @@ Section walk.
       -> (decode0 n.+1) = if (n.+1 < csum j.+1) then (j, k.+1) else (j.+1,0).
     Proof.
       rewrite /decode0 => -[H1 H2].
-      pose proof (exists_sandwich1 n) as H3.
+      pose proof (exists_sandwich n) as H3.
       move: H2 H3;rewrite H1 => H2 /[dup] /andP [H3 H3'] /csumI1. 
       case H4: (n.+1 < csum j.+1). 
       + move => ->. 
@@ -160,7 +160,6 @@ Section walk.
         by move: H5 => /eqP H5;rewrite -H5 subnn.
     Qed.
     
-
   End cum_sum.
   
   Section cum_sum1.
@@ -198,7 +197,7 @@ Section walk.
       (forall n, allL R (g n) (f n) (f n.+1))  -> forall n, R ((val n), (val n.+1)).
     Proof.
       move => H1 n.
-      move: (@exists_sandwich1 p n) => H2.
+      move: (@exists_sandwich p n) => H2.
       pose j:= (csumI p n);rewrite -/j in H2.
       pose proof (@allL_nth T R (g j) (f j) (f j.+1) (f j)) as H3.
       move: H1 => /(_ j) /H3 [H3' [H4 H5]].
