@@ -210,6 +210,14 @@ Section Seq_utilities.
   Lemma head_rcons s t t': head t (rcons s t') = head t' s.
   Proof. by elim:s.  Qed.
 
+  Lemma nth_dv s x y i: i < size s -> nth x s i = nth y s i.
+  Proof.
+    elim/last_ind: s x y i => [//| s z Hr x y i].
+    rewrite size_rcons ltnS leq_eqVlt 2!nth_rcons => /orP [/eqP <- | H1].
+    by rewrite eq_refl ltnn.
+    by rewrite H1;apply: Hr.
+  Qed.
+
 End Seq_utilities.
 
 Section allset.
@@ -616,7 +624,7 @@ Section allset_Lifted.
       /\ (forall n, n.+1 < size st -> R ((nth z st n),(nth z st n.+1)))
       /\ R (nth x st (size st).-1, y).
   Proof. by rewrite allL_split (@Lift_in2nth T R st z) nth0 -nth_last. Qed.
-  
+
   Lemma allL_cat R st st' x y z: 
     allL R ((rcons st y) ++ st') x z <-> allL R st x y && allL R st' y z.
   Proof.

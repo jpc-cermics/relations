@@ -16,7 +16,7 @@ From mathcomp Require Import all_boot seq order boolp classical_sets.
 From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
 
-From RL Require Import seq1 rel. 
+From RL Require Import seq1 seq2 rel. 
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -124,11 +124,16 @@ Section walk.
       + have H4: (csum j) <= n.+1 < (csum j.+1) by lia.
         pose proof (exists_sandwich n.+1) as H5.
         by apply: (@uniq_sandwich n.+1 (csumI n.+1) j).
-      + pose proof (exists_sandwich n.+1) as H5.
-        have H6: csum j.+1 <= n.+1 by lia.
-        have H7: n.+1 < csum j.+2 by rewrite csumP;lia.
-        have H8: csum j.+1 <= n.+1 < csum j.+2 by rewrite H6 H7.
-        by apply: (@uniq_sandwich n.+1 (csumI n.+1) j.+1).
+      + have H6': n.+1 = csum j.+1 by lia.
+        by apply: csumI0; rewrite H6' [csum j.+2]csumP; lia.
+    Qed.
+
+    Lemma csumI1' n j: n= (csum j) -> (n.+1 < csum j.+1) = false -> (p j)=0.
+    Proof.
+      move => H1 H2.
+      have H3: n < csum j.+1 by rewrite H1;apply: csum_inc.
+      have: n.+1 = csum j.+1 by lia.
+      by rewrite csumP -H1;lia.
     Qed.
     
     Lemma csumI2 n: if (n.+1 < csum (csumI n).+1) then (csumI n.+1) = (csumI n) 
@@ -171,17 +176,18 @@ Section walk.
       let (row,col):= decode0 p n in 
       if col == 0 then (f row) else nth (f row.+1) (g row) col.-1.
 
-    Lemma valP3 n j: ((csum p j) <= n < csum p j.+1)
+    Lemma valP n j: ((csum p j) <= n < csum p j.+1)
                      -> val n = (if n - csum p j == 0
                                 then f j
                                 else nth (f j.+1) (g j) (n - csum p j).-1).
     Proof. by move => /(@csumI0 p n j) H1; rewrite  /val /decode0 H1. Qed.
     
+    (** the possible cases for (val n) (val n.+1) *)
     Lemma valP1 n j: n = csum p j -> val n = f j.
     Proof.
       move => H1.
       have H2: ((csum p j) <= n < csum p j.+1) by rewrite H1 csumP; lia.
-      by move: (valP3 H2); rewrite -H1 subnn /=.
+      by move: (valP H2); rewrite -H1 subnn /=.
     Qed.
     
     Lemma valP1' n j: 
@@ -197,38 +203,76 @@ Section walk.
       case H4: (n.+1 < csum p j.+1);
         by move: (@csumI1 p n j H2) => /[!H4] H5 H6;rewrite /val H6 /=. 
     Qed.
+
+    Lemma valP1'' n j: 
+      n = csum p j -> (n.+1 < csum p j.+1) = false -> (g j) = [::]. 
+    Proof.
+      by move => H1 H2;move: (csumI1' H1 H2);rewrite /p;apply: size0nil.
+    Qed.
     
-    Lemma valP2 n j: ((csum p j) < n < csum p j.+1)
+    Lemma valP2 n j: 
+      ((csum p j) < n < csum p j.+1)
       -> val n = nth (f j.+1) (g j) (n - (csum p j)).-1.
     Proof.
       move => H1. 
       have H2: ((csum p j) <= n < csum p j.+1) by lia.
-      move: (valP3 H2).
+      move: (valP H2).
       by have ->: (n - csum p j == 0)= false by lia.
     Qed.
 
+    Lemma valP2' n j: ((csum p j) < n < csum p j.+1)
+      -> val n.+1 = if (n.+1 < csum p j.+1) then 
+                     nth (f j.+1) (g j) (n.+1 - (csum p j)).-1
+                   else (f j.+1).
+    Proof.
+      move => H1. 
+      have H8: (val n) = nth (f j.+1) (g j ) (n - (csum p j)).-1 
+        by apply: valP2.
+      case H9: (n.+1 < csum p j.+1).
+      + by have H10: (val n.+1) = nth (f j.+1) (g j ) (n.+1 - (csum p j)).-1
+          by apply: valP2; lia.
+      + have H10: (n.+1 = csum p j.+1) by lia.
+        by apply: valP1.
+    Qed.
+    
     Lemma test (R: relation T): 
       (forall n, allL R (g n) (f n) (f n.+1))  -> forall n, R ((val n), (val n.+1)).
     Proof.
       move => H1 n.
       move: (@exists_sandwich p n) => H2.
       pose j:= (csumI p n);rewrite -/j in H2.
-      pose proof (@allL_nth T R (g j) (f j) (f j.+1) (f j)) as H3.
+      pose proof (@allL_nth T R (g j) (f j) (f j.+1) (f j.+1)) as H3.
       move: H1 => /(_ j) /H3 [H3' [H4 H5]].
+      move: H4 => /(_ (n - csum p j).-1) H4.
       clear H3.
       case H6: (n == csum p j).
-      + move: H6 => /eqP /[dup] H6 /valP1' H7. 
-        have H8: (val n) = f j by apply: valP1.
-        case H9: (n.+1 < csum p j.+1).
-        ++ by rewrite H9 in H7;rewrite H7 H8.
-        ++ admit. 
-      + have H7: ((csum p j ) < n < csum p j.+1) by lia.
-        have H8: (val n) = nth (f j.+1) (g j ) (n - (csum p j)).-1 
+      + move: H6 => /eqP /[dup] H6 /valP1 ->.
+        case H9: (n.+1 < csum p j.+1);move: H6 => /[dup] H6' /valP1'/[!H9] -> //. 
+        have H7: (g j)=[::] by apply: (valP1'' H6' H9).
+        by move: H5;rewrite H7 /=.
+      + have H7: ((csum p j ) < n < csum p j.+1) by lia. 
+        have H8: (val n) = nth (f j.+1) (g j ) (n - (csum p j)).-1
           by apply: valP2.
-        admit.
-    Admitted.
+        case H11: (n.+1 < csum p j.+1). 
+        ++  move: (valP2' H7) => /[!H11] H10.
+           rewrite H8 H10.
+           have <-: (n - csum p j).-1.+1 = (n.+1 - csum p j).-1 by lia. 
+           by apply: H4;move: H11;rewrite csumP [(p j)]/p; lia.
+        ++  move: (valP2' H7) => /[!H11] H10.
+           rewrite H8 H10.
+           have H12: (n.+1 = csum p j +(p j).+1) by rewrite -csumP;lia.
+           have H13: (n - csum p j).-1 = (p j).-1 by lia.
+           have H14: (n - csum p j).-1 = (size (g j)).-1
+             by rewrite [(p j)]/p in H13.
+           have H15: nth (f j.+1) (g j) (n - csum p j).-1 
+                     = nth (f j) (g j) (n - csum p j).-1 .
+           apply: nth_dv.
+           case H15: ((p j) == 0). 
+            +++ by move: H15 => /eqP H15;rewrite csumP H15 in H7;lia.
+            +++ move: H15 => /neq0_lt0n. rewrite H14 [(p j)]/p. lia.
+                by rewrite H15 H14. 
+    Qed.
     
-
   End cum_sum1.
   
   Section encode_decode. 

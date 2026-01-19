@@ -144,14 +144,6 @@ Section Seq1_plus.
     by split;[ apply Impl | move => /Impl H2; rewrite revK in H2].
   Qed.
   
-  Lemma nth_dv s x y i: i < size s -> nth x s i = nth y s i.
-  Proof.
-    elim/last_ind: s x y i => [//| s z Hr x y i].
-    rewrite size_rcons ltnS leq_eqVlt 2!nth_rcons => /orP [/eqP <- | H1].
-    by rewrite eq_refl ltnn.
-    by rewrite H1;apply: Hr.
-  Qed.
-  
   Lemma uniq_subseq s s' x: uniq (x :: s) -> subseq s' s -> uniq (x:: s').
   Proof.
     rewrite 2!cons_uniq => /andP [H2 H3] /[dup] H4 /subseqP [m _ H5]. 
