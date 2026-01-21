@@ -27,19 +27,34 @@ Unset Printing Implicit Defensive.
 Local Open Scope classical_set_scope.
 
 Section nat_util. 
-
+  
   (** * we can use lia with mathcomp thanks to zify *)
+  Lemma P4 n i: i.+1 < n.+1 -> i < n. Proof. by lia. Qed.
+  Lemma P5 n i: i < n.+1 -> (i == n) = false -> i < n. Proof. by lia.  Qed.
   Lemma P6 n: n.+1 < n = false. Proof. by lia. Qed.
+  Lemma P7 n i: i < n -> (i.+1 < n) = false -> i.+1 = n. Proof. by lia. Qed.
   Lemma P8 n: (n.+1 == n) = false. Proof. by lia. Qed.
   Lemma P9 n: n.+2 < n = false. Proof. by lia. Qed.
   Lemma P10 n: n.+2 == n = false. Proof. by lia. Qed. 
-  Lemma P4 n i: i.+1 < n.+1 -> i < n. Proof. by lia. Qed.
-  Lemma P5 n i: i < n.+1 -> (i == n) = false -> i < n. Proof. by lia.  Qed.
-  Lemma P7 n i: i < n -> (i.+1 < n) = false -> i.+1 = n. Proof. by lia. Qed.
   Lemma P11 n i: i < n -> i.+1 = n -> (i = n.-1)%N. Proof. by lia. Qed.
+
+  Lemma P4' n i: i.+1 < n.+1 <-> i < n. 
+  Proof. by rewrite ltnS. Qed. 
+  
+  Lemma P5' n i: i < n.+1 -> (i == n) = false -> i < n.
+  Proof. by rewrite leq_eqVlt eqSS => /orP [-> // | ? _];apply: P4.
+  Qed.
   
   Lemma P6' n : n.+1 < n = false.
   Proof. by apply/negP => H6;move: (leq_ltn_trans (leqnSn n) H6);rewrite ltnn. Qed.
+
+  Lemma P7' n i: i < n -> (i.+1 < n) = false -> i.+1 = n.
+  Proof.
+    move => H1 /negP/negP H2; move: H2; rewrite -ltnNge => H2.
+    case H3: (i.+1 == n);first by move: H3 =>/eqP H3.
+    move: H2;rewrite ltnS leq_eqVlt ltnS => /orP [/eqP -> // | H2].
+    by move: (leq_ltn_trans H2 H1);rewrite ltnn.
+  Qed.
   
   Lemma P8' n: (n.+1 == n) = false.
   Proof. by apply/negP => /eqP H0;move: (ltnSn n);rewrite -{1}H0 ltnn. Qed.
@@ -50,21 +65,6 @@ Section nat_util.
   
   Lemma P10' n: n.+2 == n = false.
   Proof. by elim: n . Qed.
-  
-  Lemma P4' n i: i.+1 < n.+1 -> i < n. 
-  Proof. by rewrite ltnS. Qed. 
-
-  Lemma P5' n i: i < n.+1 -> (i == n) = false -> i < n.
-  Proof. by rewrite leq_eqVlt eqSS => /orP [-> // | ? _];apply: P4.
-  Qed.
-  
-  Lemma P7' n i: i < n -> (i.+1 < n) = false -> i.+1 = n.
-  Proof.
-    move => H1 /negP/negP H2; move: H2; rewrite -ltnNge => H2.
-    case H3: (i.+1 == n);first by move: H3 =>/eqP H3.
-    move: H2;rewrite ltnS leq_eqVlt ltnS => /orP [/eqP -> // | H2].
-    by move: (leq_ltn_trans H2 H1);rewrite ltnn.
-  Qed.
   
   Lemma P11': forall n i, i < n -> i.+1 = n -> (i = n.-1).
   Proof.
@@ -250,6 +250,58 @@ Section Seq1_plus.
                            /\ ~ ( x = y).
   Proof. by rewrite -2!uniq_nth2 -uniq_nth3 uniq_crc. Qed.
 
+  (* 
+  Variables (a1 b1 c1 d1 e1 f1 g1 h1 i1 j1 k1 l1 m1 x y z:T).
+  Definition st1:= [:: a1; b1; c1].
+  Definition st2 : seq T:= [::].
+
+  Compute  (x,(nth y st1 0)).
+  Compute  ((nth z (x::(rcons st1 y)) 0),(nth z (x::(rcons st1 y)) 0.+1)).
+  
+  Compute  ((nth x st1 0),(nth y st1 0.+1)).
+  Compute  ((nth z (x::(rcons st1 y)) 1),(nth z (x::(rcons st1 y)) 1.+1)).
+
+  Compute  ((nth x st1 1),(nth y st1 1.+1)).
+  Compute  ((nth z (x::(rcons st1 y)) 2),(nth z (x::(rcons st1 y)) 2.+1)).
+  
+  Compute  ((nth x st1 2),(nth y st1 2.+1)).
+  Compute  ((nth z (x::(rcons st1 y)) 3),(nth z (x::(rcons st1 y)) 3.+1)).
+  
+  Compute  ((nth z (x::(rcons st2 y)) 0),(nth z (x::(rcons st2 y)) 0.+1)).
+   *)
+  
+  Lemma nth_L1 st x y z n:
+      0 < n <= size st -> (nth y st n) = (nth z (x::(rcons st y)) n.+1).
+  Proof.
+    move => /andP [H1 H2] /=;case H3: (n == (size st)). 
+    by move: H3 => /eqP ->;rewrite nth_rcons ltnn eq_refl;apply: nth_default.
+    by (have H4: n < size st by lia);rewrite nth_rcons H4;apply: nth_dv.
+  Qed.
+
+  Lemma nth_L2 st x y z : x = (nth z (x::(rcons st y)) 0).
+  Proof. by []. Qed.
+  
+  Lemma allL_nth' R st x y z:
+    allL R st x y 
+    <-> (forall n, n <= size st -> R ((nth z (x::(rcons st y)) n), (nth z (x::(rcons st y)) n.+1))).
+  Proof. 
+    rewrite (allL_nth R st x y z).
+    split. 
+    + move => [H4 [H5 H6]] n H7.
+      case H8: (n == 0). 
+      ++ move: H8 => /eqP -> /=.
+         rewrite nth_rcons.
+         case H8: (0 < size st).
+         by have <-: (nth y st 0 = nth z st 0) by apply: nth_dv.
+         (have: size st = 0 by lia);move => /size0nil H9.
+         by move: H4;rewrite H9.
+      ++ have: 0 < n <= size st by lia.
+         move => /[dup] H9 /(@nth_L1 st x y z) <-.
+         case H10: (0 < n.-1).
+         +++ 
+
+  Admitted.
+        
 End Seq1_plus. 
 
 Section allL_uniq.
