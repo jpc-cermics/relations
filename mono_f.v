@@ -234,7 +234,8 @@ Section walk.
       + have H10: (n.+1 = csum p j.+1) by lia.
         by apply: valP1.
     Qed.
-    
+
+
     Lemma test (R: relation T): 
       (forall n, allL R (g n) (f n) (f n.+1))  -> forall n, R ((val n), (val n.+1)).
     Proof.
