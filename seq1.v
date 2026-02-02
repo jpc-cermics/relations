@@ -12,6 +12,8 @@
 (******************************************************************************)
 (* some operations on sequences which are usefull for dealing with graph paths*)
 (* when the graph is described by a relation (relation as sets (set T*T))     *)
+(* a node path is a sequence (seq T)                                          *)
+(* an edge path is a sequence of pairs (seq T*T)                              *)
 (*    p [\in] X    ==  all the elements of a node path p are in X               *)
 (*    spt [\in] R  ==  all the elements of an edge path spt satisfy relation R  *)
 (*    p [Suc\in] R ==  the successive elements of the node paths p satisfy      *)
@@ -46,6 +48,7 @@ Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_boot order.
 From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
+From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
 
 From RL Require Import rel. 
@@ -107,11 +110,9 @@ Definition allL (T: Type) (R:relation T) st x y := (x::(rcons st y)) [L\in] R.
 
 Section Seq_utilities.
   (** * some utilities for sequences *)
-
-  (* XXXX headI permet de passer d'un rcons a un cons *)
-
+  
   Context {T : Type}.
-  Implicit Types (T : Type) (s p q: seq T) (n: nat).
+  Implicit Types (s p q: seq T) (n: nat).
   
   Lemma seq_rc s: (0 < size s) -> exists s' x, s = (rcons s' x).
   Proof. by elim:s => [//| x s _ _];exists (belast x s), (last x s);rewrite lastI. Qed.
@@ -224,7 +225,7 @@ Section allset.
   (** * utilities for st [\in] X, X: set T *)
 
   Context {T : Type}.
-  Implicit Types (T : Type) (X Y: set T) (st: seq T) (x:T).
+  Implicit Types (X Y: set T) (st: seq T) (x:T).
     
   Lemma allsetP X st x: X x /\ st [\in] X <-> (x \in X) && (st [\in] X).
   Proof. by split => [[/mem_set -> ->] // | /andP [/set_mem H1 H2]].  Qed.
@@ -244,7 +245,7 @@ Section allset.
   Lemma allset_rcons X st x: (rcons st x) [\in] X <-> st [\in] X /\ X x.
   Proof. by rewrite all_rcons andC allsetP.  Qed. 
     
-  Lemma allset_rev X st: st [\in] X <->  (rev st) [\in] X.
+  Lemma allset_rev X st: st [\in] X <-> (rev st) [\in] X.
   Proof. by rewrite all_rev. Qed. 
   
   Lemma allset_cat X st st': (st++st') [\in] X <-> st [\in] X /\ st' [\in] X.
@@ -263,7 +264,7 @@ End allset.
 Section allset2.
   (** * extra utilities for spt [\in] R, R: relation T *)
   Context {T: Type}.
-  Implicit Types (T : Type) (R: relation T) (X Y: set T) (spt: seq (T*T)) (x y:T).
+  Implicit Types (R: relation T) (X Y: set T) (spt: seq (T*T)) (x y:T).
 
   Lemma allset_inv R (spt: seq (T*T)): spt [\in] R <-> (map (fun tt => (tt.2,tt.1)) spt) [\in] R^-1. 
   Proof. by elim:spt  => [ // | [x y] spt Hr];rewrite map_cons !allset_cons Hr. Qed.
@@ -423,7 +424,7 @@ Section Lift_in_facts.
   (** * properties of [L\in] *)
 
   Context {T: Type}.
-  Implicit Types (T : Type) (R S: relation T) (X Y: set T) (st: seq T) (x y z:T).
+  Implicit Types (R S: relation T) (X Y: set T) (st: seq T) (x y z:T).
 
   Lemma Lift_in_c R st x: (x::st) [L\in] R -> st [L\in] R.
   Proof. by elim: st x => [// | y st Hr x];rewrite Lift_cc allset_cons => -[_ ?] //. Qed.
@@ -677,6 +678,75 @@ Section allset_Lifted.
     by have <- : last x s = last z s by apply: last_dv;apply:H1. 
   Qed.
 
+  Lemma nth_L3 st y z : nth y st 0 = (nth z (rcons st y) 0).
+  Proof. 
+    case H1: (size st == 0);first by move: H1 => /eqP/size0nil -> /=.
+    have H2: 0 < size st by lia.
+    rewrite /= nth_rcons H2. by apply: nth_dv.
+  Qed.
+  
+  Lemma nth_L6 n st y z:
+    n < (size st) -> nth z (rcons st y) n = nth y st n.
+  Proof. move => H0;rewrite nth_rcons H0;by apply: nth_dv. Qed.
+
+  Lemma nth_L7 n st y z:
+    n = (size st) ->  nth z (rcons st y) n = y.
+  Proof. by move => ->;rewrite nth_rcons ltnn eq_refl /=. Qed.
+  
+  (** a more compact equivalence *)
+  Lemma allL_nth' R st x y z:
+    allL R st x y 
+    <-> (forall n, n <= size st -> R ((nth z (x::(rcons st y)) n), (nth z (x::(rcons st y)) n.+1))).
+  Proof. 
+    rewrite (allL_nth R st x y z).
+    split. 
+    + move => [H4 [H5 H6]] n H7.
+      case H8: (n == 0); first by move: H8 => /eqP -> /=; rewrite -nth_L3.
+      case H9: ( n == (size st)).
+      ++ rewrite /=; move: H9 => /eqP/[dup] H9 /(@nth_L7 n st y z) ->.
+         have H10: size st = (size st).-1.+1 by lia.
+         have H12: (size st).-1 < size st by lia.
+         rewrite H9 H10 /= nth_rcons H12.
+         have ->: (nth z st (size st).-1) = (nth x st (size st).-1)
+           by apply: nth_dv.
+         exact.
+      ++ rewrite /=.
+         have H10: n = n.-1.+1 by lia.
+         rewrite {1}H10 /=.
+         have H11:  n.-1.+1 < size st by lia.
+         move: H5 => /(_ n.-1) H5.
+         move: H11 => /H5 H11.
+         rewrite -H10 in H11.
+         rewrite 2!nth_rcons. 
+         have H12: n < size st by lia.
+         have H13: n.-1 < size st by lia.
+         by rewrite H12 H13.
+    + move => H1.
+      split. 
+      by move: H1 => /(_ 0) /= H1;rewrite (nth_L3 st y z);apply: H1.
+      split.
+      ++ move => n H2.
+         move: H1 => /(_ n.+1) H1.
+         have H3: n < size st by lia.
+         move: (H3) => /[dup] /(@nth_L6 n st y z) H3' /H1. 
+         move: (H2) => /(@nth_L6 n.+1 st y z) H2'.
+         rewrite /= H3' H2'.
+         have H5: nth y st n = nth z st n by apply: nth_dv. 
+         have H6: nth y st n.+1 = nth z st n.+1 by apply: nth_dv. 
+         by rewrite H5 H6.
+      ++ move: H1 => /(_ (size st)) H1.
+         (have: size st <= size st by lia) => {}/H1 /=.
+         rewrite nth_L7;last by exact. 
+         
+         case H1: (size st == 0);first by move: H1 => /eqP /size0nil -> /=.
+         have H2: 0 < size st by lia.
+         have H3: size st = (size st).-1.+1 by lia.
+         have H4: (size st).-1 < size st by lia.
+         rewrite 1!H3 /= nth_rcons H4.
+         have H5: nth z st (size st).-1 = nth x st (size st).-1 by apply: nth_dv.
+         by rewrite H5.
+  Qed.
+  
 End allset_Lifted.
 
 Section Suc_as_Lift. 

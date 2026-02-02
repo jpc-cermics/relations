@@ -567,7 +567,7 @@ Section Main_Result.
   Proof.
     move => x y; split.
     by apply contraPP => /contrapT H1; apply C_P8.
-    by apply contraPP => /D_P15 H1;rewrite notP.
+    by apply contraPP => /D_P15 H1;rewrite not_notP.
   Qed.
 
   (** * This is the main result of the paper csbr *)

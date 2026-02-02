@@ -249,7 +249,7 @@ Section Seq1_plus.
                            /\ (forall i j, i < j -> j < size s -> ~ (nth z s j = nth z s i))
                            /\ ~ ( x = y).
   Proof. by rewrite -2!uniq_nth2 -uniq_nth3 uniq_crc. Qed.
-
+  
   (* 
   Variables (a1 b1 c1 d1 e1 f1 g1 h1 i1 j1 k1 l1 m1 x y z:T).
   Definition st1:= [:: a1; b1; c1].
@@ -269,38 +269,6 @@ Section Seq1_plus.
   
   Compute  ((nth z (x::(rcons st2 y)) 0),(nth z (x::(rcons st2 y)) 0.+1)).
    *)
-  
-  Lemma nth_L1 st x y z n:
-      0 < n <= size st -> (nth y st n) = (nth z (x::(rcons st y)) n.+1).
-  Proof.
-    move => /andP [H1 H2] /=;case H3: (n == (size st)). 
-    by move: H3 => /eqP ->;rewrite nth_rcons ltnn eq_refl;apply: nth_default.
-    by (have H4: n < size st by lia);rewrite nth_rcons H4;apply: nth_dv.
-  Qed.
-
-  Lemma nth_L2 st x y z : x = (nth z (x::(rcons st y)) 0).
-  Proof. by []. Qed.
-  
-  Lemma allL_nth' R st x y z:
-    allL R st x y 
-    <-> (forall n, n <= size st -> R ((nth z (x::(rcons st y)) n), (nth z (x::(rcons st y)) n.+1))).
-  Proof. 
-    rewrite (allL_nth R st x y z).
-    split. 
-    + move => [H4 [H5 H6]] n H7.
-      case H8: (n == 0). 
-      ++ move: H8 => /eqP -> /=.
-         rewrite nth_rcons.
-         case H8: (0 < size st).
-         by have <-: (nth y st 0 = nth z st 0) by apply: nth_dv.
-         (have: size st = 0 by lia);move => /size0nil H9.
-         by move: H4;rewrite H9.
-      ++ have: 0 < n <= size st by lia.
-         move => /[dup] H9 /(@nth_L1 st x y z) <-.
-         case H10: (0 < n.-1).
-         +++ 
-
-  Admitted.
         
 End Seq1_plus. 
 
@@ -308,9 +276,8 @@ Section allL_uniq.
   (** * The aim of this section is to prove allL_uniq *)
 
   Context (T:eqType).
-
   Implicit Types  (R: relation T) (s: seq T) (x y z : T).
-
+  
   Lemma last_in_drop s z x:
     z \in s -> ~ (z = (last x s)) -> (last x s) \in (drop ((index z s).+1) s).
   Proof.

@@ -211,7 +211,7 @@ Section Infinite_paths_X.
   Proof.
     move => H1 H0.
     have H2:  ~ (iic (Asym R)) -> ~ (iic (@Restrict' T X (Asym R)))
-      by apply contraPP;rewrite notE notE; apply: test67.
+      by apply contraPP;rewrite not_notE not_notE; apply: test67.
     move: H1 => /H2 H1.
     by apply: (notiic_rloop_sub H0 H1).
   Qed.
@@ -407,7 +407,7 @@ Section Paper.
           -> exists S1, S1 \in C /\ S [<=] S1 /\ ~ (s \in (sval S1)).
       Proof.
         move: Hc => H1 S s H2 H3. 
-        apply contraPP;rewrite not_existsP 2!notE inP /Sinf => H4;exists S.
+        apply contraPP;rewrite not_existsP 2!not_notE inP /Sinf => H4;exists S.
         split => [// | ];split => [// |A ? ?].
         by move: H4 => /(_ A) /not_andP [? //|/not_andP [// | /contrapT ?]].
       Qed.
@@ -986,7 +986,7 @@ Section Paper.
     Proof.
       move => Smax x H1. 
       move: (fact13 Smax) => /forallNP /(_ x) H2.
-      have H3: ~ (x \in Sx) <-> (x \in Sm) \/ (x \in Mono#Sm) by rewrite inP not_andE 2!notP.
+      have H3: ~ (x \in Sx) <-> (x \in Sm) \/ (x \in Mono#Sm) by rewrite inP not_andE 2!not_notP.
       by move: H2 => /H3 [H2 | H2].
     Qed.
     
