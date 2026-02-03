@@ -1624,26 +1624,16 @@ Section Infinite_path.
     by split;[rewrite J2 J1|split;[rewrite J2 J1|rewrite K2 K1]].
   Qed.
   
-(** 
-  Lemma Asym2P6: 
-    (iic (Asym R.+)) -> exists k: nat -> T, exists l: nat -> seq T, exists l': nat -> nat -> T,
-        forall n, (forall i, i < size (l n) -> R ((l' n i), l' n i.+1)
-                                    /\ ~ ((l' n i) = (l' n i.+1))
-                                    /\ ~ (k n = l' n i) /\ ~ (k n.+1 =  l' n i))
-             /\ allLu R (l n) (k n) (k n.+1) /\ ~ R.+ (k n.+1, k n) /\ uniq ((l n) ++ (l n.+1)).
-  Proof.
-    move => /Asym2P5 [k [l H0]]. 
-    exists k; exists l; exists (fun n p => nth (k n.+1) (l n) p).  
-    move => n.
-    split; last exact.
-    move => i H1.
-    move: H0 => /(_ n) [[H0 H0'] _].
-    pose proof (@allL_nth' T R (l n) (k n) (k n.+1) H0 i H1) as H2.
-    pose proof (@uniq_nth T (l n) (k n) (k n.+1) H0' i H1) as H3.
-    pose proof (@uniq_nth' T (l n) (k n) (k n.+1) H0' i H1) as H4.
-    exact. 
-  Qed.
+  Lemma Asym2P6 (k: nat -> T) (l: nat -> seq T) z n: 
+    allL R (l n) (k n) (k n.+1)
+    <-> forall j, j <= size (l n) ->
+           R ((nth z ((k n)::(rcons (l n) (k n.+1))) j),
+               (nth z ((k n)::(rcons (l n) (k n.+1))) j.+1)).
+  Proof. by rewrite (@allL_nth' T R (l n) (k n) (k n.+1) z). Qed.
 
-  *)
+  Lemma Asym2P7 (k: nat -> T) (l: nat -> seq T): 
+    (forall n, allL R (l n) (k n) (k n.+1))
+    -> forall n, R ((@val T k l n), (@val T k l n.+1)).
+  Proof. by move => /(@test T k l R). Qed.
 
 End Infinite_path. 
