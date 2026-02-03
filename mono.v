@@ -1624,6 +1624,22 @@ Section Infinite_path.
     by split;[rewrite J2 J1|split;[rewrite J2 J1|rewrite K2 K1]].
   Qed.
   
+  Lemma Asym2P6' (k: nat -> T) (l: nat -> seq T): 
+    (forall n, allLu R (l n) (k n) (k n.+1) /\ ~ R.+ (k n.+1, k n) /\ uniq ((l n) ++ (l n.+1)))
+    -> ( forall n, forall n', n < n' -> uniq ((l n) ++ (l n'))).
+  Proof.
+    move => H0 n n' H1.
+    move: H0 => /[dup] /(_ n) [[H2 H3] [H4 H5]] /(_ n') [[H6 H7] [H8 H9]].
+    case C1: (n' == n.+1);first by move: C1 => /eqP ->. 
+    have H10: n.+1 < n' by lia.
+    move: H3 H7;rewrite 2!uniq_crc => -[_ [_ [H3 _]]] -[_ [_ [H7 _]]].
+    rewrite uniq_catE H3 H7. split. exact. split. exact.
+    move => x H11 H12.
+    have H13: R.+ (k n.+2, x). admit.
+    have H14: R.+ (x, k n.+1). admit.
+    have H15: R.+ (k n.+2, k n.+1). admit.
+  Admitted.
+  
   Lemma Asym2P6 (k: nat -> T) (l: nat -> seq T) z n: 
     allL R (l n) (k n) (k n.+1)
     <-> forall j, j <= size (l n) ->

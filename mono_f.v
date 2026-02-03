@@ -267,6 +267,7 @@ Section walk.
            have ->: (csum p j + (size (g j)).+1 - csum p j) = (size (g j)).+1 by lia.
            by rewrite  nth_L1' -H9 -H12 H3.
         ++ (* now csum p j <= n < csum p j.+1 and csum p j.+1 < n' *)
+          
     Admitted.
     
   End cum_sum1.
