@@ -48,7 +48,7 @@ Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_boot order.
 From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
-From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
+(* From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *) *)
 Set Warnings "parsing coercions".
 
 From RL Require Import rel. 
@@ -709,22 +709,22 @@ Section allset_Lifted.
   Lemma nth_L2 st x y z (n: nat): 
     0 < n < size st -> nth z (x :: rcons st y) n = nth z st n.-1.
   Proof.
-    move => /andP [H1 H1'];have H2: n = n.-1.+1 by lia.
-    by rewrite 1!H2 /= nth_rcons; have ->: n.-1 < size st by lia.
+    move => /andP [H1 H1'].
+    have H2: n.-1.+1 = n by apply: (@ltn_predK 0 n H1). 
+    rewrite -1!H2 /= nth_rcons. 
+    by have ->: n.-1 < size st by apply: ltn_trans _ H1';rewrite ltn_predL.
   Qed.
-
+  
   Lemma nth_L2' st x y z (n: nat): 
     0 < n < size st -> nth z (x :: rcons st y) n.+1 = nth z st n.
   Proof.
-    move => /andP [H1 H1'];have H2: n = n.-1.+1 by lia.
-    by rewrite 1!H2 /= nth_rcons -H2 H1'. 
+    move => /andP [H1 H1'].
+    have H2: n.-1.+1 = n by apply: (@ltn_predK 0 n H1).
+    by rewrite -1!H2 /= nth_rcons H2 H1'. 
   Qed.
   
   Lemma nth_L3 st y z : nth y st 0 = (nth z (rcons st y) 0).
-  Proof.
-    case H1: (size st == 0);first by move: H1 => /eqP/size0nil -> /=.
-    by move: H1 => /neq0_lt0n H1;rewrite /= nth_rcons H1;apply: nth_dv.
-  Qed.
+  Proof. by rewrite -(@nth_L0' st y y z) /=. Qed.
   
   Lemma nth_L6 n st y z:
     n < (size st) -> nth z (rcons st y) n = nth y st n.
@@ -743,34 +743,34 @@ Section allset_Lifted.
     + move => [H4 [H5 H6]] n H7.
       case H8: (n == 0);first by move: H8 => /eqP ->; rewrite nth_L0''. 
       case H9: (n == (size st));first by move: H9 => /eqP ->;rewrite nth_L1''.
-      have H10: 0 < n < size st by lia.
-      move: (H10) => /[dup] /(@nth_L2 st x y z n) ->  /(@nth_L2' st x y z n) ->.
-      have H11: n = n.-1.+1 by lia.
-      move: H5 => /(_ n.-1);rewrite -H11 => H5.
-      by apply: H5;move: H10 => /andP [_ H10].
+      have H10: 0 < n < size st
+        by move: H8 H7 => /neq0_lt0n ->;rewrite leq_eqVlt H9 orFb => ->.
+      move: (H10) => /[dup] /(@nth_L2 st x y z n) -> /(@nth_L2' st x y z n) ->.
+      move: H10 => /andP [H10 H10'].
+      have H11: n.-1.+1 = n by apply: (@ltn_predK 0 _). 
+      move: H5 => /(_ n.-1);rewrite H11 => H5.
+      by apply: H5.
     + move => H1.
       split. 
       by move: H1 => /(_ 0) /= H1;rewrite (nth_L3 st y z);apply: H1.
       split.
-      ++ move => n H2.
-         move: H1 => /(_ n.+1) H1.
-         have H3: n < size st by lia.
-         move: (H3) => /[dup] /(@nth_L6 n st y z) H3' /H1. 
-         move: (H2) => /(@nth_L6 n.+1 st y z) H2'.
-         rewrite /= H3' H2'.
-         have H5: nth y st n = nth z st n by apply: nth_dv. 
-         have H6: nth y st n.+1 = nth z st n.+1 by apply: nth_dv. 
-         by rewrite H5 H6.
+      ++ move: H1 => + n H2 => /(_ n.+1) H1.
+         have H3: n < size st by apply/(ltn_trans _ H2)/ltnSn. 
+         move: (H3) => /[dup] /(@nth_L6 n st y z) + /H1 /= => ->. 
+         move: (H2) => /(@nth_L6 n.+1 st y z) ->.
+         have ->: nth y st n = nth z st n by apply: nth_dv. 
+         have ->: nth y st n.+1 = nth z st n.+1 by apply: nth_dv. 
+         exact.
       ++ move: H1 => /(_ (size st)) H1.
-         (have: size st <= size st by lia) => {}/H1 /=.
+         (have: size st <= size st by apply: leqnn) => {}/H1 /=.
          rewrite nth_L7;last by exact. 
          case H1: (size st == 0);first by move: H1 => /eqP /size0nil -> /=.
-         have H2: 0 < size st by lia.
-         have H3: size st = (size st).-1.+1 by lia.
-         have H4: (size st).-1 < size st by lia.
-         rewrite 1!H3 /= nth_rcons H4.
-         have H5: nth z st (size st).-1 = nth x st (size st).-1 by apply: nth_dv.
-         by rewrite H5.
+         move: H1 => /neq0_lt0n H1.
+         have H3: (size st).-1.+1 = size st by apply: (@ltn_predK 0 _). 
+         have H4: (size st).-1 < size st by rewrite ltn_predL.
+         rewrite -1!H3 /= nth_rcons H4.
+         have ->: nth z st (size st).-1 = nth x st (size st).-1 by apply: nth_dv.
+         exact.
   Qed.
   
 End allset_Lifted.
