@@ -1634,6 +1634,6 @@ Section Infinite_path.
   Lemma Asym2P7 (k: nat -> T) (l: nat -> seq T): 
     (forall n, allL R (l n) (k n) (k n.+1))
     -> forall n, R ((@val T k l n), (@val T k l n.+1)).
-  Proof. by move => /(@test T k l R). Qed.
-
+  Proof. by move => /(@allL2val T k l R). Qed.
+  
 End Infinite_path. 

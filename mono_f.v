@@ -31,7 +31,7 @@ Notation dec x := (sumbool_of_bool x).
 
 Section walk.
   
-  Context (T:Type) (f: nat -> T) (g: nat -> seq T).
+  Context (T:eqType) (f: nat -> T) (g: nat -> seq T).
   
   Section cum_sum. 
 
@@ -181,98 +181,93 @@ Section walk.
                                 then f j
                                 else nth (f j.+1) (g j) (n - csum p j).-1).
     Proof. by move => /(@csumI0 p n j) H1; rewrite  /val /decode0 H1. Qed.
+
+    Lemma valP' n j z: ((csum p j) <= n < csum p j.+1)
+                       -> val n = nth z ((f j)::(rcons (g j) (f j.+1))) (n - csum p j).
+    Proof. 
+      move => /[dup] H1 /valP.
+      case H2: (n - csum p j == 0);first by move: H2 => /eqP -> /=.
+      have H3: csum p j < n by lia.
+      move: H1;rewrite csumP [(p j)]/p => [H1 H1'].
+      have H6: 0 < n - csum p j <=  (size (g j)) by lia.
+      case H7: (n - csum p j == (size (g j))).
+      by move: H7 H1' => /eqP ->;rewrite nth_L1 => ->;apply: nth_dv; lia.
+      have H8:  0 < n - csum p j <  (size (g j)) by lia.
+      rewrite (@nth_L2 T (g j) (f j) (f j.+1) z (n -csum p j) H8) H1'.
+      by apply: nth_dv; lia.
+    Qed.
     
-    (** the possible cases for (val n) (val n.+1) *)
-    Lemma valP1 n j: n = csum p j -> val n = f j.
+    Lemma valP'' n j: n = (csum p j) -> val n = (f j).
     Proof.
       move => H1.
-      have H2: ((csum p j) <= n < csum p j.+1) by rewrite H1 csumP; lia.
-      by move: (valP H2); rewrite -H1 subnn /=.
+      have H2: ((csum p j) <= n < csum p j.+1) by rewrite csumP H1;lia.
+      by move: H2 => /(@valP' n j (f j.+1));rewrite H1 subnn /=.
     Qed.
     
-    Lemma valP1' n j: 
-      n = csum p j ->
-      if (n.+1 < csum p j.+1) then val n.+1 = nth (f j.+1) (g j) 0
-      else val n.+1 = f j.+1.
-    Proof.
-      move => H1.
-      have H2: ((csum p j) <= n < csum p j.+1) by rewrite H1 csumP; lia.
-      move: (H2) => /(@csumI0 p n j) H2'.
-      have H3: (decode0 p n = (j,0)) by rewrite /decode0 H2' -H1 subnn. 
-      move: H3 => /decode_next.
-      case H4: (n.+1 < csum p j.+1);
-        by move: (@csumI1 p n j H2) => /[!H4] H5 H6;rewrite /val H6 /=. 
-    Qed.
-
-    Lemma valP1'' n j: 
-      n = csum p j -> (n.+1 < csum p j.+1) = false -> (g j) = [::]. 
-    Proof.
-      by move => H1 H2;move: (csumI1' H1 H2);rewrite /p;apply: size0nil.
-    Qed.
-    
-    Lemma valP2 n j: 
-      ((csum p j) < n < csum p j.+1)
-      -> val n = nth (f j.+1) (g j) (n - (csum p j)).-1.
-    Proof.
-      move => H1. 
-      have H2: ((csum p j) <= n < csum p j.+1) by lia.
-      move: (valP H2).
-      by have ->: (n - csum p j == 0)= false by lia.
-    Qed.
-
-    Lemma valP2' n j: ((csum p j) < n < csum p j.+1)
-      -> val n.+1 = if (n.+1 < csum p j.+1) then 
-                     nth (f j.+1) (g j) (n.+1 - (csum p j)).-1
-                   else (f j.+1).
-    Proof.
-      move => H1. 
-      have H8: (val n) = nth (f j.+1) (g j ) (n - (csum p j)).-1 
-        by apply: valP2.
-      case H9: (n.+1 < csum p j.+1).
-      + by have H10: (val n.+1) = nth (f j.+1) (g j ) (n.+1 - (csum p j)).-1
-          by apply: valP2; lia.
-      + have H10: (n.+1 = csum p j.+1) by lia.
-        by apply: valP1.
-    Qed.
-
-
-    Lemma test (R: relation T): 
-      (forall n, allL R (g n) (f n) (f n.+1))  -> forall n, R ((val n), (val n.+1)).
+    Lemma allL2val (R: relation T): 
+      (forall n, allL R (g n) (f n) (f n.+1)) -> forall n, R ((val n), (val n.+1)).
     Proof.
       move => H1 n.
       move: (@exists_sandwich p n) => H2.
       pose j:= (csumI p n);rewrite -/j in H2.
-      pose proof (@allL_nth T R (g j) (f j) (f j.+1) (f j.+1)) as H3.
-      move: H1 => /(_ j) /H3 [H3' [H4 H5]].
-      move: H4 => /(_ (n - csum p j).-1) H4.
-      clear H3.
-      case H6: (n == csum p j).
-      + move: H6 => /eqP /[dup] H6 /valP1 ->.
-        case H9: (n.+1 < csum p j.+1);move: H6 => /[dup] H6' /valP1'/[!H9] -> //. 
-        have H7: (g j)=[::] by apply: (valP1'' H6' H9).
-        by move: H5;rewrite H7 /=.
-      + have H7: ((csum p j ) < n < csum p j.+1) by lia. 
-        have H8: (val n) = nth (f j.+1) (g j ) (n - (csum p j)).-1
-          by apply: valP2.
-        case H11: (n.+1 < csum p j.+1). 
-        ++  move: (valP2' H7) => /[!H11] H10.
-           rewrite H8 H10.
-           have <-: (n - csum p j).-1.+1 = (n.+1 - csum p j).-1 by lia. 
-           by apply: H4;move: H11;rewrite csumP [(p j)]/p; lia.
-        ++  move: (valP2' H7) => /[!H11] H10.
-           rewrite H8 H10.
-           have H12: (n.+1 = csum p j +(p j).+1) by rewrite -csumP;lia.
-           have H13: (n - csum p j).-1 = (p j).-1 by lia.
-           have H14: (n - csum p j).-1 = (size (g j)).-1
-             by rewrite [(p j)]/p in H13.
-           have H15: nth (f j.+1) (g j) (n - csum p j).-1 
-                     = nth (f j) (g j) (n - csum p j).-1 .
-           apply: nth_dv.
-           case H15: ((p j) == 0). 
-            +++ by move: H15 => /eqP H15;rewrite csumP H15 in H7;lia.
-            +++ move: H15 => /neq0_lt0n. rewrite H14 [(p j)]/p. lia.
-                by rewrite H15 H14. 
+      pose proof (@allL_nth' T R (g j) (f j) (f j.+1) (f j.+1)) as H3.
+      move: H1 => /(_ j) {}/H3 /(_ (n -csum p j)) H1.
+      have H3: n - csum p j <= size (g j) by rewrite csumP [(p j)]/p in H2; lia.
+      move: H3 => /H1.
+      move: (H2) => /(@valP' n j (f j.+1)) <-.
+      case H3: (n.+1 < csum p j.+1). 
+      + have H2': csum p j <= n.+1 < csum p j.+1 by lia.
+        have H4: (n.+1 - csum p j) = (n - csum p j).+1 by lia.
+        by move: H2' => /(@valP' n.+1 j (f j.+1));rewrite H4 => <-.
+      + have H4: n.+1 = csum p j.+1 by lia.
+        have H5: (n - csum p j).+1 = csum p j.+1 -csum p j by lia.
+        have H6: (n - csum p j).+1 = (p j).+1 by rewrite csumP in H5;lia.
+        rewrite H6 [(p j)]/p nth_L1'.
+        have H7: csum p j.+1 <= n.+1 < csum p j.+2
+          by apply/andP;split;rewrite H4;[|apply: csum_strict_inc].
+        pose proof (@valP' n.+1 j.+1 (f j.+1) H7) as H8.
+        by rewrite H8 H4 subnn /=.
     Qed.
+
+    Lemma allL2valu (R: relation T): 
+      (forall n, @allLu T R (g n) (f n) (f n.+1) /\ ~ R.+ (f n.+1, f n) /\ uniq ((g n) ++ (g n.+1)))
+      -> forall n, forall n', n < n' -> (val n) = (val n') -> False.
+    Proof.
+      move => H1 n n' H2 H3.
+      move: (@exists_sandwich p n) => H4.
+      pose j:= (csumI p n);rewrite -/j in H4.
+      case H5: (n' < csum p j.+1).
+      + (* n and n' are in the same interval csum p j <= . < csum p j.+1 *)
+        move: H1 => /(_ j) [[H6 H6'] [H7 H8]].
+        move: (H4) => /(@valP' n j (f j.+1)) H9.
+        have H4':  csum p j <= n' < csum p j.+1 by lia.
+        move: (H4') => /(@valP' n' j (f j.+1)) H9'.
+        move: H3;rewrite H9 H9'.
+        pose proof (@uniq_nth3 T (f j :: rcons (g j) (f j.+1)) (f j.+1)) as H10.
+        move: H6' => {}/H10 /(_ (n - csum p j) (n' - csum p j)) H6'.
+        have H10: n - csum p j < n' - csum p j  by lia.
+        have H11: n' - csum p j < size (f j :: rcons (g j) (f j.+1))
+          by rewrite /= size_rcons;rewrite csumP [(p j)]/p in H5; lia.
+        move: H10 => /H6' H10.
+        move: H11 => /H10 H11.
+        by move => H12;rewrite H12 in H11.
+      + (* csum p j <= n < csum p j.+1 and csum p j.+1 <= n' *)
+        case H5': (n' == csum p j.+1).
+        ++ move: H1 => /(_ j) [[H6 H6'] [H7 H8]].
+           move: (H4) => /(@valP' n j (f j.+1)) H9.
+           move: H5' => /eqP/[dup] H5' /(@valP''  n' j.+1).
+           pose proof (@uniq_nth3 T (f j :: rcons (g j) (f j.+1)) (f j.+1)) as H10.
+           move: H6' => {}/H10 /(_ (n - csum p j) (n' - csum p j)) H6'.
+           have H10: n - csum p j < n' - csum p j  by lia.
+           have H11: n' - csum p j < size (f j :: rcons (g j) (f j.+1))
+             by rewrite /= size_rcons H5' csumP [(p j)]/p;lia. 
+           move: H10 => {}/H6' H10.
+           move: H11 => {}/H10 H11 H12.
+           move: H11. rewrite H5' csumP [(p j)]/p.
+           have ->: (csum p j + (size (g j)).+1 - csum p j) = (size (g j)).+1 by lia.
+           by rewrite  nth_L1' -H9 -H12 H3.
+        ++ (* now csum p j <= n < csum p j.+1 and csum p j.+1 < n' *)
+    Admitted.
     
   End cum_sum1.
   
