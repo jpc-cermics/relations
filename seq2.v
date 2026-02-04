@@ -273,7 +273,7 @@ Section Seq1_plus.
 End Seq1_plus. 
 
 Section allL_uniq.
-  (** * The aim of this section is to prove allL_uniq *)
+  (** * The aim of this section is to prove allL_uniq  *)
 
   Context (T:eqType).
   Implicit Types  (R: relation T) (s: seq T) (x y z : T).
@@ -426,4 +426,25 @@ Section allL_uniq.
   Qed.
   
 End allL_uniq.
+
+Section allL_props.
+  (** * more properties of allL  *)
+
+  Context (T:eqType).
+  Implicit Types  (R: relation T) (s: seq T) (x y z : T).
+  
+  Lemma allL_to_clos_t_left R s x y z: z \in s -> allL R s x y -> R.+ (x, z).
+  Proof.
+    move => H1 H2;pose proof (@allL_take_drop T R s x y z H1 H2) as [H3 _].
+    by move: H3 => /(@allL_to_clos_t T R) H3.
+  Qed. 
+
+  Lemma allL_to_clos_t_right R s x y z: z \in s -> allL R s x y -> R.+ (z, y).
+  Proof.
+    move => H1 H2;pose proof (@allL_take_drop T R s x y z H1 H2) as [_ H3].
+    by move: H3 => /(@allL_to_clos_t T R) H3.
+  Qed. 
+  
+End allL_props.
+
 

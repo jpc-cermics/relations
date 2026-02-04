@@ -1624,6 +1624,46 @@ Section Infinite_path.
     by split;[rewrite J2 J1|split;[rewrite J2 J1|rewrite K2 K1]].
   Qed.
   
+  Section utilities.
+
+    Lemma Asym2P9 (k: nat -> T) (l: nat -> seq T): 
+      (forall n, allL R (l n) (k n) (k n.+1)) 
+      -> ( forall n, forall n', n < n' -> R.+ ((k n), (k n'))).
+    Proof.
+      move => H0 n;elim => [//| n' Hr H1].
+      move: H0 => /(_ n') /(@allL_to_clos_t T R) H0.
+      case H2: (n < n');first by move: H2 => /Hr H2;apply: (@TclosT T R (k n) (k n') _).
+      by have /eqP ->: (n == n') by lia.
+    Qed.
+
+    Lemma Asym2P10 (k: nat -> T) (l: nat -> seq T): 
+      (forall n, allL R (l n) (k n) (k n.+1)) 
+      -> ( forall n, forall n', forall x, n < n' -> x \in (l n') -> R.+ ((k n), x)).
+    Proof.
+      move => H0 n n' x H1 H2. 
+      move: (H0) => /Asym2P9/(_ n n' H1) H3.
+      move: H0 => /(_ n') H4.
+      pose proof (@allL_to_clos_t_left T _ _ _ _ x H2 H4). 
+      by apply: (@TclosT T R (k n) (k n') _).
+    Qed.
+
+    Lemma Asym2P11 (k: nat -> T) (l: nat -> seq T): 
+      (forall n, allL R (l n) (k n) (k n.+1)) 
+      -> ( forall n, forall n', forall x, n < n' -> x \in (l n) -> R.+ (x, (k n'))).
+    Proof.
+      move => H0 n n' x H1 H2. 
+      case H3: (n.+1 < n').
+      + move: H3 => /(@Asym2P9 k l H0) H3.
+        move: H0 => /(_ n) H4.
+        pose proof (@allL_to_clos_t_right T _ _ _ _ x H2 H4). 
+        by apply: (@TclosT T R x (k n.+1) _).
+      + have /eqP <-: (n.+1 == n') by lia.
+        move: H0 => /(_ n) H4.
+        by pose proof (@allL_to_clos_t_right T _ _ _ _ x H2 H4). 
+    Qed.
+    
+  End utilities.
+
   Lemma Asym2P6' (k: nat -> T) (l: nat -> seq T): 
     (forall n, allLu R (l n) (k n) (k n.+1) /\ ~ R.+ (k n.+1, k n) /\ uniq ((l n) ++ (l n.+1)))
     -> ( forall n, forall n', n < n' -> uniq ((l n) ++ (l n'))).
