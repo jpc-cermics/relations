@@ -1662,34 +1662,48 @@ Section Infinite_path.
         by pose proof (@allL_to_clos_t_right T _ _ _ _ x H2 H4). 
     Qed.
     
+    Lemma Asym2P12 (k: nat -> T) (l: nat -> seq T): 
+      (forall n, allLu R (l n) (k n) (k n.+1) /\ ~ R.+ (k n.+1, k n) /\ uniq ((l n) ++ (l n.+1)))
+      -> ( forall n, forall n', n < n' -> ~ R.+ (k n', k n)).
+    Proof.
+      move => H0 n.
+      elim => [// | n' Hr H1].
+      case H2: (n < n'); 
+        last by (have <-: n = n' by lia);move: H0 => /(_ n) [_ [? _]].
+      move: H2 => /Hr H2 H3.
+      move: H0 => /(_ n') [[+ _] _] => /(@allL_to_clos_t T) H4.
+      by pose proof (@TclosT T R (k n') (k n'.+1) _ H4 H3).
+    Qed.
+      
+    Lemma Asym2P6' (k: nat -> T) (l: nat -> seq T): 
+      (forall n, allLu R (l n) (k n) (k n.+1) /\ ~ R.+ (k n.+1, k n) /\ uniq ((l n) ++ (l n.+1)))
+      -> ( forall n, forall n', n < n' -> uniq ((l n) ++ (l n'))).
+    Proof.
+      move => H0 n n' H1.
+      move: (H0) => /[dup] /(_ n) [[H2 H3] [H4 H5]] /(_ n') [[H6 H7] [H8 H9]].
+      case C1: (n' == n.+1);first by move: C1 => /eqP ->. 
+      have H10: n.+1 < n' by lia.
+      move: H3 H7;rewrite 2!uniq_crc => -[_ [_ [H3 _]]] -[_ [_ [H7 _]]].
+      rewrite uniq_catE H3 H7;split;[exact |split;[exact|]].
+      move => x H11 H12.
+      pose proof (@allL_to_clos_t_left T _ _ _ _ x H12 H6) as T0.
+      pose proof (@allL_to_clos_t_right T _ _ _ _ x H11 H2) as T1.    
+      have H13: R.+ (k n', k n.+1) by apply: (@TclosT T R _ _ _ T0 T1).
+      by pose proof (@Asym2P12 k l H0 _ _ H10).
+    Qed.
+  
+    Lemma Asym2P6 (k: nat -> T) (l: nat -> seq T) z n: 
+      allL R (l n) (k n) (k n.+1)
+      <-> forall j, j <= size (l n) ->
+             R ((nth z ((k n)::(rcons (l n) (k n.+1))) j),
+                 (nth z ((k n)::(rcons (l n) (k n.+1))) j.+1)).
+    Proof. by rewrite (@allL_nth' T R (l n) (k n) (k n.+1) z). Qed.
+    
+    Lemma Asym2P7 (k: nat -> T) (l: nat -> seq T): 
+      (forall n, allL R (l n) (k n) (k n.+1))
+      -> forall n, R ((@val T k l n), (@val T k l n.+1)).
+    Proof. by move => /(@allL2val T k l R). Qed.
+
   End utilities.
 
-  Lemma Asym2P6' (k: nat -> T) (l: nat -> seq T): 
-    (forall n, allLu R (l n) (k n) (k n.+1) /\ ~ R.+ (k n.+1, k n) /\ uniq ((l n) ++ (l n.+1)))
-    -> ( forall n, forall n', n < n' -> uniq ((l n) ++ (l n'))).
-  Proof.
-    move => H0 n n' H1.
-    move: H0 => /[dup] /(_ n) [[H2 H3] [H4 H5]] /(_ n') [[H6 H7] [H8 H9]].
-    case C1: (n' == n.+1);first by move: C1 => /eqP ->. 
-    have H10: n.+1 < n' by lia.
-    move: H3 H7;rewrite 2!uniq_crc => -[_ [_ [H3 _]]] -[_ [_ [H7 _]]].
-    rewrite uniq_catE H3 H7. split. exact. split. exact.
-    move => x H11 H12.
-    have H13: R.+ (k n.+2, x). admit.
-    have H14: R.+ (x, k n.+1). admit.
-    have H15: R.+ (k n.+2, k n.+1). admit.
-  Admitted.
-  
-  Lemma Asym2P6 (k: nat -> T) (l: nat -> seq T) z n: 
-    allL R (l n) (k n) (k n.+1)
-    <-> forall j, j <= size (l n) ->
-           R ((nth z ((k n)::(rcons (l n) (k n.+1))) j),
-               (nth z ((k n)::(rcons (l n) (k n.+1))) j.+1)).
-  Proof. by rewrite (@allL_nth' T R (l n) (k n) (k n.+1) z). Qed.
-
-  Lemma Asym2P7 (k: nat -> T) (l: nat -> seq T): 
-    (forall n, allL R (l n) (k n) (k n.+1))
-    -> forall n, R ((@val T k l n), (@val T k l n.+1)).
-  Proof. by move => /(@allL2val T k l R). Qed.
-  
 End Infinite_path. 
