@@ -12,7 +12,7 @@
 (** * Utilities *)
 
 Set Warnings "-parsing -coercions".
-From mathcomp Require Import all_boot seq order boolp classical_sets. 
+From mathcomp Require Import all_boot seq order boolp classical_sets contra. 
 From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
 
@@ -49,27 +49,27 @@ Section walk.
     Lemma csum_gt_id n : csum n >= n.
     Proof. elim: n => [// |n Hr];apply: (leq_ltn_trans Hr (csum_strict_inc n)). Qed.
     
-    Lemma csum_inc  i j : i < j -> csum i < csum  j.
+    Lemma csum_inc  n m : n < m -> csum n < csum  m.
     Proof. 
-      elim: j i => [i // | n Hn i H1]. 
-      case H2: (i == n);first by move: H2 => /eqP ->;apply: csum_strict_inc.
+      elim: m n => [n // | m' Hn n H1]. 
+      case H2: (n == m');first by move: H2 => /eqP ->;apply: csum_strict_inc.
       move: H1;rewrite leq_eqVlt => /orP [H3 | H3];first by lia.
-      have /Hn H4: i < n by lia.
-      have H5:  csum i <= csum n by lia. 
+      have /Hn H4: n < m' by lia.
+      have H5:  csum n <= csum m' by lia. 
       by rewrite csumP;apply: (leq_ltn_trans H5 _);lia.
     Qed.
     
-    Lemma csum_inc1  i j : i <= j -> csum i <= csum j.
-    Proof.
-      by move => H1;case H2: (i == j );[move: H2 => /eqP ->|apply/ltnW/csum_inc;lia].
+    Lemma csum_inc1 n m: n <= m -> csum n <= csum m.
+    Proof. 
+      by move => ?;case H2: (n == m);[move: H2 => /eqP ->|apply/ltnW/csum_inc;lia].
     Qed.
     
-    Lemma csum_up  i: exists k, i < csum k.
+    Lemma csum_up  n: exists k, n < csum k.
     Proof.
-      by  (exists i.+1);apply: (leq_ltn_trans (csum_gt_id i) (csum_strict_inc i)).
+      by  (exists n.+1);apply: (leq_ltn_trans (csum_gt_id n) (csum_strict_inc n)).
     Qed.
-
-    Definition csumI n := (ex_minn (csum_up n)).-1.
+    
+    Definition csumI n:= (ex_minn (csum_up n)).-1.
 
     Lemma exists_sandwich n:
       (csum (csumI n)) <= n < csum (csumI n).+1.
@@ -104,6 +104,17 @@ Section walk.
         have H6: csum k.+1 <= csum j by apply: csum_inc1.
         have H7: n < n by lia.  
         by have H8: false by rewrite -(ltnn n).
+    Qed.
+    
+    Lemma incr_sandwich n j: (csumI n) < j -> n <= (csum j).
+    Proof.
+      move: (exists_sandwich n) => /andP [H1 H2] H3.
+      have H4: csum (csumI n).+1 <= csum j by apply: csum_inc1.
+      by lia.
+    Qed.
+    
+    Lemma incr_sandwich1 n j: (csum j) < n -> j <= (csumI n).
+    Proof. contra. apply: incr_sandwich.
     Qed.
     
     Lemma csumI0 n j: ((csum j) <= n < csum j.+1) -> (csumI n) = j.
@@ -203,6 +214,28 @@ Section walk.
       have H2: ((csum p j) <= n < csum p j.+1) by rewrite csumP H1;lia.
       by move: H2 => /(@valP' n j (f j.+1));rewrite H1 subnn /=.
     Qed.
+
+    Lemma valP''' n j: ((csum p j) < n < csum p j.+1) -> (val n) \in (g j).
+    Proof.
+      move => H1;have /(@valP n j):((csum p j) <= n < csum p j.+1) by lia.
+      have ->: (n - csum p j == 0) = false by lia.
+      move => H2.
+      apply/nthP.
+      exists (n - csum p j).-1. 
+      by move: H1;rewrite csumP [(p j)]/p => /andP [H1 H1'];lia.
+      by rewrite H2.
+    Qed.
+
+    Lemma valP4 n j: (csum p j) < n -> exists j', (j <= j') /\ ((val n) \in (g j') \/ (val n) = (f j')).
+    Proof.
+      move => H1.
+      move: (@exists_sandwich p n) => H2.
+      pose proof (@incr_sandwich1 p n j H1) as H3. 
+      exists (csumI p n);split;first exact. 
+      case H4: (n == csum p (csumI p n)). 
+      by move: H4 => /eqP/valP'' H4;right.
+      by (have /valP''' H5: csum p (csumI p n) < n < csum p (csumI p n).+1 by lia);left.
+    Qed.
     
     Lemma allL2val (R: relation T): 
       (forall n, allL R (g n) (f n) (f n.+1)) -> forall n, R ((val n), (val n.+1)).
@@ -228,7 +261,88 @@ Section walk.
         pose proof (@valP' n.+1 j.+1 (f j.+1) H7) as H8.
         by rewrite H8 H4 subnn /=.
     Qed.
+    
+    Lemma Asym2P12 (R: relation T):
+      (forall n, allLu R (g n) (f n) (f n.+1) /\ ~ R.+ (f n.+1, f n) /\ uniq ((g n) ++ (g n.+1)))
+      -> ( forall n, forall n', n < n' -> ~ R.+ (f n', f n)).
+    Proof.
+      move => H0 n.
+      elim => [// | n' Hr H1].
+      case H2: (n < n'); 
+        last by (have <-: n = n' by lia);move: H0 => /(_ n) [_ [? _]].
+      move: H2 => /Hr H2 H3.
+      move: H0 => /(_ n') [[+ _] _] => /(@allL_to_clos_t T) H4.
+      by pose proof (@TclosT T R (f n') (f n'.+1) _ H4 H3).
+    Qed.
+    
+    Lemma Asym2P9 (R: relation T): 
+      (forall n, allL R (g n) (f n) (f n.+1)) 
+      -> ( forall n, forall n', n < n' -> R.+ ((f n), (f n'))).
+    Proof.
+      move => H0 n;elim => [//| n' Hr H1].
+      move: H0 => /(_ n') /(@allL_to_clos_t T R) H0.
+      case H2: (n < n');first by move: H2 => /Hr H2;apply: (@TclosT T R (f n) (f n') _).
+      by have /eqP ->: (n == n') by lia.
+    Qed.
 
+    Lemma Asym2P10 (R: relation T): 
+      (forall n, allLu R (g n) (f n) (f n.+1)) 
+      -> ( forall n, forall n', forall x, n <= n' -> x \in (g n') -> R.+ ((f n), x)).
+    Proof.
+      move => H0 n n' x H1' H2. 
+      case H0': (n == n' ); last first.
+      + have H1: ( n < n') by lia.
+        have H1'': (forall n, allL R (g n) (f n) (f n.+1))
+          by move: H0 => + n1 => /(_ n1) [H0 _].
+        move: H1'' => /Asym2P9/(_ n n' H1) H3.
+        move: H0 => /(_ n') [H4 _].
+        pose proof (@allL_to_clos_t_left T _ _ _ _ x H2 H4). 
+        by apply: (@TclosT T R (f n) (f n') _).
+      + move: H0' => /eqP ->.
+        move: H0 => /(_ n') [H0 _].
+        by pose proof (@allL_to_clos_t_left T R (g n') (f n') (f n'.+1) x H2 H0). 
+    Qed.
+    
+    Lemma Asym2P11 (R: relation T): 
+      (forall n, allL R (g n) (f n) (f n.+1)) 
+      -> ( forall n, forall n', forall x, n < n' -> x \in (g n) -> R.+ (x, (f n'))).
+    Proof.
+      move => H0 n n' x H1 H2. 
+      case H3: (n.+1 < n').
+      + move: H3 => /(@Asym2P9 R H0) H3.
+        move: H0 => /(_ n) H4.
+        pose proof (@allL_to_clos_t_right T _ _ _ _ x H2 H4). 
+        by apply: (@TclosT T R x (f n.+1) _).
+      + have /eqP <-: (n.+1 == n') by lia.
+        move: H0 => /(_ n) H4.
+        by pose proof (@allL_to_clos_t_right T _ _ _ _ x H2 H4). 
+    Qed.
+    
+    Lemma Asym2P6 (R: relation T) z n: 
+      allL R (g n) (f n) (f n.+1)
+      <-> forall j, j <= size (g n) ->
+             R ((nth z ((f n)::(rcons (g n) (f n.+1))) j),
+                 (nth z ((f n)::(rcons (g n) (f n.+1))) j.+1)).
+    Proof. by rewrite (@allL_nth' T R (g n) (f n) (f n.+1) z). Qed.
+
+    
+    Lemma Asym2P6' (R: relation T):
+      (forall n, allLu R (g n) (f n) (f n.+1) /\ ~ R.+ (f n.+1, f n) /\ uniq ((g n) ++ (g n.+1)))
+      -> ( forall n, forall n', n < n' -> uniq ((g n) ++ (g n'))).
+    Proof.
+      move => H0 n n' H1.
+      move: (H0) => /[dup] /(_ n) [[H2 H3] [H4 H5]] /(_ n') [[H6 H7] [H8 H9]].
+      case C1: (n' == n.+1);first by move: C1 => /eqP ->. 
+      have H10: n.+1 < n' by lia.
+      move: H3 H7;rewrite 2!uniq_crc => -[_ [_ [H3 _]]] -[_ [_ [H7 _]]].
+      rewrite uniq_catE H3 H7;split;[exact |split;[exact|]].
+      move => x H11 H12.
+      pose proof (@allL_to_clos_t_left T _ _ _ _ x H12 H6) as T0.
+      pose proof (@allL_to_clos_t_right T _ _ _ _ x H11 H2) as T1.    
+      have H13: R.+ (f n', f n.+1) by apply: (@TclosT T R _ _ _ T0 T1).
+      by pose proof (@Asym2P12 R H0 _ _ H10).
+    Qed.
+    
     Lemma allL2valu (R: relation T): 
       (forall n, @allLu T R (g n) (f n) (f n.+1) /\ ~ R.+ (f n.+1, f n) /\ uniq ((g n) ++ (g n.+1)))
       -> forall n, forall n', n < n' -> (val n) = (val n') -> False.
@@ -263,12 +377,57 @@ Section walk.
              by rewrite /= size_rcons H5' csumP [(p j)]/p;lia. 
            move: H10 => {}/H6' H10.
            move: H11 => {}/H10 H11 H12.
-           move: H11. rewrite H5' csumP [(p j)]/p.
+           move: H11;rewrite H5' csumP [(p j)]/p.
            have ->: (csum p j + (size (g j)).+1 - csum p j) = (size (g j)).+1 by lia.
            by rewrite  nth_L1' -H9 -H12 H3.
         ++ (* now csum p j <= n < csum p j.+1 and csum p j.+1 < n' *)
-          
-    Admitted.
+          have H6: csum p j.+1 < n' by lia.
+          move: (@valP4 _ _ H6) => [j' [H7 [H8 | H8]]].
+          +++ (* val n' \in g j' *) 
+            case H9: (n == csum p j).
+            ++++ (** val n = f j and val n' \in g j' *)
+              move: H9 => /eqP/valP'' H9.
+              have H10:  forall n : nat, allLu R (g n) (f n) (f n.+1)
+                  by move: H1 => + n1 => /(_ n1) [H1 _].
+              pose proof (@Asym2P10 R H10 j' j' (val n') (leqnn j') H8) as H11.
+              move: H11;rewrite -H3 H9 => H11.
+              by pose proof (@Asym2P12 R H1 j j' H7).
+            ++++ (** val n = g j and val n' = g j' *)
+              have H10:  csum p j < n < csum p j.+1 by lia.
+              move: H10 => /valP''' H10. 
+              move: H1 => /(@Asym2P6') /(_ j j' H7) /uniq_catE [_ [_ H1]].
+              apply: H1. apply: H10. rewrite H3. apply: H8.
+          +++ (** val n' = f j' *)
+            case H9: (n == csum p j).
+            ++++  (** val n= (f j) et val n'= (f j') *)
+              move: H9 => /eqP/valP'' H9.
+              pose proof (@Asym2P12 R H1 j j' H7) as H10.
+              move: H10;rewrite -H8 -H9 -H3 => H10.
+              have H11: (forall n, allL R (g n) (f n) (f n.+1))
+                by move: H1 => + n1 => /(_ n1) [[H1 _] _].
+              pose proof (@Asym2P9 R H11 j j' H7) as H12.
+              move: H12; rewrite  -H8 -H9 -H3 => H12.
+              exact.
+            ++++ (** val n= (g j) et val n'= (f j') *)
+              have H10:  csum p j < n < csum p j.+1 by lia.
+                 move: H10 => /valP''' H10. 
+                 move: (H1) => /(_ j) [[H01 H1'] _].
+                 case H12: (j' == j.+1). 
+                 +++++ move: H12 => /eqP H12.
+                 rewrite H12 -H3 in H8.
+                 move: H1' => /(@uniqE T (g j) (f j) (f j.+1) (val n)) [_ [H1' _]].
+                 move: H1' => /(_ (index (val n) (g j))) H1'.
+                 rewrite nth_index in H1'.
+                 move: (H10); rewrite -index_mem => /H1'.
+                 by rewrite -H8.
+                 exact.
+                 +++++ 
+                 pose proof (@allL_to_clos_t_right T R (g j) (f j) (f j.+1) (val n) H10 H01) as H11. 
+                 move: H11;rewrite H3 H8 => H11.
+                 have H13: j.+1 < j' by lia.
+                 pose proof (@Asym2P12 R H1 _ _ H13).
+                 exact.
+    Qed.
     
   End cum_sum1.
   
