@@ -16,7 +16,7 @@ From mathcomp Require Import all_boot seq order boolp classical_sets contra.
 From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
 
-From RL Require Import seq1 seq2 rel. 
+From RL Require Import rel seq1 seq2.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -24,17 +24,23 @@ Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
 
-From Equations Require Import Equations.
-From Coq  Require Import Sumbool.
+(** What is done here: 
+    given a path (f 0) -> (g 0) -> (f 1) -> g(1) -> f(2) in a graph 
+    defined by a relation R, where the function f and g are given.
+    for each i, (f i) is a node in T and (g i) is a sequence in T (giving a path).
+    We want to build a function val such that the path is given by 
+    (val 0) -> (val 1) -> (val 2) -> .....
+    Moreover, using properties of f and g with respect to the relation R, 
+    we want to prove that val is injective. 
+*)
 
-Notation dec x := (sumbool_of_bool x).
-
-Section walk.
+Section val_construction.
+  (** utilities *)
   
   Context (T:eqType) (f: nat -> T) (g: nat -> seq T).
   
-  Section cum_sum. 
-
+  Section prelude.
+    (** utilities *)
     Context (p: nat -> nat).
     
     Definition csum (n : nat) : nat:=
@@ -156,16 +162,16 @@ Section walk.
       by move: (csumI2 n) => + H1;have ->: (n.+1 < csum (csumI n).+1) = false by lia.
     Qed.
 
-    Definition decode0 n := (csumI n, n - (csum (csumI n))).
+    Definition decode n := (csumI n, n - (csum (csumI n))).
 
-    Lemma decode0P n j: ((csum j) <= n < csum j.+1) -> (decode0 n)= (j, n -(csum j)).
+    Lemma decodeP n j: ((csum j) <= n < csum j.+1) -> (decode n)= (j, n -(csum j)).
     Proof. by move => /(@csumI0 n j) <-. Qed.
     
     Lemma decode_next n j k: 
-      (decode0 n) = (j,k) 
-      -> (decode0 n.+1) = if (n.+1 < csum j.+1) then (j, k.+1) else (j.+1,0).
+      (decode n) = (j,k) 
+      -> (decode n.+1) = if (n.+1 < csum j.+1) then (j, k.+1) else (j.+1,0).
     Proof.
-      rewrite /decode0 => -[H1 H2].
+      rewrite /decode => -[H1 H2].
       pose proof (exists_sandwich n) as H3.
       move: H2 H3;rewrite H1 => H2 /[dup] /andP [H3 H3'] /csumI1. 
       case H4: (n.+1 < csum j.+1). 
@@ -176,22 +182,30 @@ Section walk.
         by move: H5 => /eqP H5;rewrite -H5 subnn.
     Qed.
     
-  End cum_sum.
+    (** unused: we just use decode 
+        Definition encode (rc : nat * nat) : nat := (csum rc.1 + rc.2).
+     *)
+
+  End prelude.
   
-  Section cum_sum1.
+  Section val_def_and_properties.
 
     (** we specialize previous section to the case when p is (fun n' => (size (g n')) *)
     Definition p := (fun n => (size (g n))).
-    
+
+    (** unused: we just use decode 
+        Definition encode' (g : nat -> seq T) (rc : nat * nat) : nat := encode (fun n' => (size (g n'))) rc.
+    *)
+
     Definition val n := 
-      let (row,col):= decode0 p n in 
+      let (row,col):= decode p n in 
       if col == 0 then (f row) else nth (f row.+1) (g row) col.-1.
 
     Lemma valP n j: ((csum p j) <= n < csum p j.+1)
                      -> val n = (if n - csum p j == 0
                                 then f j
                                 else nth (f j.+1) (g j) (n - csum p j).-1).
-    Proof. by move => /(@csumI0 p n j) H1; rewrite  /val /decode0 H1. Qed.
+    Proof. by move => /(@csumI0 p n j) H1; rewrite  /val /decode H1. Qed.
 
     Lemma valP' n j z: ((csum p j) <= n < csum p j.+1)
                        -> val n = nth z ((f j)::(rcons (g j) (f j.+1))) (n - csum p j).
@@ -237,31 +251,37 @@ Section walk.
       by (have /valP''' H5: csum p (csumI p n) < n < csum p (csumI p n).+1 by lia);left.
     Qed.
     
-    Lemma allL2val (R: relation T): 
-      (forall n, allL R (g n) (f n) (f n.+1)) -> forall n, R ((val n), (val n.+1)).
-    Proof.
-      move => H1 n.
-      move: (@exists_sandwich p n) => H2.
-      pose j:= (csumI p n);rewrite -/j in H2.
-      pose proof (@allL_nth' T R (g j) (f j) (f j.+1) (f j.+1)) as H3.
-      move: H1 => /(_ j) {}/H3 /(_ (n -csum p j)) H1.
-      have H3: n - csum p j <= size (g j) by rewrite csumP [(p j)]/p in H2; lia.
-      move: H3 => /H1.
-      move: (H2) => /(@valP' n j (f j.+1)) <-.
-      case H3: (n.+1 < csum p j.+1). 
-      + have H2': csum p j <= n.+1 < csum p j.+1 by lia.
-        have H4: (n.+1 - csum p j) = (n - csum p j).+1 by lia.
-        by move: H2' => /(@valP' n.+1 j (f j.+1));rewrite H4 => <-.
-      + have H4: n.+1 = csum p j.+1 by lia.
-        have H5: (n - csum p j).+1 = csum p j.+1 -csum p j by lia.
-        have H6: (n - csum p j).+1 = (p j).+1 by rewrite csumP in H5;lia.
-        rewrite H6 [(p j)]/p nth_L1'.
-        have H7: csum p j.+1 <= n.+1 < csum p j.+2
-          by apply/andP;split;rewrite H4;[|apply: csum_strict_inc].
-        pose proof (@valP' n.+1 j.+1 (f j.+1) H7) as H8.
-        by rewrite H8 H4 subnn /=.
-    Qed.
-    
+    Section val_path.
+
+      Lemma allL2val (R: relation T): 
+        (forall n, allL R (g n) (f n) (f n.+1)) -> forall n, R ((val n), (val n.+1)).
+      Proof.
+        move => H1 n.
+        move: (@exists_sandwich p n) => H2.
+        pose j:= (csumI p n);rewrite -/j in H2.
+        pose proof (@allL_nth' T R (g j) (f j) (f j.+1) (f j.+1)) as H3.
+        move: H1 => /(_ j) {}/H3 /(_ (n -csum p j)) H1.
+        have H3: n - csum p j <= size (g j) by rewrite csumP [(p j)]/p in H2; lia.
+        move: H3 => /H1.
+        move: (H2) => /(@valP' n j (f j.+1)) <-.
+        case H3: (n.+1 < csum p j.+1). 
+        + have H2': csum p j <= n.+1 < csum p j.+1 by lia.
+          have H4: (n.+1 - csum p j) = (n - csum p j).+1 by lia.
+          by move: H2' => /(@valP' n.+1 j (f j.+1));rewrite H4 => <-.
+        + have H4: n.+1 = csum p j.+1 by lia.
+          have H5: (n - csum p j).+1 = csum p j.+1 -csum p j by lia.
+          have H6: (n - csum p j).+1 = (p j).+1 by rewrite csumP in H5;lia.
+          rewrite H6 [(p j)]/p nth_L1'.
+          have H7: csum p j.+1 <= n.+1 < csum p j.+2
+            by apply/andP;split;rewrite H4;[|apply: csum_strict_inc].
+          pose proof (@valP' n.+1 j.+1 (f j.+1) H7) as H8.
+          by rewrite H8 H4 subnn /=.
+      Qed.
+      
+    End val_path.
+
+    Section val_injective.
+
     Lemma Asym2P12 (R: relation T):
       (forall n, allLu R (g n) (f n) (f n.+1) /\ ~ R.+ (f n.+1, f n) /\ uniq ((g n) ++ (g n.+1)))
       -> ( forall n, forall n', n < n' -> ~ R.+ (f n', f n)).
@@ -428,270 +448,24 @@ Section walk.
                  pose proof (@Asym2P12 R H1 _ _ H13).
                  exact.
     Qed.
-    
-  End cum_sum1.
-  
-  Section encode_decode. 
-    (* using equations to obtain a computable function *)
 
-    Equations? decode_aux (row col: nat) (p : nat -> nat) : nat* nat  by wf col lt :=
-      decode_aux row col p with sumbool_of_bool (col <= (p row)) => {
-        | left  H0 => (row, col) ;
-        | right H0 => decode_aux row.+1 (col - (p row).+1) p; 
-        }.
-    Proof. by lia. Qed.
-    
-    (* we obtain the recursive equality we wanted *)
-    Lemma decode_auxP0 (row col: nat) (p : nat -> nat): 
-      decode_aux row col p = 
-        if col <= (p row) then (row,col)
-        else decode_aux row.+1 (col - (p row).+1) p.
-    Proof. by funelim (decode_aux row col p);rewrite H0. Qed.
-    
-    Lemma decode_auxP1 (p: nat -> nat) j col: 
-      decode_aux j (col - csum p j) p
-      = if (col - csum p j) <= (p j) then (j, col - csum p j)
-        else decode_aux j.+1 (col - (csum p j.+1)) p.
+    Lemma is_inj: 
+      (forall n, forall n', n < n' -> (val n) = (val n') -> False) -> injective val.
     Proof.
-      elim: j col => [col | j _ col];
-                    first by rewrite csumP /= subn0 add0n;apply: decode_auxP0.
-      rewrite decode_auxP0. 
-      have ->: col - csum p j.+2 = col - csum p j.+1 - (p j.+1).+1
-        by  rewrite [in LHS]csumP;lia.
-      exact.
+      move => H1 n n' H2.
+      case H3: ((n < n') || (n' < n));
+        first by move: H3 => /orP [/H1 /[!H2] ? |/H1 /[!H2] ?] //.
+      lia.
     Qed.
     
-    Lemma decode_auxP2 (p: nat -> nat) n col: 
-      csum p n.+1 <= col -> 
-      forall j, j < n -> decode_aux j (col - csum p j) p = 
-                     decode_aux j.+1 (col - csum p j.+1) p.
-    Proof.
-      move => H1 j H2.
-      have H3:  j.+1 < n.+1 by lia.
-      have H4: csum p j.+1 < col 
-        by pose proof (@csum_inc p j.+1 n.+1 H3);lia.
-      rewrite csumP in H4.
-      have H5: (col - csum p j) <= (p j) = false by lia.
-      by rewrite decode_auxP1 H5.
-    Qed.
+    Lemma allL2val_inj (R: relation T): 
+      (forall n, @allLu T R (g n) (f n) (f n.+1) /\ ~ R.+ (f n.+1, f n) /\ uniq ((g n) ++ (g n.+1)))
+      -> injective val. 
+    Proof. by move => /allL2valu H1;apply: is_inj. Qed.
     
-    Definition P (p: nat -> nat) n j col := 
-      decode_aux j (col - csum p j) p = decode_aux n (col - csum p n) p.
-    
-    Lemma decode_auxP3 (p: nat -> nat) n col j:
-      csum p n.+1 <= col -> j < n -> P p n j.+1 col -> P p n j col.
-    Proof. by rewrite /P;move => H1 H2 <-;apply: (decode_auxP2 H1). Qed.
-    
-    Lemma decode_auxP4 (p: nat -> nat) n col: P p n n col.
-    Proof. by []. Qed.
-    
-    Lemma decode_auxP5 (p: nat -> nat) n col:
-      csum p n.+1 <= col -> ~ (P p n 0 col) -> forall j, j <= n -> ~(P p n j col).
-    Proof.
-      move => H1 H2.
-      elim => [// | j Hr H3 /(@decode_auxP3 p n col j H1 H3)H4].
-      by have H5: ~ P p n j col by apply: Hr;lia.
-    Qed.
-    
-    Lemma decode_auxP6 (p: nat -> nat) n col:
-      csum p n.+1 <= col -> ~ (P p n 0 col) -> False. 
-    Proof.  
-      move => H1 H2; move: (decode_auxP5 H1 H2) => /(_ n) H3.
-      by (have /H3 H4: n <= n by lia);have H5: P p n n col by [].
-    Qed.
-    
-    Lemma decode_auxP7 (p: nat -> nat) n col:
-      csum p n.+1 <= col -> (P p n 0 col). 
-    Proof.
-      by move => H1;move: (decode_auxP6 H1) => H2;apply: contrapT => /H2 ?.
-    Qed.
+    End val_injective .
 
-    Lemma decode_auxP8 (p: nat -> nat) n col:
-      csum p n.+1 <= col -> 
-      decode_aux 0 col p = decode_aux n (col - csum p n) p.
-    Proof. by move => H1;move: (decode_auxP7 H1);rewrite /P /= subn0. Qed.
-    
-    Lemma decode_auxP9 (p: nat -> nat) n col:
-      col < csum p n.+1 ->
-      decode_aux n (col - csum p n) p = (n, col - (csum p n)).
-    Proof. 
-      move => H1. 
-      rewrite decode_auxP1.
-      have H2: col - csum p n <= p n by rewrite csumP in H1; lia.
-      by rewrite H2.
-    Qed.
-    
-    Lemma decode_auxP10 (p: nat -> nat) n col:
-      csum p n.+1 <= col < csum p n.+2 -> 
-      decode_aux 0 col p = (n.+1, col - (csum p n.+1)).
-    Proof. 
-      move => /andP [/[dup] H0 /decode_auxP8 -> /decode_auxP9 <-]. 
-      rewrite decode_auxP1.
-      by have -> : col - csum p n <= p n = false by rewrite csumP in H0; lia.
-    Qed.
+  End val_def_and_properties.
 
-    Lemma decode_auxP11 (p: nat -> nat) n col:
-      csum p n <= col < csum p n.+1 -> 
-      decode_aux 0 col p = (n, col - (csum p n)).
-    Proof. 
-      case H1: (n== 0);first by move: H1 => /eqP -> /=;rewrite add0n subn0 ltnS decode_auxP0 => ->.
-      move: H1 => /neq0_lt0n H1.
-      have H2: n.-1.+1 = n by lia.
-      by rewrite -H2 => /decode_auxP10 H3.
-    Qed.
-    
-    Definition decode2 (p : nat -> nat) (n : nat): nat * nat := decode_aux 0 n p.
+End val_construction.
 
-    (* 
-    Lemma decodeP (p : nat -> nat) col: exists gamma: nat ->nat,  (decode2 p col) = (decode0 p col).
-    Proof.
-      pose proof (gamma p) as [gamma H1]; exists gamma;rewrite /decode2 /decode1.
-      by move: H1 => /(_ col) => /(@decode_auxP11 p (gamma col) col) ->.
-    Qed.
-    *)
-    
-    Section Example.
-      
-      Definition p' n := 
-        match n with 
-        | 0 => 3
-        | 1 => 2
-        | 2 => 0
-        | _ => 1
-        end.
-      
-      (** we can preform computations with decode2 version *)
-      
-      Compute (decode2 p' 0).
-      Compute (decode2 p' 1).
-      Compute (decode2 p' 2).
-      Compute (decode2 p' 3).
-      Compute (decode2 p' 4).
-      Compute (decode2 p' 5).
-      Compute (decode2 p' 6).
-      Compute (decode2 p' 7).
-      Compute (decode2 p' 8).
-      Compute (decode2 p' 9).
-      Compute (decode2 p' 10).
-      Compute (decode2 p' 11).
-      
-    End Example.
-    
-  End encode_decode. 
-  
-  (*
-
-  Definition decode' (g : nat -> seq T) (i : nat) : nat * nat := decode2 (fun n' => (size (g n'))) i.
-
-  Definition encode' (g : nat -> seq T) (rc : nat * nat) : nat := encode0 (fun n' => (size (g n'))) rc.
-  
-  Definition val' (f: nat -> T) (g : nat -> seq T) n := 
-    let (row,col):= decode' g n in 
-    if col == 0 then (f row) else nth (f row) (g row) col.-1.
-  
-  Section demo.
-
-    Variables (a1 b1 c1 d1 e1 f1 g1 h1 i1 j1 k1 l1 m1 :T).
-    Definition L:= [:: a1; b1; c1; d1; e1; f1; g1; h1; i1; j1; k1; l1; m1].
-    Definition g n := 
-      match n with 
-      | 0 => [:: b1 ; c1 ; d1]
-      | 1 => [:: f1 ; g1]
-      | 2 => [::]
-      | _ => [:: j1]
-      end.
-    
-    Definition f n := 
-      match n with 
-      | 0 => a1
-      | 1 => e1
-      | 2 => h1
-      | 3 => i1
-      |_  => k1
-      end.
-
-    Compute (decode' g 0).
-    Compute (decode' g 1).
-    Compute (decode' g 2).
-    Compute (decode' g 3).
-    Compute (decode' g 4).
-    Compute (decode' g 5).
-    Compute (decode' g 6).
-    Compute (decode' g 7).
-    
-    (* should give a1 b1 c1 d1 e1 f1 g1 h1 i1 j1 *)
-    Compute ((val' f g  0) =   (nth m1 L 0)).
-    Compute ((val' f g  1) =   (nth m1 L 1)).
-    Compute ((val' f g  2) =   (nth m1 L 2)).
-    Compute ((val' f g  3) =   (nth m1 L 3)).
-    Compute ((val' f g  4) =   (nth m1 L 4)).
-    Compute ((val' f g  5) =   (nth m1 L 5)).
-    Compute ((val' f g  6) =   (nth m1 L 6)).
-    Compute ((val' f g  7) =   (nth m1 L 7)).
-    Compute ((val' f g  8) =   (nth m1 L 8)).
-    Compute ((val' f g  9) =   (nth m1 L 9)).
-    Compute ((val' f g  10) =  (nth m1 L 10)).
-    
-    Compute (encode' g (decode' g 0)) == 0.
-    Compute (encode' g (decode' g 1)) == 1.
-    Compute (encode' g (decode' g 2)) == 2.
-    Compute (encode' g (decode' g 3)) == 3.
-    Compute (encode' g (decode' g 4)) == 4.
-    Compute (encode' g (decode' g 5)) == 5.
-       
-  End demo.
-  *)
-
-
-End walk.
-
-    (** version obsolete avec gamma construite avec choix dependent *)
-    (** 
-    Theorem exists_sandwich' n:
-      exists j, ((csum j) <= n < csum j.+1).
-    Proof.
-      case H1: (n <= 0);
-        first by move: H1;rewrite /csum => H1;exists 0;rewrite /csum add0n;lia.
-      move: H1;rewrite leqNgt => /negP/negP H1.
-      have hex: exists k, n < csum k
-          by  (exists n.+1);apply: (leq_ltn_trans (csum_gt_id n) (csum_strict_inc n)).
-      pose  k0 := ex_minn hex.
-      have H2: ~(0 = k0) by rewrite /k0;case: ex_minnP  => k H3 ?;move => H5;rewrite -H5 in H3.
-      have H3: 0 < k0 by lia.
-      exists k0.-1.
-      have ->: k0.-1.+1 = k0 by lia.
-      move: H3. rewrite /k0. case: ex_minnP => // k -> H5 H6.
-      rewrite andbT. 
-      have H7: n < csum k.-1 -> False  by move => /H5 H7; lia.
-      by lia.
-    Qed.
-    
-
-    (** build a function using choice on exists_sandwich theorem *)
-    Lemma gamma: exists (gamma : nat -> nat), 
-      (forall n, ((csum (gamma n)) <= n < csum (gamma n).+1)) 
-      /\ (forall n j, (csum (gamma n)) <= j < csum (gamma n).+1
-                -> gamma j = gamma n).
-    Proof.
-      pose R:= [set ij | ((csum ij.2) <= ij.1) && (ij.1 < csum (ij.2).+1)].
-      have Tr: total_rel R by move => n;move: (exists_sandwich' n) => [j H1];exists j.
-      pose proof (choice'  Tr) as [gamma H1];exists gamma.
-      by split;[| move => n j;apply: uniq_sandwich; apply: H1].
-    Qed.
-
-    Definition decode1 (gamma:  nat -> nat) n := ((gamma n), n - (csum (gamma n))).
-    
-    Definition encode1 (rc : nat * nat) : nat := (csum rc.1 + rc.2).
-    
-    Lemma encode_decode (gamma' : nat -> nat) (n:nat): 
-      (n >= csum (gamma' n)) -> encode1 (decode1 gamma' n) = n.
-    Proof. by rewrite  /decode1 /encode1 /=;lia. Qed.
-
-    Lemma encode_decode':
-      exists (gamma : nat -> nat), forall n, encode1 (decode1 gamma n) = n.
-    Proof.
-      pose proof gamma as [gamma [H1 H1']].
-      by exists gamma;move => n;move: H1 => /(_ n) /andP [H1 H2];rewrite  /decode1 /encode1 /=;lia.
-    Qed.
-    
-     *)
