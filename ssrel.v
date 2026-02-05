@@ -18,7 +18,7 @@
 (** * No more used in rel.v as we use a different definition for closures *)
 
 Set Warnings "-parsing -coercions".
-From mathcomp Require Import all_boot order boolp classical_sets ssrbool.
+From mathcomp Require Import all_boot order boolp  classical_sets ssrbool.
 Set Warnings "parsing coercions".
 
 Set Implicit Arguments.

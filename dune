@@ -1,5 +1,7 @@
+;;(rocq.theory
 (coq.theory
  (name RL)
-  (theories elpi_elpi elpi HB mathcomp.ssreflect mathcomp AAC_tactics Equations dpdgraph)
+;;  (theories elpi_elpi elpi HB mathcomp.ssreflect mathcomp AAC_tactics Equations dpdgraph)
+  (theories elpi_elpi elpi HB mathcomp.ssreflect mathcomp AAC_tactics dpdgraph)
  )
  
