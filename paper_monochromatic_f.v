@@ -9,7 +9,18 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 
-(** * Utilities *)
+(** * The main result here is the last lemma of the file: Asym2P5'                 *)
+(** * Under assumption Hypothesis A1: (exists (v0:T), (v0 \in setT))               *)
+(** *    if there is an infinite path for the relation (Asym R.+)                  *)
+(** *   then there is an infinite path for the relation R.                         *)
+(** *   By infinite path, we mean here that all the visited vertices are distincts.*)
+(** *   More formally,                                                             *)
+(** *                                                                              *)
+(** *   exists f: nat -> T, (forall n, (Asym R.+) ((f n), (f n.+1)))               *)
+(** *   => exists h: nat -> T, (forall n, R ((h n), (h n.+1))) /\ injective h.     *)
+(** *                                                                              *)
+(** *   Note that f is automatically injective.                                    *)
+(** *                                                                              *)
 
 Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_boot seq order boolp classical_sets contra. 
@@ -23,19 +34,6 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
-
-(** * The main result here is the last lemma of the file: Asym2P5' *)
-(** * Under assumption Hypothesis A1: (exists (v0:T), (v0 \in setT)).
-    if there is an infinite path for the relation (Asym R.+) 
-   then there is an infinite path for the relation R. 
-   By infinite path, we mean here that all the visited vertices are distincts. 
-   More formally, 
-
-   exists f: nat -> T, (forall n, (Asym R.+) ((f n), (f n.+1))) 
-   => exists h: nat -> T, (forall n, R ((h n), (h n.+1))) /\ injective h.
-   
-   Note that f is automatically injective.
- *)
 
 Section Hn4.
   (** * some Lemmata around infinite outward R-path *) 
