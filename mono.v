@@ -1623,14 +1623,18 @@ Section Infinite_path.
     move: HH' => [_ [_ [_ [_ [_ H9']]]]].
     by split;[rewrite J2 J1|split;[rewrite J2 J1|rewrite K2 K1]].
   Qed.
-  
-  Section utilities.
-    
-    Lemma Asym2P7 (k: nat -> T) (l: nat -> seq T): 
-      (forall n, allL R (l n) (k n) (k n.+1))
-      -> forall n, R ((@val T k l n), (@val T k l n.+1)).
-    Proof. by move => /(@allL2val T k l R). Qed.
 
-  End utilities.
+  (** * here we insert the results of mono_f and conclude *)
+  
+  Lemma Asym2P5': 
+    (iic (Asym R.+)) -> exists h: nat -> T, (forall n, R ((h n), (h n.+1))) /\ injective h.
+  Proof.
+    move => /Asym2P5 [k [l H1]]. 
+    move: (H1) => /allL2val_inj ?.
+    have H2: (forall n, allL R (l n) (k n) (k n.+1)) 
+      by move: H1 => + n => /(_ n) [[? _] _].
+    move: H2 => /allL2val ?. 
+    by exists (val k l).
+  Qed.
 
 End Infinite_path. 
