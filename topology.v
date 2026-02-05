@@ -42,11 +42,11 @@ Section Preorder.
 
   Lemma gt_prop: forall (x y:T), lt y x = (le y x) && ~~ (le x y).
   Proof. exact. Qed. 
+
+  (** * to be done 
   
   Lemma ge_trans: Coq.ssr.ssrbool.transitive  (fun x y => le y x).
-  Admitted. 
   
-  (**           
   HB.instance Definition _  := (@isDuallyPreorder.Build rel_display T
                      le lt lt_prop gt_prop le_refl le_refl le_trans ge_trans).
   *) 

@@ -235,6 +235,7 @@ Section CwCw_s_facts.
     by move => w';rewrite /C /D;right.
   Qed.
   
+  (* 
   Lemma C_as_clos_t (X: set T): (C X) =  (Δ_(X) `|` (Δ_(X) `;` Kw `;`  Δ_(X))).+.
   Proof.
     have H3: (Δ_(X)`;`Kw`;`Δ_(X)) `<=`(Δ_(X) `|` Δ_(X)`;`Kw`;`Δ_(X))  by apply: subsetUr.
@@ -244,7 +245,8 @@ Section CwCw_s_facts.
     by apply: TclosSu; left.
     move => [n /= H1 H2 ].
   Admitted.
-  
+  *)
+
   Lemma C_n (X: set T) : forall (w w': T),
       w <> w' -> ((C X) (w, w') <->  exists n, (Δ_(X) `;` Kw `;` Δ_(X))^(n.+1) (w, w')).
   Proof.
@@ -294,12 +296,12 @@ Section Cw_facts.
   Proof.
     apply C_reflexive_W.
   Qed.
-  
+  (* 
   Lemma Cw_as_clos_t: Cw =  (Δ_(W) `|` (Δ_(W) `;` Kw `;`  Δ_(W))).+.
   Proof.
     apply C_as_clos_t.
   Qed.
-  
+  *)
   Lemma Cw_n : forall (w w': T),
       w <> w' -> (Cw (w, w') <->  exists n, (Δ_(W) `;` Kw `;` Δ_(W))^(n.+1) (w, w')).
   Proof.
@@ -357,11 +359,13 @@ Section Cw_s_facts.
     apply C_reflexive_W. 
   Qed.
 
+  (*
   Lemma Cw_s_as_clos_t: Cw_s =  (Δ_(W_s) `|` (Δ_(W_s) `;` Kw `;`  Δ_(W_s))).+.
   Proof.
     apply C_as_clos_t. 
   Qed.
-  
+  *)
+
   Lemma Cw_s_n : forall (w w': T),
       w <> w' -> (Cw_s (w, w') <->  exists n, (Δ_(W_s) `;` Kw `;` Δ_(W_s))^(n.+1) (w, w')).
   Proof.
