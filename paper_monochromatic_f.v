@@ -38,7 +38,7 @@ Local Open Scope classical_set_scope.
 Section Hn4.
   (** * some Lemmata around infinite outward R-path *) 
   
-  Variables (T:choiceType) (R: relation T).
+  Variables (T: eqType) (R: relation T).
   
   Lemma allL_asym_l1: forall st x y,
       allL R st x y -> ~ R.+ (y, last x st) -> (Asym R.+) (x, y).
