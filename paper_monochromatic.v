@@ -133,12 +133,12 @@ Section Set_order.
 End Set_order. 
 
 Section Infinite_paths.
-  (** * Definitions around infinite paths *)
+  (** *  iic_injective *) 
 
   Context (T : Type).
   Implicit Types (T : Type) (R S: relation T) (A B: set T).
   
-  Lemma AsymInf (f : nat -> T) R:
+  Lemma AsymInf_step1 (f : nat -> T) R:
     (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
      forall p n, 0 < p -> (Asym R.+) (f n, f (n + p)). 
   Proof.
@@ -153,37 +153,27 @@ Section Infinite_paths.
     by rewrite -addn1 -[p.+1]addn1 addnA.
   Qed.
   
-  Lemma AsymInf' (f : nat -> T) R:
+  Lemma AsymInf_step2 (f : nat -> T) R:
     (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
     forall p n, 0 < p -> ~ (f n) = f (n + p). 
   Proof.
-    by move => + p n H1 => /AsymInf /(_ p n H1) + H2;rewrite -H2; apply: Asym_irreflexive.
-  Qed.
-
-  Lemma comp: forall n, forall m, m < n -> exists p, p> 0 /\ n = m + p.
-  Proof.
-    elim => [// | n' Hr m' H1]. 
-    case H2: (m' == n'.+1);first by move: H2=> /eqP H2; rewrite H2 ltnn in H1.
-    case H3: (m' == n');first by move: H3 => /eqP ->;(exists 1); split;[ |rewrite addn1].
-    have H4:  m' <= n' by lia.
-      move: H4; rewrite leq_eqVlt => /orP [/eqP -> | H5].
-      ++ exists 1. by rewrite addn1.
-      ++ move: (Hr m' H5) => [p [H6 H7]].
-         exists p.+1. split. exact. 
-         by rewrite -addn1 H7 -addnA addn1.
+    by move => + p n H1 => /AsymInf_step1 /(_ p n H1) + H2;rewrite -H2; apply: Asym_irreflexive.
   Qed.
   
-  Lemma AsymInf'' (f : nat -> T) R:
+  Lemma AsymInf (f : nat -> T) R:
     (forall n, (Asym R.+) ((f n),(f (S n)))) -> injective f.
   Proof.
-    move => /AsymInf' Hi p q;apply contraPP => H1.
+    have H0 n m: m < n -> exists p, p> 0 /\ n = m + p by move => H1;exists (n-m); lia.
+    move => /AsymInf_step2 Hi p q;apply contraPP => H1.
     have [H2|H2]: (p < q \/ q < p) by lia.
-    + by pose proof (comp H2) as [p' [H3 ->]]; apply: Hi.
-    + move: (comp H2) => [p' [H3 ->]].
-      pose proof (Hi p' q H3).
-      by symmetry.
-Qed.
-
+    by pose proof (H0 q p H2) as [p' [H3 ->]]; apply: Hi.
+    by move: (H0 p q H2) => [p' [H3 ->]];move: (Hi p' q H3);symmetry.
+  Qed.
+  
+  Lemma iic_injective R: 
+    (iic (Asym R.+)) -> exists f,  (forall n, (Asym R.+) ((f n),(f (S n)))) /\ injective f.
+  Proof. by move => [f /[dup] H1 /AsymInf H2];exists f. Qed.
+    
 End Infinite_paths.
 
 Section Infinite_paths_X.

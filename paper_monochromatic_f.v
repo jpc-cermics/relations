@@ -39,91 +39,79 @@ Section Hn4.
   (** * some Lemmata around infinite outward R-path *) 
   
   Variables (T: eqType) (R: relation T).
+  Implicit Types (st: seq T) (x y s z:T).
   
-  Lemma allL_asym_l1: forall st x y,
-      allL R st x y -> ~ R.+ (y, last x st) -> (Asym R.+) (x, y).
+  Lemma allL_asym_l1 st x y: allL R st x y -> ~ R.+ (y, last x st) -> (Asym R.+) (x, y).
   Proof.
-    move => st x y H1 H2.
-    split => [|H3];first by apply: (allL_to_clos_t H1).
-    case H4: (st == [::]); first by move: H4 H2 => /eqP -> /= H5. 
+    move => H1 H2;split => [|H3];first by apply: (allL_to_clos_t H1).
+    case H4: (st == [::]); first by move: H4 H2 => /eqP -> /= ?. 
     move: H4 => /eqP/(@last_in T) => /(_ x) H4.
     have H5: (last x st) \in (rcons st y) by rewrite in_rcons;apply/orP;left. 
     move: (Lxx_head H5 H1) => H6. 
-    have H7: R.+ (y, last x st) by apply: TclosT H3 H6.
-    exact.
+    by have: R.+ (y, last x st) by apply: TclosT H3 H6.
   Qed.
 
-  Lemma allL_asym_r1: forall st x y,
-      allL R st x y -> ~ R.+ (head y st,x) -> (Asym R.+) (x, y).
+  Lemma allL_asym_r1 st x y: allL R st x y -> ~ R.+ (head y st,x) -> (Asym R.+) (x, y).
   Proof.
-    move => st x y H1 H2.
-    split;first by move: H1 => /(@allL_to_clos_t T) H1.
-    move => H3. 
-    case H4: (st == [::]);first by move: H4 H2 => /eqP -> /= H5.
+    move => H1 H2;split => [|H3];first by apply: (allL_to_clos_t H1). 
+    case H4: (st == [::]);first by move: H4 H2 => /eqP -> /= ?.
     move: H4 => /eqP/(@head0 T) => /(_ y) H4.
     have H5: (head y st) \in (x::st) by rewrite in_cons;apply/orP;right.
     move: (Lxx H5 H1) => H6. 
-    have H7: R.+ (head y st,x) by apply: TclosT H6 H3.
-    exact.
+    by have: R.+ (head y st,x) by apply: TclosT H6 H3.
   Qed.
   
-  Lemma allL_asym_l: forall st x s y,
-      s \in st -> allL R st x y -> ~ R.+ (y, last x st) 
-      -> (Asym R.+) (s, y).
+  Lemma allL_asym_l st x s y:  s \in st -> allL R st x y -> ~ R.+ (y, last x st) 
+                               -> (Asym R.+) (s, y).
   Proof.
-    move => st x s y H1 H4 H5.
-    pose proof (allL_take_drop H1 H4) as [_ H1'].
+    move => H1 H4 H5;move: (allL_take_drop H1 H4) => [_ H1'].
     split; first by move: (allL_to_clos_t H1') => H6.
     case H3: (s == (last x st)); first by move: H3 => /eqP ->.
-    have H6: ~ ( s = (last x st)). by move => H7; rewrite -H7 eq_refl in H3.
+    have H6: ~ ( s = (last x st)) by move => H7; rewrite -H7 eq_refl in H3.
     pose proof (allL_belast H1 H6 H4) as H7.
     by move => H8;have H9: R.+ (y, last x st) by apply: (TclosT H8 H7).
   Qed.
   
-  Lemma allL_asym_r: forall st x s y,
-      s \in st -> allL R st x y -> ~ R.+ (head y st, x) 
-      -> (Asym R.+) (x, s).
+  Lemma allL_asym_r st x s y: s \in st -> allL R st x y -> ~ R.+ (head y st, x) 
+                              -> (Asym R.+) (x, s).
   Proof.
-    move => st x s y H1 H4 H5.
-    pose proof (allL_take_drop H1 H4) as [H1' _].
+    move => H1 H4 H5;move: (allL_take_drop H1 H4) => [H1' _].
     split;first by move: (allL_to_clos_t H1').
     case H3: (s == (head y st)); first by move: H3 => /eqP ->.
-    have H6: ~ ( s = (head y st)). by move => H7; rewrite -H7 eq_refl in H3.
+    have H6: ~ ( s = (head y st))  by move => H7; rewrite -H7 eq_refl in H3.
     pose proof (allL_behead H1 H6 H4) as H7.
     by move => H8;have H9: R.+ (head y st,x) by apply: (TclosT H7 H8).
   Qed.
   
-  Lemma allL_asym_lr: forall st st' x s y s' z,
-      s \in st -> allL R st x y -> ~ R.+ (y, last x st) 
-      -> s' \in st'  -> allL R st' y z
-      -> (Asym R.+) (s, s').
+  Lemma allL_asym_lr st st' x s y s' z: 
+    s \in st -> allL R st x y -> ~ R.+ (y, last x st) 
+    -> s' \in st'  -> allL R st' y z
+    -> (Asym R.+) (s, s').
   Proof.
-    move => st st' x s y s' z H1 H3 H4 H5 H6.
-    pose proof (allL_asym_l H1 H3 H4) as H7.
+    move => H1 H3 H4 H5 H6;move: (allL_asym_l H1 H3 H4) => H7.
     have H8: s' \in (rcons st' z) by rewrite in_rcons H5 orTb. 
     pose proof (Lxx_head H8 H6) as H9. 
     have H10: (Asym(R.+) `;` R.+) (s,s') by (exists y).
     by move: H10 => /AsymIncr H10.
   Qed.
   
-  Lemma allL_asym_rl: forall st st' x s y s' z,
+  Lemma allL_asym_rl st st' x s y s' z:
       s \in st -> allL R st x y 
       -> s' \in st' -> allL R st' y z -> ~ R.+ (head z st', y) 
       -> (Asym R.+) (s, s').
   Proof.
-    move => st st' x s y s' z H1 H2 H3 H5 H6.
-    pose proof (allL_asym_r H3 H5 H6) as H7.
+    move => H1 H2 H3 H5 H6;move: (allL_asym_r H3 H5 H6) => H7.
     have H8: s \in (x::st) by rewrite in_cons H1 orbT. 
     pose proof (Lxx H8 H2) as H9. 
     have H10: (R.+  `;` Asym(R.+)) (s,s') by (exists y).
     by move: H10 => /AsymIncl H10.
   Qed.
   
-  Lemma allL_asym_xx: forall st x s z,
-      s \in st -> ~ (z = s) -> allL R st x z -> ~ R.+ (z, s)
-      -> (Asym R.+) (x,z).
+  Lemma allL_asym_xx st x s z: 
+    s \in st -> ~ (z = s) -> allL R st x z -> ~ R.+ (z, s)
+    -> (Asym R.+) (x,z).
   Proof.
-    elim => [// | y st Hr x s z].
+    elim: st x s z => [// | y st Hr x s z].
     rewrite in_cons => /orP [/eqP -> | H1] H2.
     + rewrite allL_c => /andP [/inP H3 H4] H5. 
       split.
@@ -144,8 +132,7 @@ Section Hn4.
          have H11: R.+ (z,y) by apply: TclosT H10 H7.
          exact.
   Qed.
-
-
+  
   Lemma uniq_asym2: forall x stl y str z,
       allLu R stl x y -> ~ R.+ (y, last x stl) -> allLu R str y z 
       -> (forall s, s \in str -> s \in stl -> False).
@@ -178,11 +165,8 @@ Section Hn4.
       by move: H1 => + H6;rewrite H6 => /(@allL_to_clos_t T) H1.
   Qed.
   
-  (* utility lemma *)
   Lemma RedBackL: forall (st:seq T) (x y:T),
-      (x::(rcons st y)) [L\in] R
-      -> uniq (x::(rcons st y)) 
-      -> ~ ( R.+ (y,x))
+      allLu R st x y -> ~ ( R.+ (y,x))
       -> exists st', exists y',
           subseq st' st (* subseq (rcons st' y') (rcons st y) *)
           /\ uniq (x::(rcons st' y'))       
@@ -193,7 +177,7 @@ Section Hn4.
           /\ ~ (R.+ (y',(last x st'))).
   Proof.
     have H0: forall (q: seq T) (x' y': T), head y' (rcons q x') = head x' q by elim.
-    elim/last_ind => [x y H1 H2| st z Hr x y H1 H1' H2];
+    elim/last_ind => [x y [H1 H2] | st z Hr x y [H1 H1'] H2];
                     first by (exists [::], y);have H3: y = y \/ R.+ (y, y) by left.
     case H3: ((z,x) \in R.+).
     - exists (rcons st z); exists y.
@@ -211,17 +195,17 @@ Section Hn4.
     - rewrite Lift_crc Lift_rcrc allset_cons allset_rcons in H1.
       move: (H1); rewrite H0 => [[H10 [H10' H10'']]].
       have H5: (x :: rcons st z) [L\in] R by rewrite Lift_crc allset_cons.
-      apply Hr in H5; last by move => /inP H6; rewrite H6 in H3.
-      move: H5 => [st' [y' [H5 [H5' [H6 [H7 [H8 [H9 H9']]]]]]]].
+      have H13: subseq (rcons st z) (rcons (rcons st z) y) by apply: subseq_rcons. 
+      have H14: uniq (x :: rcons st z) by apply: (uniq_subseq H1' H13).
+      have H5': allLu R st x z by split.
+      apply Hr in H5'; last by move => /inP H6; rewrite H6 in H3.
+      move: H5' => [st' [y' [H5'' [H5' [H6 [H7 [H8 [H9 H9']]]]]]]].
       (* have H11: subseq (rcons st' y') (rcons (rcons st z) y)
         by apply subseq_trans with (rcons st z);[ | apply subseq_rcons]. *)
-      have H11: subseq st' (rcons st z). by apply/subseq_trans/subseq_rcons.
+      have H11: subseq st' (rcons st z) by apply/subseq_trans/subseq_rcons.
       (exists st', y'); move: H9 => [H9 | H9].
       by have H12: (y = y' \/ R.+ (y', y)) by right;rewrite -H9;apply: TclosSu.
       by have H12: (y = y' \/ R.+ (y', y)) by right;apply TclosT with z;[ |apply: TclosSu].
-      have H13: subseq (rcons st z) (rcons (rcons st z) y) by apply: subseq_rcons. 
-      have H14: uniq (x :: rcons st z) by apply: (uniq_subseq H1' H13).
-      exact.
   Qed.
 
   (* utility lemma *)
@@ -269,8 +253,7 @@ Section Hn4.
   Qed.
   
   Lemma RedBackLR: forall (x y z:T) (stl: seq T),
-      allLu R stl x y -> ~ R.+ (y,x) -> 
-      (Asym R.+) (y,z) 
+      allLu R stl x y -> ~ R.+ (y,x) -> (Asym R.+) (y,z) 
       -> exists stl', exists yl, exists str', exists yr, exists stlr,
           ((yl = yr) \/ (allLu R stlr yl yr))
           /\ subseq stl' stl (* (rcons stl' yl) (rcons stl y)  *)
@@ -282,7 +265,7 @@ Section Hn4.
           /\ ~ (R.+ ((head z str'),yr)).
   Proof.
     move => x y z stl [H1 H2] H3 /TCP_uniq1 [[str [H4 H5]] H6].
-    pose proof (RedBackL H1 H2 H3) as [stl' [yl [H7' H7]]].
+    pose proof (RedBackL (conj H1 H2) H3) as [stl' [yl [H7' H7]]].
     pose proof (RedBackR H4 H5 H6) as [str' [yr [_ H8]]].
     exists stl';exists yl;exists str';exists yr.
     move: H7 => [L1 [L2 [L3 [L4 [L5 L6]]]]].
@@ -450,15 +433,15 @@ Section Hn4.
   Qed.
   
   (** * The main Lemma of this section *)
-  Lemma Asym2P: forall (x y z:T) (stl: seq T),
-      allLu R stl x y -> ~ R.+ (y,x) -> (Asym R.+) (y,z) 
-      -> exists stl', exists y', exists str',
-          subseq stl' stl 
-          /\ allLu R stl' x y' /\ ~ R.+ (y',x)
-          /\ allLu R str' y' z /\ ~ R.+ (z, y')
-          /\ uniq (stl' ++ str').
+  Lemma Asym2P x y z stl: 
+    allLu R stl x y -> ~ R.+ (y,x) -> (Asym R.+) (y,z) 
+    -> exists stl', exists y', exists str',
+        subseq stl' stl 
+        /\ allLu R stl' x y' /\ ~ R.+ (y',x)
+        /\ allLu R str' y' z /\ ~ R.+ (z, y')
+        /\ uniq (stl' ++ str').
   Proof.
-    move => x y z stl H1 H1' H2.
+    move => H1 H1' H2.
     move: (RedBackLR2 H1 H1' H2) => [stl1 [yl [str1 [yr [stlr H7]]]]].
     move: H7 => [[H7 [H8 [H9' [H9 [H10 [H11 H12]]]]]] | ]. 
     + exists stl1;exists yl;exists stlr.
@@ -659,7 +642,6 @@ Section Infinite_path.
 
 End Infinite_path. 
 
-
 (** What is done here: 
     given a path (f 0) -> (g 0) -> (f 1) -> g(1) -> f(2) in a graph 
     defined by a relation R, where the function f and g are given.
@@ -671,8 +653,8 @@ End Infinite_path.
 *)
 
 Section val_construction.
+
   (** utilities *)
-  
   Context (T:eqType) (f: nat -> T) (g: nat -> seq T).
   
   Section prelude.
