@@ -41,13 +41,23 @@ Section Hn4.
   Variables (T: eqType) (R: relation T).
   Implicit Types (st: seq T) (x y s z:T).
   
+  Lemma allL_rc_asym st y z: z \in st -> (rcons st y) [L\in] R -> R.+ (z, y).
+  Proof.
+    by move => H1 /(@Lift_in_F T R) H2;move: (allset_in H1 H2) => /inP ?;rewrite Fset_t0.
+  Qed.
+  
+  Lemma allL_c_asym st x y: y \in st -> (x::st) [L\in] R -> R.+ (x, y).
+  Proof.
+    by move => H1 /(@Lift_in_A _ R) H3;move: (allset_in H1 H3);rewrite /Aset inP -Fset_t0.  
+  Qed.
+  
   Lemma allL_asym_l1 st x y: allL R st x y -> ~ R.+ (y, last x st) -> (Asym R.+) (x, y).
   Proof.
     move => H1 H2;split => [|H3];first by apply: (allL_to_clos_t H1).
     case H4: (st == [::]); first by move: H4 H2 => /eqP -> /= ?. 
     move: H4 => /eqP/(@last_in T) => /(_ x) H4.
     have H5: (last x st) \in (rcons st y) by rewrite in_rcons;apply/orP;left. 
-    move: (Lxx_head H5 H1) => H6. 
+    move: (allL_c_asym H5 H1) => H6. 
     by have: R.+ (y, last x st) by apply: TclosT H3 H6.
   Qed.
 
@@ -57,7 +67,7 @@ Section Hn4.
     case H4: (st == [::]);first by move: H4 H2 => /eqP -> /= ?.
     move: H4 => /eqP/(@head0 T) => /(_ y) H4.
     have H5: (head y st) \in (x::st) by rewrite in_cons;apply/orP;right.
-    move: (Lxx H5 H1) => H6. 
+    move: (allL_rc_asym H5 H1) => H6. 
     by have: R.+ (head y st,x) by apply: TclosT H6 H3.
   Qed.
   
@@ -90,7 +100,7 @@ Section Hn4.
   Proof.
     move => H1 H3 H4 H5 H6;move: (allL_asym_l H1 H3 H4) => H7.
     have H8: s' \in (rcons st' z) by rewrite in_rcons H5 orTb. 
-    pose proof (Lxx_head H8 H6) as H9. 
+    pose proof (allL_c_asym H8 H6) as H9. 
     have H10: (Asym(R.+) `;` R.+) (s,s') by (exists y).
     by move: H10 => /AsymIncr H10.
   Qed.
@@ -102,7 +112,7 @@ Section Hn4.
   Proof.
     move => H1 H2 H3 H5 H6;move: (allL_asym_r H3 H5 H6) => H7.
     have H8: s \in (x::st) by rewrite in_cons H1 orbT. 
-    pose proof (Lxx H8 H2) as H9. 
+    pose proof (allL_rc_asym H8 H2) as H9. 
     have H10: (R.+  `;` Asym(R.+)) (s,s') by (exists y).
     by move: H10 => /AsymIncl H10.
   Qed.
@@ -1094,10 +1104,7 @@ Section main_result.
 
   Hypothesis A1: (exists (v0:T), (v0 \in setT)).
   
-  (** * here we insert the results of mono_f and conclude *)
-  
-  Lemma Asym2P5': 
-    (iic (Asym R.+)) -> exists h: nat -> T, (forall n, R ((h n), (h n.+1))) /\ injective h.
+  Lemma Asym2P5': (iic (Asym R.+)) -> (iic_inj R). 
   Proof.
     move => /(@Asym2P5 T R A1) [k [l H1]]. 
     move: (H1) => /allL2val_inj ?.
@@ -1106,7 +1113,7 @@ Section main_result.
     move: H2 => /allL2val ?. 
     by exists (val k l).
   Qed.
-
+  
 End main_result.
 
 

@@ -258,7 +258,7 @@ Section allset.
     elim: st => [// | x spa Hr /andP];rewrite !allset_cons => [[[? ?] [? ?]]].
     by split;[rewrite /setI /mkset | apply Hr;apply/andP].
   Qed.
-
+  
 End allset.
 
 Section allset2.
@@ -557,7 +557,7 @@ Section allset_Lifted.
   (** * with specified endpoints *)
 
   Context {T: Type}.
-  Implicit Types (T : Type) (R: relation T) (X Y: set T) (st: seq T) (x y z:T).
+  Implicit Types (R: relation T) (X Y: set T) (st: seq T) (x y z:T).
   
   Lemma allL0 R x y:  allL R [::] x y = ((x,y) \in R).
   Proof. by rewrite /allL Lift_cc /andP /= andbT. Qed.

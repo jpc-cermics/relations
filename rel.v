@@ -1414,6 +1414,8 @@ Section Infinite_paths.
   Proof. by move => [f H1] x;exists (iterf f x). Qed.
   
   Definition iic (R: relation T) := exists f : nat -> T, forall n, R ((f n),(f (S n))).  
+
+  Definition iic_inj (R: relation T) := exists f : nat -> T, (forall n, R ((f n),(f (S n)))) /\ injective f.
   
   Lemma total_rel''_to_iic R: (exists (v0:T), (v0 \in setT)) ->  total_rel'' R -> iic R. 
   Proof. by move => -[v0 H1] /(_ v0) [f [H2 H3]]; exists f. Qed.

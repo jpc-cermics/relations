@@ -133,7 +133,7 @@ Section Set_order.
 End Set_order. 
 
 Section Infinite_paths.
-  (** *  iic_injective *) 
+  (** *  iic_asym_injective *) 
 
   Context (T : Type).
   Implicit Types (T : Type) (R S: relation T) (A B: set T).
@@ -170,10 +170,9 @@ Section Infinite_paths.
     by move: (H0 p q H2) => [p' [H3 ->]];move: (Hi p' q H3);symmetry.
   Qed.
   
-  Lemma iic_injective R: 
-    (iic (Asym R.+)) -> exists f,  (forall n, (Asym R.+) ((f n),(f (S n)))) /\ injective f.
+  Lemma iic_asym_injective R: iic (Asym R.+) -> iic_inj (Asym R.+).
   Proof. by move => [f /[dup] H1 /AsymInf H2];exists f. Qed.
-    
+  
 End Infinite_paths.
 
 Section Infinite_paths_X.

@@ -14,7 +14,7 @@
 (******************************************************************************)
 
 Set Warnings "-parsing -coercions".
-From mathcomp Require Import all_boot seq order boolp classical_sets. 
+From mathcomp Require Import all_boot seq order boolp classical_sets contra. 
 From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
 
@@ -25,54 +25,6 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
-
-Section nat_util. 
-  
-  (** * we can use lia with mathcomp thanks to zify *)
-  Lemma P4 n i: i.+1 < n.+1 -> i < n. Proof. by lia. Qed.
-  Lemma P5 n i: i < n.+1 -> (i == n) = false -> i < n. Proof. by lia.  Qed.
-  Lemma P6 n: n.+1 < n = false. Proof. by lia. Qed.
-  Lemma P7 n i: i < n -> (i.+1 < n) = false -> i.+1 = n. Proof. by lia. Qed.
-  Lemma P8 n: (n.+1 == n) = false. Proof. by lia. Qed.
-  Lemma P9 n: n.+2 < n = false. Proof. by lia. Qed.
-  Lemma P10 n: n.+2 == n = false. Proof. by lia. Qed. 
-  Lemma P11 n i: i < n -> i.+1 = n -> (i = n.-1)%N. Proof. by lia. Qed.
-
-  Lemma P4' n i: i.+1 < n.+1 <-> i < n. 
-  Proof. by rewrite ltnS. Qed. 
-  
-  Lemma P5' n i: i < n.+1 -> (i == n) = false -> i < n.
-  Proof. by rewrite leq_eqVlt eqSS => /orP [-> // | ? _];apply: P4.
-  Qed.
-  
-  Lemma P6' n : n.+1 < n = false.
-  Proof. by apply/negP => H6;move: (leq_ltn_trans (leqnSn n) H6);rewrite ltnn. Qed.
-
-  Lemma P7' n i: i < n -> (i.+1 < n) = false -> i.+1 = n.
-  Proof.
-    move => H1 /negP/negP H2; move: H2; rewrite -ltnNge => H2.
-    case H3: (i.+1 == n);first by move: H3 =>/eqP H3.
-    move: H2;rewrite ltnS leq_eqVlt ltnS => /orP [/eqP -> // | H2].
-    by move: (leq_ltn_trans H2 H1);rewrite ltnn.
-  Qed.
-  
-  Lemma P8' n: (n.+1 == n) = false.
-  Proof. by apply/negP => /eqP H0;move: (ltnSn n);rewrite -{1}H0 ltnn. Qed.
-  
-  Lemma P9' n: n.+2 < n = false.
-  Proof. by apply/negP => H9;move: (leq_ltn_trans (leqnSn n.+1) H9);rewrite P6.
-  Qed.
-  
-  Lemma P10' n: n.+2 == n = false.
-  Proof. by elim: n . Qed.
-  
-  Lemma P11': forall n i, i < n -> i.+1 = n -> (i = n.-1).
-  Proof.
-    move => n i H0 H1; pose proof (ltn_predK H0) as H2.
-    by move: H1; rewrite -{1}H2 => /eqP H1; move: H1; rewrite eqSS => /eqP H1.
-  Qed.
-  
-End nat_util. 
 
 Section Seq1_plus. 
   (** * extensions of results from seq1 and rel using eqType *)
@@ -91,16 +43,14 @@ Section Seq1_plus.
   
   Lemma mem_last s x: last x s \in x :: s.
   Proof. by rewrite lastI mem_rcons mem_head. Qed.
- 
-  Lemma size0P s: ~ ( s = [::]) <-> 0 < size s.
-  Proof. 
-    split;last by move => + /nilP/eqP H1;rewrite H1.
-    by move: (leq0n (size s));rewrite leq_eqVlt eq_sym=> /orP [/nilP|? _].
-  Qed.
   
-  Lemma ZZpoo1 s: ( s = [::]) <-> size s == 0.
+  Lemma size0E s: ( s = [::]) <-> size s == 0.
   Proof. by split => [/nilP|/nilP]. Qed.
 
+  Lemma size0P s: ~ ( s = [::]) <-> 0 < size s.
+  Proof. by split =>[|/[swap] /nilP/eqP -> //];contra;rewrite leqn0 => /nilP. Qed.
+         
+  
   Lemma head0 s x: ~ ( s = [::]) -> (head x s) \in s.
   Proof. by elim: s x => [//| x s _ ? _ /=];rewrite in_cons eq_refl. Qed.
    
@@ -183,16 +133,6 @@ Section Seq1_plus.
     move: H7; rewrite [sl' in (has _ sl')]H4' => /has_mask/hasP [x H7 H8].
     move: H8 => /andP [_ H8].
     by pose proof (H3 x H8 H7).
-  Qed.
-  
-  Lemma Lxx R s y z: z \in s -> (rcons s y) [L\in] R -> R.+ (z, y).
-  Proof.
-    by move => H1 /(@Lift_in_F T R) H2;move: (allset_in H1 H2) => /inP ?;rewrite Fset_t0.
-  Qed.
-  
-  Lemma Lxx_head R s x y: y \in s -> (x::s) [L\in] R -> R.+ (x, y).
-  Proof.
-    by move => H1 /(@Lift_in_A _ R) H3;move: (allset_in H1 H3);rewrite /Aset inP -Fset_t0.  
   Qed.
   
   Lemma uniq_crc s x y:
