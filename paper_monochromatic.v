@@ -12,16 +12,27 @@ Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_boot seq order boolp classical_sets. 
 From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
-
 From RL Require Import  seq1 seq2 rel.
 
-(* Require Import ClassicalChoice. *)
+From RL Require Import  paper_monochromatic_f. 
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
+
+Section CheckAsym. 
+
+  Context (T : choiceType) (R: relation T).
+  Hypothesis A1: (exists (v0:T), (v0 \in setT)).
+
+  Import Asyminf2Inf(Asym2P5', allL_rc_asym).
+  
+  Lemma check_asym:  (iic (Asym R.+)) -> (iic_inj R). 
+    Proof. by apply: (@Asym2P5' T R A1). Qed.
+End  CheckAsym. 
+
 
 Reserved Notation "A [<=] B" (at level 4, no associativity). 
 Reserved Notation "A [<= R ] S" (at level 4, no associativity). 
