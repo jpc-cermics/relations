@@ -653,7 +653,7 @@ Section Paper.
   
   Section Maximal. 
 
-    (** * We show that the maximal set is the independ set we search *)
+    (** * We show that the maximal set is the independent set we search *)
     Variable (Sm: set T).
     
     Definition IsMaximal (S: set T):= 
