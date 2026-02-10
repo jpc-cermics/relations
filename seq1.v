@@ -48,7 +48,7 @@ Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_boot order.
 From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
-(* From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *) *)
+(* From mathcomp Require Import zify. *)
 Set Warnings "parsing coercions".
 
 From RL Require Import rel. 
@@ -959,10 +959,9 @@ Section PathRel.
   Qed.
   
   (* R.+ =  PathRel R *)
-  (* begin snippet TCP':: no-out *)  
-  (* Lemma TCP' (R: relation T) : R.+ = [set vp | exists p, (Lift (vp.1::(rcons p vp.2))) [\in] R]. *)
-  Lemma TCP' (R: relation T) : R.+ = [set vp | exists p, allL R p vp.1 vp.2 ].
-  (* end snippet TCP' *)  
+  (* begin snippet TCP:: no-out *)  
+  Lemma TCP (R: relation T) : R.+ = [set vp | exists p, allL R p vp.1 vp.2 ].
+  (* end snippet TCP *)  
   Proof.
     rewrite predeqE => -[x y];split => [/(@clos_t_iterk T) [n] | [p H1]].
     by rewrite  Itern_iff_PathReln /PathRel_n => -[p [H1 H2]];(exists p).
@@ -971,12 +970,12 @@ Section PathRel.
   Qed.
   
   Lemma allL_to_clos_t  (R: relation T) : forall (st: seq T) x y, allL R st x y -> R.+ (x,y).
-  Proof. by move => st x y; rewrite TCP'; exists st. Qed.
+  Proof. by move => st x y; rewrite TCP; exists st. Qed.
   
   Lemma TCP'' (R: relation T) (X: set T): 
     (Δ_(X) `;` R).+ = [set vp | exists p, (vp.1::p) [\in] X /\ allL R p vp.1 vp.2 ].
   Proof.
-    rewrite {1}TCP' predeqE => -[x y].
+    rewrite {1}TCP predeqE => -[x y].
     split; first by move => [p /allL_WS_iff /andP [H1 H2]];(exists p).
     by move => [p /andP/allL_WS_iff ?];(exists p).
   Qed.
@@ -1048,6 +1047,7 @@ Definition ActiveOe' {T: Type} (X: set T) (R: relation T) :=
       | (N,P,v) => X.^c v
       | (P,N,v) => (Fset R.* X) v
       end].
+
 
 (* Active is now almost expressed as a transitive closure 
  * on an lifted space (A * A) * O as it uses AllL *)
@@ -1734,7 +1734,42 @@ Section Active_paths_simple.
   
 End Active_paths_simple.  
 
-(* 
+(* Start of removable part XXXXXX  *)
+
+Section ActiveOe_equiv.
+  
+  Context {T: Type}.
+  Implicit Types (W X: set T) (R: relation T) (o: O) (p: seq (T*T*O)).
+
+  Lemma ActiveOe_iff: forall (W: set T) (E: relation T), 
+      ActiveOe W E = ActiveOe' W E.
+  Proof.
+    move => W E.
+    rewrite /ActiveOe' /A_tr /ActiveOe /setI /setX /mkset predeqE => [[eo1 eo2]].
+    by split => [[[H1 H2] [H3 H4]] | [H1 [H2 [H3 H4]]]]. 
+  Qed.
+
+  Lemma ActiveOe_Oedge: forall (W: set T) (E: relation T) (eo : (T*T*O) * (T*T*O)),
+      (ActiveOe W E) eo -> Oedge E eo.1 /\ Oedge E eo.2.
+  Proof.
+    by move => W E eo [H1 [H2 _]].
+  Qed.
+  
+  Lemma ActiveOe_Compose: forall (W: set T) (E: relation T) (eo : (T*T*O) * (T*T*O)),
+      eo \in (ActiveOe W E) -> ChrelO eo. 
+  Proof.
+    by move => W E eo;rewrite ActiveOe_iff => /inP [_ [_ [H3 _]]].
+  Qed.
+
+  Lemma ActiveOe_ChrelO: forall (W: set T) (E: relation T),
+      (ActiveOe W E) `<=` ChrelO.
+  Proof.
+    move => W E;rewrite /subset => s /inP H1.
+    by apply ActiveOe_Compose with W E.
+  Qed.
+
+End  ActiveOe_equiv.
+
 Section Endpoints_and_Deployment.
   (** * endpoints  *)
   
@@ -2208,7 +2243,7 @@ Section Extended_Oriented_Paths.
       move => [H5 [[H6 H6'] [H7 [H8 H9]]]].
       have H10: stto [L\in] (ActiveOe W E)
         by apply (@Rpath_L3 (T*T*O)).
-      by [].
+      by rewrite -ActiveOe_iff.
   Qed.
 
   Theorem Active_check2: forall (E: relation T) (W: set T) (x y:T) stto,
@@ -2226,13 +2261,14 @@ Section Extended_Oriented_Paths.
         by rewrite 2!last_cons.
       have H7: eo1::(rcons (belast eo2 stto') (last eo2 stto')) = stto
         by rewrite -lastI.
-      have H8: stto [L\in]  (ActiveOe W E) by rewrite -H7.
+      have H8: stto [L\in]  (ActiveOe' W E) by rewrite -H7.
+      have H8'': stto [L\in]  (ActiveOe W E) by rewrite ActiveOe_iff.
       move: H2 H3 H8;rewrite -H5 -H6 -H1 => H2 H3 H8.
       rewrite inP /D_U_a1 /mkset.
       have H9:  1 < size stto by rewrite H1.
       have H9':  0 < size stto by rewrite H1.
       have H10: stto [\in] (Oedge E)
-        by move: H8;rewrite allset_I => /andP [H8 H8']; apply (@Rpath_L2 (T*T*O)).
+        by move: H8'';rewrite allset_I => /andP [H8'' H8']; apply (@Rpath_L2 (T*T*O)).
       have H11: stto [L\in] ChrelO
         by pose proof (@ActiveOe_ChrelO T);apply allset_subset with (ActiveOe W E);
         [apply ActiveOe_ChrelO |].
@@ -2332,14 +2368,14 @@ Section Extended_Oriented_Paths.
   Qed.
   
 End Extended_Oriented_Paths.
-*)
+(* End of removable part XXXXX *)
 
 
 Section Active_path_unique. 
   
   Variables (T: Type). 
 
-  Lemma ChrelO_eq: forall (x y z t: T) (o1 o2:O),
+  Lemma ChrelO_eq': forall (x y z t: T) (o1 o2:O),
       ChrelO ((x,y,o1), (z,t,o2)) <-> y = z.
   Proof. by []. Qed.
   
@@ -2397,14 +2433,14 @@ Section Active_path_unique.
       - rewrite -4!rcons_cons Active_path_rcrc'.
         have -> : [:: (x, y, P); (y, z, P)] = rcons [:: (x, y, P)]  (y, z, P) by [].
         rewrite Active_path_rcrc' /head.
-        move => [[H1 [H'2 [H'3 [/ChrelO_eq H'4 H'5]]]] [H3 [H4 [_ H6]]]].
+        move => [[H1 [H'2 [H'3 [/ChrelO_eq' H'4 H'5]]]] [H3 [H4 [_ H6]]]].
         by (exists [::z]).
       - move => [[t s] o] p Hr x y z u v w.
         rewrite rcons_cons rcons_cons Active_path_cc_old.
         elim: p Hr.
         + move => Hr [H1 H2].
           move: (H1);
-            rewrite Active_path_cc_old => [[_ [_ [_ [/ChrelO_eq H3 _]]]]];
+            rewrite Active_path_cc_old => [[_ [_ [_ [/ChrelO_eq' H3 _]]]]];
                                                rewrite <- H3 in *.
           elim: o H1 => [ /Hr [q [H1 H4]] | ].
           ++ exists [:: z & q].
@@ -2417,7 +2453,7 @@ Section Active_path_unique.
              by split.
         + move => [[a b] o2] p _ H1 H2.
           move: (H2);rewrite Active_path_cc_old rcons_cons rcons_cons;
-            move => [[_ [_ [_ [/ChrelO_eq H6 _]]]] _].
+            move => [[_ [_ [_ [/ChrelO_eq' H6 _]]]] _].
           rewrite <- H6 in *; clear H6.
           elim: o H2 => [[H2 H3] | ].
           ++ apply H1 in H2;move:H2 => [q H2].

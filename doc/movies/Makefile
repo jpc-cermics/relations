@@ -24,7 +24,6 @@ SNIPPETS = \
 	snippets/rel/Stwo-n.tex \
 	snippets/rel/Sthree-n.tex \
 	snippets/seq1/LiftO-n.tex \
-	snippets/seq1/Sn-n.tex \
 	snippets/seq1/Lift-n.tex \
 	snippets/seq1/OO-n.tex \
 	snippets/seq1/pair-n.tex \
@@ -56,17 +55,17 @@ SNIPPETS = \
 	snippets/seq1/LiftLift-n.tex \
 	snippets/paper_relations/Aw-n.tex \
 	snippets/paper_csbr/theoremfive-n.tex \
-	snippets/mono/RelIndep-n.tex \
-	snippets/mono/leset-n.tex \
-	snippets/mono/Mono-n.tex \
-	snippets/mono/ScalP-n.tex \
-	snippets/mono/Scal-n.tex \
-	snippets/mono/Rloop-n.tex \
-	snippets/mono/Assumptions-n.tex \
-	snippets/mono/Scalnotempty-n.tex \
-	snippets/mono/SType-n.tex \
-	snippets/mono/leSetone-n.tex \
-	snippets/mono/Chains-n.tex \
+	snippets/rel/RelIndep-n.tex \
+	snippets/paper_monochromatic/leset-n.tex \
+	snippets/paper_monochromatic/Mono-n.tex \
+	snippets/paper_monochromatic/Scal-n.tex \
+	snippets/rel/Rloop-n.tex \
+	snippets/paper_monochromatic/Assumptions-n.tex \
+	snippets/paper_monochromatic/Scalnotempty-n.tex \
+	snippets/paper_monochromatic/SType-n.tex \
+	snippets/paper_monochromatic/leSetone-n.tex \
+	snippets/paper_monochromatic/Chains-n.tex \
+
 
 all: allstd allplus ../snippets.tex
 

@@ -337,7 +337,7 @@ Section allL_uniq.
   Lemma TCP_uniq R x y: R.+ (x,y) <-> exists s, ~ x \in s /\ ~ y \in s /\ uniq s /\ allL R s x y. 
   Proof.
     split;last by move => [s [_ [_ [_ /(@allL_to_clos_t T R s) ?]]]].
-    by rewrite TCP' /mkset => -[s /allL_uniq H1];move: H1 => [s' /= [_ H1]];(exists s').
+    by rewrite TCP /mkset => -[s /allL_uniq H1];move: H1 => [s' /= [_ H1]];(exists s').
   Qed.
   
   Lemma TCP_uniq'' R x y:

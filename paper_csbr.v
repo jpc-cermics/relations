@@ -182,7 +182,7 @@ Section Bw_implies_active_path.
   Proof.
     rewrite /Bw -DuT_eq_Tstar /mkset .
     move => x y [x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
-    move: H2; rewrite {1}TCP' => -[p /clos_t_to_paths_l [H3 [H4 H5]]].
+    move: H2; rewrite {1}TCP => -[p /clos_t_to_paths_l [H3 [H4 H5]]].
     exists (x1::p);split;last by [].
     by apply Active_path_simple;split;[ | rewrite /R_o allL_c H4 andbT;apply: mem_set].
   Qed.
@@ -222,7 +222,7 @@ Section Bmw_implies_active_path.
   Proof.
     rewrite /Bmw /inverse /Bw -DuT_eq_Tstar.
     move => x y [x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
-    move: H2; rewrite {1}TCP' => -[p /clos_t_to_paths_l [H3 [/allL_rev H4 H5]]].
+    move: H2; rewrite {1}TCP => -[p /clos_t_to_paths_l [H3 [/allL_rev H4 H5]]].
     move: H3 => /allset_cons [H3 H3'].
     exists (rcons (rev p) x1); split.
     apply Active_path_simple.
