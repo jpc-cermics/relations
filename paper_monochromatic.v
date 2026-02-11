@@ -9,7 +9,7 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 Set Warnings "-parsing -coercions".
-From mathcomp Require Import all_boot seq order boolp classical_sets. 
+From mathcomp Require Import all_boot seq order boolp classical_sets contra. 
 From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
 From RL Require Import  seq1 seq2 rel.
@@ -343,12 +343,35 @@ Section Paper.
     (* end snippet Sinf *)   
 
     (* A relation on the set Elt C, all the elements
-       of T which are elements of a set in the chain C *)
+       of T which are elements of a set in C *)
     (* begin snippet RC:: no-out *)   
     Definition RC:= [set xy:Ec*Ec |
                       ((sval xy.1) \in Sinf /\ xy.2 = xy.1)
                       \/ (~ ((sval xy.1) \in Sinf) /\ (Asym Eb.+) (sval xy.1, sval xy.2))].
+    (* end snippet RC*)   
 
+        
+    Lemma transitive_RC: transitive RC. 
+    Proof.
+      have H3: transitive (Asym Eb.+) by apply/Asym_preserve_transitivity/TclosT.
+      by move => x y z [/= [H0 ->]| [H1 H1']] [ /= [H0' /= ->]| /= [H2 H2']]; 
+                [left | right | right |right;split;[ | apply H3 with (sval y)]].
+    Qed.
+
+    (** * Elt C  is not empty *)
+    (* begin snippet Eltnotempty:: no-out *)   
+    Lemma Elt_not_empty: exists _ : Elt C, True.
+    (* end snippet Eltnotempty *)   
+    Proof.
+      have: exists (S: SType), S \in C /\ (exists x, x \in (sval S)).
+      move: Hne => /notempty_exists [S H2];exists S;split;first by []. 
+      by move: S H2 => [S' [H3 [H4 /notempty_exists H5]] /=] _.
+            
+      move => [S [? [x ?]]].
+      have H4: exists (S: SType), S \in C /\ x \in (sval S) by (exists S).
+      by exists (exist _ x H4).
+    Qed.
+    
     Section total_RC. 
       (** *  the main result here is total_RC *) 
 
@@ -380,7 +403,9 @@ Section Paper.
         by exists (exist _ s1 H7).
       Qed.
       
+      (* begin snippet totalRC:: no-out *)    
       Lemma total_RC: total_rel RC. 
+      (* end snippet totalRC:: no-out *)    
       Proof.
         move => s.
         case H3: ((sval s) \in Sinf); first by (exists s); left.
@@ -388,68 +413,45 @@ Section Paper.
         move: (total_RC_L3 H4) => [s1 H5].
         by exists s1; right.
       Qed.
+
+      Lemma iic_RC: (iic RC).
+      Proof.
+        apply DC; last by apply: total_RC.
+        move: Elt_not_empty => [x _];exists x;by apply/inP.
+      Qed.
       
     End total_RC. 
+        
+    Lemma Elt_not_empty_witness: Elt C.
+    Proof. by apply: inhabited_witness; rewrite inhabitedE; apply: Elt_not_empty. Qed.
     
-    (* end snippet RC*)   
-    Lemma transitive_RC: transitive RC. 
-    Proof.
-      have H3: transitive (Asym Eb.+) by apply/Asym_preserve_transitivity/TclosT.
-      by move => x y z [/= [H0 ->]| [H1 H1']] [ /= [H0' /= ->]| /= [H2 H2']]; 
-                [left | right | right |right;split;[ | apply H3 with (sval y)]].
-    Qed.
-
-    Lemma Elt_not_empty: exists (S: SType), S \in C /\ (exists x, x \in (sval S)).
-    Proof.
-      move: Hne => /notempty_exists [S H2];exists S;split;first by []. 
-      by move: S H2 => [S' [H3 [H4 /notempty_exists H5]] /=] _.
-    Qed.
-
-    Lemma ChnotE: exists _ : Elt C, True.
-    Proof.
-      move: Elt_not_empty => [S [? [x ?]]].
-      have H4: exists (S: SType), S \in C /\ x \in (sval S) by (exists S).
-      by exists (exist _ x H4).
-    Qed.
-
-    Lemma ChnotE_witness: Elt C.
-    Proof. by apply: inhabited_witness; rewrite inhabitedE; apply: ChnotE. Qed.
-    
-
     Section total_RC_to_iic.
+      (** consequence of the fact that RC is total *)
 
-      Lemma test0_iic_RC: forall s, exists f : nat -> (Elt C), f 0 = s /\ forall n, RC ((f n),(f (S n))).  
+      Implicit Type (f: nat -> Elt C) (s: Elt C).
+        
+      Lemma test1_RC s f: 
+        f 0=s /\ (forall n, RC ((f n),(f (S n)))) 
+        -> (forall n, ~ (sval (f n)) \in Sinf) -> iic (Asym Eb.+). 
       Proof. 
-        by move: total_RC => /total_rel_iff H1;apply: total_rel'_to_total_rel''. 
+        move => H1 H2;exists (fun n => (sval (f n))) => n.
+        by move: H1 H2 => [H0 /(_ n) [/=[H1 H1'] | /= [H1 H1']]] /(_ n) H2.
       Qed.
       
-      Lemma test1_RC:forall s, forall f: nat -> (Elt C),
-          f 0=s /\ (forall n, RC ((f n),(f (S n)))) 
-          -> (forall n, ~ (sval (f n)) \in Sinf)
-          -> (forall n, (Asym Eb.+) (sval (f n), sval(f (S n)))).
+      Lemma test2_RC s f: ~ (iic (Asym Eb.+))
+                           -> f 0=s /\ (forall n, RC ((f n),(f (S n))))
+                           -> ~ (forall n, ~ (sval (f n)) \in Sinf).
+      Proof. by move => H1 /test1_RC H2 /H2 H3. Qed.
+      
+      Lemma test4_RC: ~ (iic (Asym Eb.+))
+                      -> forall s, exists f, (f 0=s /\ (forall n, RC ((f n),(f (S n)))))
+                                  /\ exists n, (sval (f n)) \in Sinf.
       Proof. 
-        by move => s f + + n => [[H0 /(_ n) [/=[H1 H1'] | /= [H1 H1']]]] /(_ n) H2.
+        move: total_RC => /total_rel_iff /total_rel'_to_total_rel'' H1.
+        move: H1 => + H2 s => /(_ s) [f H3].
+        by exists f;split;[ | apply/not_existsP;apply: (test2_RC H2 H3)].
       Qed.
       
-      Lemma test3_RC: ~ (iic (Asym Eb.+)) -> 
-                      forall s, exists f: nat -> (Elt C), (f 0=s /\ (forall n, RC ((f n),(f (S n)))))
-                                /\ ~ (forall n, ~ (sval (f n)) \in Sinf).
-      Proof.
-        move => H1; move: test0_iic_RC => + s => /(_ s) [f H2].
-        exists f; split => [// | H4]. 
-        have H5:  iic (Asym Eb.+)
-          by exists (fun n => (sval (f n)));move: test1_RC => /(_ s f) H6;apply: H6. 
-               exact.
-      Qed.
-      
-      Lemma test4_RC: ~ (iic (Asym Eb.+)) ->
-                      forall s, exists f: nat -> (Elt C), (f 0=s /\ (forall n, RC ((f n),(f (S n)))))
-                                /\ exists n, (sval (f n)) \in Sinf.
-      Proof.
-        move => H1; move: (test3_RC H1) => + s => /(_ s) [f [H2 /not_existsP [n H3]]].
-        exists f;split;[ exact| exists n; exact].
-      Qed.
-
       Lemma transitiveN_RC: forall f: nat -> (Elt C), 
           (forall n, RC ((f n),(f (S n)))) -> (forall n, n > 1 -> RC (f 0, f n)).
       Proof.
@@ -473,7 +475,7 @@ Section Paper.
       Qed.
       
       Lemma test_yy: ~ (iic (Asym Eb.+)) ->
-                     forall s, exists f: nat -> (Elt C), f 0=s /\ (exists n, (sval (f n)) \in Sinf /\ RC ((f 0), (f n))).
+                     forall s, exists f, f 0=s /\ (exists n, (sval (f n)) \in Sinf /\ RC ((f 0), (f n))).
       Proof.
         move => H1; move: (test4_RC H1) => + s => /(_ s) [f [[H2 H3] [n H4]]].
         exists f. split;first by [].
@@ -490,7 +492,7 @@ Section Paper.
       Qed.
 
       Lemma ChooseRC5:~ (iic (Asym Eb.+))
-            -> forall (s: Elt C), (sval s \in Sinf) \/ exists s',  s' \in Sinf /\ (Asym Eb.+) (sval s, s').
+            -> forall (s: Elt C), (sval s \in Sinf) \/ exists (s':T), (s' \in Sinf) /\ (Asym Eb.+) (sval s, s').
       Proof. 
         move => H1; move: (test_yy H1) => + s => /(_ s) [f [H2 [n [H3 H3']]]].
         case H4: (sval (f 0) \in Sinf). by left; rewrite -H2 H4.
@@ -584,7 +586,7 @@ Section Paper.
     
     Lemma Sinf_not_empty: (Sinf C) != set0.
     Proof.
-      move: (@ChnotE C Hne) => [s _];rewrite -notempty_exists.
+      move: (@Elt_not_empty C Hne) => [s _];rewrite -notempty_exists.
       by move: (ChooseRC5 A4 s) => [H1 | [s' [H1 _]]];[exists (sval s) | exists s'].
     Qed.
     
@@ -1020,4 +1022,5 @@ Section Paper.
       by exists Sm; move => x; apply: fact14.
     Qed.
     
+
 End Paper.
