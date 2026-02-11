@@ -23,7 +23,7 @@ Unset Printing Implicit Defensive.
 Local Open Scope classical_set_scope.
 
 Section CheckAsym. 
-
+  (** * main result from paper_monochromatic_f *)
   Context (T : choiceType) (R: relation T).
   Hypothesis A1: (exists (v0:T), (v0 \in setT)).
 
@@ -32,7 +32,6 @@ Section CheckAsym.
   Lemma check_asym:  (iic (Asym R.+)) -> (iic_inj R). 
     Proof. by apply: (@Asym2P5' T R A1). Qed.
 End  CheckAsym. 
-
 
 Reserved Notation "A [<=] B" (at level 4, no associativity). 
 Reserved Notation "A [<= R ] S" (at level 4, no associativity). 
@@ -331,9 +330,6 @@ Section Paper.
     
     Variables  (C: set SType).
     Hypothesis Hne: C != set0.
-    (* begin snippet Ec:: no-out *)   
-    Definition Ec := Elt C.
-    (* end snippet Ec *) 
     
     (* Set Sinf associated to a chain C *)
     (* begin snippet Sinf:: no-out *)   
@@ -345,11 +341,10 @@ Section Paper.
     (* A relation on the set Elt C, all the elements
        of T which are elements of a set in C *)
     (* begin snippet RC:: no-out *)   
-    Definition RC:= [set xy:Ec*Ec |
+    Definition RC:= [set xy: (Elt C)*(Elt C) |
                       ((sval xy.1) \in Sinf /\ xy.2 = xy.1)
                       \/ (~ ((sval xy.1) \in Sinf) /\ (Asym Eb.+) (sval xy.1, sval xy.2))].
     (* end snippet RC*)   
-
         
     Lemma transitive_RC: transitive RC. 
     Proof.
@@ -394,8 +389,8 @@ Section Paper.
         by move: ((H6 s) H3) => [s1 [H8 [H9 | H9]]];exists S1, s1;[rewrite -H9 in H8|].
       Qed.
       
-      Lemma total_RC_L3: forall (s: Ec), 
-          ~ ((sval s) \in Sinf) -> exists (s1: Ec), (Asym Eb.+) (sval s,sval s1).
+      Lemma total_RC_L3: forall (s: Elt C), 
+          ~ ((sval s) \in Sinf) -> exists (s1: Elt C), (Asym Eb.+) (sval s,sval s1).
       Proof.
         move => [s [S [H1 H2]]] H3.
         move: (total_RC_L2 H1 H2 H3) => [S1 [s1 [H4 [H5 H6]]]].
@@ -430,7 +425,7 @@ Section Paper.
 
       Implicit Type (f: nat -> Elt C) (s: Elt C).
         
-      Lemma test1_RC s f: 
+      Lemma total_RC_P1 s f: 
         f 0=s /\ (forall n, RC ((f n),(f (S n)))) 
         -> (forall n, ~ (sval (f n)) \in Sinf) -> iic (Asym Eb.+). 
       Proof. 
@@ -438,69 +433,54 @@ Section Paper.
         by move: H1 H2 => [H0 /(_ n) [/=[H1 H1'] | /= [H1 H1']]] /(_ n) H2.
       Qed.
       
-      Lemma test2_RC s f: ~ (iic (Asym Eb.+))
-                           -> f 0=s /\ (forall n, RC ((f n),(f (S n))))
-                           -> ~ (forall n, ~ (sval (f n)) \in Sinf).
-      Proof. by move => H1 /test1_RC H2 /H2 H3. Qed.
-      
-      Lemma test4_RC: ~ (iic (Asym Eb.+))
-                      -> forall s, exists f, (f 0=s /\ (forall n, RC ((f n),(f (S n)))))
-                                  /\ exists n, (sval (f n)) \in Sinf.
+      Lemma total_RC_P2:
+        ~ (iic (Asym Eb.+))
+        -> forall s, exists f, (f 0=s /\ (forall n, RC ((f n),(f (S n)))))
+                    /\ exists n, (sval (f n)) \in Sinf.
       Proof. 
         move: total_RC => /total_rel_iff /total_rel'_to_total_rel'' H1.
         move: H1 => + H2 s => /(_ s) [f H3].
-        by exists f;split;[ | apply/not_existsP;apply: (test2_RC H2 H3)].
+        exists f;split;[exact | apply/not_existsP]. 
+        by move: H3 => /total_RC_P1 H3;move => /H3 H4.
       Qed.
       
-      Lemma transitiveN_RC: forall f: nat -> (Elt C), 
-          (forall n, RC ((f n),(f (S n)))) -> (forall n, n > 1 -> RC (f 0, f n)).
+      Lemma transitiveN_RC f: (forall n, RC ((f n),(f (S n))))
+                              -> (forall n, n > 1 -> RC (f 0, f n)).
       Proof.
-        move => f H1;elim => [// | n Hn H2 ].
+        move => H1;elim => [// | n Hn H2 ].
         case H3: (1 < n). 
         + have H4: RC (f 0, f n) by apply: Hn;rewrite H3.
           by move : (transitive_RC H4 (H1 n)).
-        + case H5: (n == 0); first by move: H5 => /eqP ->; apply: H1.
+        + case H5: (n == 0); first by move: H5 => /eqP ->;apply: H1.
           case H6: (n == 1); first by move: H6 => /eqP ->;move: (transitive_RC (H1 0) (H1 1)).
           have H7: ~ (n <= 1) by rewrite leq_eqVlt H6 ltnS leqn0 H5.  
           by rewrite leqNgt H3 in H7.
       Qed.
       
-      Lemma Util: forall n, ~ (n = 0) /\ ~ (n = 1) ->  n > 1. 
+      Lemma total_RC_P3:
+        ~ (iic (Asym Eb.+)) ->
+        forall s, exists f, f 0=s /\ (exists n, (sval (f n)) \in Sinf /\ RC ((f 0), (f n))).
       Proof.
-        move => n [/eqP H1 /eqP H2]. 
-        have: n >= 0 by []; rewrite  leq_eqVlt => /orP [/eqP H3 // | ].
-        by move: H3 H1 => H3; rewrite -H3. 
-        rewrite leq_eqVlt => /orP [/eqP H4 | H4 //].
-        by move: H2; by rewrite -H4.
+        move => H1; move: (total_RC_P2 H1) => + s => /(_ s) [f [[H2 H3] [n H4]]].
+        exists f;split;first exact.
+        case H5: (sval (f 0) \in Sinf);first by (exists 0);split;[ | left].
+        have H6: ~ (n = 0) by move => H7;rewrite H7 H5 in H4. 
+        case H7: (sval (f 1) \in Sinf);first by (exists 1).
+        exists n. 
+        have H8: ~ (n = 1) by move => H8;rewrite H8 H7 in H4.
+        have H9: n > 1 by lia. 
+        move: (transitiveN_RC H3) => /(_ n) H10.
+        by split;[| apply: H10].
       Qed.
       
-      Lemma test_yy: ~ (iic (Asym Eb.+)) ->
-                     forall s, exists f, f 0=s /\ (exists n, (sval (f n)) \in Sinf /\ RC ((f 0), (f n))).
-      Proof.
-        move => H1; move: (test4_RC H1) => + s => /(_ s) [f [[H2 H3] [n H4]]].
-        exists f. split;first by [].
-        case H5: (sval (f 0) \in Sinf).
-        + exists 0. split.  by []. left. by [].
-        + have H6: ~ (n = 0). move => H6. rewrite H6 in H4. by rewrite H5 in H4.
-          case H7: (sval (f 1) \in Sinf).
-          ++ by (exists 1).
-          ++ exists n. 
-             have H8: ~ (n = 1). move => H8. rewrite H8 in H4. by rewrite H7 in H4.
-             have H9: n > 1 by apply Util.
-             move: (transitiveN_RC H3) => /(_ n) H10.
-             split. by []. by apply: H10.           
-      Qed.
-
       Lemma ChooseRC5:~ (iic (Asym Eb.+))
             -> forall (s: Elt C), (sval s \in Sinf) \/ exists (s':T), (s' \in Sinf) /\ (Asym Eb.+) (sval s, s').
       Proof. 
-        move => H1; move: (test_yy H1) => + s => /(_ s) [f [H2 [n [H3 H3']]]].
-        case H4: (sval (f 0) \in Sinf). by left; rewrite -H2 H4.
-        right. exists (sval (f n)). split. by []. 
+        move => H1; move: (total_RC_P3 H1) => + s => /(_ s) [f [H2 [n [H3 H3']]]].
+        case H4: (sval (f 0) \in Sinf); first by left;rewrite -H2 H4.
+        right;exists (sval (f n));split;first exact. 
         rewrite -H2. 
-        move: H3' => [/= [H3' _] | /= [H5 H6]].
-        by rewrite H4 in H3'.
-        by [].
+        by move: H3' => [/= [H3' _] | /= [H5 H6]//];rewrite H4 in H3'.
       Qed.
 
       Lemma ChooseRC6:~ (iic (Asym Eb.+))
@@ -544,7 +524,7 @@ Section Paper.
     Hypothesis Hc: C \in Chains. 
     Hypothesis Hne: C != set0.
         
-    (* Sinf is a Mono-independent set *)
+    (* Sinf is a Mono-independent set when C is a chain *)
     Lemma Sinf_indep: RelIndep Mono (Sinf C).
     Proof.
       move: Hc => /inP H1 x y /inP H2 /inP H3 H4 /= H5.
@@ -587,7 +567,7 @@ Section Paper.
     Lemma Sinf_not_empty: (Sinf C) != set0.
     Proof.
       move: (@Elt_not_empty C Hne) => [s _];rewrite -notempty_exists.
-      by move: (ChooseRC5 A4 s) => [H1 | [s' [H1 _]]];[exists (sval s) | exists s'].
+      by move: (@ChooseRC5 C Hne A4 s) => [H1 | [s' [H1 _]]];[exists (sval s) | exists s'].
     Qed.
     
     Lemma Sinf_ScalP: (Sinf C):#(Er.+) `<=` Mono#(Sinf C).
@@ -625,7 +605,7 @@ Section Paper.
     Qed.
 
   End Sinf_chains.
-
+  
   Hypothesis A1: (exists (v0:T), (v0 \in setT)).
   Hypothesis A3: ~ (iic (Asym Er.+)).
   Hypothesis A4: ~ (iic (Asym Eb.+)).
@@ -672,9 +652,16 @@ Section Paper.
     move: SmaxZ => [Sm H1];exists (sval Sm); split; first by  apply: S2Scal.
     by move => S /Scal2S [S' <-] H3; f_equal;by apply H1.
   Qed.
+
+  (** * back to set T *)
+  Lemma Exists_Smax': exists Sm, Sm \in Scal /\ forall T, T \in Scal -> Sm [<= (Asym Eb.+)] T -> T = Sm.
+  Proof.
+    move: SmaxZ => [Sm H1];exists (sval Sm); split; first by  apply: S2Scal.
+    by move => S /Scal2S [S' <-] H3; f_equal;by apply H1.
+  Qed.
   
   Section Maximal. 
-
+    
     (** * We show that the maximal set is the independent set we search *)
     Variable (Sm: set T).
     
