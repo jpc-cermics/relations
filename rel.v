@@ -1134,9 +1134,10 @@ Section Relation_Facts.
   Qed.
       
   (** * Asymmetric part of a relation *) 
-  
+  (* begin snippet asym:: no-out *)  
   Definition Asym (R: relation T): relation T := [set xy | R xy /\ ~ (R^-1 xy)].
-  
+  (* end snippet asym *)    
+
   Lemma Asym_antisymmetric R: antisymmetric  (Asym R).
   Proof. by move => x y [_ ?] [? _]. Qed.
 
@@ -1384,7 +1385,9 @@ Section Infinite_paths.
   Implicit Types (T : Type) (R S: relation T) (A B: set T).
   
   (* total (or left total)  *) 
+  (* begin snippet lefttotal:: no-out *)  
   Definition total_rel (R: relation T) := forall x, exists y, R (x,y).
+  (* end snippet lefttotal *)
   
   Definition total_rel' (R: relation T) := exists f : T -> T, forall x, R (x, f x). 
   
@@ -1413,10 +1416,14 @@ Section Infinite_paths.
   Lemma total_rel'_to_total_rel'' R:  total_rel' R -> total_rel'' R.
   Proof. by move => [f H1] x;exists (iterf f x). Qed.
   
-  Definition iic (R: relation T) := exists f : nat -> T, forall n, R ((f n),(f (S n))).  
-
-  Definition iic_inj (R: relation T) := exists f : nat -> T, (forall n, R ((f n),(f (S n)))) /\ injective f.
+  (* begin snippet iic:: no-out *)  
+  Definition iic (R: relation T) := exists f, forall n, R ((f n),(f (S n))).  
+  (* end snippet iic *)
   
+  (* begin snippet iicinj:: no-out *)  
+  Definition iic_inj (R: relation T) := exists f, (forall n, R ((f n),(f (S n)))) /\ injective f.
+  (* end snippet iicinj *)  
+
   Lemma total_rel''_to_iic R: (exists (v0:T), (v0 \in setT)) ->  total_rel'' R -> iic R. 
   Proof. by move => -[v0 H1] /(_ v0) [f [H2 H3]]; exists f. Qed.
   

@@ -62,8 +62,10 @@ Section Set_relation.
       by (exists a); split;[ | left].
       by exists b; split;[ | right].
   Qed.
-  
+
+  (* begin snippet lesetI:: no-out *)   
   Lemma Ile R A B: A `<=` B -> A [<= R] B.
+  (* end snippet lesetI *)
   Proof. by move => H1 /= a /inP/H1 ?;exists a;split;[rewrite inP|left]. Qed.
 
   Lemma leI R S: S `<=` R -> (leSet S)  `<=` (leSet R).
@@ -128,9 +130,11 @@ Section Set_order.
   
   End Util.
   
+  (* begin snippet lesetporder:: no-out *)   
   Lemma leSet2_porder R: 
     sporder R -> 
     @porder {S: set T| RelIndep R S} [set AB | (sval AB.1) [<= R] (sval AB.2)].
+  (* end snippet lesetporder  *)   
   Proof.
     move => H_sp.
     split => [ [A ?] | [A Ha] [B Hb] H1 H2 | [A ?] [B ?] [C ?]].
@@ -144,12 +148,12 @@ Section Set_order.
 End Set_order. 
 
 Section Infinite_paths.
-  (** *  iic_asym_injective *) 
+  (** * iic_asym_injective:  iic (Asym R.+) -> iic_inj (Asym R.+) *) 
 
   Context (T : Type).
   Implicit Types (T : Type) (R S: relation T) (A B: set T).
   
-  Lemma AsymInf_step1 (f : nat -> T) R:
+  Lemma iic_asym_L1 (f : nat -> T) R:
     (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
      forall p n, 0 < p -> (Asym R.+) (f n, f (n + p)). 
   Proof.
@@ -164,25 +168,25 @@ Section Infinite_paths.
     by rewrite -addn1 -[p.+1]addn1 addnA.
   Qed.
   
-  Lemma AsymInf_step2 (f : nat -> T) R:
+  Lemma iic_asym_L2 (f : nat -> T) R:
     (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
     forall p n, 0 < p -> ~ (f n) = f (n + p). 
   Proof.
-    by move => + p n H1 => /AsymInf_step1 /(_ p n H1) + H2;rewrite -H2; apply: Asym_irreflexive.
+    by move => + p n H1 => /iic_asym_L1 /(_ p n H1) + H2;rewrite -H2; apply: Asym_irreflexive.
   Qed.
   
-  Lemma AsymInf (f : nat -> T) R:
+  Lemma iic_asym_L3 (f : nat -> T) R:
     (forall n, (Asym R.+) ((f n),(f (S n)))) -> injective f.
   Proof.
     have H0 n m: m < n -> exists p, p> 0 /\ n = m + p by move => H1;exists (n-m); lia.
-    move => /AsymInf_step2 Hi p q;apply contraPP => H1.
+    move => /iic_asym_L2 Hi p q;apply contraPP => H1.
     have [H2|H2]: (p < q \/ q < p) by lia.
     by pose proof (H0 q p H2) as [p' [H3 ->]]; apply: Hi.
     by move: (H0 p q H2) => [p' [H3 ->]];move: (Hi p' q H3);symmetry.
   Qed.
   
   Lemma iic_asym_injective R: iic (Asym R.+) -> iic_inj (Asym R.+).
-  Proof. by move => [f /[dup] H1 /AsymInf H2];exists f. Qed.
+  Proof. by move => [f /[dup] ? /iic_asym_L3  ?];exists f. Qed.
   
 End Infinite_paths.
 
@@ -251,8 +255,10 @@ Section Paper.
   (* begin snippet SType:: no-out *)    
   Definition SType := {S: set T| RelIndep Mono S /\ S:#(Er.+) `<=` Mono#S  /\ S != set0}.
   (* end snippet SType *)  
-  
+
+  (* begin snippet Elt:: no-out *)   
   Definition Elt (C: set SType) := {x : T |exists (S: SType), S \in C /\ x \in (sval S)}.
+  (* end snippet Elt:: no-out *)   
   
   Lemma S2Scal: forall (S: SType), (sval S) \in Scal.
   Proof. by move => [S [H1 [H2 H3]]];rewrite inP. Qed.
@@ -320,112 +326,56 @@ Section Paper.
     
   End Scal_order.
 
-  Section SType_chains.
-    (** * Chains in Stype *)
-
-    (* begin snippet Chains:: no-out *)    
-    Definition Chains := [set C: set SType| forall (c1 c2: SType),
-          c1 \in C -> c2 \in C -> c1 [<=] c2 \/ c2 [<=] c1].
-    (* end snippet Chains *)    
-    
-    Lemma Chains_is_total: forall (A : set SType),
-        A \in Chains <-> total_on A (curry leSet1).
-    Proof. split => [/inP H2 c1 c2 /inP ? /inP ?| H1]; first by apply: H2. 
-           by apply/inP => c1 c2 /inP H2 /inP H3;apply: H1.
-    Qed.
-  
-    Lemma Chains_Scal:  forall (C: set SType) S,
-        C \in Chains -> S \in C -> Scal (sval S).
-    Proof. by move => C [S [H1 [H2 H3]]] /inP H4 /inP H5. Qed.
-  
-    Lemma Elt_not_empty: forall (C: set SType), 
-        C \in Chains -> C != set0 -> exists (S: SType), (S \in C /\ (exists x, x \in (sval S))).
-    Proof.
-      move => C H1 /notempty_exists [S H2];exists S;split;first by []. 
-      by move: S H2 => [S' [H3 [H4 /notempty_exists H5]] /=] _.
-    Qed.
-    
-  End SType_chains.
-
   Section Sinf_set.
-    (** * Sinf C for a non empty Chain *)
+    (** * Sinf C for (C: set SType) and C != set0 *)
     
     Variables  (C: set SType).
-    Hypothesis Hc: C \in Chains. 
     Hypothesis Hne: C != set0.
-    
+    (* begin snippet Ec:: no-out *)   
     Definition Ec := Elt C.
-
-    (* Set Sinf associated to a chain *)
+    (* end snippet Ec *) 
+    
+    (* Set Sinf associated to a chain C *)
+    (* begin snippet Sinf:: no-out *)   
     Definition Sinf := 
       [ set v: T | 
         exists S, (S \in C) /\ (v \in (sval S)) /\ (forall T, T \in C -> S [<=] T -> v \in (sval T))].
-    
+    (* end snippet Sinf *)   
+
     (* A relation on the set Elt C, all the elements
        of T which are elements of a set in the chain C *)
+    (* begin snippet RC:: no-out *)   
     Definition RC:= [set xy:Ec*Ec |
                       ((sval xy.1) \in Sinf /\ xy.2 = xy.1)
                       \/ (~ ((sval xy.1) \in Sinf) /\ (Asym Eb.+) (sval xy.1, sval xy.2))].
-    
-    Lemma transitive_RC: transitive RC. 
-    Proof.
-      have H3: transitive (Asym Eb.+) by apply/Asym_preserve_transitivity/TclosT.
-      by move => x y z [/= [H0 ->]| [H1 H1']] [ /= [H0' /= ->]| /= [H2 H2']]; 
-                [left | right | right |right;split;[ | apply H3 with (sval y)]].
-    Qed.
-    
-    Lemma ChnotE: exists _ : Elt C, True.
-    Proof.
-      move: (Elt_not_empty Hc Hne) => [S [H2 [x H3]]].
-      have H4: exists (S: SType), S \in C /\ x \in (sval S) by (exists S).
-      by exists (exist _ x H4).
-    Qed.
-    
-    Lemma ChnotE_witness: Elt C.
-    Proof. by apply: inhabited_witness; rewrite inhabitedE; apply: ChnotE. Qed.
-    
-    (* Sinf is a Mono-independent set *)
-    Lemma Sinf_indep: RelIndep Mono Sinf.
-    Proof.
-      move: Hc => /inP H1 x y /inP H2 /inP H3 H4 /= H5.
-      move: H2 H3 =>[S [H6 [/= H7 H8]]] [U [H6' [/= H7' H8']]].
-      move: H8 H8' => /((_ U) H6') H8 /((_ S) H6) H8'.
-      have [H9|H9]: S [<=] U \/ U [<=] S by apply: H1.
-      - move: H9 H1 => /H8 H9 /inP H1.
-        move: (Chains_Scal H1 H6') => [/(_ x y) H10 _].
-        by apply: (H10 H9 H7' H4 H5).
-      - move: H9 H1 => /H8' H9 /inP H1.
-        move: (Chains_Scal H1 H6) => [/(_ x y) H10 _].
-        by apply: (H10 H7 H9 H4 H5).
-    Qed.
-    
-    Section Ec_seq. 
+
+    Section total_RC. 
       (** *  the main result here is total_RC *) 
 
-      Lemma Ec_seq1: forall (S: SType) (s:T), 
+      Lemma total_RC_L1: forall (S: SType) (s:T), 
           (S \in C) -> (s \in (sval S)) -> ( ~ (s \in Sinf)) 
           -> exists S1, S1 \in C /\ S [<=] S1 /\ ~ (s \in (sval S1)).
       Proof.
-        move: Hc => H1 S s H2 H3. 
+        move => S s H2 H3. 
         apply contraPP;rewrite not_existsP 2!not_notE inP /Sinf => H4;exists S.
         split => [// | ];split => [// |A ? ?].
         by move: H4 => /(_ A) /not_andP [? //|/not_andP [// | /contrapT ?]].
       Qed.
       
-      Lemma Ec_seq2: forall (S: SType) (s:T), 
+      Lemma total_RC_L2: forall (S: SType) (s:T), 
           (S \in C) -> (s \in (sval S)) -> ( ~ (s \in Sinf)) 
           -> exists S1, exists s1, S1 \in C /\ s1 \in (sval S1) /\ (Asym Eb.+) (s,s1).
       Proof.
-        move: Hc => H1 S s H2 H3 H4.
-        move: (Ec_seq1 H2 H3 H4) => [S1 [H5 [H6 H7]]].
+        move => S s H2 H3 H4.
+        move: (total_RC_L1 H2 H3 H4) => [S1 [H5 [H6 H7]]].
         by move: ((H6 s) H3) => [s1 [H8 [H9 | H9]]];exists S1, s1;[rewrite -H9 in H8|].
       Qed.
       
-      Lemma Ec_seq3: forall (s: Ec), 
+      Lemma total_RC_L3: forall (s: Ec), 
           ~ ((sval s) \in Sinf) -> exists (s1: Ec), (Asym Eb.+) (sval s,sval s1).
       Proof.
         move => [s [S [H1 H2]]] H3.
-        move: (Ec_seq2 H1 H2 H3) => [S1 [s1 [H4 [H5 H6]]]].
+        move: (total_RC_L2 H1 H2 H3) => [S1 [s1 [H4 [H5 H6]]]].
         have H7: exists (S: SType), S \in C /\ s1 \in (sval S) by (exists S1).
         by exists (exist _ s1 H7).
       Qed.
@@ -435,28 +385,54 @@ Section Paper.
         move => s.
         case H3: ((sval s) \in Sinf); first by (exists s); left.
         have H4: ~ ((sval s) \in Sinf) by move => H5;rewrite H5 in H3.
-        move: (Ec_seq3 H4) => [s1 H5].
+        move: (total_RC_L3 H4) => [s1 H5].
         by exists s1; right.
       Qed.
       
-    End Ec_seq.
+    End total_RC. 
     
-    Section XXX.
+    (* end snippet RC*)   
+    Lemma transitive_RC: transitive RC. 
+    Proof.
+      have H3: transitive (Asym Eb.+) by apply/Asym_preserve_transitivity/TclosT.
+      by move => x y z [/= [H0 ->]| [H1 H1']] [ /= [H0' /= ->]| /= [H2 H2']]; 
+                [left | right | right |right;split;[ | apply H3 with (sval y)]].
+    Qed.
 
-      Lemma test0_iic_RC: forall s, exists f : nat -> Ec, f 0 = s /\ forall n, RC ((f n),(f (S n))).  
+    Lemma Elt_not_empty: exists (S: SType), S \in C /\ (exists x, x \in (sval S)).
+    Proof.
+      move: Hne => /notempty_exists [S H2];exists S;split;first by []. 
+      by move: S H2 => [S' [H3 [H4 /notempty_exists H5]] /=] _.
+    Qed.
+
+    Lemma ChnotE: exists _ : Elt C, True.
+    Proof.
+      move: Elt_not_empty => [S [? [x ?]]].
+      have H4: exists (S: SType), S \in C /\ x \in (sval S) by (exists S).
+      by exists (exist _ x H4).
+    Qed.
+
+    Lemma ChnotE_witness: Elt C.
+    Proof. by apply: inhabited_witness; rewrite inhabitedE; apply: ChnotE. Qed.
+    
+
+    Section total_RC_to_iic.
+
+      Lemma test0_iic_RC: forall s, exists f : nat -> (Elt C), f 0 = s /\ forall n, RC ((f n),(f (S n))).  
       Proof. 
         by move: total_RC => /total_rel_iff H1;apply: total_rel'_to_total_rel''. 
       Qed.
       
-      Lemma test1_RC:forall s, forall f, f 0=s /\ (forall n, RC ((f n),(f (S n)))) 
-                               -> (forall n, ~ (sval (f n)) \in Sinf)
-                               -> (forall n, (Asym Eb.+) (sval (f n), sval(f (S n)))).
+      Lemma test1_RC:forall s, forall f: nat -> (Elt C),
+          f 0=s /\ (forall n, RC ((f n),(f (S n)))) 
+          -> (forall n, ~ (sval (f n)) \in Sinf)
+          -> (forall n, (Asym Eb.+) (sval (f n), sval(f (S n)))).
       Proof. 
         by move => s f + + n => [[H0 /(_ n) [/=[H1 H1'] | /= [H1 H1']]]] /(_ n) H2.
       Qed.
       
       Lemma test3_RC: ~ (iic (Asym Eb.+)) -> 
-                      forall s, exists f, (f 0=s /\ (forall n, RC ((f n),(f (S n)))))
+                      forall s, exists f: nat -> (Elt C), (f 0=s /\ (forall n, RC ((f n),(f (S n)))))
                                 /\ ~ (forall n, ~ (sval (f n)) \in Sinf).
       Proof.
         move => H1; move: test0_iic_RC => + s => /(_ s) [f H2].
@@ -467,14 +443,14 @@ Section Paper.
       Qed.
       
       Lemma test4_RC: ~ (iic (Asym Eb.+)) ->
-                      forall s, exists f, (f 0=s /\ (forall n, RC ((f n),(f (S n)))))
+                      forall s, exists f: nat -> (Elt C), (f 0=s /\ (forall n, RC ((f n),(f (S n)))))
                                 /\ exists n, (sval (f n)) \in Sinf.
       Proof.
         move => H1; move: (test3_RC H1) => + s => /(_ s) [f [H2 /not_existsP [n H3]]].
         exists f;split;[ exact| exists n; exact].
       Qed.
 
-      Lemma transitiveN_RC: forall f, 
+      Lemma transitiveN_RC: forall f: nat -> (Elt C), 
           (forall n, RC ((f n),(f (S n)))) -> (forall n, n > 1 -> RC (f 0, f n)).
       Proof.
         move => f H1;elim => [// | n Hn H2 ].
@@ -497,7 +473,7 @@ Section Paper.
       Qed.
       
       Lemma test_yy: ~ (iic (Asym Eb.+)) ->
-                     forall s, exists f, f 0=s /\ (exists n, (sval (f n)) \in Sinf /\ RC ((f 0), (f n))).
+                     forall s, exists f: nat -> (Elt C), f 0=s /\ (exists n, (sval (f n)) \in Sinf /\ RC ((f 0), (f n))).
       Proof.
         move => H1; move: (test4_RC H1) => + s => /(_ s) [f [[H2 H3] [n H4]]].
         exists f. split;first by [].
@@ -514,10 +490,10 @@ Section Paper.
       Qed.
 
       Lemma ChooseRC5:~ (iic (Asym Eb.+))
-            -> forall (s:Ec), (sval s \in Sinf) \/ exists s',  s' \in Sinf /\ (Asym Eb.+) (sval s, s').
+            -> forall (s: Elt C), (sval s \in Sinf) \/ exists s',  s' \in Sinf /\ (Asym Eb.+) (sval s, s').
       Proof. 
         move => H1; move: (test_yy H1) => + s => /(_ s) [f [H2 [n [H3 H3']]]].
-        case H4: (sval (f 0) \in Sinf ). by left; rewrite -H2 H4.
+        case H4: (sval (f 0) \in Sinf). by left; rewrite -H2 H4.
         right. exists (sval (f n)). split. by []. 
         rewrite -H2. 
         move: H3' => [/= [H3' _] | /= [H5 H6]].
@@ -525,7 +501,8 @@ Section Paper.
         by [].
       Qed.
 
-      Lemma ChooseRC6:~ (iic (Asym Eb.+)) -> forall (S: SType), (S \in C) -> (sval S) [<= (Asym Eb.+)] Sinf.
+      Lemma ChooseRC6:~ (iic (Asym Eb.+))
+            -> forall (S: SType), (S \in C) -> (sval S) [<= (Asym Eb.+)] Sinf.
       Proof. 
         move => H1 S H2 s /= H3.
         have H4: exists (S: SType), S \in C /\ s \in (sval S) by (exists S).
@@ -534,7 +511,51 @@ Section Paper.
         by (exists s');split;[|right].
       Qed.
       
-    End XXX.
+    End total_RC_to_iic.
+    
+  End Sinf_set.
+  
+  Section SType_chains.
+    (** * set (C: set SType) which are in Chains *)
+    
+    Implicit Type (C: set SType).
+    
+    (* begin snippet Chains:: no-out *)    
+    Definition Chains := [set C: set SType| forall (c1 c2: SType),
+          c1 \in C -> c2 \in C -> c1 [<=] c2 \/ c2 [<=] c1].
+    (* end snippet Chains *)    
+    
+    Lemma Chains_is_total C: C \in Chains <-> total_on C (curry leSet1).
+    Proof. split => [/inP H2 c1 c2 /inP ? /inP ?| H1]; first by apply: H2. 
+           by apply/inP => c1 c2 /inP H2 /inP H3;apply: H1.
+    Qed.
+    
+    Lemma Chains_Scal C S: C \in Chains -> S \in C -> Scal (sval S).
+    Proof. by move: S => [S [H1 [H2 H3]]] /inP H4 /inP H5. Qed.
+    
+  End SType_chains.
+  
+  Section Sinf_chains.
+    (** * Sinf when C is a non empty Chain *)
+    
+    Variables  (C: set SType).
+    Hypothesis Hc: C \in Chains. 
+    Hypothesis Hne: C != set0.
+        
+    (* Sinf is a Mono-independent set *)
+    Lemma Sinf_indep: RelIndep Mono (Sinf C).
+    Proof.
+      move: Hc => /inP H1 x y /inP H2 /inP H3 H4 /= H5.
+      move: H2 H3 =>[S [H6 [/= H7 H8]]] [U [H6' [/= H7' H8']]].
+      move: H8 H8' => /((_ U) H6') H8 /((_ S) H6) H8'.
+      have [H9|H9]: S [<=] U \/ U [<=] S by apply: H1.
+      - move: H9 H1 => /H8 H9 /inP H1.
+        move: (Chains_Scal H1 H6') => [/(_ x y) H10 _].
+        by apply: (H10 H9 H7' H4 H5).
+      - move: H9 H1 => /H8' H9 /inP H1.
+        move: (Chains_Scal H1 H6) => [/(_ x y) H10 _].
+        by apply: (H10 H7 H9 H4 H5).
+    Qed.
     
     (** * The Assumptions we use: weaker than the original paper assumptions *)
     (* begin snippet Assumptions:: no-out *)    
@@ -561,13 +582,13 @@ Section Paper.
       by exists (exist _ [set v] H2);rewrite inP.
     Qed.
     
-    Lemma Sinf_not_empty: Sinf != set0.
+    Lemma Sinf_not_empty: (Sinf C) != set0.
     Proof.
-      move: ChnotE => [s _];rewrite -notempty_exists.
+      move: (@ChnotE C Hne) => [s _];rewrite -notempty_exists.
       by move: (ChooseRC5 A4 s) => [H1 | [s' [H1 _]]];[exists (sval s) | exists s'].
     Qed.
     
-    Lemma Sinf_ScalP: Sinf:#(Er.+) `<=` Mono#Sinf.
+    Lemma Sinf_ScalP: (Sinf C):#(Er.+) `<=` Mono#(Sinf C).
     Proof.
       move: Hc => H1 y [s [ H2 H3]].
       move: (H3) => [S [H4 [H5 H6]]].
@@ -575,7 +596,7 @@ Section Paper.
       have H13: y \in Er.+^-1#(sval S)
           by rewrite inP /Fset;exists s;split;[exact | rewrite -inP].
       move: H13 => /inP/H8 [t [H13 H14]]. 
-      case H15: (t \in Sinf); first by (exists t); split;[ exact | rewrite -inP].
+      case H15: (t \in (Sinf C)); first by (exists t); split;[ exact | rewrite -inP].
       have H16: (s <> t) by move => H17;rewrite -inP H17 in H3;rewrite H3 in H15.
       have H17: ~ ( Er.+ (y,t)). 
       move => H18.
@@ -584,29 +605,28 @@ Section Paper.
       move: H14 => /inP H14.
       by move: (H7 H5 H14 H16).
       have H18: (Eb.+ (y,t)) by move: H13 => [H13 | H13]. 
-      have H19: (sval S) [<= (Asym Eb.+)] Sinf by apply: ChooseRC6. 
+      have H19: (sval S) [<= (Asym Eb.+)] (Sinf C) by apply: ChooseRC6. 
       move: H14 => /inP/H19 [tinf [/= H20 [H21 | [H21 H22]]]].
       + by rewrite -H21 in H20;rewrite H20 in H15. 
       + by exists tinf;split;[ left;apply: (TclosT H18 H21) | rewrite -inP].
     Qed.
     
-    Lemma Sinf_Scal: Sinf \in Scal. 
+    Lemma Sinf_Scal: (Sinf C) \in Scal. 
     Proof.
       rewrite inP;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
     Qed.
     
     Lemma Sinf_final: exists Si, forall (S: SType), C S -> S [<=] Si.
     Proof.
-      move: Sinf_Scal => /inP H2;exists (exist _ Sinf H2);move => S /inP H3. 
+      move: Sinf_Scal => /inP H2;exists (exist _ (Sinf C) H2);move => S /inP H3. 
       by apply: ChooseRC6.
     Qed.
 
-  End Sinf_set.
+  End Sinf_chains.
 
   Hypothesis A1: (exists (v0:T), (v0 \in setT)).
   Hypothesis A3: ~ (iic (Asym Er.+)).
   Hypothesis A4: ~ (iic (Asym Eb.+)).
-  
   
   (** * we are now able to use Zorn Lemma *)
   (** Zorn lemma  in mathcomp-analysis.1.3.1 

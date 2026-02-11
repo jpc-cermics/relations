@@ -5,67 +5,76 @@ assets_root := $(snippets_root)/assets
 include config.mk
 
 SNIPPETS = \
-	snippets/seq1/ActiveOe-n.tex \
+	snippets/paper_csbr/dsepnota-n.tex \
+	snippets/paper_csbr/theoremfive-n.tex \
+	snippets/paper_monochromatic/Assumptions-n.tex \
+	snippets/paper_monochromatic/Chains-n.tex \
+	snippets/paper_monochromatic/Mono-n.tex \
+	snippets/paper_monochromatic/SType-n.tex \
+	snippets/paper_monochromatic/Scal-n.tex \
+	snippets/paper_monochromatic/Scalnotempty-n.tex \
+	snippets/paper_monochromatic/leSetone-n.tex \
+	snippets/paper_monochromatic/leset-n.tex \
+	snippets/paper_monochromatic/lesetI-n.tex \
+	snippets/paper_monochromatic/Elt-n.tex \
+	snippets/paper_monochromatic/Ec-n.tex \
+	snippets/paper_monochromatic/Sinf-n.tex \
+	snippets/paper_monochromatic/RC-n.tex \
+	snippets/paper_monochromatic/lesetporder-n.tex \
+	snippets/paper_relations/Aw-n.tex \
+	snippets/rel/RelIndep-n.tex \
+	snippets/rel/Rloop-n.tex \
+	snippets/rel/Sone-n.tex \
+	snippets/rel/Sthree-n.tex \
+	snippets/rel/Stwo-n.tex \
+	snippets/rel/asym-n.tex \
+	snippets/rel/lefttotal-n.tex \
+	snippets/rel/iic-n.tex \
+	snippets/rel/iicinj-n.tex \
 	snippets/seq1/Active-n.tex \
-	snippets/seq1/Dseparated-n.tex \
+	snippets/seq1/ActiveOe-n.tex \
+	snippets/seq1/Activeeq-n.tex \
 	snippets/seq1/Aeop-n.tex \
-	snippets/seq1/allnotation-n.tex \
+	snippets/seq1/Atr-n.tex \
 	snippets/seq1/Chrel-n.tex \
+	snippets/seq1/ChrelO-n.tex \
+	snippets/seq1/DI-n.tex \
+	snippets/seq1/DP-n.tex \
+	snippets/seq1/DPDV-n.tex \
 	snippets/seq1/DU-n.tex \
 	snippets/seq1/DUa-n.tex \
 	snippets/seq1/DUaone-n.tex \
+	snippets/seq1/DV-n.tex \
+	snippets/seq1/Dseparated-n.tex \
+	snippets/seq1/Eope-n.tex \
+	snippets/seq1/EopeLiftO-n.tex \
+	snippets/seq1/Epathgt-n.tex \
+	snippets/seq1/Epe-n.tex \
+	snippets/seq1/EpeLift-n.tex \
+	snippets/seq1/Lift-n.tex \
+	snippets/seq1/LiftLift-n.tex \
+	snippets/seq1/LiftO-n.tex \
+	snippets/seq1/Liftinj-n.tex \
 	snippets/seq1/Liftlemma-n.tex \
 	snippets/seq1/Liftnota-n.tex \
+	snippets/seq1/Liftsurj-n.tex \
+	snippets/seq1/OO-n.tex \
 	snippets/seq1/Oedge-n.tex \
+	snippets/seq1/Pe-n.tex \
+	snippets/seq1/PeUnLift-n.tex \
+	snippets/seq1/PeUnLiftO-n.tex \
+	snippets/seq1/RPath-n.tex \
+	snippets/seq1/RPathequiv-n.tex \
+	snippets/seq1/RpathLone-n.tex \
 	snippets/seq1/TCP-n.tex \
 	snippets/seq1/Ugeone-n.tex \
-	snippets/paper_csbr/dsepnota-n.tex \
-	snippets/rel/Sone-n.tex \
-	snippets/rel/Stwo-n.tex \
-	snippets/rel/Sthree-n.tex \
-	snippets/seq1/LiftO-n.tex \
-	snippets/seq1/Lift-n.tex \
-	snippets/seq1/OO-n.tex \
+	snippets/seq1/Ugt-n.tex \
+	snippets/seq1/allL-n.tex \
+	snippets/seq1/allnotation-n.tex \
 	snippets/seq1/pair-n.tex \
 	snippets/ssrel/closrefltrans-n.tex \
 	snippets/ssrel/closrt-n.tex \
 	snippets/ssrel/relation-n.tex \
-	snippets/seq1/RPathequiv-n.tex \
-	snippets/seq1/RPath-n.tex \
-	snippets/seq1/RpathLone-n.tex \
-	snippets/seq1/DI-n.tex \
-	snippets/seq1/Liftinj-n.tex \
-	snippets/seq1/Liftsurj-n.tex \
-	snippets/seq1/Epathgt-n.tex \
-	snippets/seq1/DP-n.tex \
-	snippets/seq1/DV-n.tex \
-	snippets/seq1/DPDV-n.tex \
-	snippets/seq1/Pe-n.tex \
-	snippets/seq1/Epe-n.tex \
-	snippets/seq1/Ugt-n.tex \
-	snippets/seq1/ChrelO-n.tex \
-	snippets/seq1/EpeLift-n.tex \
-	snippets/seq1/PeUnLift-n.tex \
-	snippets/seq1/EopeLiftO-n.tex \
-	snippets/seq1/Eope-n.tex \
-	snippets/seq1/PeUnLiftO-n.tex \
-	snippets/seq1/Activeeq-n.tex \
-	snippets/seq1/allL-n.tex \
-	snippets/seq1/Atr-n.tex \
-	snippets/seq1/LiftLift-n.tex \
-	snippets/paper_relations/Aw-n.tex \
-	snippets/paper_csbr/theoremfive-n.tex \
-	snippets/rel/RelIndep-n.tex \
-	snippets/paper_monochromatic/leset-n.tex \
-	snippets/paper_monochromatic/Mono-n.tex \
-	snippets/paper_monochromatic/Scal-n.tex \
-	snippets/rel/Rloop-n.tex \
-	snippets/paper_monochromatic/Assumptions-n.tex \
-	snippets/paper_monochromatic/Scalnotempty-n.tex \
-	snippets/paper_monochromatic/SType-n.tex \
-	snippets/paper_monochromatic/leSetone-n.tex \
-	snippets/paper_monochromatic/Chains-n.tex \
-
 
 all: allstd allplus ../snippets.tex
 

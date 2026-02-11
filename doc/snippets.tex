@@ -1,162 +1,3 @@
-\newcommand{\SnippetActiveOe}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kn}{Definition}~\PY{n+nf}{ActiveOe}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{X}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~~\nl
-      ~~\PY{o}{((}\PY{n}{Oedge}~\PY{n}{R}\PY{o}{)}~\PY{o}{`*`}~\PY{n}{Oedge}~\PY{n}{R}\PY{o}{)}~\PY{o}{\(\cap\)}~\PY{o}{(}\PY{n}{A\PYZus{}tr}~\PY{n}{X}~\PY{n}{R}\PY{o}{).}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetActive}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kn}{Definition}~\PY{n+nf}{Active}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}\nl
-      ~~\PY{o}{(}\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)),}~\PY{n}{Active\PYZus{}path}~\PY{n}{W}~\PY{n}{E}~\PY{n}{p}~\PY{n}{x}~\PY{n}{y}\PY{o}{).}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetDseparated}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}separated}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\nl
-      ~~\PY{o}{\(\neg\)(}\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)),}~\PY{n}{Active\PYZus{}path}~\PY{n}{W}~\PY{n}{E}~\PY{n}{p}~\PY{n}{x}~\PY{n}{y}\PY{o}{).}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetAeop}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kn}{Definition}~\PY{n+nf}{Active\PYZus{}path}\nl
-      ~~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{X}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{))}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}\nl
-      ~~\PY{k+kr}{match}~\PY{n}{p}~\PY{k+kr}{with}~\nl
-      ~~\PY{o}{|}~\PY{o}{[::]}~\PY{o}{=\PYZgt{}}~\PY{n}{x}~\PY{o}{=}~\PY{n}{y}~\nl
-      ~~\PY{o}{|}~\PY{o}{[::}\PY{n}{eo1}\PY{o}{]}~\PY{o}{=\PYZgt{}}~\PY{n}{eo1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}~\PY{o}{=}~\PY{n}{x}~\PY{o}{\(\,\wedge\,\)}~~\PY{n}{eo1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}~\PY{o}{=}~\PY{n}{y}~\PY{o}{\(\,\wedge\,\)}~~\PY{n}{Oedge}~\PY{n}{R}~\PY{n}{eo1}~\nl
-      ~~\PY{o}{|}~\PY{n}{eo1}~\PY{o}{::}~\PY{o}{[::}~\PY{n}{eo2}~\PY{o}{\PYZam{}}~\PY{n}{p}\PY{o}{]}\nl
-      ~~~~\PY{o}{=\PYZgt{}}~\PY{n}{eo1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}~\PY{o}{=}~\PY{n}{x}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n+nb}{last}~\PY{n}{eo2}~\PY{n}{p}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}~\PY{o}{=}~\PY{n}{y}~\nl
-      ~~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{allL}~\PY{o}{(}\PY{n}{ActiveOe\PYZsq{}}~\PY{n}{X}~\PY{n}{R}\PY{o}{)}~\PY{o}{(}\PY{n}{belast}~\PY{n}{eo2}~\PY{n}{p}\PY{o}{)}~\PY{n}{eo1}~\PY{o}{(}\PY{n+nb}{last}~\PY{n}{eo2}~\PY{n}{p}\PY{o}{)}\nl
-      ~~\PY{k+kr}{end}\PY{o}{.}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\Snippetallnotation}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Notation}~\PY{l+s+s2}{\PYZdq{}p~\([{\in}]\)~X\PYZdq{}}~\PY{o}{:=}~\PY{o}{(}\PY{k+kp}{all}~\PY{o}{(}\PY{k+kr}{fun}~\PY{n+nv}{x}~\PY{o}{=\PYZgt{}}~\PY{n}{x}~\(\in\)~\PY{n}{X}\PY{o}{)}~\PY{n}{p}\PY{o}{).}~
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetChrel}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Chrel}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{:=[}\PY{n+nb}{set}~\PY{n}{s}\PY{o}{:}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)*(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)|}~\PY{o}{(}\PY{n}{s}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{).}\PY{l+m+mi}{2}~\PY{o}{=}~\PY{o}{(}\PY{n}{s}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{].}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetDU}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}U}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{stto}~\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)}~\PY{o}{|}\PY{n}{size}\PY{o}{(}\PY{n}{stto}\PY{o}{)\PYZgt{}}\PY{l+m+mi}{0}~\nl
-      ~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{Eope}~\PY{n}{stto}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{stto}~\([{\in}]\)~\PY{o}{(}\PY{n}{Oedge}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{ChrelO}\PY{o}{].}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetDUa}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}U\PYZus{}a}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}\PY{n}{T}\PY{o}{):=}\nl
-      ~~~~\PY{o}{(}\PY{n}{D\PYZus{}U}~\PY{n}{R}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\cap\)}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{stto}~\PY{o}{|}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{o}{(}\PY{n}{A\PYZus{}tr}~\PY{n}{W}~\PY{n}{E}\PY{o}{)].}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetDUaone}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}U\PYZus{}a1}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}\PY{n}{T}\PY{o}{):=}\nl
-      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{stto}~\PY{o}{|}\PY{n}{size}\PY{o}{(}\PY{n}{stto}\PY{o}{)\PYZgt{}}\PY{l+m+mi}{0}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Eope}~\PY{n}{stto}\PY{o}{)=(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{stto}~\([{\in}]\)~\PY{o}{(}\PY{n}{Oedge}~\PY{n}{E}\PY{o}{)}~\nl
-      ~~~~~~~~~~~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{ChrelO}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{o}{(}\PY{n}{A\PYZus{}tr}~\PY{n}{W}~\PY{n}{E}\PY{o}{)].}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetLiftlemma}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Lift\PYZus{}lemma}\PY{o}{:}~~\PY{n}{image}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{st}~\PY{o}{|}~\PY{k+kt}{True}\PY{o}{]}~\PY{o}{(@}\PY{n}{Lift}~\PY{n}{T}\PY{o}{)}~\nl
-      ~~~~~~~~~~~~~~~~~~~~~\PY{o}{=}~\PY{n}{preimage}~\PY{o}{(@}\PY{n}{Lift}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{))}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{spt}\PY{o}{|}~\PY{n}{spt}~\([{\in}]\)~\PY{n}{Chrel}\PY{o}{].}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetLiftnota}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Notation}~\PY{l+s+s2}{\PYZdq{}s~[L{\(\in\)}]~R\PYZdq{}}~\PY{o}{:=}~\PY{o}{(}\PY{n}{Lift}~\PY{n}{s}\PY{o}{)}~\([{\in}]\)~\PY{n}{R}\PY{o}{.}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetOedge}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kn}{Definition}~\PY{n+nf}{Oedge}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):}~\PY{n+nb}{set}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)}~\PY{o}{:=}\nl
-      ~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{oe}\PY{o}{:}~\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}~\PY{o}{|}~\PY{o}{(}\PY{k+kr}{match}~\PY{n}{oe}~\PY{k+kr}{with}~\PY{o}{|}~\PY{o}{(}\PY{n}{e}\PY{o}{,}\PY{n}{P}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{R}~\PY{n}{e}~\PY{o}{|}~\PY{o}{(}\PY{n}{e}\PY{o}{,}\PY{n}{N}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{R}\PY{o}{\PYZca{}\PYZhy{}}\PY{l+m+mi}{1}~\PY{n}{e}~\PY{k+kr}{end}\PY{o}{)].}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetTCP}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{TCP}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:}~\PY{n}{R}\PY{o}{.+}~\PY{o}{=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{vp}~\PY{o}{|}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{p}\PY{o}{,}~\PY{n}{allL}~\PY{n}{R}~\PY{n}{p}~\PY{n}{vp}\PY{o}{.}\PY{l+m+mi}{1}~\PY{n}{vp}\PY{o}{.}\PY{l+m+mi}{2}~\PY{o}{].}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetUgeone}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{U\PYZus{}ge\PYZus{}1}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):=}\nl
-      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{sto}~\PY{o}{|}~\PY{n}{sto}~\([{\in}]\)~\PY{o}{(}\PY{n}{Oedge}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~~\PY{n}{size}\PY{o}{(}\PY{n}{sto}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{l+m+mi}{0}~\PY{o}{\(\,\wedge\,\)}~\nl
-      ~~~~~~~~~~~~~~~~~\PY{o}{(}\PY{n}{Lift}~\PY{n}{sto}\PY{o}{)}~\([{\in}]\)~\PY{n}{ChrelO}\PY{o}{].}
-    \end{input}
-  \end{sentence}
-}
 \newcommand{\Snippetdsepnota}{
 %
   % Generator: Alectryon
@@ -167,399 +8,184 @@
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetSone}{
+\newcommand{\Snippettheoremfive}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{empty\PYZus{}notexists}~\PY{o}{(}\PY{n+nv}{T\PYZsq{}}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{X}\PY{o}{:}\PY{n+nb}{set}~\PY{n}{T\PYZsq{}}\PY{o}{):}~\PY{n}{X}~\PY{o}{=}~\PY{n}{set0}~\PY{o}{\(\leftrightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{k+kr}{\(\exists\)}~\PY{n+nv}{z}\PY{o}{,}~\PY{n}{z}~\(\in\)~\PY{n}{X}\PY{o}{).}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Proof}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~\PY{n+nb}{split}~\PY{o}{=\PYZgt{}[\PYZhy{}\PYZgt{}}~\PY{o}{[}\PY{n}{z}\PY{o}{]|}~\PY{n}{H1}\PY{o}{];}\PY{k+kp}{first}~\PY{n+nb+bp}{by}~\PY{n+nb}{rewrite}~\PY{n}{in\PYZus{}set0}\PY{o}{.}~\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~\PY{n+nb+bp}{by}~\PY{n+nb}{rewrite}~\PY{n}{predeqE}~\PY{o}{=\PYZgt{}}~\PY{n}{x}\PY{o}{;}\PY{n+nb}{split}~\PY{o}{=\PYZgt{}}~\PY{o}{[/}\PY{n}{inP}~\PY{o}{?|];[}\PY{n+nb}{have}~\PY{n}{H2}\PY{o}{:}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{z}\PY{o}{,}~\PY{n}{z}~\(\in\)~\PY{n}{X}~\PY{n+nb+bp}{by}~\PY{o}{(}\PY{k+kr}{\(\exists\)}~\PY{n+nv}{x}\PY{o}{)|].}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Qed}\PY{o}{.}
+      ~~\PY{k+kn}{Theorem}~\PY{n+nf}{Th5}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{),}~\PY{o}{(}~\PY{n}{x}~\PY{o}{[\(\bot\)}\PY{n}{d}\PY{o}{]}~\PY{n}{y}~\PY{o}{|}~\PY{n}{W}~\PY{o}{)}~\PY{o}{\(\leftrightarrow\)}~\PY{o}{\(\neg\)}~\PY{n}{Aw}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{).}
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetStwo}{
+\newcommand{\SnippetAssumptions}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{empty\PYZus{}iff}~\PY{o}{(}\PY{n+nv}{T\PYZsq{}}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{X}\PY{o}{:}\PY{n+nb}{set}~\PY{n}{T\PYZsq{}}\PY{o}{):}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{X}~\PY{o}{!=}~\PY{n}{set0}\PY{o}{)}~\PY{o}{\(\leftrightarrow\)}~\PY{n}{X}~\PY{o}{=}~\PY{n}{set0}\PY{o}{.}
+      ~~~~\PY{k+kn}{Hypothesis}~\PY{n+nv}{A1}\PY{o}{:}~\PY{o}{(}\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{v0}\PY{o}{:}\PY{n}{T}\PY{o}{),}~\PY{o}{(}\PY{n}{v0}~\(\in\)~\PY{n}{setT}\PY{o}{)).}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Hypothesis}~\PY{n+nv}{A3}\PY{o}{:}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Er}\PY{o}{.+)).}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Hypothesis}~\PY{n+nv}{A4}\PY{o}{:}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)).}
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetSthree}{
+\newcommand{\SnippetChains}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      \PY{k+kn}{Definition}~\PY{n+nf}{inverse}~\PY{o}{(}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}~\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{x}~\PY{o}{|}~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{,}\PY{n}{x}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)].}
+      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{Chains}~\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{C}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{SType}\PY{o}{|}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{c1}~\PY{n+nv}{c2}\PY{o}{:}~\PY{n}{SType}\PY{o}{),}\nl
+      ~~~~~~~~~~\PY{n}{c1}~\(\in\)~\PY{n}{C}~\PY{o}{\(\rightarrow\)}~\PY{n}{c2}~\(\in\)~\PY{n}{C}~\PY{o}{\(\rightarrow\)}~\PY{n}{c1}~\PY{o}{[\PYZlt{}=]}~\PY{n}{c2}~\PY{o}{\(\,\vee\,\)}~\PY{n}{c2}~\PY{o}{[\PYZlt{}=]}~\PY{n}{c1}\PY{o}{].}
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetLiftO}{
+\newcommand{\SnippetMono}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{LiftO}~\PY{o}{(}\PY{n+nv}{st}\PY{o}{:}~\PY{n}{seq}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{so}\PY{o}{:}~\PY{n}{seq}~\PY{n}{O}\PY{o}{)}~\PY{o}{:=}~\PY{n}{pair}~\PY{o}{(}\PY{n}{Lift}~\PY{n}{st}\PY{o}{)}~\PY{n}{so}\PY{o}{.}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Mono}~\PY{o}{:=}~~\PY{n}{Eb}\PY{o}{.+}~\PY{o}{\(\cup\)}~\PY{n}{Er}\PY{o}{.+.}
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetLift}{
+\newcommand{\SnippetSType}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      \PY{k+kn}{Fixpoint}~\PY{n+nf}{Lift}~\PY{o}{(}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{st}\PY{o}{:}~\PY{n}{seq}~\PY{n}{T}\PY{o}{):}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\nl
-      ~~\PY{k+kr}{match}~\PY{n}{st}~\PY{k+kr}{with}~\nl
-      ~~\PY{o}{|}~\PY{n}{x}~\PY{o}{::}~\PY{o}{[::}~\PY{n}{y}~\PY{o}{\PYZam{}}~\PY{n}{st}\PY{o}{]}~\PY{k+kr}{as}~\PY{n}{st1}~\PY{o}{=\PYZgt{}}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)::(}\PY{n}{Lift}~\PY{n}{st1}\PY{o}{)}\nl
-      ~~\PY{o}{|}~\PY{n}{\PYZus{}}~\PY{o}{=\PYZgt{}}~\PY{n}{Nil}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)}\nl
-      ~~\PY{k+kr}{end}\PY{o}{.}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{SType}~\PY{o}{:=}~\PY{o}{\PYZob{}}\PY{n}{S}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{|}~\PY{n}{RelIndep}~\PY{n}{Mono}~\PY{n}{S}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{S}\PY{o}{:\PYZsh{}(}\PY{n}{Er}\PY{o}{.+)}~\PY{o}{\(\subset\)}~\PY{n}{Mono}\PY{o}{\PYZsh{}}\PY{n}{S}~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{S}~\PY{o}{!=}~\PY{n}{set0}\PY{o}{\PYZcb{}.}
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetOO}{
+\newcommand{\SnippetScal}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      \PY{k+kn}{Inductive}~\PY{n+nf}{O}~\PY{o}{:=}~\PY{o}{|}~\PY{n}{P}~\PY{o}{|}~\PY{n}{N}\PY{o}{.}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Scal}~\PY{o}{:=}~\PY{o}{[}~\PY{n+nb}{set}~\PY{n}{S}~\PY{o}{|}~\PY{n}{RelIndep}~\PY{n}{Mono}~\PY{n}{S}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{S}\PY{o}{:\PYZsh{}(}\PY{n}{Er}\PY{o}{.+)}~\PY{o}{\(\subset\)}~\PY{n}{Mono}\PY{o}{\PYZsh{}}\PY{n}{S}~\PY{o}{\(\,\wedge\,\)}~~\PY{n}{S}~\PY{o}{!=}~\PY{n}{set0}~\PY{o}{].}
     \end{input}
   \end{sentence}
 }
-\newcommand{\Snippetpair}{
+\newcommand{\SnippetScalnotempty}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Fixpoint}~\PY{n+nf}{pair}~\PY{o}{(}\PY{n+nv}{stt}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{))}~\PY{o}{(}\PY{n+nv}{so}\PY{o}{:}~\PY{n}{seq}~\PY{n}{O}\PY{o}{)}~\PY{o}{:=}~\nl
-      ~~~~\PY{k+kr}{match}~\PY{n}{stt}\PY{o}{,}~\PY{n}{so}~\PY{k+kr}{with}~\nl
-      ~~~~\PY{o}{|}~\PY{o}{(}\PY{n}{pt}\PY{o}{)::}\PY{n}{stt}\PY{o}{,}~\PY{n}{o}\PY{o}{::}\PY{n}{so}~\PY{o}{=\PYZgt{}}~\PY{o}{(}\PY{n}{pt}\PY{o}{,}\PY{n}{o}\PY{o}{)::(}\PY{n}{pair}~\PY{n}{stt}~\PY{n}{so}\PY{o}{)}\nl
-      ~~~~\PY{o}{|}~\PY{o}{(}\PY{n}{pt}\PY{o}{)::}\PY{n}{stt}\PY{o}{,}~\PY{o}{[::]}~\PY{o}{=\PYZgt{}}~~\PY{o}{(}\PY{n}{pt}\PY{o}{,}\PY{n}{P}\PY{o}{)::(}\PY{n}{pair}~\PY{n}{stt}~\PY{o}{[::])}\nl
-      ~~~~\PY{o}{|}~\PY{n}{\PYZus{}}~\PY{o}{,}~\PY{n}{\PYZus{}}~\PY{o}{=\PYZgt{}}~\PY{n}{Nil}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)}\nl
-      ~~~~\PY{k+kr}{end}\PY{o}{.}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{Scal\PYZus{}not\PYZus{}empty}\PY{o}{:}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{v}\PY{o}{,}~\PY{n}{Scal}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{v}\PY{o}{].}
     \end{input}
   \end{sentence}
 }
-\newcommand{\Snippetclosrefltrans}{
+\newcommand{\SnippetleSetone}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Inductive}~\PY{n+nf}{clos\PYZus{}refl\PYZus{}trans}~\PY{o}{(}\PY{n+nv}{x}\PY{o}{:}\PY{n}{T}\PY{o}{)}~\PY{o}{:}~\PY{n}{T}~\PY{o}{\(\rightarrow\)}~\PY{k+kt}{Prop}~\PY{o}{:=}\nl
-      ~~\PY{o}{|}~\PY{n}{rt\PYZus{}step}~\PY{o}{(}\PY{n}{y}\PY{o}{:}\PY{n}{T}\PY{o}{)}~\PY{o}{:}~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{clos\PYZus{}refl\PYZus{}trans}~\PY{n}{x}~\PY{n}{y}\nl
-      ~~\PY{o}{|}~\PY{n}{rt\PYZus{}refl}~\PY{o}{:}~\PY{n}{clos\PYZus{}refl\PYZus{}trans}~\PY{n}{x}~\PY{n}{x}\nl
-      ~~\PY{o}{|}~\PY{n}{rt\PYZus{}trans}~\PY{o}{(}\PY{n}{y}~\PY{n}{z}\PY{o}{:}\PY{n}{T}\PY{o}{)}~\PY{o}{:}\nl
-      ~~~~\PY{n}{clos\PYZus{}refl\PYZus{}trans}~\PY{n}{x}~\PY{n}{y}~\PY{o}{\(\rightarrow\)}~\PY{n}{clos\PYZus{}refl\PYZus{}trans}~\PY{n}{y}~\PY{n}{z}~\PY{o}{\(\rightarrow\)}~\PY{n}{clos\PYZus{}refl\PYZus{}trans}~\PY{n}{x}~\PY{n}{z}\PY{o}{.}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{leSet1}~\PY{o}{(}\PY{n+nv}{AB}\PY{o}{:}~\PY{n}{SType}\PY{o}{*}\PY{n}{SType}\PY{o}{)}~\PY{o}{:=}\nl
+      ~~~~\PY{n}{leSet}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)}~\PY{o}{((}\PY{n}{proj1\PYZus{}sig}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{),}~\PY{o}{(}\PY{n}{proj1\PYZus{}sig}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{)).}
     \end{input}
   \end{sentence}
 }
-\newcommand{\Snippetclosrt}{
+\newcommand{\Snippetleset}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{clos\PYZus{}rt}~\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{x}\PY{o}{:}~\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{|}~\PY{n}{clos\PYZus{}refl\PYZus{}trans}~\PY{n}{x}\PY{o}{.}\PY{l+m+mi}{1}~\PY{n}{x}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{].}
+      \PY{k+kn}{Definition}~\PY{n+nf}{leSet}~\PY{n+nv}{T}~\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{o}{(}\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\nl
+      ~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{AB}~\PY{o}{|}\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{a}\PY{o}{:}\PY{n}{T}\PY{o}{),}~\PY{o}{(}\PY{n}{a}~\(\in\)~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{b}\PY{o}{,}~\PY{n}{b}~\(\in\)~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{2}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}~\PY{n}{a}~\PY{o}{=}~\PY{n}{b}~\PY{o}{\(\,\vee\,\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{a}\PY{o}{,}\PY{n}{b}\PY{o}{))}~\PY{o}{].}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{txt}
+    \nl
+  \end{txt}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Notation}~\PY{l+s+s2}{\PYZdq{}A~[\PYZlt{}=~R~]~B\PYZdq{}}~\PY{o}{:=}~\PY{o}{(}\PY{n}{leSet}~\PY{n}{R}~\PY{o}{(}\PY{n}{A}\PY{o}{,}\PY{n}{B}\PY{o}{)).}
     \end{input}
   \end{sentence}
 }
-\newcommand{\Snippetrelation}{
+\newcommand{\SnippetlesetI}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      \PY{k+kn}{Definition}~\PY{n+nf}{relation}~\PY{o}{(}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{:=}~\PY{n+nb}{set}~\PY{o}{(}\PY{n}{T}~\PY{o}{*}~\PY{n}{T}\PY{o}{).}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Ile}~\PY{n+nv}{R}~\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{:}~\PY{n}{A}~\PY{o}{\(\subset\)}~\PY{n}{B}~\PY{o}{\(\rightarrow\)}~\PY{n}{A}~\PY{o}{[\PYZlt{}=}~\PY{n}{R}\PY{o}{]}~\PY{n}{B}\PY{o}{.}
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetRPathequiv}{
+\newcommand{\SnippetElt}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{RPath\PYZus{}equiv}~\PY{n+nv}{st}~\PY{n+nv}{R}\PY{o}{:}~\PY{n}{st}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{R}~\PY{o}{\(\leftrightarrow\)}~\PY{n}{st}~\PY{o}{[}\PY{n}{Suc}\(\in\)\PY{o}{]}~\PY{n}{R}\PY{o}{.}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Elt}~\PY{o}{(}\PY{n+nv}{C}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{SType}\PY{o}{)}~\PY{o}{:=}~\PY{o}{\PYZob{}}\PY{n}{x}~\PY{o}{:}~\PY{n}{T}~\PY{o}{|}\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{S}\PY{o}{:}~\PY{n}{SType}\PY{o}{),}~\PY{n}{S}~\(\in\)~\PY{n}{C}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{x}~\(\in\)~\PY{o}{(}\PY{n}{sval}~\PY{n}{S}\PY{o}{)\PYZcb{}.}
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetRPath}{
+\newcommand{\SnippetEc}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Notation}~\PY{l+s+s2}{\PYZdq{}s~[Suc{\(\in\)}]~R\PYZdq{}}~\PY{o}{:=}~\PY{o}{(}\PY{n}{RPath}~\PY{n}{R}~\PY{n}{s}\PY{o}{).}
+      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{Ec}~\PY{o}{:=}~\PY{n}{Elt}~\PY{n}{C}\PY{o}{.}
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetRpathLone}{
+\newcommand{\SnippetSinf}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Rpath\PYZus{}L1}~\PY{n+nv}{st}~\PY{n+nv}{X}\PY{o}{:}~\PY{n}{st}~\([{\in}]\)~\PY{n}{X}~\PY{o}{\(\rightarrow\)}~\PY{n}{st}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{o}{(}\PY{n}{X}~\PY{o}{`*`}~\PY{n}{X}\PY{o}{).}~
+      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{Sinf}~\PY{o}{:=}~\nl
+      ~~~~~~\PY{o}{[}~\PY{n+nb}{set}~\PY{n}{v}\PY{o}{:}~\PY{n}{T}~\PY{o}{|}~\nl
+      ~~~~~~~~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{o}{(}\PY{n}{S}~\(\in\)~\PY{n}{C}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{v}~\(\in\)~\PY{o}{(}\PY{n}{sval}~\PY{n}{S}\PY{o}{))}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{k+kr}{\(\forall\)}~\PY{n+nv}{T}\PY{o}{,}~\PY{n}{T}~\(\in\)~\PY{n}{C}~\PY{o}{\(\rightarrow\)}~\PY{n}{S}~\PY{o}{[\PYZlt{}=]}~\PY{n}{T}~\PY{o}{\(\rightarrow\)}~\PY{n}{v}~\(\in\)~\PY{o}{(}\PY{n}{sval}~\PY{n}{T}\PY{o}{))].}
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetDI}{
+\newcommand{\SnippetRC}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Lift\PYZus{}Dom}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{st}\PY{o}{:}\PY{n}{seq}~\PY{n}{T}\PY{o}{|}~\PY{n}{size}\PY{o}{(}\PY{n}{st}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{l+m+mi}{1}\PY{o}{].}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Lift\PYZus{}Im}~~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{spt}\PY{o}{:}\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)|}~\PY{n}{size}\PY{o}{(}\PY{n}{spt}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{l+m+mi}{0}~\nl
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{spt}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{Chrel}\PY{o}{].}
+      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{RC}\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{xy}\PY{o}{:}\PY{n}{Ec}\PY{o}{*}\PY{n}{Ec}~\PY{o}{|}\nl
+      ~~~~~~~~~~~~~~~~~~~~~~\PY{o}{((}\PY{n}{sval}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)}~\(\in\)~\PY{n}{Sinf}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{2}~\PY{o}{=}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)}\nl
+      ~~~~~~~~~~~~~~~~~~~~~~\PY{o}{\(\,\vee\,\)}~\PY{o}{(\PYZti{}}~\PY{o}{((}\PY{n}{sval}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)}~\(\in\)~\PY{n}{Sinf}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)}~\PY{o}{(}\PY{n}{sval}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{,}~\PY{n}{sval}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{))].}
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetLiftinj}{
+\newcommand{\Snippetlesetporder}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Lift\PYZus{}inj}~\PY{n+nv}{st}~\PY{n+nv}{st\PYZsq{}}\PY{o}{:}~\PY{n}{st}~\(\in\)~\PY{n}{Lift\PYZus{}Dom}~\PY{o}{\(\rightarrow\)}~\PY{n}{Lift}~\PY{n}{st}~\PY{o}{=}~\PY{n}{Lift}~\PY{n}{st\PYZsq{}}~\PY{o}{\(\rightarrow\)}~\PY{n}{st}~\PY{o}{=}~\PY{n}{st\PYZsq{}}\PY{o}{.}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetLiftsurj}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Lift\PYZus{}surj}~\PY{n+nv}{spt}\PY{o}{:}~\PY{n}{spt}~\(\in\)~\PY{n}{Lift\PYZus{}Im}~\PY{o}{\(\rightarrow\)}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{st}\PY{o}{,}~\PY{n}{st}\(\in\)~\PY{n}{Lift\PYZus{}Dom}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{Lift}~\PY{n}{st}\PY{o}{=}\PY{n}{spt}\PY{o}{.}~
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetEpathgt}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Example}~\PY{n+nf}{P\PYZus{}gt}~\PY{o}{(}\PY{n+nv}{n}\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~~\PY{o}{:=}~\nl
-      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{spt}~\PY{o}{|}~\PY{n}{size}\PY{o}{(}\PY{n}{spt}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{n}{n}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{spt}~\([{\in}]\)~\PY{n}{E}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{spt}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{Chrel}\PY{o}{].}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetDP}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}P}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):=}~\nl
-      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{spt}\PY{o}{|}~\PY{n}{spt}~\(\in\)~\PY{n}{Lift\PYZus{}Im}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{Epe}~\PY{n}{spt}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{spt}~\([{\in}]\)~\PY{n}{E}~\PY{o}{].}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetDV}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}V}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):=}\nl
-      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{st}\PY{o}{|}~\PY{n}{st}~\(\in\)~\PY{n}{Lift\PYZus{}Dom}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{Pe}~\PY{n}{st}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{st}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{E}\PY{o}{].}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetDPDV}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{DP\PYZus{}DV}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{),}~\PY{n}{image}~\PY{o}{(}\PY{n}{D\PYZus{}V}~\PY{n}{R}~\PY{n}{E}\PY{o}{)}~\PY{o}{(@}\PY{n}{Lift}~\PY{n}{T}\PY{o}{)}~\PY{o}{=}~\PY{o}{(}\PY{n}{D\PYZus{}P}~\PY{n}{R}~\PY{n}{E}\PY{o}{).}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetPe}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Pe}~\PY{o}{(}\PY{n+nv}{st}\PY{o}{:}~\PY{n}{seq}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\PY{o}{(}\PY{n}{head}~\PY{n}{ptv}\PY{o}{.}\PY{l+m+mi}{1}~\PY{n}{st}\PY{o}{,}~\PY{n+nb}{last}~\PY{n}{ptv}\PY{o}{.}\PY{l+m+mi}{1}~\PY{n}{st}\PY{o}{).}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetEpe}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Epe}~\PY{o}{(}\PY{n+nv}{spt}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{))}~\PY{o}{:=}~\PY{o}{((}\PY{n}{head}~\PY{n}{ptv}~\PY{n}{spt}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{,}~\PY{o}{(}\PY{n+nb}{last}~\PY{n}{ptv}~\PY{n}{spt}\PY{o}{).}\PY{l+m+mi}{2}\PY{o}{).}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetUgt}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Example}~\PY{n+nf}{U\PYZus{}gt}~\PY{o}{(}\PY{n+nv}{n}\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):=}\nl
-      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{sto}~\PY{o}{|}~\PY{n}{size}\PY{o}{(}\PY{n}{sto}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{n}{n}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{sto}~\([{\in}]\)~\PY{o}{(}\PY{n}{Oedge}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Lift}~\PY{n}{sto}\PY{o}{)}~\([{\in}]\)~\PY{n}{ChrelO}\PY{o}{].}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetChrelO}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kn}{Definition}~\PY{n+nf}{ChrelO}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{ppa}\PY{o}{:}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)*(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)}~\PY{o}{|}~\PY{o}{(}\PY{n}{ppa}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{).}\PY{l+m+mi}{2}~\PY{o}{=}~\PY{o}{(}\PY{n}{ppa}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{].}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetEpeLift}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Epe\PYZus{}Lift}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{st}\PY{o}{:}\PY{n}{seq}~\PY{n}{T}\PY{o}{),}~\PY{n}{st}~\(\in\)~\PY{n}{Lift\PYZus{}Dom}~\PY{o}{\(\rightarrow\)}~\PY{n}{Epe}~\PY{o}{(}\PY{n}{Lift}~\PY{n}{st}\PY{o}{)}~\PY{o}{=}~\PY{n}{Pe}~\PY{n}{st}\PY{o}{.}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetPeUnLift}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Pe\PYZus{}UnLift}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{spt}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)),}~\nl
-      ~~~~~~\PY{n}{spt}~\(\in\)~\PY{n}{Lift\PYZus{}Im}\PY{o}{\(\rightarrow\)}\PY{n}{Pe}~\PY{o}{(}\PY{n}{UnLift}~\PY{n}{spt}~\PY{n}{ptv}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)=}\PY{n}{Epe}~\PY{n}{spt}\PY{o}{.}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetEopeLiftO}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Eope\PYZus{}LiftO}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{st}\PY{o}{:}\PY{n}{seq}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{so}\PY{o}{:}\PY{n}{seq}~\PY{n}{O}\PY{o}{),}\nl
-      ~~~~~~\PY{n}{size}\PY{o}{(}\PY{n}{st}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{l+m+mi}{1}~\PY{o}{\(\rightarrow\)}~\PY{n}{size}~\PY{o}{(}\PY{n}{so}\PY{o}{)}~\PY{o}{=}~\PY{n}{size}~\PY{n}{st}~\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}~\PY{o}{\(\rightarrow\)}~\PY{n}{Eope}~\PY{o}{(}\PY{n}{LiftO}~\PY{n}{st}~\PY{n}{so}\PY{o}{)}~\PY{o}{=}~\PY{n}{Pe}~\PY{n}{ptv}~\PY{n}{st}\PY{o}{.}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetEope}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Eope}~\PY{o}{(}\PY{n+nv}{stto}~\PY{o}{:}~\PY{n}{seq}\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{))}~\PY{o}{:}~\PY{n}{T}\PY{o}{*}\PY{n}{T}~\PY{o}{:=}\nl
-      ~~~~\PY{o}{((}\PY{n}{head}~\PY{o}{(}\PY{n}{ptv}\PY{o}{,}\PY{n}{P}\PY{o}{)}~\PY{n}{stto}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{,}~\PY{o}{(}\PY{n+nb}{last}~\PY{o}{(}\PY{n}{ptv}\PY{o}{,}\PY{n}{P}\PY{o}{)}~\PY{n}{stto}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{).}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetPeUnLiftO}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Pe\PYZus{}UnLiftO}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{stto}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)),}~\nl
-      ~~~~~~\PY{n}{size}\PY{o}{(}\PY{n}{stto}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{l+m+mi}{0}~\PY{o}{\(\rightarrow\)}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{ChrelO}~\PY{o}{\(\rightarrow\)}~\nl
-      ~~~~~~\PY{o}{(}\PY{n}{Pe}~\PY{n}{ptv}~\PY{o}{(}\PY{n}{UnLiftO}~\PY{n}{stto}~\PY{n}{ptv}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{)}~\PY{o}{=}~~\PY{n}{Eope}~\PY{n}{stto}\PY{o}{.}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetActiveeq}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Ub}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\nl
-      ~~~~\PY{o}{\(\neg\)`}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{stto}~\PY{o}{|}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{o}{(}\PY{n}{A\PYZus{}tr}~\PY{n}{W}~\PY{n}{E}\PY{o}{)].}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{D\PYZus{}separated\PYZus{}iff}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{),}\nl
-      ~~~~~~\PY{o}{\(\neg\)(}\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)),}~\PY{n}{Active\PYZus{}path}~\PY{n}{W}~\PY{n}{E}~\PY{n}{p}~\PY{n}{x}~\PY{n}{y}\PY{o}{)}\nl
-      ~~~~~~\PY{o}{\(\leftrightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{x}~\PY{o}{=}~\PY{n}{y}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~~\PY{o}{(}\PY{n}{D\PYZus{}U}~\PY{o}{[}\PY{n+nb}{set}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)]}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\subset\)}~\PY{o}{(}\PY{n}{Ub}~\PY{n}{W}~\PY{n}{E}\PY{o}{).}~
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetallL}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kn}{Definition}~\PY{n+nf}{allL}~\PY{o}{(}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{n+nv}{st}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{o}{:=}~\PY{o}{(}\PY{n}{x}\PY{o}{::(}\PY{n}{rcons}~\PY{n}{st}~\PY{n}{y}\PY{o}{))}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{R}\PY{o}{.}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetAtr}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kn}{Definition}~\PY{n+nf}{A\PYZus{}tr}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{X}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\nl
-      ~~\PY{n}{ChrelO}~\PY{o}{\(\cap\)}~\nl
-      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{oe}~\PY{o}{:}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)}~\PY{o}{*}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)|}~\PY{k+kr}{match}~\PY{o}{(}\PY{n}{oe}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{,}\PY{n}{oe}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{,}~\PY{n}{oe}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{)}~\PY{k+kr}{with}~\nl
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\PY{o}{|}~\PY{o}{(}\PY{n}{P}\PY{o}{,}\PY{n}{P}\PY{o}{,}\PY{n}{v}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{X}\PY{o}{.\PYZca{}}\PY{n}{c}~\PY{n}{v}~\PY{o}{|}~\PY{o}{(}\PY{n}{N}\PY{o}{,}\PY{n}{N}\PY{o}{,}\PY{n}{v}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{X}\PY{o}{.\PYZca{}}\PY{n}{c}~\PY{n}{v}~\PY{o}{|}~\PY{o}{(}\PY{n}{N}\PY{o}{,}\PY{n}{P}\PY{o}{,}\PY{n}{v}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{X}\PY{o}{.\PYZca{}}\PY{n}{c}~\PY{n}{v}\nl
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\PY{o}{|}~\PY{o}{(}\PY{n}{P}\PY{o}{,}\PY{n}{N}\PY{o}{,}\PY{n}{v}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{o}{(}\PY{n}{Fset}~\PY{n}{R}\PY{o}{.*}~\PY{n}{X}\PY{o}{)}~\PY{n}{v}~\PY{k+kr}{end}\PY{o}{].}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetLiftLift}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Lift\PYZus{}Lift}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{st}\PY{o}{:}\PY{n}{seq}~\PY{n}{T}\PY{o}{),}~\PY{o}{(}\PY{n}{Lift}~\PY{n}{st}\PY{o}{)}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{Chrel}\PY{o}{.}~
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{leSet2\PYZus{}porder}~\PY{n+nv}{R}\PY{o}{:}~\nl
+      ~~~~\PY{n}{sporder}~\PY{n}{R}~\PY{o}{\(\rightarrow\)}~\nl
+      ~~~~\PY{o}{@}\PY{n}{porder}~\PY{o}{\PYZob{}}\PY{n}{S}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{|}~\PY{n}{RelIndep}~\PY{n}{R}~\PY{n}{S}\PY{o}{\PYZcb{}}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{AB}~\PY{o}{|}~\PY{o}{(}\PY{n}{sval}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)}~\PY{o}{[\PYZlt{}=}~\PY{n}{R}\PY{o}{]}~\PY{o}{(}\PY{n}{sval}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{)].}
     \end{input}
   \end{sentence}
 }
@@ -631,16 +257,6 @@
     \end{input}
   \end{sentence}
 }
-\newcommand{\Snippettheoremfive}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Theorem}~\PY{n+nf}{Th5}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{),}~\PY{o}{(}~\PY{n}{x}~\PY{o}{[\(\bot\)}\PY{n}{d}\PY{o}{]}~\PY{n}{y}~\PY{o}{|}~\PY{n}{W}~\PY{o}{)}~\PY{o}{\(\leftrightarrow\)}~\PY{o}{\(\neg\)}~\PY{n}{Aw}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{).}
-    \end{input}
-  \end{sentence}
-}
 \newcommand{\SnippetRelIndep}{
 %
   % Generator: Alectryon
@@ -649,47 +265,6 @@
     \begin{input}
       \PY{k+kn}{Definition}~\PY{n+nf}{RelIndep}~\PY{o}{(}\PY{n+nv}{T}\PY{o}{:}\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{S}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}\nl
       ~~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}\PY{n}{T}\PY{o}{),}~~\PY{n}{x}~\(\in\)~\PY{n}{S}~\PY{o}{\(\rightarrow\)}~\PY{n}{y}~\(\in\)~\PY{n}{S}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)(}\PY{n}{x}~\PY{o}{=}~\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)(}~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)).}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\Snippetleset}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kn}{Definition}~\PY{n+nf}{leSet}~\PY{n+nv}{T}~\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{o}{(}\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\nl
-      ~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{AB}~\PY{o}{|}\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{a}\PY{o}{:}\PY{n}{T}\PY{o}{),}~\PY{o}{(}\PY{n}{a}~\(\in\)~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{b}\PY{o}{,}~\PY{n}{b}~\(\in\)~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{2}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}~\PY{n}{a}~\PY{o}{=}~\PY{n}{b}~\PY{o}{\(\,\vee\,\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{a}\PY{o}{,}\PY{n}{b}\PY{o}{))}~\PY{o}{].}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{txt}
-    \nl
-  \end{txt}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Notation}~\PY{l+s+s2}{\PYZdq{}A~[\PYZlt{}=~R~]~B\PYZdq{}}~\PY{o}{:=}~\PY{o}{(}\PY{n}{leSet}~\PY{n}{R}~\PY{o}{(}\PY{n}{A}\PY{o}{,}\PY{n}{B}\PY{o}{)).}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetMono}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Mono}~\PY{o}{:=}~~\PY{n}{Eb}\PY{o}{.+}~\PY{o}{\(\cup\)}~\PY{n}{Er}\PY{o}{.+.}
-    \end{input}
-  \end{sentence}
-}
-\newcommand{\SnippetScal}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Scal}~\PY{o}{:=}~\PY{o}{[}~\PY{n+nb}{set}~\PY{n}{S}~\PY{o}{|}~\PY{n}{RelIndep}~\PY{n}{Mono}~\PY{n}{S}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{S}\PY{o}{:\PYZsh{}(}\PY{n}{Er}\PY{o}{.+)}~\PY{o}{\(\subset\)}~\PY{n}{Mono}\PY{o}{\PYZsh{}}\PY{n}{S}~\PY{o}{\(\,\wedge\,\)}~~\PY{n}{S}~\PY{o}{!=}~\PY{n}{set0}~\PY{o}{].}
     \end{input}
   \end{sentence}
 }
@@ -703,67 +278,598 @@
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetAssumptions}{
+\newcommand{\SnippetSone}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~~~\PY{k+kn}{Hypothesis}~\PY{n+nv}{A1}\PY{o}{:}~\PY{o}{(}\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{v0}\PY{o}{:}\PY{n}{T}\PY{o}{),}~\PY{o}{(}\PY{n}{v0}~\(\in\)~\PY{n}{setT}\PY{o}{)).}\nl
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{empty\PYZus{}notexists}~\PY{o}{(}\PY{n+nv}{T\PYZsq{}}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{X}\PY{o}{:}\PY{n+nb}{set}~\PY{n}{T\PYZsq{}}\PY{o}{):}~\PY{n}{X}~\PY{o}{=}~\PY{n}{set0}~\PY{o}{\(\leftrightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{k+kr}{\(\exists\)}~\PY{n+nv}{z}\PY{o}{,}~\PY{n}{z}~\(\in\)~\PY{n}{X}\PY{o}{).}\nl
     \end{input}
   \end{sentence}
   \sep
   \begin{sentence}
     \begin{input}
-      ~~~~\PY{k+kn}{Hypothesis}~\PY{n+nv}{A3}\PY{o}{:}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Er}\PY{o}{.+)).}\nl
+      ~~\PY{k+kn}{Proof}\PY{o}{.}\nl
     \end{input}
   \end{sentence}
   \sep
   \begin{sentence}
     \begin{input}
-      ~~~~\PY{k+kn}{Hypothesis}~\PY{n+nv}{A4}\PY{o}{:}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)).}
+      ~~~~\PY{n+nb}{split}~\PY{o}{=\PYZgt{}[\PYZhy{}\PYZgt{}}~\PY{o}{[}\PY{n}{z}\PY{o}{]|}~\PY{n}{H1}\PY{o}{];}\PY{k+kp}{first}~\PY{n+nb+bp}{by}~\PY{n+nb}{rewrite}~\PY{n}{in\PYZus{}set0}\PY{o}{.}~\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{n+nb+bp}{by}~\PY{n+nb}{rewrite}~\PY{n}{predeqE}~\PY{o}{=\PYZgt{}}~\PY{n}{x}\PY{o}{;}\PY{n+nb}{split}~\PY{o}{=\PYZgt{}}~\PY{o}{[/}\PY{n}{inP}~\PY{o}{?|];[}\PY{n+nb}{have}~\PY{n}{H2}\PY{o}{:}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{z}\PY{o}{,}~\PY{n}{z}~\(\in\)~\PY{n}{X}~\PY{n+nb+bp}{by}~\PY{o}{(}\PY{k+kr}{\(\exists\)}~\PY{n+nv}{x}\PY{o}{)|].}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Qed}\PY{o}{.}
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetScalnotempty}{
+\newcommand{\SnippetSthree}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{Scal\PYZus{}not\PYZus{}empty}\PY{o}{:}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{v}\PY{o}{,}~\PY{n}{Scal}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{v}\PY{o}{].}
+      \PY{k+kn}{Definition}~\PY{n+nf}{inverse}~\PY{o}{(}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}~\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{x}~\PY{o}{|}~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{,}\PY{n}{x}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)].}
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetSType}{
+\newcommand{\SnippetStwo}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{SType}~\PY{o}{:=}~\PY{o}{\PYZob{}}\PY{n}{S}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{|}~\PY{n}{RelIndep}~\PY{n}{Mono}~\PY{n}{S}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{S}\PY{o}{:\PYZsh{}(}\PY{n}{Er}\PY{o}{.+)}~\PY{o}{\(\subset\)}~\PY{n}{Mono}\PY{o}{\PYZsh{}}\PY{n}{S}~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{S}~\PY{o}{!=}~\PY{n}{set0}\PY{o}{\PYZcb{}.}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{empty\PYZus{}iff}~\PY{o}{(}\PY{n+nv}{T\PYZsq{}}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{X}\PY{o}{:}\PY{n+nb}{set}~\PY{n}{T\PYZsq{}}\PY{o}{):}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{X}~\PY{o}{!=}~\PY{n}{set0}\PY{o}{)}~\PY{o}{\(\leftrightarrow\)}~\PY{n}{X}~\PY{o}{=}~\PY{n}{set0}\PY{o}{.}
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetleSetone}{
+\newcommand{\Snippetasym}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{leSet1}~\PY{o}{(}\PY{n+nv}{AB}\PY{o}{:}~\PY{n}{SType}\PY{o}{*}\PY{n}{SType}\PY{o}{)}~\PY{o}{:=}\nl
-      ~~~~\PY{n}{leSet}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)}~\PY{o}{((}\PY{n}{proj1\PYZus{}sig}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{),}~\PY{o}{(}\PY{n}{proj1\PYZus{}sig}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{)).}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Asym}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):}~\PY{n}{relation}~\PY{n}{T}~\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{xy}~\PY{o}{|}~\PY{n}{R}~\PY{n}{xy}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{R}\PY{o}{\PYZca{}\PYZhy{}}\PY{l+m+mi}{1}~\PY{n}{xy}\PY{o}{)].}
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetChains}{
+\newcommand{\Snippetlefttotal}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{Chains}~\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{C}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{SType}\PY{o}{|}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{c1}~\PY{n+nv}{c2}\PY{o}{:}~\PY{n}{SType}\PY{o}{),}\nl
-      ~~~~~~~~~~\PY{n}{c1}~\(\in\)~\PY{n}{C}~\PY{o}{\(\rightarrow\)}~\PY{n}{c2}~\(\in\)~\PY{n}{C}~\PY{o}{\(\rightarrow\)}~\PY{n}{c1}~\PY{o}{[\PYZlt{}=]}~\PY{n}{c2}~\PY{o}{\(\,\vee\,\)}~\PY{n}{c2}~\PY{o}{[\PYZlt{}=]}~\PY{n}{c1}\PY{o}{].}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{total\PYZus{}rel}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\PY{k+kr}{\(\forall\)}~\PY{n+nv}{x}\PY{o}{,}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{y}\PY{o}{,}~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetiic}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{iic}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{f}\PY{o}{,}~\PY{k+kr}{\(\forall\)}~\PY{n+nv}{n}\PY{o}{,}~\PY{n}{R}~\PY{o}{((}\PY{n}{f}~\PY{n}{n}\PY{o}{),(}\PY{n}{f}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))).}~~
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetiicinj}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{iic\PYZus{}inj}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{f}\PY{o}{,}~\PY{o}{(}\PY{k+kr}{\(\forall\)}~\PY{n+nv}{n}\PY{o}{,}~\PY{n}{R}~\PY{o}{((}\PY{n}{f}~\PY{n}{n}\PY{o}{),(}\PY{n}{f}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))))}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{injective}~\PY{n}{f}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetActive}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Definition}~\PY{n+nf}{Active}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}\nl
+      ~~\PY{o}{(}\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)),}~\PY{n}{Active\PYZus{}path}~\PY{n}{W}~\PY{n}{E}~\PY{n}{p}~\PY{n}{x}~\PY{n}{y}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetActiveOe}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Definition}~\PY{n+nf}{ActiveOe}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{X}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~~\nl
+      ~~\PY{o}{((}\PY{n}{Oedge}~\PY{n}{R}\PY{o}{)}~\PY{o}{`*`}~\PY{n}{Oedge}~\PY{n}{R}\PY{o}{)}~\PY{o}{\(\cap\)}~\PY{o}{(}\PY{n}{A\PYZus{}tr}~\PY{n}{X}~\PY{n}{R}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetActiveeq}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Ub}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\nl
+      ~~~~\PY{o}{\(\neg\)`}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{stto}~\PY{o}{|}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{o}{(}\PY{n}{A\PYZus{}tr}~\PY{n}{W}~\PY{n}{E}\PY{o}{)].}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{D\PYZus{}separated\PYZus{}iff}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{),}\nl
+      ~~~~~~\PY{o}{\(\neg\)(}\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)),}~\PY{n}{Active\PYZus{}path}~\PY{n}{W}~\PY{n}{E}~\PY{n}{p}~\PY{n}{x}~\PY{n}{y}\PY{o}{)}\nl
+      ~~~~~~\PY{o}{\(\leftrightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{x}~\PY{o}{=}~\PY{n}{y}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~~\PY{o}{(}\PY{n}{D\PYZus{}U}~\PY{o}{[}\PY{n+nb}{set}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)]}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\subset\)}~\PY{o}{(}\PY{n}{Ub}~\PY{n}{W}~\PY{n}{E}\PY{o}{).}~
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetAeop}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Definition}~\PY{n+nf}{Active\PYZus{}path}\nl
+      ~~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{X}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{))}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}\nl
+      ~~\PY{k+kr}{match}~\PY{n}{p}~\PY{k+kr}{with}~\nl
+      ~~\PY{o}{|}~\PY{o}{[::]}~\PY{o}{=\PYZgt{}}~\PY{n}{x}~\PY{o}{=}~\PY{n}{y}~\nl
+      ~~\PY{o}{|}~\PY{o}{[::}\PY{n}{eo1}\PY{o}{]}~\PY{o}{=\PYZgt{}}~\PY{n}{eo1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}~\PY{o}{=}~\PY{n}{x}~\PY{o}{\(\,\wedge\,\)}~~\PY{n}{eo1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}~\PY{o}{=}~\PY{n}{y}~\PY{o}{\(\,\wedge\,\)}~~\PY{n}{Oedge}~\PY{n}{R}~\PY{n}{eo1}~\nl
+      ~~\PY{o}{|}~\PY{n}{eo1}~\PY{o}{::}~\PY{o}{[::}~\PY{n}{eo2}~\PY{o}{\PYZam{}}~\PY{n}{p}\PY{o}{]}\nl
+      ~~~~\PY{o}{=\PYZgt{}}~\PY{n}{eo1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}~\PY{o}{=}~\PY{n}{x}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n+nb}{last}~\PY{n}{eo2}~\PY{n}{p}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}~\PY{o}{=}~\PY{n}{y}~\nl
+      ~~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{allL}~\PY{o}{(}\PY{n}{ActiveOe\PYZsq{}}~\PY{n}{X}~\PY{n}{R}\PY{o}{)}~\PY{o}{(}\PY{n}{belast}~\PY{n}{eo2}~\PY{n}{p}\PY{o}{)}~\PY{n}{eo1}~\PY{o}{(}\PY{n+nb}{last}~\PY{n}{eo2}~\PY{n}{p}\PY{o}{)}\nl
+      ~~\PY{k+kr}{end}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetAtr}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Definition}~\PY{n+nf}{A\PYZus{}tr}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{X}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\nl
+      ~~\PY{n}{ChrelO}~\PY{o}{\(\cap\)}~\nl
+      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{oe}~\PY{o}{:}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)}~\PY{o}{*}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)|}~\PY{k+kr}{match}~\PY{o}{(}\PY{n}{oe}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{,}\PY{n}{oe}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{,}~\PY{n}{oe}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{)}~\PY{k+kr}{with}~\nl
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\PY{o}{|}~\PY{o}{(}\PY{n}{P}\PY{o}{,}\PY{n}{P}\PY{o}{,}\PY{n}{v}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{X}\PY{o}{.\PYZca{}}\PY{n}{c}~\PY{n}{v}~\PY{o}{|}~\PY{o}{(}\PY{n}{N}\PY{o}{,}\PY{n}{N}\PY{o}{,}\PY{n}{v}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{X}\PY{o}{.\PYZca{}}\PY{n}{c}~\PY{n}{v}~\PY{o}{|}~\PY{o}{(}\PY{n}{N}\PY{o}{,}\PY{n}{P}\PY{o}{,}\PY{n}{v}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{X}\PY{o}{.\PYZca{}}\PY{n}{c}~\PY{n}{v}\nl
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\PY{o}{|}~\PY{o}{(}\PY{n}{P}\PY{o}{,}\PY{n}{N}\PY{o}{,}\PY{n}{v}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{o}{(}\PY{n}{Fset}~\PY{n}{R}\PY{o}{.*}~\PY{n}{X}\PY{o}{)}~\PY{n}{v}~\PY{k+kr}{end}\PY{o}{].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetChrel}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Chrel}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{:=[}\PY{n+nb}{set}~\PY{n}{s}\PY{o}{:}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)*(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)|}~\PY{o}{(}\PY{n}{s}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{).}\PY{l+m+mi}{2}~\PY{o}{=}~\PY{o}{(}\PY{n}{s}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetChrelO}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Definition}~\PY{n+nf}{ChrelO}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{ppa}\PY{o}{:}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)*(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)}~\PY{o}{|}~\PY{o}{(}\PY{n}{ppa}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{).}\PY{l+m+mi}{2}~\PY{o}{=}~\PY{o}{(}\PY{n}{ppa}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetDI}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Lift\PYZus{}Dom}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{st}\PY{o}{:}\PY{n}{seq}~\PY{n}{T}\PY{o}{|}~\PY{n}{size}\PY{o}{(}\PY{n}{st}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{l+m+mi}{1}\PY{o}{].}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Lift\PYZus{}Im}~~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{spt}\PY{o}{:}\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)|}~\PY{n}{size}\PY{o}{(}\PY{n}{spt}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{l+m+mi}{0}~\nl
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{spt}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{Chrel}\PY{o}{].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetDP}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}P}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):=}~\nl
+      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{spt}\PY{o}{|}~\PY{n}{spt}~\(\in\)~\PY{n}{Lift\PYZus{}Im}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{Epe}~\PY{n}{spt}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{spt}~\([{\in}]\)~\PY{n}{E}~\PY{o}{].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetDPDV}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{DP\PYZus{}DV}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{),}~\PY{n}{image}~\PY{o}{(}\PY{n}{D\PYZus{}V}~\PY{n}{R}~\PY{n}{E}\PY{o}{)}~\PY{o}{(@}\PY{n}{Lift}~\PY{n}{T}\PY{o}{)}~\PY{o}{=}~\PY{o}{(}\PY{n}{D\PYZus{}P}~\PY{n}{R}~\PY{n}{E}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetDU}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}U}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{stto}~\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)}~\PY{o}{|}\PY{n}{size}\PY{o}{(}\PY{n}{stto}\PY{o}{)\PYZgt{}}\PY{l+m+mi}{0}~\nl
+      ~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{Eope}~\PY{n}{stto}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{stto}~\([{\in}]\)~\PY{o}{(}\PY{n}{Oedge}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{ChrelO}\PY{o}{].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetDUa}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}U\PYZus{}a}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}\PY{n}{T}\PY{o}{):=}\nl
+      ~~~~\PY{o}{(}\PY{n}{D\PYZus{}U}~\PY{n}{R}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\cap\)}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{stto}~\PY{o}{|}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{o}{(}\PY{n}{A\PYZus{}tr}~\PY{n}{W}~\PY{n}{E}\PY{o}{)].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetDUaone}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}U\PYZus{}a1}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}\PY{n}{T}\PY{o}{):=}\nl
+      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{stto}~\PY{o}{|}\PY{n}{size}\PY{o}{(}\PY{n}{stto}\PY{o}{)\PYZgt{}}\PY{l+m+mi}{0}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Eope}~\PY{n}{stto}\PY{o}{)=(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{stto}~\([{\in}]\)~\PY{o}{(}\PY{n}{Oedge}~\PY{n}{E}\PY{o}{)}~\nl
+      ~~~~~~~~~~~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{ChrelO}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{o}{(}\PY{n}{A\PYZus{}tr}~\PY{n}{W}~\PY{n}{E}\PY{o}{)].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetDV}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}V}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):=}\nl
+      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{st}\PY{o}{|}~\PY{n}{st}~\(\in\)~\PY{n}{Lift\PYZus{}Dom}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{Pe}~\PY{n}{st}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{st}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{E}\PY{o}{].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetDseparated}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}separated}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\nl
+      ~~\PY{o}{\(\neg\)(}\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)),}~\PY{n}{Active\PYZus{}path}~\PY{n}{W}~\PY{n}{E}~\PY{n}{p}~\PY{n}{x}~\PY{n}{y}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetEope}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Eope}~\PY{o}{(}\PY{n+nv}{stto}~\PY{o}{:}~\PY{n}{seq}\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{))}~\PY{o}{:}~\PY{n}{T}\PY{o}{*}\PY{n}{T}~\PY{o}{:=}\nl
+      ~~~~\PY{o}{((}\PY{n}{head}~\PY{o}{(}\PY{n}{ptv}\PY{o}{,}\PY{n}{P}\PY{o}{)}~\PY{n}{stto}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{,}~\PY{o}{(}\PY{n+nb}{last}~\PY{o}{(}\PY{n}{ptv}\PY{o}{,}\PY{n}{P}\PY{o}{)}~\PY{n}{stto}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetEopeLiftO}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Eope\PYZus{}LiftO}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{st}\PY{o}{:}\PY{n}{seq}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{so}\PY{o}{:}\PY{n}{seq}~\PY{n}{O}\PY{o}{),}\nl
+      ~~~~~~\PY{n}{size}\PY{o}{(}\PY{n}{st}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{l+m+mi}{1}~\PY{o}{\(\rightarrow\)}~\PY{n}{size}~\PY{o}{(}\PY{n}{so}\PY{o}{)}~\PY{o}{=}~\PY{n}{size}~\PY{n}{st}~\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}~\PY{o}{\(\rightarrow\)}~\PY{n}{Eope}~\PY{o}{(}\PY{n}{LiftO}~\PY{n}{st}~\PY{n}{so}\PY{o}{)}~\PY{o}{=}~\PY{n}{Pe}~\PY{n}{ptv}~\PY{n}{st}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetEpathgt}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Example}~\PY{n+nf}{P\PYZus{}gt}~\PY{o}{(}\PY{n+nv}{n}\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~~\PY{o}{:=}~\nl
+      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{spt}~\PY{o}{|}~\PY{n}{size}\PY{o}{(}\PY{n}{spt}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{n}{n}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{spt}~\([{\in}]\)~\PY{n}{E}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{spt}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{Chrel}\PY{o}{].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetEpe}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Epe}~\PY{o}{(}\PY{n+nv}{spt}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{))}~\PY{o}{:=}~\PY{o}{((}\PY{n}{head}~\PY{n}{ptv}~\PY{n}{spt}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{,}~\PY{o}{(}\PY{n+nb}{last}~\PY{n}{ptv}~\PY{n}{spt}\PY{o}{).}\PY{l+m+mi}{2}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetEpeLift}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Epe\PYZus{}Lift}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{st}\PY{o}{:}\PY{n}{seq}~\PY{n}{T}\PY{o}{),}~\PY{n}{st}~\(\in\)~\PY{n}{Lift\PYZus{}Dom}~\PY{o}{\(\rightarrow\)}~\PY{n}{Epe}~\PY{o}{(}\PY{n}{Lift}~\PY{n}{st}\PY{o}{)}~\PY{o}{=}~\PY{n}{Pe}~\PY{n}{st}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetLift}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Fixpoint}~\PY{n+nf}{Lift}~\PY{o}{(}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{st}\PY{o}{:}~\PY{n}{seq}~\PY{n}{T}\PY{o}{):}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\nl
+      ~~\PY{k+kr}{match}~\PY{n}{st}~\PY{k+kr}{with}~\nl
+      ~~\PY{o}{|}~\PY{n}{x}~\PY{o}{::}~\PY{o}{[::}~\PY{n}{y}~\PY{o}{\PYZam{}}~\PY{n}{st}\PY{o}{]}~\PY{k+kr}{as}~\PY{n}{st1}~\PY{o}{=\PYZgt{}}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)::(}\PY{n}{Lift}~\PY{n}{st1}\PY{o}{)}\nl
+      ~~\PY{o}{|}~\PY{n}{\PYZus{}}~\PY{o}{=\PYZgt{}}~\PY{n}{Nil}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)}\nl
+      ~~\PY{k+kr}{end}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetLiftLift}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Lift\PYZus{}Lift}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{st}\PY{o}{:}\PY{n}{seq}~\PY{n}{T}\PY{o}{),}~\PY{o}{(}\PY{n}{Lift}~\PY{n}{st}\PY{o}{)}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{Chrel}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetLiftO}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{LiftO}~\PY{o}{(}\PY{n+nv}{st}\PY{o}{:}~\PY{n}{seq}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{so}\PY{o}{:}~\PY{n}{seq}~\PY{n}{O}\PY{o}{)}~\PY{o}{:=}~\PY{n}{pair}~\PY{o}{(}\PY{n}{Lift}~\PY{n}{st}\PY{o}{)}~\PY{n}{so}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetLiftinj}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Lift\PYZus{}inj}~\PY{n+nv}{st}~\PY{n+nv}{st\PYZsq{}}\PY{o}{:}~\PY{n}{st}~\(\in\)~\PY{n}{Lift\PYZus{}Dom}~\PY{o}{\(\rightarrow\)}~\PY{n}{Lift}~\PY{n}{st}~\PY{o}{=}~\PY{n}{Lift}~\PY{n}{st\PYZsq{}}~\PY{o}{\(\rightarrow\)}~\PY{n}{st}~\PY{o}{=}~\PY{n}{st\PYZsq{}}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetLiftlemma}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Lift\PYZus{}lemma}\PY{o}{:}~~\PY{n}{image}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{st}~\PY{o}{|}~\PY{k+kt}{True}\PY{o}{]}~\PY{o}{(@}\PY{n}{Lift}~\PY{n}{T}\PY{o}{)}~\nl
+      ~~~~~~~~~~~~~~~~~~~~~\PY{o}{=}~\PY{n}{preimage}~\PY{o}{(@}\PY{n}{Lift}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{))}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{spt}\PY{o}{|}~\PY{n}{spt}~\([{\in}]\)~\PY{n}{Chrel}\PY{o}{].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetLiftnota}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Notation}~\PY{l+s+s2}{\PYZdq{}s~[L{\(\in\)}]~R\PYZdq{}}~\PY{o}{:=}~\PY{o}{(}\PY{n}{Lift}~\PY{n}{s}\PY{o}{)}~\([{\in}]\)~\PY{n}{R}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetLiftsurj}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Lift\PYZus{}surj}~\PY{n+nv}{spt}\PY{o}{:}~\PY{n}{spt}~\(\in\)~\PY{n}{Lift\PYZus{}Im}~\PY{o}{\(\rightarrow\)}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{st}\PY{o}{,}~\PY{n}{st}\(\in\)~\PY{n}{Lift\PYZus{}Dom}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{Lift}~\PY{n}{st}\PY{o}{=}\PY{n}{spt}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetOO}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Inductive}~\PY{n+nf}{O}~\PY{o}{:=}~\PY{o}{|}~\PY{n}{P}~\PY{o}{|}~\PY{n}{N}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetOedge}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Definition}~\PY{n+nf}{Oedge}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):}~\PY{n+nb}{set}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)}~\PY{o}{:=}\nl
+      ~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{oe}\PY{o}{:}~\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}~\PY{o}{|}~\PY{o}{(}\PY{k+kr}{match}~\PY{n}{oe}~\PY{k+kr}{with}~\PY{o}{|}~\PY{o}{(}\PY{n}{e}\PY{o}{,}\PY{n}{P}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{R}~\PY{n}{e}~\PY{o}{|}~\PY{o}{(}\PY{n}{e}\PY{o}{,}\PY{n}{N}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{R}\PY{o}{\PYZca{}\PYZhy{}}\PY{l+m+mi}{1}~\PY{n}{e}~\PY{k+kr}{end}\PY{o}{)].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetPe}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Pe}~\PY{o}{(}\PY{n+nv}{st}\PY{o}{:}~\PY{n}{seq}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\PY{o}{(}\PY{n}{head}~\PY{n}{ptv}\PY{o}{.}\PY{l+m+mi}{1}~\PY{n}{st}\PY{o}{,}~\PY{n+nb}{last}~\PY{n}{ptv}\PY{o}{.}\PY{l+m+mi}{1}~\PY{n}{st}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetPeUnLift}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Pe\PYZus{}UnLift}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{spt}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)),}~\nl
+      ~~~~~~\PY{n}{spt}~\(\in\)~\PY{n}{Lift\PYZus{}Im}\PY{o}{\(\rightarrow\)}\PY{n}{Pe}~\PY{o}{(}\PY{n}{UnLift}~\PY{n}{spt}~\PY{n}{ptv}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)=}\PY{n}{Epe}~\PY{n}{spt}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetPeUnLiftO}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Pe\PYZus{}UnLiftO}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{stto}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)),}~\nl
+      ~~~~~~\PY{n}{size}\PY{o}{(}\PY{n}{stto}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{l+m+mi}{0}~\PY{o}{\(\rightarrow\)}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{ChrelO}~\PY{o}{\(\rightarrow\)}~\nl
+      ~~~~~~\PY{o}{(}\PY{n}{Pe}~\PY{n}{ptv}~\PY{o}{(}\PY{n}{UnLiftO}~\PY{n}{stto}~\PY{n}{ptv}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{)}~\PY{o}{=}~~\PY{n}{Eope}~\PY{n}{stto}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetRPath}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Notation}~\PY{l+s+s2}{\PYZdq{}s~[Suc{\(\in\)}]~R\PYZdq{}}~\PY{o}{:=}~\PY{o}{(}\PY{n}{RPath}~\PY{n}{R}~\PY{n}{s}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetRPathequiv}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{RPath\PYZus{}equiv}~\PY{n+nv}{st}~\PY{n+nv}{R}\PY{o}{:}~\PY{n}{st}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{R}~\PY{o}{\(\leftrightarrow\)}~\PY{n}{st}~\PY{o}{[}\PY{n}{Suc}\(\in\)\PY{o}{]}~\PY{n}{R}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetRpathLone}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Rpath\PYZus{}L1}~\PY{n+nv}{st}~\PY{n+nv}{X}\PY{o}{:}~\PY{n}{st}~\([{\in}]\)~\PY{n}{X}~\PY{o}{\(\rightarrow\)}~\PY{n}{st}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{o}{(}\PY{n}{X}~\PY{o}{`*`}~\PY{n}{X}\PY{o}{).}~
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetTCP}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{TCP}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:}~\PY{n}{R}\PY{o}{.+}~\PY{o}{=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{vp}~\PY{o}{|}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{p}\PY{o}{,}~\PY{n}{allL}~\PY{n}{R}~\PY{n}{p}~\PY{n}{vp}\PY{o}{.}\PY{l+m+mi}{1}~\PY{n}{vp}\PY{o}{.}\PY{l+m+mi}{2}~\PY{o}{].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetUgeone}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{U\PYZus{}ge\PYZus{}1}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):=}\nl
+      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{sto}~\PY{o}{|}~\PY{n}{sto}~\([{\in}]\)~\PY{o}{(}\PY{n}{Oedge}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~~\PY{n}{size}\PY{o}{(}\PY{n}{sto}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{l+m+mi}{0}~\PY{o}{\(\,\wedge\,\)}~\nl
+      ~~~~~~~~~~~~~~~~~\PY{o}{(}\PY{n}{Lift}~\PY{n}{sto}\PY{o}{)}~\([{\in}]\)~\PY{n}{ChrelO}\PY{o}{].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetUgt}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Example}~\PY{n+nf}{U\PYZus{}gt}~\PY{o}{(}\PY{n+nv}{n}\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):=}\nl
+      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{sto}~\PY{o}{|}~\PY{n}{size}\PY{o}{(}\PY{n}{sto}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{n}{n}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{sto}~\([{\in}]\)~\PY{o}{(}\PY{n}{Oedge}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Lift}~\PY{n}{sto}\PY{o}{)}~\([{\in}]\)~\PY{n}{ChrelO}\PY{o}{].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetallL}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Definition}~\PY{n+nf}{allL}~\PY{o}{(}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{n+nv}{st}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{o}{:=}~\PY{o}{(}\PY{n}{x}\PY{o}{::(}\PY{n}{rcons}~\PY{n}{st}~\PY{n}{y}\PY{o}{))}~\PY{o}{[}\PY{n}{L}\(\in\)\PY{o}{]}~\PY{n}{R}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetallnotation}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Notation}~\PY{l+s+s2}{\PYZdq{}p~\([{\in}]\)~X\PYZdq{}}~\PY{o}{:=}~\PY{o}{(}\PY{k+kp}{all}~\PY{o}{(}\PY{k+kr}{fun}~\PY{n+nv}{x}~\PY{o}{=\PYZgt{}}~\PY{n}{x}~\(\in\)~\PY{n}{X}\PY{o}{)}~\PY{n}{p}\PY{o}{).}~
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetpair}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Fixpoint}~\PY{n+nf}{pair}~\PY{o}{(}\PY{n+nv}{stt}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{))}~\PY{o}{(}\PY{n+nv}{so}\PY{o}{:}~\PY{n}{seq}~\PY{n}{O}\PY{o}{)}~\PY{o}{:=}~\nl
+      ~~~~\PY{k+kr}{match}~\PY{n}{stt}\PY{o}{,}~\PY{n}{so}~\PY{k+kr}{with}~\nl
+      ~~~~\PY{o}{|}~\PY{o}{(}\PY{n}{pt}\PY{o}{)::}\PY{n}{stt}\PY{o}{,}~\PY{n}{o}\PY{o}{::}\PY{n}{so}~\PY{o}{=\PYZgt{}}~\PY{o}{(}\PY{n}{pt}\PY{o}{,}\PY{n}{o}\PY{o}{)::(}\PY{n}{pair}~\PY{n}{stt}~\PY{n}{so}\PY{o}{)}\nl
+      ~~~~\PY{o}{|}~\PY{o}{(}\PY{n}{pt}\PY{o}{)::}\PY{n}{stt}\PY{o}{,}~\PY{o}{[::]}~\PY{o}{=\PYZgt{}}~~\PY{o}{(}\PY{n}{pt}\PY{o}{,}\PY{n}{P}\PY{o}{)::(}\PY{n}{pair}~\PY{n}{stt}~\PY{o}{[::])}\nl
+      ~~~~\PY{o}{|}~\PY{n}{\PYZus{}}~\PY{o}{,}~\PY{n}{\PYZus{}}~\PY{o}{=\PYZgt{}}~\PY{n}{Nil}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)}\nl
+      ~~~~\PY{k+kr}{end}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetclosrefltrans}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Inductive}~\PY{n+nf}{clos\PYZus{}refl\PYZus{}trans}~\PY{o}{(}\PY{n+nv}{x}\PY{o}{:}\PY{n}{T}\PY{o}{)}~\PY{o}{:}~\PY{n}{T}~\PY{o}{\(\rightarrow\)}~\PY{k+kt}{Prop}~\PY{o}{:=}\nl
+      ~~\PY{o}{|}~\PY{n}{rt\PYZus{}step}~\PY{o}{(}\PY{n}{y}\PY{o}{:}\PY{n}{T}\PY{o}{)}~\PY{o}{:}~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{clos\PYZus{}refl\PYZus{}trans}~\PY{n}{x}~\PY{n}{y}\nl
+      ~~\PY{o}{|}~\PY{n}{rt\PYZus{}refl}~\PY{o}{:}~\PY{n}{clos\PYZus{}refl\PYZus{}trans}~\PY{n}{x}~\PY{n}{x}\nl
+      ~~\PY{o}{|}~\PY{n}{rt\PYZus{}trans}~\PY{o}{(}\PY{n}{y}~\PY{n}{z}\PY{o}{:}\PY{n}{T}\PY{o}{)}~\PY{o}{:}\nl
+      ~~~~\PY{n}{clos\PYZus{}refl\PYZus{}trans}~\PY{n}{x}~\PY{n}{y}~\PY{o}{\(\rightarrow\)}~\PY{n}{clos\PYZus{}refl\PYZus{}trans}~\PY{n}{y}~\PY{n}{z}~\PY{o}{\(\rightarrow\)}~\PY{n}{clos\PYZus{}refl\PYZus{}trans}~\PY{n}{x}~\PY{n}{z}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetclosrt}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{clos\PYZus{}rt}~\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{x}\PY{o}{:}~\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{|}~\PY{n}{clos\PYZus{}refl\PYZus{}trans}~\PY{n}{x}\PY{o}{.}\PY{l+m+mi}{1}~\PY{n}{x}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetrelation}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Definition}~\PY{n+nf}{relation}~\PY{o}{(}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{:=}~\PY{n+nb}{set}~\PY{o}{(}\PY{n}{T}~\PY{o}{*}~\PY{n}{T}\PY{o}{).}
     \end{input}
   \end{sentence}
 }
