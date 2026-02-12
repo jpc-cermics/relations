@@ -46,10 +46,16 @@
   \sep
   \begin{sentence}
     \begin{input}
-      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{Chains}~\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{C}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{SType}\PY{o}{|}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{c1}~\PY{n+nv}{c2}\PY{o}{:}~\PY{n}{SType}\PY{o}{),}\nl
-      ~~~~~~~~~~\PY{n}{c1}~\(\in\)~\PY{n}{C}~\PY{o}{\(\rightarrow\)}~\PY{n}{c2}~\(\in\)~\PY{n}{C}~\PY{o}{\(\rightarrow\)}~\PY{n}{c1}~\PY{o}{[\PYZlt{}=]}~\PY{n}{c2}~\PY{o}{\(\,\vee\,\)}~\PY{n}{c2}~\PY{o}{[\PYZlt{}=]}~\PY{n}{c1}\PY{o}{].}
+      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{ChainsB}~\PY{o}{:=}~\PY{o}{@}\PY{n}{Chains}~\PY{n}{SType}~\PY{n}{leSet1}\PY{o}{.}~\nl
     \end{input}
   \end{sentence}
+  \sep
+  \begin{txt}
+    ~~~~\PY{c}{(*~}\nl
+    \PY{c}{~~~~Definition~Chains~:=~[set~C:~set~SType|~forall~(c1~c2:~SType),}\nl
+    \PY{c}{~~~~~~~~~~c1~\PYZbs{}in~C~\PYZhy{}\PYZgt{}~c2~\PYZbs{}in~C~\PYZhy{}\PYZgt{}~c1~[\PYZlt{}=]~c2~\PYZbs{}/~c2~[\PYZlt{}=]~c1].}\nl
+    \PY{c}{~~~~~*)}
+  \end{txt}
 }
 \newcommand{\SnippetMono}{
 %
@@ -98,7 +104,7 @@
   \begin{sentence}
     \begin{input}
       ~~\PY{k+kn}{Definition}~\PY{n+nf}{leSet1}~\PY{o}{(}\PY{n+nv}{AB}\PY{o}{:}~\PY{n}{SType}\PY{o}{*}\PY{n}{SType}\PY{o}{)}~\PY{o}{:=}\nl
-      ~~~~\PY{n}{leSet}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)}~\PY{o}{((}\PY{n}{proj1\PYZus{}sig}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{),}~\PY{o}{(}\PY{n}{proj1\PYZus{}sig}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{)).}
+      ~~~~\PY{n}{leSet}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)}~\PY{o}{((}\PY{n}{sval}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{),}~\PY{o}{(}\PY{n}{sval}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{)).}
     \end{input}
   \end{sentence}
 }
@@ -250,6 +256,26 @@
   \begin{sentence}
     \begin{input}
       ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{Sinf\PYZus{}ScalP}\PY{o}{:}~\PY{o}{(}\PY{n}{Sinf}~\PY{n}{C}\PY{o}{):\PYZsh{}(}\PY{n}{Er}\PY{o}{.+)}~\PY{o}{\(\subset\)}~\PY{n}{Mono}\PY{o}{\PYZsh{}(}\PY{n}{Sinf}~\PY{n}{C}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetSmaxSType}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Smax\PYZus{}SType}\PY{o}{:}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{Sm}\PY{o}{,}~\PY{k+kr}{\(\forall\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{Sm}~\PY{o}{[\PYZlt{}=]}~\PY{n}{S}~\PY{o}{\(\rightarrow\)}~\PY{n}{S}~\PY{o}{=}~\PY{n}{Sm}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetSmax}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Smax}\PY{o}{:}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{Sm}\PY{o}{,}~\PY{n}{Sm}~\(\in\)~\PY{n}{Scal}~\PY{o}{\(\,\wedge\,\)}~\PY{k+kr}{\(\forall\)}~\PY{n+nv}{T}\PY{o}{,}~\PY{n}{T}~\(\in\)~\PY{n}{Scal}~\PY{o}{\(\rightarrow\)}~\PY{n}{Sm}~\PY{o}{[\PYZlt{}=}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)]}~\PY{n}{T}~\PY{o}{\(\rightarrow\)}~\PY{n}{T}~\PY{o}{=}~\PY{n}{Sm}\PY{o}{.}
     \end{input}
   \end{sentence}
 }

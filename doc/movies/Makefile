@@ -27,6 +27,8 @@ SNIPPETS = \
 	snippets/paper_monochromatic/ChooseRCSi-n.tex \
 	snippets/paper_monochromatic/SinfScal-n.tex \
 	snippets/paper_monochromatic/SinfScalP-n.tex \
+	snippets/paper_monochromatic/SmaxSType-n.tex \
+	snippets/paper_monochromatic/Smax-n.tex \
 	snippets/paper_relations/Aw-n.tex \
 	snippets/rel/RelIndep-n.tex \
 	snippets/rel/Rloop-n.tex \

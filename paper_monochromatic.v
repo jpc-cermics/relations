@@ -624,20 +624,23 @@ Section Paper.
   Hypothesis A4: ~ (iic (Asym Eb.+)).
   
   (** * existence of Smax with Zorn Lemma for type SType *)
+  (* begin snippet SmaxSType:: no-out *)    
   Lemma Smax_SType: exists Sm, forall S, Sm [<=] S -> S = Sm.
+  (* end snippet SmaxSType *)
   Proof.
     apply: (@Zorn_relation SType leSet1 leSet1_porder) => C.
     move: (@Sinf_final C) => H2 /inP H3.
     move: H3 => {}/H2 H3.
     case H4: ( C != set0 );first by move: H4 A4 => /H3 H4 {}/H4 H5.
-    
     move: H4 => /negP/contrapT/eqP H4. 
     move: (SType_not_empty A1 A3) => /notempty_exists [Sm Ht].
     by exists Sm; move => S; rewrite H4 -inP in_set0. 
   Qed.
   
   (** * existence of Smax in set T *)
+  (* begin snippet Smax:: no-out *)    
   Lemma Smax: exists Sm, Sm \in Scal /\ forall T, T \in Scal -> Sm [<= (Asym Eb.+)] T -> T = Sm.
+  (* end snippet Smax *)    
   Proof.
     move: Smax_SType => [Sm H1];exists (sval Sm); split; first by  apply: S2Scal.
     by move => S /Scal2S [S' <-] H3; f_equal;by apply H1.
