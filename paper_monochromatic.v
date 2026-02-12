@@ -267,7 +267,7 @@ Section Paper.
 
   (* begin snippet leSetone:: no-out *)   
   Definition leSet1 (AB: SType*SType) :=
-    leSet (Asym Eb.+) ((proj1_sig AB.1), (proj1_sig AB.2)).
+    leSet (Asym Eb.+) ((sval AB.1), (sval AB.2)).
   (* end snippet leSetone *)  
   
   (** * The relation on sets restricted to Stype subsets *)
@@ -400,7 +400,7 @@ Section Paper.
       
       (* begin snippet totalRC:: no-out *)    
       Lemma total_RC: total_rel RC. 
-      (* end snippet totalRC:: no-out *)    
+      (* end snippet totalRC *)    
       Proof.
         move => s.
         case H3: ((sval s) \in Sinf); first by (exists s); left.
@@ -457,9 +457,11 @@ Section Paper.
           by rewrite leqNgt H3 in H7.
       Qed.
       
+      (* begin snippet totalRCPTr:: no-out *)    
       Lemma total_RC_P3:
         ~ (iic (Asym Eb.+)) ->
         forall s, exists f, f 0=s /\ (exists n, (sval (f n)) \in Sinf /\ RC ((f 0), (f n))).
+      (* end snippet totalRCPTr *)
       Proof.
         move => H1; move: (total_RC_P2 H1) => + s => /(_ s) [f [[H2 H3] [n H4]]].
         exists f;split;first exact.
@@ -472,9 +474,10 @@ Section Paper.
         move: (transitiveN_RC H3) => /(_ n) H10.
         by split;[| apply: H10].
       Qed.
-      
+      (* begin snippet ChooseRCCi:: no-out *)    
       Lemma ChooseRC5:~ (iic (Asym Eb.+))
             -> forall (s: Elt C), (sval s \in Sinf) \/ exists (s':T), (s' \in Sinf) /\ (Asym Eb.+) (sval s, s').
+      (* end snippet ChooseRCCi *)    
       Proof. 
         move => H1; move: (total_RC_P3 H1) => + s => /(_ s) [f [H2 [n [H3 H3']]]].
         case H4: (sval (f 0) \in Sinf); first by left;rewrite -H2 H4.
@@ -483,8 +486,10 @@ Section Paper.
         by move: H3' => [/= [H3' _] | /= [H5 H6]//];rewrite H4 in H3'.
       Qed.
 
+      (* begin snippet ChooseRCSi:: no-out *)    
       Lemma ChooseRC6:~ (iic (Asym Eb.+))
             -> forall (S: SType), (S \in C) -> (sval S) [<= (Asym Eb.+)] Sinf.
+      (* end snippet ChooseRCSi *) 
       Proof. 
         move => H1 S H2 s /= H3.
         have H4: exists (S: SType), S \in C /\ s \in (sval S) by (exists S).
@@ -503,16 +508,19 @@ Section Paper.
     Implicit Type (C: set SType).
     
     (* begin snippet Chains:: no-out *)    
+    Definition ChainsB := @Chains SType leSet1. 
+    (* 
     Definition Chains := [set C: set SType| forall (c1 c2: SType),
           c1 \in C -> c2 \in C -> c1 [<=] c2 \/ c2 [<=] c1].
+     *)
     (* end snippet Chains *)    
     
-    Lemma Chains_is_total C: C \in Chains <-> total_on C (curry leSet1).
-    Proof. split => [/inP H2 c1 c2 /inP ? /inP ?| H1]; first by apply: H2. 
-           by apply/inP => c1 c2 /inP H2 /inP H3;apply: H1.
+    Lemma Chains_is_total C: C \in ChainsB <-> total_on C (curry leSet1).
+    Proof. split => [/inP H2 c1 c2 ? ?| H1];first by apply: H2. 
+           by apply/inP => c1 c2 ? ?;apply: H1.
     Qed.
     
-    Lemma Chains_Scal C S: C \in Chains -> S \in C -> Scal (sval S).
+    Lemma Chains_Scal C S: C \in ChainsB -> S \in C -> Scal (sval S).
     Proof. by move: S => [S [H1 [H2 H3]]] /inP H4 /inP H5. Qed.
     
   End SType_chains.
@@ -521,14 +529,15 @@ Section Paper.
     (** * Sinf when C is a non empty Chain *)
     
     Variables  (C: set SType).
-    Hypothesis Hc: C \in Chains. 
+    Hypothesis Hc: C \in ChainsB. 
     Hypothesis Hne: C != set0.
         
     (* Sinf is a Mono-independent set when C is a chain *)
     Lemma Sinf_indep: RelIndep Mono (Sinf C).
     Proof.
       move: Hc => /inP H1 x y /inP H2 /inP H3 H4 /= H5.
-      move: H2 H3 =>[S [H6 [/= H7 H8]]] [U [H6' [/= H7' H8']]].
+      move: H2 H3 =>[S [/[dup] H6 /inP P6 [/= H7 H8]]]
+                     [U [/[dup] H6' /inP P6' [/= H7' H8']]].
       move: H8 H8' => /((_ U) H6') H8 /((_ S) H6) H8'.
       have [H9|H9]: S [<=] U \/ U [<=] S by apply: H1.
       - move: H9 H1 => /H8 H9 /inP H1.
@@ -570,7 +579,9 @@ Section Paper.
       by move: (@ChooseRC5 C Hne A4 s) => [H1 | [s' [H1 _]]];[exists (sval s) | exists s'].
     Qed.
     
+    (* begin snippet SinfScalP:: no-out *)    
     Lemma Sinf_ScalP: (Sinf C):#(Er.+) `<=` Mono#(Sinf C).
+     (* end snippet SinfScalP *)
     Proof.
       move: Hc => H1 y [s [ H2 H3]].
       move: (H3) => [S [H4 [H5 H6]]].
@@ -593,7 +604,9 @@ Section Paper.
       + by exists tinf;split;[ left;apply: (TclosT H18 H21) | rewrite -inP].
     Qed.
     
+    (* begin snippet SinfScal:: no-out *)    
     Lemma Sinf_Scal: (Sinf C) \in Scal. 
+    (* end snippet SinfScal *)
     Proof.
       rewrite inP;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
     Qed.
@@ -610,53 +623,23 @@ Section Paper.
   Hypothesis A3: ~ (iic (Asym Er.+)).
   Hypothesis A4: ~ (iic (Asym Eb.+)).
   
-  (** * we are now able to use Zorn Lemma *)
-  (** Zorn lemma  in mathcomp-analysis.1.3.1 
-   * has changed and requires R to be (R : rel T) as oposed to (R: T -> T -> Prop) in 
-   * previous version. Thus we have to convert (curry leSet1) to rel T and adapt the proof.
-   **)
+  (** * existence of Smax with Zorn Lemma for type SType *)
+  Lemma Smax_SType: exists Sm, forall S, Sm [<=] S -> S = Sm.
+  Proof.
+    apply: (@Zorn_relation SType leSet1 leSet1_porder) => C.
+    move: (@Sinf_final C) => H2 /inP H3.
+    move: H3 => {}/H2 H3.
+    case H4: ( C != set0 );first by move: H4 A4 => /H3 H4 {}/H4 H5.
     
-  Lemma SmaxZ_new: exists Sm, forall S, (fun x y => `[< (curry leSet1) x y >]) Sm S -> S = Sm.
-  Proof.
-    apply: Zorn.
-    move => t; rewrite asboolE; by apply leSet1_reflexive.
-    move => r s t; rewrite 3!asboolE; by apply leSet1_transitive.
-    move => s t;rewrite 2!asboolE; by apply leSet1_antisymmetric.
-    move => A. 
-    rewrite /total_on => H2.
-    have H3: total_on A (curry leSet1). 
-    move => s t H5 H6. 
-    have H7:`[< curry leSet1 s t >] \/ `[< curry leSet1 t s >] by apply H2. 
-    by rewrite 2!asboolE in H7.     
-    case H1: (A != set0).
-    pose proof Sinf_final.
-    move: H3 => /Chains_is_total H3. apply Sinf_final in H3.
-    move: H3 => [Si H3].
-    exists Si. move => S /H3 H4. by rewrite asboolE.
-    by [].
-    by [].
-    move: H1 => /negP/contrapT/eqP H1. 
+    move: H4 => /negP/contrapT/eqP H4. 
     move: (SType_not_empty A1 A3) => /notempty_exists [Sm Ht].
-    by exists Sm; move => S; rewrite H1 -inP in_set0. 
+    by exists Sm; move => S; rewrite H4 -inP in_set0. 
   Qed.
   
-  Lemma SmaxZ: exists Sm, forall S, (curry leSet1) Sm S -> S = Sm.
+  (** * existence of Smax in set T *)
+  Lemma Smax: exists Sm, Sm \in Scal /\ forall T, T \in Scal -> Sm [<= (Asym Eb.+)] T -> T = Sm.
   Proof.
-    move: SmaxZ_new => [Sm H1];exists Sm. move => S.
-    move: H1 => /(_ S) H1; by rewrite asboolE in H1.
-  Qed.
-  
-  (** * back to set T *)
-  Lemma Exists_Smax: exists Sm, Sm \in Scal /\ forall T, T \in Scal -> Sm [<= (Asym Eb.+)] T -> T = Sm.
-  Proof.
-    move: SmaxZ => [Sm H1];exists (sval Sm); split; first by  apply: S2Scal.
-    by move => S /Scal2S [S' <-] H3; f_equal;by apply H1.
-  Qed.
-
-  (** * back to set T *)
-  Lemma Exists_Smax': exists Sm, Sm \in Scal /\ forall T, T \in Scal -> Sm [<= (Asym Eb.+)] T -> T = Sm.
-  Proof.
-    move: SmaxZ => [Sm H1];exists (sval Sm); split; first by  apply: S2Scal.
+    move: Smax_SType => [Sm H1];exists (sval Sm); split; first by  apply: S2Scal.
     by move => S /Scal2S [S' <-] H3; f_equal;by apply H1.
   Qed.
   
@@ -1003,7 +986,7 @@ Section Paper.
   
   Theorem Final: exists (Sm: set T), forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
     Proof.
-      move: Exists_Smax => [Sm [H1 H2]]. 
+      move: Smax => [Sm [H1 H2]]. 
       have H3: IsMaximal Sm 
         by split => [// |U H3 H4];have ->: U = Sm by apply: H2 H3 H4.
       by exists Sm; move => x; apply: fact14.

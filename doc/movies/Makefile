@@ -21,6 +21,12 @@ SNIPPETS = \
 	snippets/paper_monochromatic/Sinf-n.tex \
 	snippets/paper_monochromatic/RC-n.tex \
 	snippets/paper_monochromatic/lesetporder-n.tex \
+	snippets/paper_monochromatic/totalRC-n.tex \
+	snippets/paper_monochromatic/totalRCPTr-n.tex \
+	snippets/paper_monochromatic/ChooseRCCi-n.tex \
+	snippets/paper_monochromatic/ChooseRCSi-n.tex \
+	snippets/paper_monochromatic/SinfScal-n.tex \
+	snippets/paper_monochromatic/SinfScalP-n.tex \
 	snippets/paper_relations/Aw-n.tex \
 	snippets/rel/RelIndep-n.tex \
 	snippets/rel/Rloop-n.tex \

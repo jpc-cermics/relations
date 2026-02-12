@@ -91,6 +91,7 @@ Definition RelIndep (T:Type) (R: relation T) (S: set T) :=
 
 (* possible Corecion of relation T to rel T *)
 Definition R2rel (T: Type) (R: relation T) : rel T := (fun x y => ((x,y) \in R)).
+Definition rel2R (T: Type) (R: rel T) : relation T := (fun xy => R xy.1 xy.2).
 Global Coercion R2rel : relation >-> rel.
 
 Notation "Δ_( X )" := (@Delta _ X) 
@@ -1469,3 +1470,35 @@ Section Infinite_paths.
 
   
 End Infinite_paths.
+
+Section ZornRelation.
+  (** * Zorn Lemma for relations : we use the Zorn Lemma from classical_sets *)
+  (** * using R2rel to obtain a rel T relations from a relation T *)
+  
+  Context (T: Type).
+  
+  Definition Chains (R: relation T) := 
+    [set C: set T| forall (c1 c2: T), C c1 -> C c2 ->  R (c1,c2) \/ R (c2,c1)].
+ 
+  Lemma Zorn_relation (R: relation T) : 
+    porder R
+    -> (forall A : set T, Chains R A -> exists t : T, forall s : T, A s -> R (s, t))
+    -> exists t, forall s, R (t, s) -> s = t.
+  Proof.
+    move => [Hr Ha Ht] Htotal. 
+    pose S:= (R2rel R).
+    have RS_iff s t:  S s t <-> R (s,t) by split;rewrite /S/R2rel => /inP. 
+    have Sr t: S t t by rewrite asboolE;apply Hr.
+    have Sa s t: S s t -> S t s -> s = t by rewrite 2!asboolE;apply Ha. 
+    have St r s t: S r s -> S s t -> S r t by rewrite 3!asboolE;apply Ht.
+    have HT A: total_on A (fun x x0 : T => S x x0) -> exists t : T, forall s : T, A s -> S s t.
+    move => H1. 
+    have H2 s t: A s -> A t -> R (s, t) \/ R (t, s) by rewrite -2!RS_iff; exact: H1.
+    by move: H2 => /Htotal [t H2];(exists t => s);rewrite RS_iff;apply: H2.
+    (* end have HT *)
+    move: (@Zorn T S Sr St Sa HT) => [t Hz].
+    by exists t => s;rewrite -RS_iff;apply: Hz.
+  Qed.
+  
+End ZornRelation.
+

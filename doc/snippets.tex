@@ -171,219 +171,9 @@
   \sep
   \begin{sentence}
     \begin{input}
-      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{RC}\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{xy}\PY{o}{:}\PY{n}{Ec}\PY{o}{*}\PY{n}{Ec}~\PY{o}{|}\nl
+      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{RC}\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{xy}\PY{o}{:}~\PY{o}{(}\PY{n}{Elt}~\PY{n}{C}\PY{o}{)*(}\PY{n}{Elt}~\PY{n}{C}\PY{o}{)}~\PY{o}{|}\nl
       ~~~~~~~~~~~~~~~~~~~~~~\PY{o}{((}\PY{n}{sval}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)}~\(\in\)~\PY{n}{Sinf}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{2}~\PY{o}{=}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)}\nl
-      ~~~~~~~~~~~~~~~~~~~~~~\PY{o}{\(\,\vee\,\)}~\PY{o}{(\PYZti{}}~\PY{o}{((}\PY{n}{sval}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)}~\(\in\)~\PY{n}{Sinf}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)}~\PY{o}{(}\PY{n}{sval}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{,}~\PY{n}{sval}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{))].}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{txt}
-    \nl
-  \end{txt}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~\PY{k+kn}{Section}~\PY{n+nf}{total\PYZus{}RC}\PY{o}{.}~\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{txt}
-    ~~~~~~\PY{l+s+sd}{(**~*~~the~main~result~here~is~total\PYZus{}RC~*)}~\nl
-    \nl
-  \end{txt}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{total\PYZus{}RC\PYZus{}L1}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{S}\PY{o}{:}~\PY{n}{SType}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{s}\PY{o}{:}\PY{n}{T}\PY{o}{),}~\nl
-      ~~~~~~~~~~\PY{o}{(}\PY{n}{S}~\(\in\)~\PY{n}{C}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{n}{s}~\(\in\)~\PY{o}{(}\PY{n}{sval}~\PY{n}{S}\PY{o}{))}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{s}~\(\in\)~\PY{n}{Sinf}\PY{o}{))}~\nl
-      ~~~~~~~~~~\PY{o}{\(\rightarrow\)}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{S1}\PY{o}{,}~\PY{n}{S1}~\(\in\)~\PY{n}{C}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{S}~\PY{o}{[\PYZlt{}=]}~\PY{n}{S1}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{s}~\(\in\)~\PY{o}{(}\PY{n}{sval}~\PY{n}{S1}\PY{o}{)).}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{k+kn}{Proof}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~~~\PY{n+nb}{move}~\PY{o}{=\PYZgt{}}~\PY{n}{S}~\PY{n}{s}~\PY{n}{H2}~\PY{n}{H3}\PY{o}{.}~\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~~~\PY{n+nb}{apply}~\PY{n}{contraPP}\PY{o}{;}\PY{n+nb}{rewrite}~\PY{n}{not\PYZus{}existsP}~\PY{l+m+mi}{2}\PY{o}{!}\PY{n}{not\PYZus{}notE}~\PY{n}{inP}~\PY{o}{/}\PY{n}{Sinf}~\PY{o}{=\PYZgt{}}~\PY{n}{H4}\PY{o}{;}\PY{k+kr}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~~~\PY{n+nb}{split}~\PY{o}{=\PYZgt{}}~\PY{o}{[//}~\PY{o}{|}~\PY{o}{];}\PY{n+nb}{split}~\PY{o}{=\PYZgt{}}~\PY{o}{[//}~\PY{o}{|}\PY{n}{A}~\PY{o}{?}~\PY{o}{?].}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~~~\PY{n+nb+bp}{by}~\PY{n+nb}{move}\PY{o}{:}~\PY{n}{H4}~\PY{o}{=\PYZgt{}}~\PY{o}{/(}\PY{n}{\PYZus{}}~\PY{n}{A}\PY{o}{)}~\PY{o}{/}\PY{n}{not\PYZus{}andP}~\PY{o}{[?}~\PY{o}{//|/}\PY{n}{not\PYZus{}andP}~\PY{o}{[//}~\PY{o}{|}~\PY{o}{/}\PY{n}{contrapT}~\PY{o}{?]].}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{k+kn}{Qed}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{txt}
-    ~~~~~~\nl
-  \end{txt}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{total\PYZus{}RC\PYZus{}L2}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{S}\PY{o}{:}~\PY{n}{SType}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{s}\PY{o}{:}\PY{n}{T}\PY{o}{),}~\nl
-      ~~~~~~~~~~\PY{o}{(}\PY{n}{S}~\(\in\)~\PY{n}{C}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{n}{s}~\(\in\)~\PY{o}{(}\PY{n}{sval}~\PY{n}{S}\PY{o}{))}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{s}~\(\in\)~\PY{n}{Sinf}\PY{o}{))}~\nl
-      ~~~~~~~~~~\PY{o}{\(\rightarrow\)}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{S1}\PY{o}{,}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{s1}\PY{o}{,}~\PY{n}{S1}~\(\in\)~\PY{n}{C}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{s1}~\(\in\)~\PY{o}{(}\PY{n}{sval}~\PY{n}{S1}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)}~\PY{o}{(}\PY{n}{s}\PY{o}{,}\PY{n}{s1}\PY{o}{).}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{k+kn}{Proof}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~~~\PY{n+nb}{move}~\PY{o}{=\PYZgt{}}~\PY{n}{S}~\PY{n}{s}~\PY{n}{H2}~\PY{n}{H3}~\PY{n}{H4}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~~~\PY{n+nb}{move}\PY{o}{:}~\PY{o}{(}\PY{n}{total\PYZus{}RC\PYZus{}L1}~\PY{n}{H2}~\PY{n}{H3}~\PY{n}{H4}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{o}{[}\PY{n}{S1}~\PY{o}{[}\PY{n}{H5}~\PY{o}{[}\PY{n}{H6}~\PY{n}{H7}\PY{o}{]]].}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~~~\PY{n+nb+bp}{by}~\PY{n+nb}{move}\PY{o}{:}~\PY{o}{((}\PY{n}{H6}~\PY{n}{s}\PY{o}{)}~\PY{n}{H3}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{o}{[}\PY{n}{s1}~\PY{o}{[}\PY{n}{H8}~\PY{o}{[}\PY{n}{H9}~\PY{o}{|}~\PY{n}{H9}\PY{o}{]]];}\PY{k+kr}{\(\exists\)}~\PY{n+nv}{S1}\PY{o}{,}~\PY{n}{s1}\PY{o}{;[}\PY{n+nb}{rewrite}~\PY{o}{\PYZhy{}}\PY{n}{H9}~\PY{k+kr}{in}~\PY{n}{H8}\PY{o}{|].}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{k+kn}{Qed}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{txt}
-    ~~~~~~\nl
-  \end{txt}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{total\PYZus{}RC\PYZus{}L3}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{s}\PY{o}{:}~\PY{n}{Ec}\PY{o}{),}~\nl
-      ~~~~~~~~~~\PY{o}{\(\neg\)}~\PY{o}{((}\PY{n}{sval}~\PY{n}{s}\PY{o}{)}~\(\in\)~\PY{n}{Sinf}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{s1}\PY{o}{:}~\PY{n}{Ec}\PY{o}{),}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)}~\PY{o}{(}\PY{n}{sval}~\PY{n}{s}\PY{o}{,}\PY{n}{sval}~\PY{n}{s1}\PY{o}{).}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{k+kn}{Proof}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~~~\PY{n+nb}{move}~\PY{o}{=\PYZgt{}}~\PY{o}{[}\PY{n}{s}~\PY{o}{[}\PY{n}{S}~\PY{o}{[}\PY{n}{H1}~\PY{n}{H2}\PY{o}{]]]}~\PY{n}{H3}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~~~\PY{n+nb}{move}\PY{o}{:}~\PY{o}{(}\PY{n}{total\PYZus{}RC\PYZus{}L2}~\PY{n}{H1}~\PY{n}{H2}~\PY{n}{H3}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{o}{[}\PY{n}{S1}~\PY{o}{[}\PY{n}{s1}~\PY{o}{[}\PY{n}{H4}~\PY{o}{[}\PY{n}{H5}~\PY{n}{H6}\PY{o}{]]]].}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~~~\PY{n+nb}{have}~\PY{n}{H7}\PY{o}{:}~\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{S}\PY{o}{:}~\PY{n}{SType}\PY{o}{),}~\PY{n}{S}~\(\in\)~\PY{n}{C}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{s1}~\(\in\)~\PY{o}{(}\PY{n}{sval}~\PY{n}{S}\PY{o}{)}~\PY{n+nb+bp}{by}~\PY{o}{(}\PY{k+kr}{\(\exists\)}~\PY{n+nv}{S1}\PY{o}{).}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~~~\PY{n+nb+bp}{by}~\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{exist}~\PY{n+nv}{\PYZus{}}~\PY{n+nv}{s1}~\PY{n+nv}{H7}\PY{o}{).}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{k+kn}{Qed}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{txt}
-    ~~~~~~\nl
-  \end{txt}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{total\PYZus{}RC}\PY{o}{:}~\PY{n}{total\PYZus{}rel}~\PY{n}{RC}\PY{o}{.}~\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{k+kn}{Proof}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~~~\PY{n+nb}{move}~\PY{o}{=\PYZgt{}}~\PY{n}{s}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~~~\PY{n+nb}{case}~\PY{n}{H3}\PY{o}{:}~\PY{o}{((}\PY{n}{sval}~\PY{n}{s}\PY{o}{)}~\(\in\)~\PY{n}{Sinf}\PY{o}{);}~\PY{k+kp}{first}~\PY{n+nb+bp}{by}~\PY{o}{(}\PY{k+kr}{\(\exists\)}~\PY{n+nv}{s}\PY{o}{);}~\PY{n+nb}{left}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~~~\PY{n+nb}{have}~\PY{n}{H4}\PY{o}{:}~\PY{o}{\(\neg\)}~\PY{o}{((}\PY{n}{sval}~\PY{n}{s}\PY{o}{)}~\(\in\)~\PY{n}{Sinf}\PY{o}{)}~\PY{n+nb+bp}{by}~\PY{n+nb}{move}~\PY{o}{=\PYZgt{}}~\PY{n}{H5}\PY{o}{;}\PY{n+nb}{rewrite}~\PY{n}{H5}~\PY{k+kr}{in}~\PY{n}{H3}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~~~\PY{n+nb}{move}\PY{o}{:}~\PY{o}{(}\PY{n}{total\PYZus{}RC\PYZus{}L3}~\PY{n}{H4}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{o}{[}\PY{n}{s1}~\PY{n}{H5}\PY{o}{].}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~~~\PY{n+nb+bp}{by}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{s1}\PY{o}{;}~\PY{n+nb}{right}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{k+kn}{Qed}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{txt}
-    ~~~~~~\nl
-  \end{txt}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~\PY{k+kn}{End}~\PY{n+nf}{total\PYZus{}RC}\PY{o}{.}~
+      ~~~~~~~~~~~~~~~~~~~~~~\PY{o}{\(\,\vee\,\)}~\PY{o}{(\PYZti{}}~\PY{o}{((}\PY{n}{sval}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)}~\(\in\)~\PY{n}{Sinf}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)}~\PY{o}{(}\PY{n}{sval}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{,}~\PY{n}{sval}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{))].}
     \end{input}
   \end{sentence}
 }
@@ -396,6 +186,70 @@
       ~~\PY{k+kn}{Lemma}~\PY{n+nf}{leSet2\PYZus{}porder}~\PY{n+nv}{R}\PY{o}{:}~\nl
       ~~~~\PY{n}{sporder}~\PY{n}{R}~\PY{o}{\(\rightarrow\)}~\nl
       ~~~~\PY{o}{@}\PY{n}{porder}~\PY{o}{\PYZob{}}\PY{n}{S}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{|}~\PY{n}{RelIndep}~\PY{n}{R}~\PY{n}{S}\PY{o}{\PYZcb{}}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{AB}~\PY{o}{|}~\PY{o}{(}\PY{n}{sval}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)}~\PY{o}{[\PYZlt{}=}~\PY{n}{R}\PY{o}{]}~\PY{o}{(}\PY{n}{sval}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{)].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippettotalRC}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{total\PYZus{}RC}\PY{o}{:}~\PY{n}{total\PYZus{}rel}~\PY{n}{RC}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippettotalRCPTr}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{total\PYZus{}RC\PYZus{}P3}\PY{o}{:}\nl
+      ~~~~~~~~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+))}~\PY{o}{\(\rightarrow\)}\nl
+      ~~~~~~~~\PY{k+kr}{\(\forall\)}~\PY{n+nv}{s}\PY{o}{,}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{f}\PY{o}{,}~\PY{n}{f}~\PY{l+m+mi}{0}\PY{o}{=}\PY{n}{s}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{k+kr}{\(\exists\)}~\PY{n+nv}{n}\PY{o}{,}~\PY{o}{(}\PY{n}{sval}~\PY{o}{(}\PY{n}{f}~\PY{n}{n}\PY{o}{))}~\(\in\)~\PY{n}{Sinf}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{RC}~\PY{o}{((}\PY{n}{f}~\PY{l+m+mi}{0}\PY{o}{),}~\PY{o}{(}\PY{n}{f}~\PY{n}{n}\PY{o}{))).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetChooseRCCi}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{ChooseRC5}\PY{o}{:\PYZti{}}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+))}\nl
+      ~~~~~~~~~~~~\PY{o}{\(\rightarrow\)}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{s}\PY{o}{:}~\PY{n}{Elt}~\PY{n}{C}\PY{o}{),}~\PY{o}{(}\PY{n}{sval}~\PY{n}{s}~\(\in\)~\PY{n}{Sinf}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{s\PYZsq{}}\PY{o}{:}\PY{n}{T}\PY{o}{),}~\PY{o}{(}\PY{n}{s\PYZsq{}}~\(\in\)~\PY{n}{Sinf}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)}~\PY{o}{(}\PY{n}{sval}~\PY{n}{s}\PY{o}{,}~\PY{n}{s\PYZsq{}}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetChooseRCSi}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{ChooseRC6}\PY{o}{:\PYZti{}}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+))}\nl
+      ~~~~~~~~~~~~\PY{o}{\(\rightarrow\)}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{S}\PY{o}{:}~\PY{n}{SType}\PY{o}{),}~\PY{o}{(}\PY{n}{S}~\(\in\)~\PY{n}{C}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{n}{sval}~\PY{n}{S}\PY{o}{)}~\PY{o}{[\PYZlt{}=}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)]}~\PY{n}{Sinf}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetSinfScal}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{Sinf\PYZus{}Scal}\PY{o}{:}~\PY{o}{(}\PY{n}{Sinf}~\PY{n}{C}\PY{o}{)}~\(\in\)~\PY{n}{Scal}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetSinfScalP}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{Sinf\PYZus{}ScalP}\PY{o}{:}~\PY{o}{(}\PY{n}{Sinf}~\PY{n}{C}\PY{o}{):\PYZsh{}(}\PY{n}{Er}\PY{o}{.+)}~\PY{o}{\(\subset\)}~\PY{n}{Mono}\PY{o}{\PYZsh{}(}\PY{n}{Sinf}~\PY{n}{C}\PY{o}{).}
     \end{input}
   \end{sentence}
 }
