@@ -31,6 +31,7 @@ Section CheckAsym.
   
   Lemma check_asym:  (iic (Asym R.+)) -> (iic_inj R). 
     Proof. by apply: (@Asym2P5' T R A1). Qed.
+
 End  CheckAsym. 
 
 Reserved Notation "A [<=] B" (at level 4, no associativity). 
@@ -80,7 +81,7 @@ Section Set_order.
   (** * the previous relation [<= R] is an order relation on R-independent sets *)
 
   Context (T : eqType).
-  Implicit Types (T : eqType) (R S: relation T) (A B: set T).
+  Implicit Types (R S: relation T) (A B: set T).
   
   Axiom proof_irrelevance: forall (P : Prop) (p q : P), p = q.
   
@@ -994,6 +995,7 @@ Section Paper.
         by split => [// |U H3 H4];have ->: U = Sm by apply: H2 H3 H4.
       by exists Sm; move => x; apply: fact14.
     Qed.
-    
 
+  Print Assumptions Final.
+  
 End Paper.
