@@ -640,21 +640,27 @@ Section Paper.
   
   (** * existence of Smax in set T *)
   (* begin snippet Smax:: no-out *)    
-  Lemma Smax: exists Sm, Sm \in Scal /\ forall T, T \in Scal -> Sm [<= (Asym Eb.+)] T -> T = Sm.
+  Lemma Smax_Scal: exists Sm, Sm \in Scal /\ forall T, T \in Scal -> Sm [<= (Asym Eb.+)] T -> T = Sm.
   (* end snippet Smax *)    
   Proof.
     move: Smax_SType => [Sm H1];exists (sval Sm); split; first by  apply: S2Scal.
     by move => S /Scal2S [S' <-] H3; f_equal;by apply H1.
   Qed.
+
+  (** * existence of Smax in set T *)
+
+  Definition IsMaximal (S: set T):= 
+      S \in Scal /\ forall T, T \in Scal -> S [<= (Asym Eb.+)] T -> T = S.
+  (* begin snippet Smax:: no-out *)    
+  Lemma Smax: exists Sm, IsMaximal Sm.
+  (* end snippet Smax *)    
+  Proof. by move: Smax_Scal => [Sm HH];exists Sm. Qed.
   
   Section Maximal. 
     
     (** * We show that the maximal set is the independent set we search *)
     Variable (Sm: set T).
     
-    Definition IsMaximal (S: set T):= 
-      S \in Scal /\ forall T, T \in Scal -> S [<= (Asym Eb.+)] T -> S = T.
-  
     Definition Sx:= [set y | ~ (y \in Sm) /\ ~ (y \in Mono#Sm)].
 
     Definition Tm x:= [set y | y \in Sm /\ ~ (Eb.+ (y,x))].
@@ -726,7 +732,7 @@ Section Paper.
     Lemma fact8: IsMaximal Sm -> (forall x, x \in Sx -> ~ (((Tm x) `|` [set x]) \in Scal)).
     Proof.
       move => Smax x H2 H3; move: (fact6 H2) Smax => H4 [H5 H6].
-      have: Sm = ((Tm x) `|` [set x]) by apply: H6.
+      have: Sm = ((Tm x) `|` [set x]) by symmetry;apply: H6.
       by apply: (fact7 H2).
     Qed.
     
@@ -977,25 +983,19 @@ Section Paper.
     Proof.
       by move => H0 /Sx_1 [v [H1 H2]];apply: (fact12' H0 H1 H2).
     Qed.
-
-    Lemma fact14: IsMaximal Sm -> (forall x, ~ (x\in Sm) -> (x \in Mono#Sm)).
-    Proof.
-      move => Smax x H1. 
-      move: (fact13 Smax) => /forallNP /(_ x) H2.
-      have H3: ~ (x \in Sx) <-> (x \in Sm) \/ (x \in Mono#Sm) by rewrite inP not_andE 2!not_notP.
-      by move: H2 => /H3 [H2 | H2].
-    Qed.
     
+    Lemma fact14:  ~(exists x, x \in Sx) -> (forall x, ~ (x\in Sm) -> (x \in Mono#Sm)).
+    Proof.
+      have H3 x: ~ (x \in Sx) <-> (x \in Sm) \/ (x \in Mono#Sm) by rewrite inP not_andE 2!not_notP.
+      by rewrite -forallNE => + x H2 => /(_ x)/H3 [H4| H4]. 
+    Qed.
+
   End Maximal. 
   
   Theorem Final: exists (Sm: set T), forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
     Proof.
-      move: Smax => [Sm [H1 H2]]. 
-      have H3: IsMaximal Sm 
-        by split => [// |U H3 H4];have ->: U = Sm by apply: H2 H3 H4.
-      by exists Sm; move => x; apply: fact14.
+      move: Smax => [Sm [H1 H2]];exists Sm;move => x;apply/fact14/fact13.
+      by split => [// |U H3 H4];have ->: U = Sm by apply: H2 H3 H4.
     Qed.
-
-  Print Assumptions Final.
   
 End Paper.
