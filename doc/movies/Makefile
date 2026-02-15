@@ -17,7 +17,6 @@ SNIPPETS = \
 	snippets/paper_monochromatic/leset-n.tex \
 	snippets/paper_monochromatic/lesetI-n.tex \
 	snippets/paper_monochromatic/Elt-n.tex \
-	snippets/paper_monochromatic/Ec-n.tex \
 	snippets/paper_monochromatic/Sinf-n.tex \
 	snippets/paper_monochromatic/RC-n.tex \
 	snippets/paper_monochromatic/lesetporder-n.tex \
@@ -29,6 +28,20 @@ SNIPPETS = \
 	snippets/paper_monochromatic/SinfScalP-n.tex \
 	snippets/paper_monochromatic/SmaxSType-n.tex \
 	snippets/paper_monochromatic/Smax-n.tex \
+	snippets/paper_monochromatic/TmI-n.tex \
+	snippets/paper_monochromatic/factun-n.tex \
+	snippets/paper_monochromatic/Sbunp-n.tex \
+	snippets/paper_monochromatic/fact-n.tex \
+	snippets/paper_monochromatic/facttwo-n.tex \
+	snippets/paper_monochromatic/factthree-n.tex \
+	snippets/paper_monochromatic/factfour-n.tex \
+	snippets/paper_monochromatic/factfive-n.tex \
+	snippets/paper_monochromatic/factseven-n.tex \
+	snippets/paper_monochromatic/facteleven-n.tex \
+	snippets/paper_monochromatic/facttwelveone-n.tex \
+	snippets/paper_monochromatic/facttwelvep-n.tex \
+	snippets/paper_monochromatic/facttreize-n.tex \
+	snippets/paper_monochromatic/factfort-n.tex \
 	snippets/paper_relations/Aw-n.tex \
 	snippets/rel/RelIndep-n.tex \
 	snippets/rel/Rloop-n.tex \

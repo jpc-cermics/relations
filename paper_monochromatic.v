@@ -665,39 +665,57 @@ Section Paper.
 
     Definition Tm x:= [set y | y \in Sm /\ ~ (Eb.+ (y,x))].
 
+    (* begin snippet TmI:: no-out *)    
     Lemma TmI: forall x, Tm x `<=` Sm.
+    (* end snippet TmI *)       
     Proof. by move => x y [/inP H2 _]. Qed.
 
+    (* begin snippet factun:: no-out *)    
     Lemma fact1: forall x y, y \in Sm -> ~(y \in (Tm x)) -> Eb.+ (y,x).
+    (* end snippet factun *)       
     Proof. by move => x y H3;rewrite inP not_andE => [[? // | /contrapT ? //]]. Qed.
     
+    (* begin snippet Sbunp:: no-out *)    
     Lemma Sb1': forall x z, z \in Sm `\` (Tm x) -> Eb.+ (z,x).
+    (* end snippet Sbunp*)       
     Proof. by move => x z /inP [/inP H3 /inP H4]; apply: (fact1 H3 H4). Qed.
     
+    (* begin snippet Sxm:: no-out *)    
     Definition Sxm x := forall y, y \in Sx -> Er.+(x,y) -> Er.+(y,x).
-    
+    (* end snippet Sxm*)       
+
     (* A consequence of A3 *)
+    (* begin snippet Sxone:: no-out *)    
     Lemma Sx_1: (exists (x:T), (x \in Sx)) -> (exists (x:T), x \in Sx /\ Sxm x).
+    (* end snippet Sxone*)       
     Proof.
       by move => H1; move: (test68' A3 H1) => H2.
     Qed.
     
+    (* begin snippet fact:: no-out *)    
     Lemma fact: IsMaximal Sm -> (forall t, t\in Sm:#(Er.+) -> t \in Mono#Sm).
+    (* end snippet fact*)       
     Proof. by move => Smax t H3;move: Smax H3 => [/inP [_ [H8 _]] _] /inP/H8 H3;rewrite inP. Qed.
     
+    (* begin snippet facttwo:: no-out *)    
     Lemma fact2: IsMaximal Sm -> (forall x, RelIndep Mono (Tm x)).
+    (* end snippet facttwo*)       
     Proof.
       move => Smax x x1 x2 /inP [H3 _] /inP [H4 _] H5 H6;move: Smax => [/inP [H7 _] _].
       by move: ((H7 x1 x2) H3 H4 H5 H6).
     Qed.
     
+    (* begin snippet factthree:: no-out *)    
     Lemma fact3: forall x, (x \in Sx) -> ~(x \in Mono#(Tm x)).
+    (* end snippet factthree *)       
     Proof.
       move => x /inP [H2 H2'] H3;move: TmI => /(_ x)/Fset_inc1 => /(_ Mono) H4.
       by have: x \in Mono#Sm by move: H3;rewrite inP => /H4 -/inP H3.
     Qed.
 
+    (* begin snippet factfour:: no-out *)    
     Lemma fact4: IsMaximal Sm -> (forall x, (x \in Sx) -> ~(x \in (Tm x):#Mono)).
+    (* end snippet factfour*)       
     Proof.
       move => Smax x /inP [_ H2'] /inP [x1 [H5 [H3 H3']]]. 
       move: (H5) => [H5' // | /= H5'] .
@@ -706,12 +724,16 @@ Section Paper.
       by move: H7 => /inP/H6 -/inP H7.
     Qed.
 
+    (* begin snippet factfive:: no-out *)    
     Lemma fact5: IsMaximal Sm -> (forall x, x \in Sx -> RelIndep Mono ((Tm x) `|` [set x])).
+    (* end snippet factfive*)       
     Proof.
       by move => Smax x H2;apply:  RelIndep_U;[apply: fact2|apply: fact3|apply: fact4].
     Qed.
-    
+
+    (* begin snippet factsix:: no-out *)    
     Lemma fact6: forall x, x \in Sx -> Sm [<= (Asym Eb.+)] ((Tm x) `|` [set x]).
+    (* end snippet factsix *)       
       move => x H2 x1 /= H3.
       case H4: (x1 \in Tm x).
       by (exists x1);split;[rewrite inP;left;rewrite -inP| left].
@@ -724,22 +746,28 @@ Section Paper.
       by have: x \in Mono#Sm by rewrite inP;(exists x1);split;[left|rewrite -inP].
     Qed.
     
+    (* begin snippet factseven:: no-out *)    
     Lemma fact7: forall x, x \in Sx -> Sm = ((Tm x) `|` [set x]) -> False.
+    (* end snippet factseven *)       
     Proof.
       by move => x /inP [H2 _] H3;have: x \in Sm by rewrite H3 inP; right.
     Qed.
     
+    (* begin snippet facteight:: no-out *)    
     Lemma fact8: IsMaximal Sm -> (forall x, x \in Sx -> ~ (((Tm x) `|` [set x]) \in Scal)).
+    (* end snippet facteight *)       
     Proof.
       move => Smax x H2 H3; move: (fact6 H2) Smax => H4 [H5 H6].
       have: Sm = ((Tm x) `|` [set x]) by symmetry;apply: H6.
       by apply: (fact7 H2).
     Qed.
     
+    (* begin snippet factnine:: no-out *)    
     Lemma fact9:  IsMaximal Sm -> 
                   (forall x, (x \in Sx) -> 
                       exists y, y \in (((Tm x) `|` [set x]):#(Er.+))
                                /\ ~ (y \in Mono#((Tm x) `|` [set x]))).
+    (* end snippet factnine*)       
     Proof.
       move => Smax x H2.
       move: (fact8 Smax H2) => /inP /not_andP [H3 | /not_andP [H3 | H3]].  
@@ -776,7 +804,9 @@ Section Paper.
     (** strangely it is not necessary to separate the two cases 
         Sm = (Tm x) or Sm <> (Tm x) *)
 
+    (* begin snippet facteleven:: no-out *)    
     Lemma fact11:  IsMaximal Sm -> (forall x, x \in Sx -> Sxm x -> Sm = (Tm x) -> False).
+    (* end snippet facteleven*)       
     Proof.
       move => Smax x H2 H2' H3.
       have H6: ~ (x \in Sm:#Mono) by move: (fact4 Smax H2); rewrite -H3.
@@ -809,7 +839,9 @@ Section Paper.
       by [].
     Qed.
 
+    (* begin snippet facttwelveone:: no-out *)    
     Lemma fact12_1: forall x, (x \in Sx) -> (Tm x) `|` (Sm `\` (Tm x)) = Sm.
+    (* end snippet facttwelveone *)       
     Proof.
       move => x H2.
       have H3: (Sm `&` (Tm x)) = (Tm x) by rewrite setIC setIidPl;apply: TmI.
@@ -817,8 +849,10 @@ Section Paper.
       by rewrite H3 in H4.
     Qed.
     
+    (* begin snippet facttwelve:: no-out *)    
     Lemma fact12: IsMaximal Sm -> 
                   (forall x, x \in Sx -> Sxm x -> (exists z, z \in Sm /\ ~(z\in (Tm x))) -> False).
+    (* end snippet facttwelve *)
     Proof.
       move => Smax x H2 H3 [z [H4 H5]].
       move: (fact9 Smax H2) => [y [/FsetUO [H6|H6] H7]].
@@ -898,7 +932,9 @@ Section Paper.
           by [].
     Qed.
     
+    (* begin snippet facttwelvep:: no-out *)    
     Lemma fact12': IsMaximal Sm -> (forall x, x \in Sx -> Sxm x -> False).
+    (* end snippet facttwelvep*)       
     Proof.
       move => Smax x H2 H3.
       move: (fact9 Smax H2) => [y [/FsetUO [H6|H6] H7]].
@@ -979,12 +1015,16 @@ Section Paper.
           by [].
     Qed.
 
+    (* begin snippet facttreize:: no-out *)    
     Lemma fact13: IsMaximal Sm -> ~(exists x, x \in Sx).
+    (* end snippet facttreize*)       
     Proof.
       by move => H0 /Sx_1 [v [H1 H2]];apply: (fact12' H0 H1 H2).
     Qed.
     
+    (* begin snippet factfort:: no-out *)    
     Lemma fact14:  ~(exists x, x \in Sx) -> (forall x, ~ (x\in Sm) -> (x \in Mono#Sm)).
+    (* end snippet factfort*)       
     Proof.
       have H3 x: ~ (x \in Sx) <-> (x \in Sm) \/ (x \in Mono#Sm) by rewrite inP not_andE 2!not_notP.
       by rewrite -forallNE => + x H2 => /(_ x)/H3 [H4| H4]. 

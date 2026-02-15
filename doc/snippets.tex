@@ -149,16 +149,6 @@
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetEc}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{Ec}~\PY{o}{:=}~\PY{n}{Elt}~\PY{n}{C}\PY{o}{.}
-    \end{input}
-  \end{sentence}
-}
 \newcommand{\SnippetSinf}{
 %
   % Generator: Alectryon
@@ -275,7 +265,157 @@
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Smax}\PY{o}{:}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{Sm}\PY{o}{,}~\PY{n}{Sm}~\(\in\)~\PY{n}{Scal}~\PY{o}{\(\,\wedge\,\)}~\PY{k+kr}{\(\forall\)}~\PY{n+nv}{T}\PY{o}{,}~\PY{n}{T}~\(\in\)~\PY{n}{Scal}~\PY{o}{\(\rightarrow\)}~\PY{n}{Sm}~\PY{o}{[\PYZlt{}=}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)]}~\PY{n}{T}~\PY{o}{\(\rightarrow\)}~\PY{n}{T}~\PY{o}{=}~\PY{n}{Sm}\PY{o}{.}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Smax\PYZus{}Scal}\PY{o}{:}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{Sm}\PY{o}{,}~\PY{n}{Sm}~\(\in\)~\PY{n}{Scal}~\PY{o}{\(\,\wedge\,\)}~\PY{k+kr}{\(\forall\)}~\PY{n+nv}{T}\PY{o}{,}~\PY{n}{T}~\(\in\)~\PY{n}{Scal}~\PY{o}{\(\rightarrow\)}~\PY{n}{Sm}~\PY{o}{[\PYZlt{}=}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)]}~\PY{n}{T}~\PY{o}{\(\rightarrow\)}~\PY{n}{T}~\PY{o}{=}~\PY{n}{Sm}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{txt}
+    ~~~~~~\nl
+  \end{txt}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Smax}\PY{o}{:}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{Sm}\PY{o}{,}~\PY{n}{IsMaximal}~\PY{n}{Sm}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetTmI}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{TmI}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{n+nv}{x}\PY{o}{,}~\PY{n}{Tm}~\PY{n}{x}~\PY{o}{\(\subset\)}~\PY{n}{Sm}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetfactun}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{fact1}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{,}~\PY{n}{y}~\(\in\)~\PY{n}{Sm}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)(}\PY{n}{y}~\(\in\)~\PY{o}{(}\PY{n}{Tm}~\PY{n}{x}\PY{o}{))}~\PY{o}{\(\rightarrow\)}~\PY{n}{Eb}\PY{o}{.+}~\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetSbunp}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{Sb1\PYZsq{}}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{z}\PY{o}{,}~\PY{n}{z}~\(\in\)~\PY{n}{Sm}~\PY{o}{`\PYZbs{}`}~\PY{o}{(}\PY{n}{Tm}~\PY{n}{x}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{Eb}\PY{o}{.+}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetfact}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{fact}\PY{o}{:}~\PY{n}{IsMaximal}~\PY{n}{Sm}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{k+kr}{\(\forall\)}~\PY{n+nv}{t}\PY{o}{,}~\PY{n}{t}\(\in\)~\PY{n}{Sm}\PY{o}{:\PYZsh{}(}\PY{n}{Er}\PY{o}{.+)}~\PY{o}{\(\rightarrow\)}~\PY{n}{t}~\(\in\)~\PY{n}{Mono}\PY{o}{\PYZsh{}}\PY{n}{Sm}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetfacttwo}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{fact2}\PY{o}{:}~\PY{n}{IsMaximal}~\PY{n}{Sm}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{k+kr}{\(\forall\)}~\PY{n+nv}{x}\PY{o}{,}~\PY{n}{RelIndep}~\PY{n}{Mono}~\PY{o}{(}\PY{n}{Tm}~\PY{n}{x}\PY{o}{)).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetfactthree}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{fact3}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{n+nv}{x}\PY{o}{,}~\PY{o}{(}\PY{n}{x}~\(\in\)~\PY{n}{Sx}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)(}\PY{n}{x}~\(\in\)~\PY{n}{Mono}\PY{o}{\PYZsh{}(}\PY{n}{Tm}~\PY{n}{x}\PY{o}{)).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetfactfour}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{fact4}\PY{o}{:}~\PY{n}{IsMaximal}~\PY{n}{Sm}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{k+kr}{\(\forall\)}~\PY{n+nv}{x}\PY{o}{,}~\PY{o}{(}\PY{n}{x}~\(\in\)~\PY{n}{Sx}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)(}\PY{n}{x}~\(\in\)~\PY{o}{(}\PY{n}{Tm}~\PY{n}{x}\PY{o}{):\PYZsh{}}\PY{n}{Mono}\PY{o}{)).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetfactfive}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{fact5}\PY{o}{:}~\PY{n}{IsMaximal}~\PY{n}{Sm}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{k+kr}{\(\forall\)}~\PY{n+nv}{x}\PY{o}{,}~\PY{n}{x}~\(\in\)~\PY{n}{Sx}~\PY{o}{\(\rightarrow\)}~\PY{n}{RelIndep}~\PY{n}{Mono}~\PY{o}{((}\PY{n}{Tm}~\PY{n}{x}\PY{o}{)}~\PY{o}{\(\cup\)}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{x}\PY{o}{])).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetfactseven}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{fact7}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{n+nv}{x}\PY{o}{,}~\PY{n}{x}~\(\in\)~\PY{n}{Sx}~\PY{o}{\(\rightarrow\)}~\PY{n}{Sm}~\PY{o}{=}~\PY{o}{((}\PY{n}{Tm}~\PY{n}{x}\PY{o}{)}~\PY{o}{\(\cup\)}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{x}\PY{o}{])}~\PY{o}{\(\rightarrow\)}~\PY{k+kt}{False}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetfacteleven}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{fact11}\PY{o}{:}~~\PY{n}{IsMaximal}~\PY{n}{Sm}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{k+kr}{\(\forall\)}~\PY{n+nv}{x}\PY{o}{,}~\PY{n}{x}~\(\in\)~\PY{n}{Sx}~\PY{o}{\(\rightarrow\)}~\PY{n}{Sxm}~\PY{n}{x}~\PY{o}{\(\rightarrow\)}~\PY{n}{Sm}~\PY{o}{=}~\PY{o}{(}\PY{n}{Tm}~\PY{n}{x}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{k+kt}{False}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetfacttwelveone}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{fact12\PYZus{}1}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{n+nv}{x}\PY{o}{,}~\PY{o}{(}\PY{n}{x}~\(\in\)~\PY{n}{Sx}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{n}{Tm}~\PY{n}{x}\PY{o}{)}~\PY{o}{\(\cup\)}~\PY{o}{(}\PY{n}{Sm}~\PY{o}{`\PYZbs{}`}~\PY{o}{(}\PY{n}{Tm}~\PY{n}{x}\PY{o}{))}~\PY{o}{=}~\PY{n}{Sm}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetfacttwelvep}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{fact12\PYZsq{}}\PY{o}{:}~\PY{n}{IsMaximal}~\PY{n}{Sm}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{k+kr}{\(\forall\)}~\PY{n+nv}{x}\PY{o}{,}~\PY{n}{x}~\(\in\)~\PY{n}{Sx}~\PY{o}{\(\rightarrow\)}~\PY{n}{Sxm}~\PY{n}{x}~\PY{o}{\(\rightarrow\)}~\PY{k+kt}{False}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetfacttreize}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{fact13}\PY{o}{:}~\PY{n}{IsMaximal}~\PY{n}{Sm}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)(}\PY{k+kr}{\(\exists\)}~\PY{n+nv}{x}\PY{o}{,}~\PY{n}{x}~\(\in\)~\PY{n}{Sx}\PY{o}{).}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetfactfort}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{fact14}\PY{o}{:}~~\PY{o}{\(\neg\)(}\PY{k+kr}{\(\exists\)}~\PY{n+nv}{x}\PY{o}{,}~\PY{n}{x}~\(\in\)~\PY{n}{Sx}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{k+kr}{\(\forall\)}~\PY{n+nv}{x}\PY{o}{,}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{x}\(\in\)~\PY{n}{Sm}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{n}{x}~\(\in\)~\PY{n}{Mono}\PY{o}{\PYZsh{}}\PY{n}{Sm}\PY{o}{)).}
     \end{input}
   \end{sentence}
 }
