@@ -192,46 +192,40 @@ End Infinite_paths.
 
 Section Infinite_paths_X.
   (** * Assumptions on infinite paths *)
-  
+  (* should be move on rel.v *)
+
   Context (T : Type).
-  Implicit Types (T : Type) (R: relation T) (X: set T).
+  Implicit Types (R: relation T) (X: set T).
 
-  Lemma setTypeP X: (exists v : X, v \in [set: X]) <-> (exists (v:T), (v \in X)).
-  Proof.
-    split => [[v H0] |[v H0]].
-    by (exists (sval v));rewrite inP; apply: set_valP. 
-    by (exists (exist _ v H0));rewrite inP.
-  Qed.
-  
-  Lemma notiic_rloop_sub X (S: relation X):
+  Lemma notiic_rloop_sub_L1 X (S: relation X):
     (exists (v0:T), (v0 \in X)) -> ~ (iic (Asym S)) -> (Rloop S).
-  Proof. by move => /setTypeP H0; apply: notiic_rloop. Qed. 
+  Proof. 
+    have setTypeP: (exists x : X, x \in [set: X]) <-> (exists (t:T), (t \in X))
+      by split => [[v ?] |[v H0]];[exists (sval v) | exists (exist _ v H0)];
+                 rewrite inP;[apply: set_valP|].
+    by move => /setTypeP H0; apply: notiic_rloop. Qed. 
   
-  Lemma test67 X R: (iic (@Restrict' T X (Asym R))) -> (iic (Asym R)).
-  Proof.  by move => [f // ?];exists (fun n => (sval (f n))). Qed.
-
-  Lemma test68 X R:
+  Lemma notiic_rloop_sub_L2 X R:
     ~ (iic (Asym R)) -> (exists (v0:T), (v0 \in X)) -> (Rloop (@Restrict' T X R)).
   Proof.
     move => H1 H0.
-    have H2:  ~ (iic (Asym R)) -> ~ (iic (@Restrict' T X (Asym R)))
-      by apply contraPP;rewrite not_notE not_notE; apply: test67.
-    move: H1 => /H2 H1.
-    by apply: (notiic_rloop_sub H0 H1).
+    have H2: (iic (@Restrict' T X (Asym R))) -> (iic (Asym R))
+      by move => [f // ?];exists (fun n => (sval (f n))). 
+    have H3:  ~ (iic (Asym R)) -> ~ (iic (@Restrict' T X (Asym R)))
+      by contra => -[f H4];apply: H2; by (exists f).
+    by apply/(notiic_rloop_sub_L1 H0)/H3.
   Qed.
   
-  Lemma test68' X R:
+  (* notiic_rloop for a subset X *)
+  Lemma notiic_rloop_sub X R:
     ~ (iic (Asym R)) ->(exists (v0:T), (v0 \in X))
     -> (exists (v:T), v \in X /\ forall w, w \in X -> R (v,w) -> R (w,v)).
   Proof.
     move => Ninf H0.
-    move: (test68 Ninf H0) => [v H1].
-    exists (sval v).
-    split; first  by rewrite inP; apply: set_valP.
-    move => w H2.
-    have [w' <-]: exists (w': X), (sval w') = w by exists (exist _ w H2). 
-    move => H3.
-    by apply: H1.
+    move: (notiic_rloop_sub_L2 Ninf H0) => [v H1];exists (sval v).
+    split=> [| w H2];first by rewrite inP;apply: set_valP.
+    have [w' <-]: exists (w': X), (sval w') = w by (exists (exist _ w H2)).
+    by move => ?;apply: H1.
   Qed.
   
 End Infinite_paths_X.
@@ -688,9 +682,7 @@ Section Paper.
     (* begin snippet Sxone:: no-out *)    
     Lemma Sx_1: (exists (x:T), (x \in Sx)) -> (exists (x:T), x \in Sx /\ Sxm x).
     (* end snippet Sxone*)       
-    Proof.
-      by move => H1; move: (test68' A3 H1) => H2.
-    Qed.
+    Proof.  by move => H1; move: (notiic_rloop_sub A3 H1) => H2.  Qed.
     
     (* begin snippet fact:: no-out *)    
     Lemma fact: IsMaximal Sm -> (forall t, t\in Sm:#(Er.+) -> t \in Mono#Sm).
