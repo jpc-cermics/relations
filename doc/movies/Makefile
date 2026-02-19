@@ -42,6 +42,8 @@ SNIPPETS = \
 	snippets/paper_monochromatic/facttwelvep-n.tex \
 	snippets/paper_monochromatic/facttreize-n.tex \
 	snippets/paper_monochromatic/factfort-n.tex \
+	snippets/paper_monochromatic/Sx-n.tex \
+	snippets/paper_monochromatic/Tm-n.tex \
 	snippets/paper_relations/Aw-n.tex \
 	snippets/rel/RelIndep-n.tex \
 	snippets/rel/Rloop-n.tex \

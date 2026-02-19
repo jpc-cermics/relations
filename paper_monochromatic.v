@@ -652,9 +652,13 @@ Section Paper.
     (** * We show that the maximal set is the independent set we search *)
     Variable (Sm: set T).
     
+    (* begin snippet Sx:: no-out *)    
     Definition Sx:= [set y | ~ (y \in Sm) /\ ~ (y \in Mono#Sm)].
+    (* end snippet Sx *)       
 
+    (* begin snippet Tm:: no-out *)    
     Definition Tm x:= [set y | y \in Sm /\ ~ (Eb.+ (y,x))].
+    (* end snippet Tm *)       
 
     (* begin snippet TmI:: no-out *)    
     Lemma TmI: forall x, Tm x `<=` Sm.
