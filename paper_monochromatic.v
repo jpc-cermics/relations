@@ -22,10 +22,12 @@ Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
 
+Definition NotEmpty (T: Type) := (exists (v0:T), (v0 \in setT)).
+
 Section CheckAsym. 
   (** * main result from paper_monochromatic_f *)
   Context (T : choiceType) (R: relation T).
-  Hypothesis A1: (exists (v0:T), (v0 \in setT)).
+  Hypothesis A1: (NotEmpty T).
 
   Import Asyminf2Inf(Asym2P5', allL_rc_asym).
   
@@ -549,15 +551,9 @@ Section Paper.
         by apply: (H10 H7 H9 H4 H5).
     Qed.
     
-    (** * The Assumptions we use: weaker than the original paper assumptions *)
-    (* begin snippet Assumptions:: no-out *)    
-    Hypothesis A1: (exists (v0:T), (v0 \in setT)).
-    Hypothesis A3: ~ (iic (Asym Er.+)).
-    Hypothesis A4: ~ (iic (Asym Eb.+)).
-    (* end snippet Assumptions *)    
-    
     (* begin snippet Scalnotempty:: no-out *) 
-    Lemma Scal_not_empty: exists v, Scal [set v].
+    Lemma Scal_not_empty (A1: NotEmpty T) (A2: ~ (iic (Asym Er.+))):
+      exists v, Scal [set v].
     (* end snippet Scalnotempty *)
     Proof.
       have: Rloop Er.+ by apply: notiic_rloop.
@@ -568,20 +564,21 @@ Section Paper.
       by rewrite -notempty_exists;(exists v);rewrite inP.
     Qed.
     
-    Lemma SType_not_empty: (@setT SType) != set0.
+    Lemma SType_not_empty (A1: NotEmpty T) (A2: ~ (iic (Asym Er.+))):
+      (@setT SType) != set0.
     Proof.
-      rewrite -notempty_exists;move: Scal_not_empty => [v H2].
+      rewrite -notempty_exists;move: (Scal_not_empty A1 A2) => [v H2].
       by exists (exist _ [set v] H2);rewrite inP.
     Qed.
     
-    Lemma Sinf_not_empty: (Sinf C) != set0.
+    Lemma Sinf_not_empty (A3: ~ (iic (Asym Eb.+))) : (Sinf C) != set0.
     Proof.
       move: (@Elt_not_empty C Hne) => [s _];rewrite -notempty_exists.
-      by move: (@ChooseRC5 C Hne A4 s) => [H1 | [s' [H1 _]]];[exists (sval s) | exists s'].
+      by move: (@ChooseRC5 C Hne A3 s) => [H1 | [s' [H1 _]]];[exists (sval s) | exists s'].
     Qed.
     
     (* begin snippet SinfScalP:: no-out *)    
-    Lemma Sinf_ScalP: (Sinf C):#(Er.+) `<=` Mono#(Sinf C).
+    Lemma Sinf_ScalP (A3: ~ iic (Asym Eb.+)): (Sinf C):#(Er.+) `<=` Mono#(Sinf C).
      (* end snippet SinfScalP *)
     Proof.
       move: Hc => H1 y [s [ H2 H3]].
@@ -606,44 +603,43 @@ Section Paper.
     Qed.
     
     (* begin snippet SinfScal:: no-out *)    
-    Lemma Sinf_Scal: (Sinf C) \in Scal. 
+    Lemma Sinf_Scal (A3: ~ iic (Asym Eb.+)): (Sinf C) \in Scal. 
     (* end snippet SinfScal *)
     Proof.
-      rewrite inP;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
+      by rewrite inP;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
     Qed.
     
-    Lemma Sinf_final: exists Si, forall (S: SType), C S -> S [<=] Si.
+    Lemma Sinf_final (A3: ~ iic (Asym Eb.+)): exists Si, forall (S: SType), C S -> S [<=] Si.
     Proof.
-      move: Sinf_Scal => /inP H2;exists (exist _ (Sinf C) H2);move => S /inP H3. 
+      move: (Sinf_Scal A3) => /inP H2;exists (exist _ (Sinf C) H2);move => S /inP H3. 
       by apply: ChooseRC6.
     Qed.
 
   End Sinf_chains.
   
-  Hypothesis A1: (exists (v0:T), (v0 \in setT)).
-  Hypothesis A3: ~ (iic (Asym Er.+)).
-  Hypothesis A4: ~ (iic (Asym Eb.+)).
   
   (** * existence of Smax with Zorn Lemma for type SType *)
   (* begin snippet SmaxSType:: no-out *)    
-  Lemma Smax_SType: exists Sm, forall S, Sm [<=] S -> S = Sm.
+  Lemma Smax_SType (A1: NotEmpty T) (A2: ~ (iic (Asym Er.+))) (A3: ~ (iic (Asym Eb.+))):
+    exists Sm, forall S, Sm [<=] S -> S = Sm.
   (* end snippet SmaxSType *)
   Proof.
     apply: (@Zorn_relation SType leSet1 leSet1_porder) => C.
     move: (@Sinf_final C) => H2 /inP H3.
     move: H3 => {}/H2 H3.
-    case H4: ( C != set0 );first by move: H4 A4 => /H3 H4 {}/H4 H5.
+    case H4: ( C != set0 );first by move: H4 A3 => /H3 H4 {}/H4 H5.
     move: H4 => /negP/contrapT/eqP H4. 
-    move: (SType_not_empty A1 A3) => /notempty_exists [Sm Ht].
+    move: (SType_not_empty A1 A2) => /notempty_exists [Sm Ht].
     by exists Sm; move => S; rewrite H4 -inP in_set0. 
   Qed.
   
   (** * existence of Smax in set T *)
   (* begin snippet Smax:: no-out *)    
-  Lemma Smax_Scal: exists Sm, Sm \in Scal /\ forall T, T \in Scal -> Sm [<= (Asym Eb.+)] T -> T = Sm.
+  Lemma Smax_Scal (A1: NotEmpty T) (A2: ~ (iic (Asym Er.+))) (A3: ~ (iic (Asym Eb.+))):
+    exists Sm, Sm \in Scal /\ forall T, T \in Scal -> Sm [<= (Asym Eb.+)] T -> T = Sm.
   (* end snippet Smax *)    
   Proof.
-    move: Smax_SType => [Sm H1];exists (sval Sm); split; first by  apply: S2Scal.
+    move: (Smax_SType A1 A2 A3) => [Sm H1];exists (sval Sm); split; first by  apply: S2Scal.
     by move => S /Scal2S [S' <-] H3; f_equal;by apply H1.
   Qed.
 
@@ -652,9 +648,10 @@ Section Paper.
   Definition IsMaximal (S: set T):= 
       S \in Scal /\ forall T, T \in Scal -> S [<= (Asym Eb.+)] T -> T = S.
   (* begin snippet Smax:: no-out *)    
-  Lemma Smax: exists Sm, IsMaximal Sm.
+  Lemma Smax (A1: NotEmpty T) (A2: ~ (iic (Asym Er.+))) (A3: ~ (iic (Asym Eb.+))):
+    exists Sm, IsMaximal Sm.
   (* end snippet Smax *)    
-  Proof. by move: Smax_Scal => [Sm HH];exists Sm. Qed.
+  Proof. by move: (Smax_Scal A1 A2 A3) => [Sm HH];exists Sm. Qed.
   
   Section Maximal. 
     
@@ -684,12 +681,13 @@ Section Paper.
     Definition Sxm x := forall y, y \in Sx -> Er.+(x,y) -> Er.+(y,x).
     (* end snippet Sxm*)       
 
-    (* A consequence of A3 *)
+    (* A consequence of A2 *)
     (* begin snippet Sxone:: no-out *)    
-    Lemma Sx_1: (exists (x:T), (x \in Sx)) -> (exists (x:T), x \in Sx /\ Sxm x).
+    Lemma Sx_1 (A2: ~ (iic (Asym Er.+))):
+      (exists (x:T), (x \in Sx)) -> (exists (x:T), x \in Sx /\ Sxm x).
     (* end snippet Sxone*)       
     Proof.
-      by move => H1; move: (test68' A3 H1) => H2.
+      by move => H1; move: (test68' A2 H1) => H2.
     Qed.
     
     (* begin snippet fact:: no-out *)    
@@ -1016,10 +1014,10 @@ Section Paper.
     Qed.
 
     (* begin snippet facttreize:: no-out *)    
-    Lemma fact13: IsMaximal Sm -> ~(exists x, x \in Sx).
+    Lemma fact13 (A2: ~ (iic (Asym Er.+))): IsMaximal Sm -> ~(exists x, x \in Sx).
     (* end snippet facttreize*)       
     Proof.
-      by move => H0 /Sx_1 [v [H1 H2]];apply: (fact12' H0 H1 H2).
+      by move => H0 /(Sx_1 A2) [v [H1 H2]];apply: (fact12' H0 H1 H2).
     Qed.
     
     (* begin snippet factfort:: no-out *)    
@@ -1031,11 +1029,19 @@ Section Paper.
     Qed.
 
   End Maximal. 
+
+  (** * The Assumptions we use: weaker than the original paper assumptions *)
+  (* begin snippet Assumptions:: no-out *)    
+  Hypothesis A1: (exists (v0:T), (v0 \in setT)).
+  Hypothesis A2: ~ (iic (Asym Er.+)).
+  Hypothesis A3: ~ (iic (Asym Eb.+)).
+  (* end snippet Assumptions *)    
   
   Theorem Final: exists (Sm: set T), forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
-    Proof.
-      move: Smax => [Sm [H1 H2]];exists Sm;move => x;apply/fact14/fact13.
-      by split => [// |U H3 H4];have ->: U = Sm by apply: H2 H3 H4.
-    Qed.
+  Proof.
+    move: (Smax A1 A2 A3) => [Sm [H1 H2]]. 
+    exists Sm;move => x;apply/fact14/(fact13 A2).
+    by split => [// |U H3 H4];have ->: U = Sm by apply: H2 H3 H4.
+  Qed.
   
 End Paper.
