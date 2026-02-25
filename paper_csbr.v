@@ -106,15 +106,19 @@ Section Csbr.
   Section Appendix_B_L7.
     Implicit Types (R: relation T) (Y: set T).
     
-    (* begin snippet Lsept:: no-out *)  
+    (* begin snippet Lseptone:: no-out *)  
     Lemma B_L7_E25 R Y: (Δ_(Y.^c) `;` R).*#Y = R.*#Y. 
     Proof. by rewrite Fset_rt. Qed.
-    
+    (* end snippet Lseptone *)
+
+    (* begin snippet Lsepttwo:: no-out *)  
     Lemma B_L7_E27 R X: Δ_(R # X) `<=` (R `;` Δ_(X) `;` R^-1).
     Proof.
       by rewrite /Delta/Fset => -[x y] [[z [? ?]] /= <-];exists z;split;[exists z|].
     Qed.
-    
+    (* end snippet Lsepttwo *)
+
+    (* begin snippet Lseptthree:: no-out *)  
     Lemma B_L7_E28: ((Ew .* ) `;` Δ_(W) `;` (Emw .* )) = ((Ew .* ) `;` Δ_(W_s) `;` (Emw .* )).
     Proof.
       have B_L7_E28a: (Fset (Δ_(W.^c) `;` E).* W) = Fset E.* W by apply: B_L7_E25.
@@ -137,7 +141,9 @@ Section Csbr.
       
       by rewrite eqEsubset; split;[apply: B_L7_E28h | apply: B_L7_E28f].
     Qed.
-    
+    (* end snippet Lseptthree *)
+
+    (* begin snippet Lseptfour:: no-out *)  
     Lemma B_L7: Aw = Aw_s. 
     Proof.
       have B_L7_1: (Ew.* `;` ((Δ_(W) `;` Kw `;` Δ_(W)).+ ) `;` Emw.* )
@@ -156,7 +162,7 @@ Section Csbr.
       rewrite [in X in 'Δ `|` Bw `|` Bmw `|` Kw `|` X]composeA.
       by rewrite -[(Bw `|` Kw) `;` (Ew.* `;` Cw_s)]composeA.
     Qed.
-    (* end snippet Lsept *)
+    (* end snippet Lseptfour *)
   End Appendix_B_L7.
   
 End Csbr. 

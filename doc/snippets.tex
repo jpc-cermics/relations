@@ -18,14 +18,41 @@
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetLsept}{
+\newcommand{\SnippetLseptone}{
 %
   % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
-      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{B\PYZus{}L7\PYZus{}E25}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{Y}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{),}\nl
-      ~~~~~~~~~~\PY{o}{(}\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{Y}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}\PY{o}{;}\PY{n}{R}\PY{o}{).*\PYZsh{}}\PY{n}{Y}~\PY{o}{=}~\PY{n}{R}\PY{o}{.*\PYZsh{}}\PY{n}{Y}\PY{o}{.}~\nl
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{B\PYZus{}L7\PYZus{}E25}~\PY{n+nv}{R}~\PY{n+nv}{Y}\PY{o}{:}~\PY{o}{(}\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{Y}\PY{o}{.\PYZca{}}\PY{n}{c}\PY{o}{)}\PY{o}{;}\PY{n}{R}\PY{o}{).*\PYZsh{}}\PY{n}{Y}~\PY{o}{=}~\PY{n}{R}\PY{o}{.*\PYZsh{}}\PY{n}{Y}\PY{o}{.}~\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Proof}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb+bp}{by}~\PY{n+nb}{rewrite}~\PY{n}{Fset\PYZus{}rt}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Qed}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetLsepttwo}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{B\PYZus{}L7\PYZus{}E27}~\PY{n+nv}{R}~\PY{n+nv}{X}\PY{o}{:}~\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{R}~\PY{o}{\PYZsh{}}~\PY{n}{X}\PY{o}{)}~\PY{o}{\(\subset\)}~\PY{o}{(}\PY{n}{R}\PY{o}{;}\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{X}\PY{o}{)}\PY{o}{;}\PY{n}{R}\PY{o}{\PYZca{}\PYZhy{}}\PY{l+m+mi}{1}\PY{o}{).}\nl
     \end{input}
   \end{sentence}
   \sep
@@ -37,65 +64,19 @@
   \sep
   \begin{sentence}
     \begin{input}
-      ~~~~~~\PY{n+nb+bp}{by}~\PY{n+nb}{move}~\PY{o}{=\PYZgt{}}~\PY{n}{R}~\PY{n}{Y}\PY{o}{;}\PY{n+nb}{rewrite}~\PY{n}{Fset\PYZus{}rt}\PY{o}{.}\nl
+      ~~~~~~\PY{n+nb+bp}{by}~\PY{n+nb}{rewrite}~\PY{o}{/}\PY{n}{Delta}\PY{o}{/}\PY{n}{Fset}~\PY{o}{=\PYZgt{}}~\PY{o}{\PYZhy{}[}\PY{n}{x}~\PY{n}{y}\PY{o}{]}~\PY{o}{[[}\PY{n}{z}~\PY{o}{[?}~\PY{o}{?]]}~\PY{o}{/=}~\PY{o}{\PYZlt{}\PYZhy{}];}\PY{k+kr}{\(\exists\)}~\PY{n+nv}{z}\PY{o}{;}\PY{n+nb}{split}\PY{o}{;[}\PY{k+kr}{\(\exists\)}~\PY{n+nv}{z}\PY{o}{|].}\nl
     \end{input}
   \end{sentence}
   \sep
   \begin{sentence}
     \begin{input}
-      ~~~~\PY{k+kn}{Qed}\PY{o}{.}\nl
+      ~~~~\PY{k+kn}{Qed}\PY{o}{.}
     \end{input}
   \end{sentence}
-  \sep
-  \begin{txt}
-    ~~~~\nl
-  \end{txt}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{B\PYZus{}L7\PYZus{}E27}\PY{o}{:}~\PY{k+kr}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{X}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{),}~\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{R}~\PY{o}{\PYZsh{}}~\PY{n}{X}\PY{o}{)}~\PY{o}{\(\subset\)}~\PY{o}{(}\PY{n}{R}\PY{o}{;}\PY{n}{\(\Delta\)\PYZus{}}\PY{o}{(}\PY{n}{X}\PY{o}{)}\PY{o}{;}\PY{n}{R}\PY{o}{\PYZca{}\PYZhy{}}\PY{l+m+mi}{1}\PY{o}{).}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~\PY{k+kn}{Proof}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{n+nb}{rewrite}~\PY{o}{/}\PY{n}{Delta}~\PY{o}{/}\PY{n}{Fset}~\PY{o}{/}\PY{n}{mkset}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{n+nb}{move}~\PY{o}{=\PYZgt{}}~\PY{n}{R}~\PY{n}{X}~\PY{o}{[}\PY{n}{x}~\PY{n}{y}\PY{o}{].}~\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{n+nb}{move}~\PY{o}{=\PYZgt{}}~\PY{o}{[[}\PY{n}{z}~\PY{o}{[}\PY{n}{H1}~\PY{n}{H2}\PY{o}{]]}~\PY{o}{/=}~\PY{o}{\PYZlt{}\PYZhy{}].}~\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{n+nb+bp}{by}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{z}\PY{o}{;}\PY{n+nb}{split}\PY{o}{;[}\PY{k+kr}{\(\exists\)}~\PY{n+nv}{z}~\PY{o}{|].}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~\PY{k+kn}{Qed}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{txt}
-    ~~~~\nl
-  \end{txt}
+}
+\newcommand{\SnippetLseptthree}{
+%
+  % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
@@ -178,13 +159,13 @@
   \sep
   \begin{sentence}
     \begin{input}
-      ~~~~\PY{k+kn}{Qed}\PY{o}{.}\nl
+      ~~~~\PY{k+kn}{Qed}\PY{o}{.}
     \end{input}
   \end{sentence}
-  \sep
-  \begin{txt}
-    ~~~~\nl
-  \end{txt}
+}
+\newcommand{\SnippetLseptfour}{
+%
+  % Generator: Alectryon
   \sep
   \begin{sentence}
     \begin{input}
@@ -247,13 +228,7 @@
   \sep
   \begin{sentence}
     \begin{input}
-      ~~~~~~\PY{n+nb}{rewrite}~\PY{o}{\PYZhy{}[}\PY{k+kr}{in}~\PY{n}{X}~\PY{k+kr}{in}~\PY{o}{\PYZsq{}}\PY{n}{\(\Delta\)}~\PY{o}{\(\cup\)}~\PY{n}{Bw}~\PY{o}{\(\cup\)}~\PY{n}{Bmw}~\PY{o}{\(\cup\)}~\PY{n}{Kw}~\PY{o}{\(\cup\)}~\PY{n}{X}\PY{o}{]}\PY{n}{composeA}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~~~\PY{n+nb}{rewrite}~\PY{o}{\PYZhy{}[}\PY{k+kr}{in}~\PY{n}{X}~\PY{k+kr}{in}~\PY{o}{\PYZsq{}}\PY{n}{\(\Delta\)}~\PY{o}{\(\cup\)}~\PY{n}{Bw}~\PY{o}{\(\cup\)}~\PY{n}{Bmw}~\PY{o}{\(\cup\)}~\PY{n}{Kw}~\PY{o}{\(\cup\)}~\PY{n}{X}\PY{o}{]}\PY{n}{composeA}\PY{o}{.}\nl
+      ~~~~~~\PY{n+nb}{rewrite}~\PY{o}{\PYZhy{}}\PY{l+m+mi}{2}\PY{o}{![}\PY{k+kr}{in}~\PY{n}{X}~\PY{k+kr}{in}~\PY{o}{\PYZsq{}}\PY{n}{\(\Delta\)}~\PY{o}{\(\cup\)}~\PY{n}{Bw}~\PY{o}{\(\cup\)}~\PY{n}{Bmw}~\PY{o}{\(\cup\)}~\PY{n}{Kw}~\PY{o}{\(\cup\)}~\PY{n}{X}\PY{o}{]}\PY{n}{composeA}\PY{o}{.}\nl
     \end{input}
   \end{sentence}
   \sep
