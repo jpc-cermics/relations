@@ -7,6 +7,7 @@ include config.mk
 SNIPPETS = \
 	snippets/paper_csbr/dsepnota-n.tex \
 	snippets/paper_csbr/theoremfive-n.tex \
+	snippets/paper_csbr/Lsept-n.tex \
 	snippets/paper_monochromatic/Assumptions-n.tex \
 	snippets/paper_monochromatic/Chains-n.tex \
 	snippets/paper_monochromatic/Mono-n.tex \

@@ -104,19 +104,15 @@ Section Csbr.
   End Appendix_D_L16. 
     
   Section Appendix_B_L7.
+    Implicit Types (R: relation T) (Y: set T).
     
-    Lemma B_L7_E25: forall (R: relation T) (Y: set T),
-          (Δ_(Y.^c) `;` R).*#Y = R.*#Y. 
-    Proof.
-      by move => R Y;rewrite Fset_rt.
-    Qed.
+    (* begin snippet Lsept:: no-out *)  
+    Lemma B_L7_E25 R Y: (Δ_(Y.^c) `;` R).*#Y = R.*#Y. 
+    Proof. by rewrite Fset_rt. Qed.
     
-    Lemma B_L7_E27: forall (R:relation T) (X: set T), Δ_(R # X) `<=` (R `;` Δ_(X) `;` R^-1).
+    Lemma B_L7_E27 R X: Δ_(R # X) `<=` (R `;` Δ_(X) `;` R^-1).
     Proof.
-      rewrite /Delta /Fset /mkset.
-      move => R X [x y]. 
-      move => [[z [H1 H2]] /= <-]. 
-      by exists z;split;[exists z |].
+      by rewrite /Delta/Fset => -[x y] [[z [? ?]] /= <-];exists z;split;[exists z|].
     Qed.
     
     Lemma B_L7_E28: ((Ew .* ) `;` Δ_(W) `;` (Emw .* )) = ((Ew .* ) `;` Δ_(W_s) `;` (Emw .* )).
@@ -156,14 +152,13 @@ Section Csbr.
       rewrite -[(Ew.* `;` _)]composeA.
       rewrite -[(Ew.* `;` Cw `;`  _)]composeA. 
       rewrite B_L7_2.
-      rewrite -[in X in 'Δ `|` Bw `|` Bmw `|` Kw `|` X]composeA.
-      rewrite -[in X in 'Δ `|` Bw `|` Bmw `|` Kw `|` X]composeA.
+      rewrite -2![in X in 'Δ `|` Bw `|` Bmw `|` Kw `|` X]composeA.
       rewrite [in X in 'Δ `|` Bw `|` Bmw `|` Kw `|` X]composeA.
       by rewrite -[(Bw `|` Kw) `;` (Ew.* `;` Cw_s)]composeA.
     Qed.
-
+    (* end snippet Lsept *)
   End Appendix_B_L7.
-
+  
 End Csbr. 
 
 (* begin snippet dsepnota:: no-out *)  
@@ -174,38 +169,36 @@ Notation "( x [⊥d] y | W )" := (D_separated W E x y).
 
 Section Bw_implies_active_path.
   
+  Implicit Types (x y:T) (p: seq T).
+
   (** * csbr: Lemma 10 *)
-  Lemma C_L10: forall (x y: T),
-      Bw (x,y) -> (exists (p: seq T),
-                   Active_path W E (Lifto (x::(rcons p y)) P) x y
-                   /\ p [\in] (Ew.+)#_(y)).
+  Lemma C_L10 x y:
+    Bw (x,y) -> (exists (p: seq T), Active_path W E (Lifto (x::(rcons p y)) P) x y
+                              /\ p [\in] (Ew.+)#_(y)).
   Proof.
-    rewrite /Bw -DuT_eq_Tstar /mkset .
-    move => x y [x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
+    rewrite /Bw -DuT_eq_Tstar => -[x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
     move: H2; rewrite {1}TCP => -[p /clos_t_to_paths_l [H3 [H4 H5]]].
     exists (x1::p);split;last by [].
     by apply Active_path_simple;split;[ | rewrite /R_o allL_c H4 andbT;apply: mem_set].
   Qed.
   
   (** simplified version for right composition *)
-  Lemma C_L10_1: forall (x y: T),
+  Lemma C_L10_1 x y:
       Bw (x,y) -> exists (p : seq (T*T*O)) (y': T),
         Active_path W E (rcons p (y',y,P)) x y /\ Oedge E (y',y,P).
   Proof.
-    move => x y H1.
-    pose proof C_L10 H1 as [p [H2 _]].
+    move => H1;pose proof C_L10 H1 as [p [H2 _]].
     rewrite -rcons_cons Lifto_rcc in H2.
     pose proof Active_path_rc_hto H2 as [_ [_ [H5 _]]].
     by exists (Lifto (x :: p) P), (last x p).
   Qed.
   
-  Lemma C_L10_2: forall (x y: T),
-      (Bw (x, y)) /\ W.^c x -> (exists (p: seq T),
-                                Active_path W E (Lifto (x::(rcons p y)) P) x y
-                                /\ (x::p) [\in] (Ew.+)#_(y)).
+  Lemma C_L10_2 x y:
+    (Bw (x, y)) /\ W.^c x 
+    -> (exists (p: seq T),  Active_path W E (Lifto (x::(rcons p y)) P) x y
+                      /\ (x::p) [\in] (Ew.+)#_(y)).
   Proof.
-    move => x y [H1 H3]. 
-    move: (H1) => [x1 [H1' H2]].
+    move => [/[dup] H1 [x1 [H1' H2] H3]]. 
     pose proof C_L10 H1 as [p [H4 H5]].
     have H6: Ew.+ (x, y) by rewrite -r_clos_rt_clos_t;exists x1;split;[exists x;split | ].
     by exists p;rewrite allset_cons;split;[ | split;[exists y|]].
@@ -215,43 +208,41 @@ End Bw_implies_active_path.
 
 Section Bmw_implies_active_path.
 
+  Implicit Types (x y:T) (p: seq T).
   (** * Lemma 11 *)
-  Lemma C_L11: forall (x y: T),
+  Lemma C_L11 x y:
       Bmw (x, y) -> (exists (p: seq T), Active_path W E (Lifto (x::(rcons p y)) N) x y
-                               /\ p [\in] (Ew.+)#_(x)).
+                                  /\ p [\in] (Ew.+)#_(x)).
   Proof.
     rewrite /Bmw /inverse /Bw -DuT_eq_Tstar.
-    move => x y [x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
+    move => [x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
     move: H2; rewrite {1}TCP => -[p /clos_t_to_paths_l [H3 [/allL_rev H4 H5]]].
     move: H3 => /allset_cons [H3 H3'].
     exists (rcons (rev p) x1); split.
     apply Active_path_simple.
-    split. 
-    by rewrite allset_rcons -allset_rev.
+    split;first by rewrite allset_rcons -allset_rev.
     by rewrite /R_o allL_rev rev_rcons revK inverseK allL_c;
     apply/andP; split;[apply mem_set| rewrite allL_rev].
     by rewrite allset_rev rev_rcons revK.
   Qed.
   
   (** simplified version for composition *)
-  Lemma C_L11_1: forall (x y: T),
+  Lemma C_L11_1 x y:
       Bmw (x, y) -> exists (p : seq (T*T*O)) (x': T),
         Active_path W E ((x,x',N)::p) x y /\ Oedge E (x,x',N).
   Proof.
-    move => x y H1.
-    pose proof C_L11 H1 as [p [H2 _]].
+    move => H1;pose proof C_L11 H1 as [p [H2 _]].
     rewrite Lifto_crc in H2.
     pose proof Active_path_c_hto H2 as [_ [_ [H5 _]]].
     by exists (Lifto (rcons p y) N), (head y p).
   Qed.
   
-  Lemma C_L11_2: forall (x y: T),
+  Lemma C_L11_2 x y:
       Bmw (x, y) /\ W.^c y -> 
       (exists (p: seq T), Active_path W E (Lifto (x::(rcons p y)) N) x y
                      /\ (rcons p y) [\in] (Ew.+)#_(x)).
   Proof.
-    move => x y [H1 H3]. 
-    move: (H1) => [x1 [H1' H2]].
+    move => [/[dup] H1 [x1 [H1' H2]] H3]. 
     pose proof C_L11 H1 as [p [H4 H5]].
     have H6: Ew.+ (y, x) by rewrite -r_clos_rt_clos_t;exists x1;split;[exists y;split | ].
     by exists p;rewrite allset_rcons; split;[ | split;[|exists x]].
@@ -261,15 +252,16 @@ End Bmw_implies_active_path.
 
 Section Kw_implies_active_path.
 
+  Implicit Types (x y:T) (p: seq T).
   (** * Lemma 12 *)  
-  Lemma C_L12: forall (x y: T),
+  Lemma C_L12 x y:
       Kw (x, y) -> (exists (p q: seq T),exists t,
                       Active_path W E 
                         ((Lifto (x::(rcons p t)) N)++(Lifto (t::(rcons q y)) P )) x y
                       /\ (rcons p t) [\in] (Ew.+)#_(x)
                       /\ (t::q) [\in] (Ew.+)#_(y)).
   Proof.
-    move => x y [z [ [t [H2 [/= H3 <-]]] /= H4]]. 
+    move => [z [ [t [H2 [/= H3 <-]]] /= H4]]. 
     pose proof (C_L11_2 (conj H2 H3)) as [p [H5 H6]].
     pose proof (C_L10_2 (conj H4 H3)) as [q [H7 H8]].
     pose proof (Lifto_rcc p N x t) as H9.
@@ -285,12 +277,12 @@ Section Kw_implies_active_path.
     by exists (Lifto (x :: p) N),(Lifto (rcons q y) P),(last x p, t, N),(t, head y q, P). 
   Qed.
   
-  Lemma C_L12_1: forall (x y: T),
+  Lemma C_L12_1 x y:
       Kw (x,y) ->  exists (p : seq (T*T*O)) (x' y': T),
         Active_path W E ((x,x',N)::(rcons p (y',y,P))) x y
         /\ Oedge E (x,x',N) /\ Oedge E (y',y,P).
   Proof.
-    move => x y H1.
+    move => H1.
     pose proof C_L12 H1 as [p [q [t [H2 _]]]].
     pose proof @Lift_o_start_end T p q x y t as [x' [y' [r H3]]].
     rewrite H3 in H2. clear H3.
