@@ -1748,26 +1748,13 @@ Section ActiveOe_equiv.
     rewrite /ActiveOe' /A_tr /ActiveOe /setI /setX /mkset predeqE => [[eo1 eo2]].
     by split => [[[H1 H2] [H3 H4]] | [H1 [H2 [H3 H4]]]]. 
   Qed.
-
-  Lemma ActiveOe_Oedge: forall (W: set T) (E: relation T) (eo : (T*T*O) * (T*T*O)),
-      (ActiveOe W E) eo -> Oedge E eo.1 /\ Oedge E eo.2.
-  Proof.
-    by move => W E eo [H1 [H2 _]].
-  Qed.
   
-  Lemma ActiveOe_Compose: forall (W: set T) (E: relation T) (eo : (T*T*O) * (T*T*O)),
-      eo \in (ActiveOe W E) -> ChrelO eo. 
-  Proof.
-    by move => W E eo;rewrite ActiveOe_iff => /inP [_ [_ [H3 _]]].
-  Qed.
-
-  Lemma ActiveOe_ChrelO: forall (W: set T) (E: relation T),
-      (ActiveOe W E) `<=` ChrelO.
-  Proof.
-    move => W E;rewrite /subset => s /inP H1.
-    by apply ActiveOe_Compose with W E.
-  Qed.
-
+  Lemma ActiveOe'_ChrelO W R: (ActiveOe' W R) `<=` ChrelO.
+  Proof. by rewrite /subset => s [_ [_ [? _]]]. Qed.
+  
+  Lemma ActiveOe'_A_tr W R: (ActiveOe' W R) `<=` (A_tr W R).
+  Proof. by rewrite /setI /subset => s [_ [_ ?]]. Qed.
+  
 End  ActiveOe_equiv.
 
 Section Endpoints_and_Deployment.
@@ -2241,8 +2228,7 @@ Section Extended_Oriented_Paths.
         by rewrite -lastI.
       rewrite -H2 -H3 /allL H4 -H1. 
       move => [H5 [[H6 H6'] [H7 [H8 H9]]]].
-      have H10: stto [L\in] (ActiveOe W E)
-        by apply (@Rpath_L3 (T*T*O)).
+      have H10: stto [L\in] (ActiveOe W E) by apply (@Rpath_L3 (T*T*O)).
       by rewrite -ActiveOe_iff.
   Qed.
 
@@ -2262,21 +2248,19 @@ Section Extended_Oriented_Paths.
       have H7: eo1::(rcons (belast eo2 stto') (last eo2 stto')) = stto
         by rewrite -lastI.
       have H8: stto [L\in]  (ActiveOe' W E) by rewrite -H7.
-      have H8'': stto [L\in]  (ActiveOe W E) by rewrite ActiveOe_iff.
       move: H2 H3 H8;rewrite -H5 -H6 -H1 => H2 H3 H8.
       rewrite inP /D_U_a1 /mkset.
       have H9:  1 < size stto by rewrite H1.
       have H9':  0 < size stto by rewrite H1.
       have H10: stto [\in] (Oedge E)
-        by move: H8'';rewrite allset_I => /andP [H8'' H8']; apply (@Rpath_L2 (T*T*O)).
+        by move: H8;rewrite -ActiveOe_iff allset_I => /andP [? ?];apply (@Rpath_L2 _).
       have H11: stto [L\in] ChrelO
-        by pose proof (@ActiveOe_ChrelO T);apply allset_subset with (ActiveOe W E);
-        [apply ActiveOe_ChrelO |].
+        by apply: (@allset_subset _ _ _ (Lift stto) (@ActiveOe'_ChrelO _ W E)). 
       have H12: stto [L\in] (A_tr W E)
-        by apply allset_subset with (ActiveOe W E);[ rewrite /ActiveOe|].
+        by apply: (@allset_subset _ _ _ (Lift stto) (@ActiveOe'_A_tr _ W E)). 
       by rewrite /Eope H2 H3. 
   Qed.
-
+  
   (** * Two equivalent definitions of D_separated *)
   (** * in D_separated_iff. *)
 
