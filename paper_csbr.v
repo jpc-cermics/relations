@@ -80,9 +80,9 @@ Section Csbr.
       have H4: ((Bw `|` Kw) `;` Δ_( W_s) `;` Em) `<=` Aw_sm 
         by apply: subset_trans E21c4 H3.
       have E21c5: Cw_s `;` Δ_(W_s) = Cw_s
-        by rewrite {1}/Cw_s composeDr -Delta_clos_trans_ends DsetK -/Cw_s.
+        by rewrite {1}/Cw_s composeDr -Delta_Tclos_ends DsetK -/Cw_s.
       have E21c6: forall (R S: relation T), (S `;` R = R) -> ((R.+ `|` S) `;` R) = (R.+)
-          by move => R S H; rewrite composeDr H setUC clos_t_decomp_rt_r.
+          by move => R S H; rewrite composeDr H setUC Tclos_decomp_rt_r.
       have E21c7: Cw_s `;` Kw `;` Δ_(W_s) = (Δ_( W_s) `;` Kw `;` Δ_( W_s)) .+ 
         by rewrite -{1}E21c5 {1}/Cw_s composeA composeA 
            -[Δ_( W_s) `;` (Kw `;` Δ_( W_s))]composeA;
@@ -183,7 +183,7 @@ Section Bw_implies_active_path.
                               /\ p [\in] (Ew.+)#_(y)).
   Proof.
     rewrite /Bw -DuT_eq_Tstar => -[x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
-    move: H2; rewrite {1}TCP => -[p /clos_t_to_paths_l [H3 [H4 H5]]].
+    move: H2; rewrite {1}TCP => -[p /Tclos_to_paths_l [H3 [H4 H5]]].
     exists (x1::p);split;last by [].
     by apply Active_path_simple;split;[ | rewrite /R_o allL_c H4 andbT;apply: mem_set].
   Qed.
@@ -206,7 +206,7 @@ Section Bw_implies_active_path.
   Proof.
     move => [/[dup] H1 [x1 [H1' H2] H3]]. 
     pose proof C_L10 H1 as [p [H4 H5]].
-    have H6: Ew.+ (x, y) by rewrite -r_clos_rt_clos_t;exists x1;split;[exists x;split | ].
+    have H6: Ew.+ (x, y) by rewrite -r_RTclos_eq_Tclos;exists x1;split;[exists x;split | ].
     by exists p;rewrite allset_cons;split;[ | split;[exists y|]].
   Qed.
 
@@ -222,7 +222,7 @@ Section Bmw_implies_active_path.
   Proof.
     rewrite /Bmw /inverse /Bw -DuT_eq_Tstar.
     move => [x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
-    move: H2; rewrite {1}TCP => -[p /clos_t_to_paths_l [H3 [/allL_rev H4 H5]]].
+    move: H2; rewrite {1}TCP => -[p /Tclos_to_paths_l [H3 [/allL_rev H4 H5]]].
     move: H3 => /allset_cons [H3 H3'].
     exists (rcons (rev p) x1); split.
     apply Active_path_simple.
@@ -250,7 +250,7 @@ Section Bmw_implies_active_path.
   Proof.
     move => [/[dup] H1 [x1 [H1' H2]] H3]. 
     pose proof C_L11 H1 as [p [H4 H5]].
-    have H6: Ew.+ (y, x) by rewrite -r_clos_rt_clos_t;exists x1;split;[exists y;split | ].
+    have H6: Ew.+ (y, x) by rewrite -r_RTclos_eq_Tclos;exists x1;split;[exists y;split | ].
     by exists p;rewrite allset_rcons; split;[ | split;[|exists x]].
   Qed.
   
@@ -346,15 +346,15 @@ Section Cw_s_implies_active_path.
       -> exists (p q: seq (T*T*O)), exists (x' y': T),
         Active_path W E q x y
         /\ q = (x,x',N)::(rcons p (y',y,P)) /\ Oedge E (x,x',N) /\ Oedge E (y',y,P).
-  Proof. by move => x y H1;pose proof clos_t_iterk H1 as [n H3];apply: (@C_L13_In n). Qed.
+  Proof. by move => x y H1;pose proof Tclos_iterk H1 as [n H3];apply: (@C_L13_In n). Qed.
   
   (* XXX a mettre ailleurs *)
   Lemma C_L13_2: forall (x y: T),
       (Δ_(W_s) `;` Kw `;` Δ_(W_s)).+ (x, y) ->  W_s x /\ W_s y.
   Proof.
     move => x y H2.
-    move: (H2);rewrite Delta_clos_trans_ends => [[y' [_ [H3 /= <-]]]].
-    by move: H2;rewrite composeA Delta_clos_trans_starts => [[z' [[H2 _] _]]].
+    move: (H2);rewrite Delta_Tclos_ends => [[y' [_ [H3 /= <-]]]].
+    by move: H2;rewrite composeA Delta_Tclos_starts => [[z' [[H2 _] _]]].
   Qed.
   
 End Cw_s_implies_active_path.

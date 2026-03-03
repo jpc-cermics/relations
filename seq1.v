@@ -963,13 +963,13 @@ Section PathRel.
   Lemma TCP (R: relation T) : R.+ = [set vp | exists p, allL R p vp.1 vp.2 ].
   (* end snippet TCP *)  
   Proof.
-    rewrite predeqE => -[x y];split => [/(@clos_t_iterk T) [n] | [p H1]].
+    rewrite predeqE => -[x y];split => [/(@Tclos_iterk T) [n] | [p H1]].
     by rewrite  Itern_iff_PathReln /PathRel_n => -[p [H1 H2]];(exists p).
     have: PathRel_n R (size p) (x, y) by (exists p).
-    by rewrite -Itern_iff_PathReln;apply: iterk_inc_clos_trans.
+    by rewrite -Itern_iff_PathReln;apply: iterk_sub_Tclos.
   Qed.
   
-  Lemma allL_to_clos_t  (R: relation T) : forall (st: seq T) x y, allL R st x y -> R.+ (x,y).
+  Lemma allL_to_Tclos  (R: relation T) : forall (st: seq T) x y, allL R st x y -> R.+ (x,y).
   Proof. by move => st x y; rewrite TCP; exists st. Qed.
   
   Lemma TCP'' (R: relation T) (X: set T): 
@@ -980,28 +980,28 @@ Section PathRel.
     by move => [p /andP/allL_WS_iff ?];(exists p).
   Qed.
 
-  Lemma clos_t_to_paths_l R (X: set T) st x y:
+  Lemma Tclos_to_paths_l R (X: set T) st x y:
     allL (Δ_(X) `;` R) st x y <-> (x::st) [\in] X /\ allL R st x y /\ (x :: st) [\in] (Δ_(X) `;` R).+#_(y).
   Proof.
     split;last by rewrite allL_WS_iff => -[-> [-> _]].
     by move => /[dup] /allL_WS_iff/andP [? ?] /(@allL_All _ (Δ_(X) `;` R) st x y) ?. 
   Qed.
   
-  Lemma clos_t_to_paths_l' R (X: set T) st x y:
+  Lemma Tclos_to_paths_l' R (X: set T) st x y:
       allL (Δ_(X) `;` R) st x y <-> (x::st) [\in] X /\ allL R st x y /\ (x :: st) [\in] R.+#_(y).
   Proof.
     split;last by rewrite allL_WS_iff => -[-> [-> _]].
     by move => /allL_WS_iff/andP [? +] => /[dup] ? /(@allL_All _ R st x y) ?. 
   Qed.
 
-  Lemma clos_t_to_paths_r R (X: set T) st x y:
+  Lemma Tclos_to_paths_r R (X: set T) st x y:
     allL (R `;` Δ_(X)) st x y <-> (rcons st y) [\in] X /\ allL R st x y /\ ((rcons st y) [\in] x _:#(R `;` Δ_(X)).+). 
   Proof.
     split;last by rewrite allL_SW_iff => -[-> [-> _]].
     by move => /[dup] /allL_SW_iff/andP [? ?] /(@allL_AllA _ (R `;` Δ_(X)) st x y) ?. 
   Qed.
   
-  Lemma clos_t_to_paths_r' R (X: set T) st x y:
+  Lemma Tclos_to_paths_r' R (X: set T) st x y:
     allL (R `;` Δ_(X)) st x y <-> (rcons st y) [\in] X /\ allL R st x y /\ ((rcons st y) [\in] x _:#R.+). 
   Proof.
     split; first by move => /allL_SW_iff/andP [? +] => /[dup] ? /(@allL_AllA _ R st x y) ?. 
@@ -2372,8 +2372,8 @@ Section Active_path_unique.
     Proof.
       move => u v [H1 [w [H2 H3]]]. 
       have H4: (R `;` R.* ) (u,w) by (exists v).
-      have H5:  (R.+ `<=` R.*  ) by apply clos_t_clos_rt.
-      have H6: R.* (u, w) by rewrite r_clos_rt_clos_t in H4 ;apply H5 in H4.
+      have H5:  (R.+ `<=` R.*  ) by apply Tclos_sub_RTclos.
+      have H6: R.* (u, w) by rewrite r_RTclos_eq_Tclos in H4 ;apply H5 in H4.
       by (exists w).
     Qed.
 

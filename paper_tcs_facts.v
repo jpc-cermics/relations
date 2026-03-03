@@ -34,7 +34,7 @@ Section Tcs.
                        ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw).
     Proof.
       have L14_E38a1 : Ew.+ = Δ_(W.^c) `;` Bw                            
-        by rewrite /Bw -composeA -/Ew r_clos_rt_clos_t.
+        by rewrite /Bw -composeA -/Ew r_RTclos_eq_Tclos.
       have L14_E38a2 : Emw.+ = Bmw `;` Δ_(W.^c)
         by rewrite -TclosIv L14_E38a1 composeIv -/Bmw DsetIv.
       by rewrite L1 !composeDr !composeDl !DeltaCr !DeltaCl setUA -E9e;
@@ -69,13 +69,13 @@ Section Tcs.
     Local Lemma L14_E38c2 : forall (R: relation T), 
         R = R `;`  Δ_(W) -> (R.+ `;`  Δ_(W) = R.+).
     Proof.
-      by move => R H1;rewrite {2}H1 [RHS]Delta_clos_trans_ends -H1. 
+      by move => R H1;rewrite {2}H1 [RHS]Delta_Tclos_ends -H1. 
     Qed.
 
     Local Lemma L14_E38c3 : forall (R: relation T), 
         R =  Δ_(W) `;` R ->  Δ_(W) `;` R.+ = R.+.
     Proof.
-      by move => R H1;rewrite {2}H1 [RHS]Delta_clos_trans_starts -H1. 
+      by move => R H1;rewrite {2}H1 [RHS]Delta_Tclos_starts -H1. 
     Qed.
     
     Local Lemma L14_E38c4 : forall (R: relation T), 
@@ -86,7 +86,7 @@ Section Tcs.
       rewrite L14_E38c2 //. 
       rewrite -setUA [in (R `|` _)]setUA [in (R `|` _)]setUC.
       rewrite -[in (R .+ `|` R `|` R .+ `;` R)]setUA.
-      rewrite clos_t_decomp_rt_r. 
+      rewrite Tclos_decomp_rt_r. 
       by rewrite setUid.
     Qed.
 
@@ -96,7 +96,7 @@ Section Tcs.
       move => R H1 H2.
       rewrite composeDr !composeDl DsetK.
       rewrite L14_E38c2 // L14_E38c3 //.
-      by rewrite clos_t_decomp_2 -setUA setUid.
+      by rewrite Tclos_decomp_2 -setUA setUid.
     Qed.
     
     (** * Equation (E38c) *)
@@ -457,8 +457,8 @@ Section Tcs.
     Proof. 
       move => x y H1 H2.
       have H3: (Δ_(W.^c) `;` Bw) (x, y) by apply R_restrict_l.
-      have H5: Ew.+ (x, y) by move: H3;rewrite /Bw -composeA -/Ew r_clos_rt_clos_t.
-      have H7: Clos_(y | E,W) x by apply Clos_Ew; apply clos_t_clos_rt.
+      have H5: Ew.+ (x, y) by move: H3;rewrite /Bw -composeA -/Ew r_RTclos_eq_Tclos.
+      have H7: Clos_(y | E,W) x by apply Clos_Ew; apply Tclos_sub_RTclos.
       have H8: Clos_(x | E,W) x by apply Clos_x_x.
       rewrite -notempty_exists; exists x. rewrite in_setE;by split.
     Qed.
@@ -586,7 +586,7 @@ Section Tcs.
 
   Section Lemma8_part2.
     (** * Lemma 8 part 2 *)
-    Local Lemma clos_t_sep_n : forall (n: nat) (W' W'': set T) (w' w'': T) (R: relation T),
+    Local Lemma Tclos_sep_n : forall (n: nat) (W' W'': set T) (w' w'': T) (R: relation T),
         (W' `<=` W) /\ (W''= W `\` W') /\ 
           w' \in W' /\ w'' \in W'' /\ (Δ_(W) `;` R `;` Δ_(W))^(n.+1) (w', w'')
         -> let Rw := (Δ_(W) `;` R `;` Δ_(W)) in
@@ -608,16 +608,16 @@ Section Tcs.
         by (exists x2; exists y2).
     Qed.
     
-    Local Lemma clos_t_sep : forall (W' W'': set T) (w' w'': T) (R: relation T),
+    Local Lemma Tclos_sep : forall (W' W'': set T) (w' w'': T) (R: relation T),
         (W' `<=` W) /\ (W''= W `\` W') /\ 
           w' \in W' /\ w'' \in W'' /\ (Δ_(W) `;` R `;` Δ_(W)).+ (w', w'')
         -> let Rw := (Δ_(W) `;` R `;` Δ_(W)) in
            (exists (x' y': T), x'\in W' /\ y' \in W'' /\ Rw (x', y')).
     Proof.
       move => W' W'' w' w'' R [H1 [H2 [H3 [H4 H5]]]].
-      apply clos_t_iterk in H5.
+      apply Tclos_iterk in H5.
       move: H5 => [n' H5].
-      by apply clos_t_sep_n with n' w' w''.
+      by apply Tclos_sep_n with n' w' w''.
     Qed.
     
     Local Lemma L8_a: forall (W' W'': set T) (w' w'': T),
@@ -634,7 +634,7 @@ Section Tcs.
               split;[ rewrite -in_setE | rewrite -in_setE]);
                   rewrite -notempty_iff in H7.
       have H7:  (Δ_(W) `;` Kw `;` Δ_(W)).+ (w', w'') by move: H5 => [H5 | [ x H5]].
-      by apply clos_t_sep with w' w''.
+      by apply Tclos_sep with w' w''.
     Qed.
     
     Local Lemma L8_b: forall (W' W'': set T) (w' w'': T),
@@ -1145,10 +1145,10 @@ Section Tcs.
         R.+#X `<=` X <-> R#X  `<=` X.
     Proof.
       move => R X;split => [H1 | H1 x [y [H2 H3]]].
-      - have H2:  R `<=` R.+ by apply: iter1_inc_clos_trans.
+      - have H2:  R `<=` R.+ by apply: iter1_sub_Tclos.
         have H3: R#X  `<=` R.+#X by apply: Fset_inc.
         by apply: (subset_trans H3 H1).
-      - have [n H4]: exists (n:nat), R^(n.+1) (x,y) by apply: clos_t_iterk.
+      - have [n H4]: exists (n:nat), R^(n.+1) (x,y) by apply: Tclos_iterk.
         have H5: R^(n.+1)#X x by (exists y).
         have H6: R^(n.+1)#X `<=` X by apply: (Ropen3 H1).
         by move: H5 => /H6 H5.

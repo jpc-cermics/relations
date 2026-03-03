@@ -91,7 +91,7 @@ Section Set_order.
     (** ingredients *)
     Lemma le_trans_if_tr R: transitive R -> transitive (leSet R).
     Proof.
-      rewrite lesetE => /clos_t_iff H0 A B C /= H1 H2.
+      rewrite lesetE => /Tclos_iff H0 A B C /= H1 H2.
       have : ('Δ  `|` R)#B `<=` ('Δ  `|` R)#(('Δ  `|` R)#C) by apply: Fset_inc1.
       rewrite Fset_comp H0 DuT_eq_Tstar compose_rt_rt -DuT_eq_Tstar -H0 => H3.
       by apply: subset_trans H1 H3.

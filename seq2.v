@@ -253,7 +253,7 @@ Section allL_uniq.
     pose proof allL_take_drop H1 H3 as [_ H4].
     have H5: last x s \in (drop (index z s).+1 s) by apply: last_in_drop.
     pose proof allL_take_drop H5 H4 as [H6 _]. 
-    by pose proof (allL_to_clos_t H6). 
+    by pose proof (allL_to_Tclos H6). 
   Qed.
   
   Lemma allL_behead R s x z y: 
@@ -262,7 +262,7 @@ Section allL_uniq.
     move => H1 H3; move: (in_behead H1 H3) => H5.
     rewrite (@behead_head T s x z H1) allL_c => /andP [_ H4].
     pose proof (allL_take_drop H5 H4) as [H6 _].
-    by apply: (allL_to_clos_t H6).
+    by apply: (allL_to_Tclos H6).
   Qed.
   
   Lemma drop_index s x:
@@ -336,7 +336,7 @@ Section allL_uniq.
   
   Lemma TCP_uniq R x y: R.+ (x,y) <-> exists s, ~ x \in s /\ ~ y \in s /\ uniq s /\ allL R s x y. 
   Proof.
-    split;last by move => [s [_ [_ [_ /(@allL_to_clos_t T R s) ?]]]].
+    split;last by move => [s [_ [_ [_ /(@allL_to_Tclos T R s) ?]]]].
     by rewrite TCP /mkset => -[s /allL_uniq H1];move: H1 => [s' /= [_ H1]];(exists s').
   Qed.
   
@@ -346,7 +346,7 @@ Section allL_uniq.
   Proof.
     split => [[H1 H7]|].
     + by move: H1 => /TCP_uniq [s [? [? [? ?]]]];(exists s);rewrite uniq_crc.
-    + by move => [s [/uniq_crc -[_[_[_ ?]]] /(@allL_to_clos_t T) ?]].
+    + by move => [s [/uniq_crc -[_[_[_ ?]]] /(@allL_to_Tclos T) ?]].
   Qed.
   
   Lemma TCP_uniq' R x y: 
@@ -362,7 +362,7 @@ Section allL_uniq.
   Lemma TCP_uniq1 R x y: (Asym R.+)(x,y) <-> (exists s, allLu R s x y) /\ ~ R.+ (y,x).
   Proof. split. 
     by move => /[dup] /TCP_uniq' [s [H1 H2]] [_ H4];split;[exists s;split |].
-    by move => [[s [H1 H2]] H3];split;[apply: allL_to_clos_t; apply: H1|].
+    by move => [[s [H1 H2]] H3];split;[apply: allL_to_Tclos; apply: H1|].
   Qed.
   
 End allL_uniq.
@@ -373,16 +373,16 @@ Section allL_props.
   Context (T:eqType).
   Implicit Types  (R: relation T) (s: seq T) (x y z : T).
   
-  Lemma allL_to_clos_t_left R s x y z: z \in s -> allL R s x y -> R.+ (x, z).
+  Lemma allL_to_Tclos_left R s x y z: z \in s -> allL R s x y -> R.+ (x, z).
   Proof.
     move => H1 H2;pose proof (@allL_take_drop T R s x y z H1 H2) as [H3 _].
-    by move: H3 => /(@allL_to_clos_t T R) H3.
+    by move: H3 => /(@allL_to_Tclos T R) H3.
   Qed. 
 
-  Lemma allL_to_clos_t_right R s x y z: z \in s -> allL R s x y -> R.+ (z, y).
+  Lemma allL_to_Tclos_right R s x y z: z \in s -> allL R s x y -> R.+ (z, y).
   Proof.
     move => H1 H2;pose proof (@allL_take_drop T R s x y z H1 H2) as [_ H3].
-    by move: H3 => /(@allL_to_clos_t T R) H3.
+    by move: H3 => /(@allL_to_Tclos T R) H3.
   Qed. 
   
 End allL_props.

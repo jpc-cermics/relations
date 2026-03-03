@@ -255,10 +255,10 @@ Section Intermediate_results_closed.
   Proof.
     rewrite predeqE /mkset => X.
     split => [H1 | H1 x [y [H2 H3]]].
-    - have H2: R `<=` R.+ by apply: iter1_inc_clos_trans.
+    - have H2: R `<=` R.+ by apply: iter1_sub_Tclos.
       have H3: R#X  `<=` R.+#X by apply: Fset_inc.
       by apply: (subset_trans H3 H1).
-    - have [n H4]: exists (n:nat), R^(n.+1) (x,y) by apply: clos_t_iterk.
+    - have [n H4]: exists (n:nat), R^(n.+1) (x,y) by apply: Tclos_iterk.
       have H5: R^(n.+1)#X x by (exists y).
       have H6: R^(n.+1)#X `<=` X by apply: (Rclosed3 H1).
       by move: H5 => /H6 H5.

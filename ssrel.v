@@ -100,13 +100,13 @@ Section Transitive_Closure.
 
   (* transitive closure as set *)
   
-  Definition clos_t := [set x: T*T | clos_trans x.1 x.2].
-  Definition clos_t_1n := [set x: T*T | clos_trans_1n x.1 x.2].
-  Definition clos_t_n1 := [set x: T*T | clos_trans_n1 x.1 x.2].
+  Definition Tclos := [set x: T*T | clos_trans x.1 x.2].
+  Definition Tclos_1n := [set x: T*T | clos_trans_1n x.1 x.2].
+  Definition Tclos_n1 := [set x: T*T | clos_trans_n1 x.1 x.2].
   
-  Lemma clos_t_t1n_iff : clos_t =  clos_t_1n.
+  Lemma Tclos_t1n_iff : Tclos =  Tclos_1n.
   Proof.
-    rewrite /clos_t /clos_t_1n /mkset predeqE => xy.
+    rewrite /Tclos /Tclos_1n /mkset predeqE => xy.
     split.
     - elim => [x' y' |x' y' z' H1 H2 H3]; first by constructor.
       elim: H2=> [x1 y1| x1 y1 z1 H4 H5 H6 H7]; first by apply t1n_trans. 
@@ -115,9 +115,9 @@ Section Transitive_Closure.
       by apply t_trans with y';[apply t_step |].
   Qed.
 
-  Lemma clos_t_tn1_iff : clos_t = clos_t_n1.
+  Lemma Tclos_tn1_iff : Tclos = Tclos_n1.
   Proof.
-    rewrite /clos_t /clos_t_n1 /mkset predeqE => xy.
+    rewrite /Tclos /Tclos_n1 /mkset predeqE => xy.
     split => [H | H].
     - elim: H => [x y H | x y z H1 H2 H3 H4]; first by apply tn1_step.
       elim: H4 => [y1 H5| y1 z1]; first by constructor 2 with y.
@@ -343,9 +343,9 @@ Section Properties.
   Qed.
     
   Lemma clos_rt_t : forall x y z,
-      clos_rt R (x,y) -> clos_t R (y,z) -> clos_t R (x,z).
+      clos_rt R (x,y) -> Tclos R (y,z) -> Tclos R (x,z).
   Proof.
-    move => x1 y1 z1. rewrite /clos_t /clos_rt /mkset /=.
+    move => x1 y1 z1. rewrite /Tclos /clos_rt /mkset /=.
     by elim => [x y H| | x y z _ H1 _ H2 ?];
               [ apply: t_trans; apply: t_step| | apply: H1 ;apply: H2].
     Qed.

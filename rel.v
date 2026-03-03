@@ -475,13 +475,13 @@ Section Relation_Facts.
   Lemma Tclos_in R S: transitive S -> R `<=` S -> R.+ `<=` S.
   Proof. by move => Ht H1 [x y] [n /= H2];move: (iter_subset Ht H1 H2) => H3 /H3 ?. Qed.
   
-  Lemma clos_t_iterk R (x y:T): R.+ (x,y) -> exists (n:nat), R^(n.+1) (x,y).
+  Lemma Tclos_iterk R (x y:T): R.+ (x,y) -> exists (n:nat), R^(n.+1) (x,y).
   Proof.
     by move => [n H1 ?];exists (n.-1);have ->: n.-1.+1 = n by apply: ltn_predK H1. 
   Qed.
   
   Lemma TclosT R: transitive R.+.
-  Proof. by move => x y z /clos_t_iterk [n1 H1] /clos_t_iterk [n2 H2];
+  Proof. by move => x y z /Tclos_iterk [n1 H1] /Tclos_iterk [n2 H2];
                    exists (n1.+1 + n2.+1);[|rewrite iter_compose;exists y].
   Qed.
   
@@ -503,12 +503,12 @@ Section Relation_Facts.
     by apply: (@smallest_sub _ transitive _ R.+ (@TclosT _) (@TclosSu _)). 
   Qed.
 
-  Lemma iterk_inc_clos_trans R: forall (n : nat), R^(n.+1) `<=` R.+.
+  Lemma iterk_sub_Tclos R: forall (n : nat), R^(n.+1) `<=` R.+.
   Proof. by move => n xy H1;exists n.+1. Qed.
   
 
-  Lemma clos_t_iterk' R (x y:T): (exists (n:nat), R^(n.+1) (x,y)) -> R.+ (x,y).
-  Proof. by move => [n H1];apply: (@iterk_inc_clos_trans R n). Qed.
+  Lemma Tclos_iterk' R (x y:T): (exists (n:nat), R^(n.+1) (x,y)) -> R.+ (x,y).
+  Proof. by move => [n H1];apply: (@iterk_sub_Tclos R n). Qed.
   
   Lemma TclosIv R: R.+^-1 = R^-1.+ .
   Proof.
@@ -517,14 +517,14 @@ Section Relation_Facts.
     by rewrite -iterIv => ?;exists n.
   Qed.
   
-  Lemma clos_t_sym R: symmetric R -> symmetric R.+.
+  Lemma Tclos_sym R: symmetric R -> symmetric R.+.
   Proof. by move => Hs x y [n /= H1 /(iter_sym Hs) H2];exists n. Qed.
 
-  Lemma iter1_inc_clos_trans R: R `<=` R.+.
+  Lemma iter1_sub_Tclos R: R `<=` R.+.
   Proof. by move => xy H1;exists 1;[ | rewrite iter1_id]. Qed.
   
   
-  Lemma clos_t_sep_n R: forall (n: nat) (x y: T) (W:set T),
+  Lemma Tclos_sep_n R: forall (n: nat) (x y: T) (W:set T),
       x\in W /\ y \in W.^c /\ R^(n.+1) (x, y)
       ->  (exists (x' y': T), x'\in W /\ y' \in W.^c /\ R (x',y')).
   Proof.
@@ -541,29 +541,29 @@ Section Relation_Facts.
       by move: H10 => [x2 [y2 [? [? ?]]]];exists x2; exists y2.
   Qed.
   
-  Lemma clos_t_sep R: forall (x y: T) (W:set T),
+  Lemma Tclos_sep R: forall (x y: T) (W:set T),
       x\in W /\ y \in W.^c /\ R.+ (x,y)
       ->  (exists (x' y': T), x'\in W /\ y' \in W.^c /\ R (x', y')).
   Proof.
-    move => x y W [H1 [H2 /clos_t_iterk [n' H3]]].
-    by apply clos_t_sep_n with n' x y.
+    move => x y W [H1 [H2 /Tclos_iterk [n' H3]]].
+    by apply Tclos_sep_n with n' x y.
   Qed.
 
-  Lemma Delta_clos_trans_ends R X: (R `;` Δ_(X)).+ =  (R `;` Δ_(X)).+ `;` Δ_(X).
+  Lemma Delta_Tclos_ends R X: (R `;` Δ_(X)).+ =  (R `;` Δ_(X)).+ `;` Δ_(X).
   Proof.
     rewrite predeqE => -[x y];split;last by move=> [z[+[_ /= H3]]];rewrite H3.
     move=> [n Pn];rewrite (iterDr R X Pn) => -[z /= [H2 H3]].
     by (exists z);split;[exists n|].
   Qed.
 
-  Lemma Delta_clos_trans_starts R X: (Δ_(X) `;` R).+ = Δ_(X) `;` (Δ_(X) `;` R).+.
+  Lemma Delta_Tclos_starts R X: (Δ_(X) `;` R).+ = Δ_(X) `;` (Δ_(X) `;` R).+.
   Proof.
     rewrite predeqE => -[x y]; split;last by move=> [z[[_ /= H3]]];rewrite H3.
     move=> [n Pn];rewrite (iterDl R X Pn) => -[z /= [H2 H3]].
     by (exists z);split;[|exists n].
   Qed.
   
-  Lemma clos_trans_inc (Z V U W: relation T):
+  Lemma Tclos_sub (Z V U W: relation T):
     (forall (n:nat), Z `;` (V^(n.+1)) `;` U = Z `;` (W^(n.+1)) `;` U) 
     -> Z `;` V.+ `;` U `<=` Z `;` W.+ `;` U.
   Proof.
@@ -573,51 +573,49 @@ Section Relation_Facts.
     by exists z';split;[exists t';split;[|exists n]|].
   Qed.
   
-  Lemma clos_trans_eq (Z R S U: relation T):
+  Lemma Tclos_eq (Z R S U: relation T):
     (forall (n:nat), Z `;` (R^(n.+1)) `;` U = Z `;` (S^(n.+1)) `;` U)
     -> Z `;` R.+ `;` U = Z `;` S.+ `;` U.
-  Proof.
-    by move => H;rewrite predeqE;split;[apply: clos_trans_inc | apply: clos_trans_inc].
-  Qed.
+  Proof. by move => H;rewrite predeqE;split;apply: Tclos_sub.  Qed.
   
-  Lemma clos_t_composer R: (R `;` R.+) `<=` R.+.
+  Lemma Tclos_composer R: (R `;` R.+) `<=` R.+.
   Proof. 
     by move => [x y] [z [? [n ? ?]]];
               exists (n.+1);[exact | rewrite iter_compose1l;exists z].
   Qed.
   
-  Lemma clos_t_composel R: (R.+ `;` R) `<=` R.+.
+  Lemma Tclos_composel R: (R.+ `;` R) `<=` R.+.
   Proof. 
     by move => [x y] [z [[n ? ?] ?]];
               exists (n.+1);[exact | rewrite iter_compose1r;exists z].
   Qed.
   
-  Lemma clos_t_decomp_rt R: R `|` (R `;` R.+) = R.+ .
+  Lemma Tclos_decomp_rt R: R `|` (R `;` R.+) = R.+ .
   Proof.
     rewrite eqEsubset;split;first by
-      apply: (union_inc_b (@TclosSu _) (@clos_t_composer _)).
-    move => -[x y] /(@clos_t_iterk R x y) [n].
+      apply: (union_inc_b (@TclosSu _) (@Tclos_composer _)).
+    move => -[x y] /(@Tclos_iterk R x y) [n].
     case H3: (n == 0);first by move: H3 => /eqP ->;rewrite iter1_id => H3;left.
     move: H3 => /neq0_lt0n H3;rewrite (iter_compose1l R) => -[z /= [H1 H2]].
     by right;exists z;split;[|exists n].
   Qed.
   
-  Lemma clos_tI R:  (R.+ `;` R.+) `<=` R.+.
+  Lemma Tclos2S R:  (R.+ `;` R.+) `<=` R.+.
   Proof. 
-    move => [x y] [z [/clos_t_iterk [n1 H1] /clos_t_iterk [n2 H2]]].
+    move => [x y] [z [/Tclos_iterk [n1 H1] /Tclos_iterk [n2 H2]]].
     by exists (n1.+1 + n2.+1);[exact | rewrite (iter_compose R n1.+1 n2.+1);exists z].
   Qed.
   
-  Lemma clos_t_decomp_2 R: R.+ `|` (R.+ `;` R.+) = R.+.
-  Proof. by rewrite predeqE => -[x y];split => [[? //| /clos_tI ?//] | ?];left. Qed.
+  Lemma Tclos_decomp_2 R: R.+ `|` (R.+ `;` R.+) = R.+.
+  Proof. by rewrite predeqE => -[x y];split => [[? //| /Tclos2S ?//] | ?];left. Qed.
   
-  Lemma clos_t_decomp_rt_r R: R `|` (R.+ `;` R) = R.+.
+  Lemma Tclos_decomp_rt_r R: R `|` (R.+ `;` R) = R.+.
   Proof.
     rewrite predeqE => -[x y];split.
-    + move => [H1| [z /= [/clos_t_iterk [n1 H1] H3]]];
-             first by apply: iter1_inc_clos_trans.
+    + move => [H1| [z /= [/Tclos_iterk [n1 H1] H3]]];
+             first by apply: iter1_sub_Tclos.
       by (exists n1.+2);[| rewrite (iter_compose1r R n1.+1);exists z].
-    + move => /clos_t_iterk [n].
+    + move => /Tclos_iterk [n].
       case H2: (n == 0); first by move: H2 => /eqP ->;rewrite iter1_id;left.
       move: H2 => /neq0_lt0n H2;rewrite (iter_compose1r R n) => -[z [H3 H4]].
       by right;exists z;split;[exists n|].
@@ -641,8 +639,8 @@ Section Relation_Facts.
   
   Lemma RTclosT R: transitive R.*.
   Proof.
-    rewrite RTclosE => x y z [/DeltaP -> //| /clos_t_iterk [n1 H1]].
-    move => [/DeltaP <- //|/clos_t_iterk [n2 H2]];first by right;(exists n1.+1).
+    rewrite RTclosE => x y z [/DeltaP -> //| /Tclos_iterk [n1 H1]].
+    move => [/DeltaP <- //|/Tclos_iterk [n2 H2]];first by right;(exists n1.+1).
     by right;exists (n1.+1 + n2.+1);[exact|rewrite iter_compose;exists y].
   Qed.
   
@@ -656,7 +654,7 @@ Section Relation_Facts.
   Lemma RTclos_smallest R: R.* = smallest [set S | reflexive S /\ transitive S] R. 
   Proof.
     rewrite RTclosE eqEsubset;split; first by 
-      move => -[x y] [/DeltaP -> //| /clos_t_iterk [n H2]] S' [[H3 H3'] H4];
+      move => -[x y] [/DeltaP -> //| /Tclos_iterk [n H2]] S' [[H3 H3'] H4];
              [|apply: (@iter_subset R S' H3' H4 n.+1)].
     rewrite -RTclosE; move => -[x y] H2.
       have: [set S | (reflexive S /\ transitive S) /\ R `<=` S] R.*
@@ -670,7 +668,7 @@ Section Relation_Facts.
   Lemma RTclos_containsD R X: Δ_(X) `<=` R.* .
   Proof. by rewrite RTclosE;apply: subset_trans;[apply: DeltaS|apply: subsetUl].  Qed.
   
-  Lemma clos_t_clos_rt R: R.+ `<=` R.*.
+  Lemma Tclos_sub_RTclos R: R.+ `<=` R.*.
   Proof. by rewrite RTclosE;apply: subsetUr. Qed.
   
   Lemma clos_refl_trans_inc R S: R `<=` S -> R.* `<=` S.*.
@@ -679,11 +677,11 @@ Section Relation_Facts.
   Lemma DuT_eq_Tstar R:  'Δ `|` R.+ = R.*.  
   Proof. by rewrite RTclosE. Qed.
   
-  Lemma r_clos_rt_clos_t R: R `;` R.* = R.+.
-  Proof. by rewrite -DuT_eq_Tstar composeDl DeltaCr clos_t_decomp_rt. Qed.
+  Lemma r_RTclos_eq_Tclos R: R `;` R.* = R.+.
+  Proof. by rewrite -DuT_eq_Tstar composeDl DeltaCr Tclos_decomp_rt. Qed.
   
-  Lemma clos_rt_r_clos_t R: R.* `;` R = R.+.
-  Proof. by rewrite -DuT_eq_Tstar composeDr DeltaCl clos_t_decomp_rt_r. Qed.
+  Lemma RTclos_r_eq_Tclos R: R.* `;` R = R.+.
+  Proof. by rewrite -DuT_eq_Tstar composeDr DeltaCl Tclos_decomp_rt_r. Qed.
     
   Definition iterU (T: Type) (R: relation T) n : relation T := [set xy | exists k, k < n.+1 /\ R^(k) xy].
   
@@ -709,7 +707,7 @@ Section Relation_Facts.
   Proof.
     elim => [|n Hr];first by rewrite iterU0 => [[x y] ?];exists 0.
     rewrite iterU_split  RTclosE;apply: setUS;move => -[x y] [z [? /Hr]].
-    by rewrite RTclosE => -[/DeltaP /= <- | H2];[apply: TclosSu| apply: clos_t_composer;exists z].
+    by rewrite RTclosE => -[/DeltaP /= <- | H2];[apply: TclosSu| apply: Tclos_composer;exists z].
   Qed.
   
   Lemma clos_rt_iterU R (x y:T): R.* (x, y) -> exists (n:nat), (iterU R n) (x,y).
@@ -744,7 +742,7 @@ Section Relation_Facts.
   Qed.
 
   Lemma compose_rt_rt R: R.* `;` R.* = R.*. 
-  Proof. by rewrite L2 -setUA clos_t_decomp_2 -setUA setUid DuT_eq_Tstar. Qed.
+  Proof. by rewrite L2 -setUA Tclos_decomp_2 -setUA setUid DuT_eq_Tstar. Qed.
 
   (** * Foresets *)
   
@@ -1056,7 +1054,7 @@ Section Relation_Facts.
     
   Lemma RTRestrict R X: (R |_(X)).+ = (R |_(X)).+ |_(X). 
   Proof. 
-    by rewrite {1}composeA  Delta_clos_trans_starts -composeA {1}Delta_clos_trans_ends -composeA.
+    by rewrite {1}composeA  Delta_Tclos_starts -composeA {1}Delta_Tclos_ends -composeA.
   Qed.
 
   Lemma RestrictU R S X: (R `|` S) |_(X) = (R |_(X)) `|` (S |_(X)).
@@ -1077,7 +1075,7 @@ Section Relation_Facts.
          
   Lemma main4 R S X: (forall n, R^(n.+1)|_(X) = S^(n.+1)|_(X)) -> R.+ |_(X) `<=` S.+ |_(X).
   Proof.
-    move => H0  -[x y] /RestrictE [H1 [H2 /clos_t_iterk [n H3]]].
+    move => H0  -[x y] /RestrictE [H1 [H2 /Tclos_iterk [n H3]]].
     have: R^(n.+1)|_(X) (x,y) by apply/RestrictE. 
     rewrite (H0 n) => /RestrictE [H1' [H2' H3']].
     by apply /RestrictE;split;[|split;[|exists n.+1]].
@@ -1124,7 +1122,7 @@ Section Relation_Facts.
       by apply: (H1 x z _). 
   Qed.
   
-  Lemma clos_t_iff R: transitive R <-> R = R.+.
+  Lemma Tclos_iff R: transitive R <-> R = R.+.
   Proof. by split => [/@smallest_id H1 | ->];[rewrite TclosE H1|apply: TclosT]. Qed.
   
   Lemma clos_rt_iff R: (reflexive R /\ transitive R) <-> R = R.*.
@@ -1342,10 +1340,10 @@ Section Restrict_to_subset.
   Proof.
     rewrite predeqE => -[x y];split.
     + move => [x' [y' /= [? [? H3]]]]. 
-      move: H3 => /(@clos_t_iterk _ ((@Restrict' _ X R)) x' y') [ n H3].
+      move: H3 => /(@Tclos_iterk _ ((@Restrict' _ X R)) x' y') [ n H3].
       by (exists n.+1);[| rewrite -Extend_iter;(exists x';exists y')].
-    + move => /(@clos_t_iterk _ (R|_(X)) x y) [n H3];move: H3; rewrite -Extend_iter. 
-      by move => [x' [y']] H1;(exists x';exists y');move: H1 => [-> [-> /iterk_inc_clos_trans ?]]. 
+    + move => /(@Tclos_iterk _ (R|_(X)) x y) [n H3];move: H3; rewrite -Extend_iter. 
+      by move => [x' [y']] H1;(exists x';exists y');move: H1 => [-> [-> /iterk_sub_Tclos ?]]. 
   Qed.
 
   Lemma RestrictEq R S X: (R |_(X)) = (S |_(X)) <-> (@Restrict' _ X R) = (@Restrict' _ X S).
