@@ -250,28 +250,6 @@
     \end{input}
   \end{sentence}
 }
-\newcommand{\SnippetAssumptions}{
-%
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Hypothesis}~\PY{n+nv}{A1}\PY{o}{:}~\PY{o}{(}\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{v0}\PY{o}{:}\PY{n}{T}\PY{o}{),}~\PY{o}{(}\PY{n}{v0}~\(\in\)~\PY{n}{setT}\PY{o}{)).}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Hypothesis}~\PY{n+nv}{A2}\PY{o}{:}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Er}\PY{o}{.+)).}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kn}{Hypothesis}~\PY{n+nv}{A3}\PY{o}{:}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+)).}
-    \end{input}
-  \end{sentence}
-}
 \newcommand{\SnippetChains}{
 %
   % Generator: Alectryon
@@ -672,6 +650,40 @@
   \begin{sentence}
     \begin{input}
       ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{Tm}~\PY{n+nv}{x}\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{y}~\PY{o}{|}~\PY{n}{y}~\(\in\)~\PY{n}{Sm}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{Eb}\PY{o}{.+}~\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{))].}
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippetinfasym}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{iic\PYZus{}asym\PYZus{}to\PYZus{}iic\PYZus{}inj}\PY{o}{:}~~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{R}\PY{o}{.+))}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{n}{iic\PYZus{}inj}~\PY{n}{R}\PY{o}{).}~
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetMainTh}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Theorem}~\PY{n+nf}{Final}\PY{o}{:}\nl
+      ~~~~\PY{o}{(}\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{v0}\PY{o}{:}\PY{n}{T}\PY{o}{),}~\PY{o}{(}\PY{n}{v0}~\(\in\)~\PY{n}{setT}\PY{o}{))}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Er}\PY{o}{.+))}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{Eb}\PY{o}{.+))}\nl
+      ~~~~\PY{o}{\(\rightarrow\)}~\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{Sm}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{),}~\PY{n}{RelIndep}~\PY{n}{Mono}~\PY{n}{Sm}~\PY{o}{\(\,\wedge\,\)}~~\PY{n}{Sm}~\PY{o}{!=}~\PY{n}{set0}~\PY{o}{\(\,\wedge\,\)}~~\PY{k+kr}{\(\forall\)}~\PY{n+nv}{x}\PY{o}{,}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{x}\(\in\)~\PY{n}{Sm}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{n}{x}~\(\in\)~\PY{n}{Mono}\PY{o}{\PYZsh{}}\PY{n}{Sm}\PY{o}{).}~
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\SnippetSSWTh}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Corollary}~\PY{n+nf}{SSW}\PY{o}{:}\nl
+      ~~~~~\PY{o}{(}\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{v0}\PY{o}{:}\PY{n}{T}\PY{o}{),}~\PY{o}{(}\PY{n}{v0}~\(\in\)~\PY{n}{setT}\PY{o}{))}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic\PYZus{}inj}~\PY{n}{Er}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic\PYZus{}inj}~\PY{n}{Eb}\PY{o}{)}\nl
+      ~~~~~\PY{o}{\(\rightarrow\)}~\PY{k+kr}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{Sm}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{),}~\PY{n}{RelIndep}~\PY{n}{Mono}~\PY{n}{Sm}~\PY{o}{\(\,\wedge\,\)}~~\PY{n}{Sm}~\PY{o}{!=}~\PY{n}{set0}~\PY{o}{\(\,\wedge\,\)}~\PY{k+kr}{\(\forall\)}~\PY{n+nv}{x}\PY{o}{,}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{x}\(\in\)~\PY{n}{Sm}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{n}{x}~\(\in\)~\PY{n}{Mono}\PY{o}{\PYZsh{}}\PY{n}{Sm}\PY{o}{).}~
     \end{input}
   \end{sentence}
 }

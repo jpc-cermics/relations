@@ -11,7 +11,6 @@ SNIPPETS = \
 	snippets/paper_csbr/Lsepttwo-n.tex \
 	snippets/paper_csbr/Lseptthree-n.tex \
 	snippets/paper_csbr/Lseptfour-n.tex \
-	snippets/paper_monochromatic/Assumptions-n.tex \
 	snippets/paper_monochromatic/Chains-n.tex \
 	snippets/paper_monochromatic/Mono-n.tex \
 	snippets/paper_monochromatic/SType-n.tex \
@@ -48,6 +47,9 @@ SNIPPETS = \
 	snippets/paper_monochromatic/factfort-n.tex \
 	snippets/paper_monochromatic/Sx-n.tex \
 	snippets/paper_monochromatic/Tm-n.tex \
+	snippets/paper_monochromatic/infasym-n.tex \
+	snippets/paper_monochromatic/MainTh-n.tex \
+	snippets/paper_monochromatic/SSWTh-n.tex \
 	snippets/paper_relations/Aw-n.tex \
 	snippets/rel/RelIndep-n.tex \
 	snippets/rel/Rloop-n.tex \

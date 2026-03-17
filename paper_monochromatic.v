@@ -30,9 +30,14 @@ Section CheckAsym.
   Hypothesis A1: (NotEmpty T).
 
   Import Asyminf2Inf(Asym2P5', allL_rc_asym).
-  
-  Lemma check_asym:  (iic (Asym R.+)) -> (iic_inj R). 
-    Proof. by apply: (@Asym2P5' T R A1). Qed.
+
+  (* begin snippet infasym:: no-out *) 
+  Lemma iic_asym_to_iic_inj:  (iic (Asym R.+)) -> (iic_inj R). 
+  (* end snippet infasym *)  
+  Proof. by apply: (@Asym2P5' T R A1). Qed.
+
+  Lemma not_iic_inj_to_not_iic_asym: ~ (iic_inj R) -> ~ (iic (Asym R.+)).
+  Proof. by move => ? /iic_asym_to_iic_inj ?. Qed.
 
 End  CheckAsym. 
 
@@ -240,7 +245,7 @@ Section Paper.
   (* begin snippet Mono:: no-out *)   
   Definition Mono :=  Eb.+ `|` Er.+.
   (* end snippet Mono *) 
-
+  
   (* The set Scal as a subset of T *)
   (* begin snippet Scal:: no-out *) 
   Definition Scal := [ set S | RelIndep Mono S /\ S:#(Er.+) `<=` Mono#S /\  S != set0 ].
@@ -1026,18 +1031,37 @@ Section Paper.
 
   End Maximal. 
 
+
   (** * The Assumptions we use: weaker than the original paper assumptions *)
-  (* begin snippet Assumptions:: no-out *)    
-  Hypothesis A1: (exists (v0:T), (v0 \in setT)).
-  Hypothesis A2: ~ (iic (Asym Er.+)).
-  Hypothesis A3: ~ (iic (Asym Eb.+)).
-  (* end snippet Assumptions *)    
-  
-  Theorem Final: exists (Sm: set T), forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
+  (* begin snippet MainTh:: no-out *)    
+  Theorem Final:
+    (exists (v0:T), (v0 \in setT)) -> ~ (iic (Asym Er.+)) -> ~ (iic (Asym Eb.+))
+    -> exists (Sm: set T), RelIndep Mono Sm /\  Sm != set0 /\  forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
+  (* end snippet MainTh:: no-out *)    
   Proof.
-    move: (Smax A1 A2 A3) => [Sm [H1 H2]]. 
-    exists Sm;move => x;apply/fact14/(fact13 A2).
-    by split => [// |U H3 H4];have ->: U = Sm by apply: H2 H3 H4.
+    move => A1 A2 A3.
+    move: (Smax A1 A2 A3) => [Sm [/inP H1 H2]]. 
+    move: (H1); rewrite /Scal => -[P1 [_ P1']].
+    exists Sm. split. by []. split. by [].
+    move => x;apply/fact14/(fact13 A2).
+    split => [ |U H3 H4];first by rewrite inP.
+    by have ->: U = Sm by apply: H2 H3 H4.
   Qed.
   
+  (* begin snippet SSWTh:: no-out *)    
+  Corollary SSW:
+     (exists (v0:T), (v0 \in setT)) -> ~ (iic_inj Er) -> ~ (iic_inj Eb)
+     -> exists (Sm: set T), RelIndep Mono Sm /\  Sm != set0 /\ forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
+  (* end snippet SSWTh:: no-out *)    
+  Proof.
+    move => A1 /not_iic_inj_to_not_iic_asym A2 /not_iic_inj_to_not_iic_asym A3.
+    move: (A1) => /[dup] /A2 A2' /A3 A3'.
+    by apply: Final.
+  Qed.
+
 End Paper.
+  
+
+
+
+
