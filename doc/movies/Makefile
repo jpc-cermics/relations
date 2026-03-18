@@ -31,6 +31,7 @@ SNIPPETS = \
 	snippets/paper_monochromatic/SinfScalP-n.tex \
 	snippets/paper_monochromatic/SmaxSType-n.tex \
 	snippets/paper_monochromatic/Smax-n.tex \
+	snippets/paper_monochromatic/IsMaximal-n.tex \
 	snippets/paper_monochromatic/TmI-n.tex \
 	snippets/paper_monochromatic/factun-n.tex \
 	snippets/paper_monochromatic/Sbunp-n.tex \
@@ -60,6 +61,7 @@ SNIPPETS = \
 	snippets/rel/lefttotal-n.tex \
 	snippets/rel/iic-n.tex \
 	snippets/rel/iicinj-n.tex \
+	snippets/rel/chains-n.tex \
 	snippets/seq1/Active-n.tex \
 	snippets/seq1/ActiveOe-n.tex \
 	snippets/seq1/Activeeq-n.tex \

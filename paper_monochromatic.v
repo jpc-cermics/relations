@@ -248,13 +248,13 @@ Section Paper.
   
   (* The set Scal as a subset of T *)
   (* begin snippet Scal:: no-out *) 
-  Definition Scal := [ set S | RelIndep Mono S /\ S:#(Er.+) `<=` Mono#S /\  S != set0 ].
+  Definition Scal := [set S| RelIndep Mono S/\S:#(Er.+) `<=` Mono#S/\S != set0 ].
   (* end snippet Scal *) 
     
   (* The set Scal as a Type *)
   
   (* begin snippet SType:: no-out *)    
-  Definition SType := {S: set T| RelIndep Mono S /\ S:#(Er.+) `<=` Mono#S  /\ S != set0}.
+  Definition SType := {S | RelIndep Mono S/\S:#(Er.+) `<=` Mono#S/\S != set0}.
   (* end snippet SType *)  
 
   (* begin snippet Elt:: no-out *)   
@@ -267,13 +267,13 @@ Section Paper.
   Lemma Scal2S: forall S, S \in Scal -> exists (S': SType), (sval S') = S.
   Proof.  by move => S /inP H1; exists (exist _ S H1). Qed.
 
+  
+  (** * The relation on sets restricted to Stype subsets *)
   (* begin snippet leSetone:: no-out *)   
   Definition leSet1 (AB: SType*SType) :=
     leSet (Asym Eb.+) ((sval AB.1), (sval AB.2)).
-  (* end snippet leSetone *)  
-  
-  (** * The relation on sets restricted to Stype subsets *)
   Notation "A [<=] B" := (leSet1 (A,B)).
+  (* end snippet leSetone *)  
   
   Section Scal_order. 
     
@@ -511,10 +511,6 @@ Section Paper.
     
     (* begin snippet Chains:: no-out *)    
     Definition ChainsB := @Chains SType leSet1. 
-    (* 
-    Definition Chains := [set C: set SType| forall (c1 c2: SType),
-          c1 \in C -> c2 \in C -> c1 [<=] c2 \/ c2 [<=] c1].
-     *)
     (* end snippet Chains *)    
     
     Lemma Chains_is_total C: C \in ChainsB <-> total_on C (curry leSet1).
@@ -633,19 +629,20 @@ Section Paper.
   Qed.
   
   (** * existence of Smax in set T *)
-  (* begin snippet Smax:: no-out *)    
+  (* begin snippet SmaxE:: no-out *)    
   Lemma Smax_Scal (A1: NotEmpty T) (A2: ~ (iic (Asym Er.+))) (A3: ~ (iic (Asym Eb.+))):
     exists Sm, Sm \in Scal /\ forall T, T \in Scal -> Sm [<= (Asym Eb.+)] T -> T = Sm.
-  (* end snippet Smax *)    
+  (* end snippet SmaxE *)    
   Proof.
     move: (Smax_SType A1 A2 A3) => [Sm H1];exists (sval Sm); split; first by  apply: S2Scal.
     by move => S /Scal2S [S' <-] H3; f_equal;by apply H1.
   Qed.
 
   (** * existence of Smax in set T *)
-
+  (* begin snippet IsMaximal:: no-out *)  
   Definition IsMaximal (S: set T):= 
       S \in Scal /\ forall T, T \in Scal -> S [<= (Asym Eb.+)] T -> T = S.
+  (* end snippet IsMaximal:: no-out *)  
   (* begin snippet Smax:: no-out *)    
   Lemma Smax (A1: NotEmpty T) (A2: ~ (iic (Asym Er.+))) (A3: ~ (iic (Asym Eb.+))):
     exists Sm, IsMaximal Sm.
@@ -1031,12 +1028,13 @@ Section Paper.
 
   End Maximal. 
 
+  Implicit Type (Sm: set T).
 
   (** * The Assumptions we use: weaker than the original paper assumptions *)
   (* begin snippet MainTh:: no-out *)    
   Theorem Final:
     (exists (v0:T), (v0 \in setT)) -> ~ (iic (Asym Er.+)) -> ~ (iic (Asym Eb.+))
-    -> exists (Sm: set T), RelIndep Mono Sm /\  Sm != set0 /\  forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
+    -> exists Sm, RelIndep Mono Sm /\  Sm != set0 /\  forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
   (* end snippet MainTh:: no-out *)    
   Proof.
     move => A1 A2 A3.
@@ -1051,7 +1049,7 @@ Section Paper.
   (* begin snippet SSWTh:: no-out *)    
   Corollary SSW:
      (exists (v0:T), (v0 \in setT)) -> ~ (iic_inj Er) -> ~ (iic_inj Eb)
-     -> exists (Sm: set T), RelIndep Mono Sm /\  Sm != set0 /\ forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
+     -> exists Sm, RelIndep Mono Sm /\  Sm != set0 /\ forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
   (* end snippet SSWTh:: no-out *)    
   Proof.
     move => A1 /not_iic_inj_to_not_iic_asym A2 /not_iic_inj_to_not_iic_asym A3.

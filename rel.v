@@ -1416,11 +1416,11 @@ Section Infinite_paths.
   Proof. by move => [f H1] x;exists (iterf f x). Qed.
   
   (* begin snippet iic:: no-out *)  
-  Definition iic (R: relation T) := exists f, forall n, R ((f n),(f (S n))).  
+  Definition iic R := exists f, forall n, R ((f n),(f (S n))).  
   (* end snippet iic *)
   
   (* begin snippet iicinj:: no-out *)  
-  Definition iic_inj (R: relation T) := exists f, (forall n, R ((f n),(f (S n)))) /\ injective f.
+  Definition iic_inj R := exists f, (forall n, R ((f n),(f (S n)))) /\ injective f.
   (* end snippet iicinj *)  
 
   Lemma total_rel''_to_iic R: (exists (v0:T), (v0 \in setT)) ->  total_rel'' R -> iic R. 
@@ -1475,9 +1475,12 @@ Section ZornRelation.
   
   Context (T: Type).
   
+
+  (* begin snippet chains:: no-out *)  
   Definition Chains (R: relation T) := 
     [set C: set T| forall (c1 c2: T), C c1 -> C c2 ->  R (c1,c2) \/ R (c2,c1)].
- 
+  (* end snippet chains *)  
+
   Lemma Zorn_relation (R: relation T) : 
     porder R
     -> (forall A : set T, Chains R A -> exists t : T, forall s : T, A s -> R (s, t))
