@@ -33,24 +33,26 @@ SNIPPETS = \
 	snippets/paper_monochromatic/Smax-n.tex \
 	snippets/paper_monochromatic/IsMaximal-n.tex \
 	snippets/paper_monochromatic/TmI-n.tex \
-	snippets/paper_monochromatic/factun-n.tex \
 	snippets/paper_monochromatic/Sbunp-n.tex \
-	snippets/paper_monochromatic/fact-n.tex \
+	snippets/paper_monochromatic/factone-n.tex \
 	snippets/paper_monochromatic/facttwo-n.tex \
 	snippets/paper_monochromatic/factthree-n.tex \
 	snippets/paper_monochromatic/factfour-n.tex \
 	snippets/paper_monochromatic/factfive-n.tex \
+	snippets/paper_monochromatic/factsix-n.tex \
 	snippets/paper_monochromatic/factseven-n.tex \
+	snippets/paper_monochromatic/facteight-n.tex \
+	snippets/paper_monochromatic/factnine-n.tex \
+	snippets/paper_monochromatic/factten-n.tex \
 	snippets/paper_monochromatic/facteleven-n.tex \
-	snippets/paper_monochromatic/facttwelveone-n.tex \
-	snippets/paper_monochromatic/facttwelvep-n.tex \
-	snippets/paper_monochromatic/facttreize-n.tex \
-	snippets/paper_monochromatic/factfort-n.tex \
 	snippets/paper_monochromatic/Sx-n.tex \
 	snippets/paper_monochromatic/Tm-n.tex \
+	snippets/paper_monochromatic/Sxm-n.tex \
+	snippets/paper_monochromatic/Sxone-n.tex \
 	snippets/paper_monochromatic/infasym-n.tex \
 	snippets/paper_monochromatic/MainTh-n.tex \
 	snippets/paper_monochromatic/SSWTh-n.tex \
+	snippets/paper_monochromatic/Monotopath-n.tex \
 	snippets/paper_relations/Aw-n.tex \
 	snippets/rel/RelIndep-n.tex \
 	snippets/rel/Rloop-n.tex \
@@ -62,14 +64,31 @@ SNIPPETS = \
 	snippets/rel/iic-n.tex \
 	snippets/rel/iicinj-n.tex \
 	snippets/rel/chains-n.tex \
+	snippets/seq1/Chrel-n.tex \
+	snippets/seq1/DI-n.tex \
+	snippets/seq1/Lift-n.tex \
+	snippets/seq1/LiftLift-n.tex \
+	snippets/seq1/Liftinj-n.tex \
+	snippets/seq1/Liftlemma-n.tex \
+	snippets/seq1/Liftnota-n.tex \
+	snippets/seq1/Liftsurj-n.tex \
+	snippets/seq1/RPath-n.tex \
+	snippets/seq1/RPathequiv-n.tex \
+	snippets/seq1/RpathLone-n.tex \
+	snippets/seq1/TCP-n.tex \
+	snippets/seq1/allL-n.tex \
+	snippets/seq1/allnotation-n.tex \
+	snippets/ssrel/closrefltrans-n.tex \
+	snippets/ssrel/closrt-n.tex \
+	snippets/ssrel/relation-n.tex \
+
+OBSOL= \
 	snippets/seq1/Active-n.tex \
 	snippets/seq1/ActiveOe-n.tex \
 	snippets/seq1/Activeeq-n.tex \
 	snippets/seq1/Aeop-n.tex \
 	snippets/seq1/Atr-n.tex \
-	snippets/seq1/Chrel-n.tex \
 	snippets/seq1/ChrelO-n.tex \
-	snippets/seq1/DI-n.tex \
 	snippets/seq1/DP-n.tex \
 	snippets/seq1/DPDV-n.tex \
 	snippets/seq1/DU-n.tex \
@@ -82,30 +101,17 @@ SNIPPETS = \
 	snippets/seq1/Epathgt-n.tex \
 	snippets/seq1/Epe-n.tex \
 	snippets/seq1/EpeLift-n.tex \
-	snippets/seq1/Lift-n.tex \
-	snippets/seq1/LiftLift-n.tex \
 	snippets/seq1/LiftO-n.tex \
-	snippets/seq1/Liftinj-n.tex \
-	snippets/seq1/Liftlemma-n.tex \
-	snippets/seq1/Liftnota-n.tex \
-	snippets/seq1/Liftsurj-n.tex \
 	snippets/seq1/OO-n.tex \
 	snippets/seq1/Oedge-n.tex \
 	snippets/seq1/Pe-n.tex \
 	snippets/seq1/PeUnLift-n.tex \
 	snippets/seq1/PeUnLiftO-n.tex \
-	snippets/seq1/RPath-n.tex \
-	snippets/seq1/RPathequiv-n.tex \
-	snippets/seq1/RpathLone-n.tex \
-	snippets/seq1/TCP-n.tex \
 	snippets/seq1/Ugeone-n.tex \
 	snippets/seq1/Ugt-n.tex \
-	snippets/seq1/allL-n.tex \
-	snippets/seq1/allnotation-n.tex \
 	snippets/seq1/pair-n.tex \
-	snippets/ssrel/closrefltrans-n.tex \
-	snippets/ssrel/closrt-n.tex \
-	snippets/ssrel/relation-n.tex \
+
+
 
 all: allstd allplus ../snippets.tex
 

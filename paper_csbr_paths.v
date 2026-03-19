@@ -778,8 +778,6 @@ Section ActiveOe_equiv.
 End  ActiveOe_equiv.
 
 (* Start of removable part XXXXXX  *)
-(* 
-
 
 Section Endpoints_and_Deployment.
   (** * endpoints  *)
@@ -1374,8 +1372,6 @@ Section Extended_Oriented_Paths.
   
 End Extended_Oriented_Paths.
 (* End of removable part XXXXX *)
-*)
-
 
 Section Active_path_unique. 
   
