@@ -53,6 +53,7 @@ SNIPPETS = \
 	snippets/paper_monochromatic/MainTh-n.tex \
 	snippets/paper_monochromatic/SSWTh-n.tex \
 	snippets/paper_monochromatic/Monotopath-n.tex \
+	snippets/paper_monochromatic_f/AsymdPV-n.tex \
 	snippets/paper_relations/Aw-n.tex \
 	snippets/rel/RelIndep-n.tex \
 	snippets/rel/Rloop-n.tex \
@@ -78,6 +79,7 @@ SNIPPETS = \
 	snippets/seq1/TCP-n.tex \
 	snippets/seq1/allL-n.tex \
 	snippets/seq1/allnotation-n.tex \
+	snippets/seq2/tcpuniq-n.tex \
 	snippets/ssrel/closrefltrans-n.tex \
 	snippets/ssrel/closrt-n.tex \
 	snippets/ssrel/relation-n.tex \

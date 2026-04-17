@@ -333,8 +333,12 @@ Section allL_uniq.
     have I4: ~ (x \in s4) by apply notin_subseq with s3.
     by exists s4;pose proof (subseq_trans (subseq_trans S4 S3) S2).
   Qed.
-  
-  Lemma TCP_uniq R x y: R.+ (x,y) <-> exists s, ~ x \in s /\ ~ y \in s /\ uniq s /\ allL R s x y. 
+
+
+  (* begin snippet tcpuniq:: no-out *)  
+  Lemma TCP_uniq R x y: R.+ (x,y) <-> exists s, ~ x \in s /\ ~ y \in s /\ uniq s
+                                         /\ allL R s x y. 
+  (* end snippet tcpuniq *)  
   Proof.
     split;last by move => [s [_ [_ [_ /(@allL_to_Tclos T R s) ?]]]].
     by rewrite TCP /mkset => -[s /allL_uniq H1];move: H1 => [s' /= [_ H1]];(exists s').

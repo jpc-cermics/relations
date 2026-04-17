@@ -714,6 +714,19 @@
     \end{input}
   \end{sentence}
 }
+\newcommand{\SnippetAsymdPV}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{k+kn}{Lemma}~\PY{n+nf}{Asym2P5}\PY{o}{:}~\nl
+      ~~~~~~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{R}\PY{o}{.+))}~\PY{o}{\(\rightarrow\)}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{k}\PY{o}{:}~\PY{n}{nat}~\PY{o}{\(\rightarrow\)}~\PY{n}{T}\PY{o}{,}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{l}\PY{o}{:}~\PY{n}{nat}~\PY{o}{\(\rightarrow\)}~\PY{n}{seq}~\PY{n}{T}\PY{o}{,}\nl
+      ~~~~~~~~\PY{k+kr}{\(\forall\)}~\PY{n+nv}{n}\PY{o}{,}~\PY{n}{allLu}~\PY{n}{R}~\PY{o}{(}\PY{n}{l}~\PY{n}{n}\PY{o}{)}~\PY{o}{(}\PY{n}{k}~\PY{n}{n}\PY{o}{)}~\PY{o}{(}\PY{n}{k}~\PY{n}{n}\PY{o}{.+}\PY{l+m+mi}{1}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{\(\neg\)}~\PY{n}{R}\PY{o}{.+}~\PY{o}{(}\PY{n}{k}~\PY{n}{n}\PY{o}{.+}\PY{l+m+mi}{1}\PY{o}{,}~\PY{n}{k}~\PY{n}{n}\PY{o}{)}\nl
+      ~~~~~~~~~~~~~~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{uniq}~\PY{o}{((}\PY{n}{l}~\PY{n}{n}\PY{o}{)}~\PY{o}{++}~\PY{o}{(}\PY{n}{l}~\PY{n}{n}\PY{o}{.+}\PY{l+m+mi}{1}\PY{o}{)).}
+    \end{input}
+  \end{sentence}
+}
 \newcommand{\SnippetAw}{
 %
   % Generator: Alectryon
@@ -1057,6 +1070,17 @@
   \begin{sentence}
     \begin{input}
       ~~\PY{k+kn}{Notation}~\PY{l+s+s2}{\PYZdq{}p~\([{\in}]\)~X\PYZdq{}}~\PY{o}{:=}~\PY{o}{(}\PY{k+kp}{all}~\PY{o}{(}\PY{k+kr}{fun}~\PY{n+nv}{x}~\PY{o}{=\PYZgt{}}~\PY{n}{x}~\(\in\)~\PY{n}{X}\PY{o}{)}~\PY{n}{p}\PY{o}{).}~
+    \end{input}
+  \end{sentence}
+}
+\newcommand{\Snippettcpuniq}{
+%
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{TCP\PYZus{}uniq}~\PY{n+nv}{R}~\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{R}\PY{o}{.+}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\leftrightarrow\)}~\PY{k+kr}{\(\exists\)}~\PY{n+nv}{s}\PY{o}{,}~\PY{o}{\(\neg\)}~\PY{n}{x}~\(\in\)~\PY{n}{s}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{\(\neg\)}~\PY{n}{y}~\(\in\)~\PY{n}{s}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{uniq}~\PY{n}{s}\nl
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{allL}~\PY{n}{R}~\PY{n}{s}~\PY{n}{x}~\PY{n}{y}\PY{o}{.}~
     \end{input}
   \end{sentence}
 }

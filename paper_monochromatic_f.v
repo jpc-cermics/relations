@@ -644,10 +644,12 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
       by apply: H1.
     Qed.
     
+    (* begin snippet AsymdPV:: no-out *)  
     Lemma Asym2P5: 
       (iic (Asym R.+)) -> exists k: nat -> T, exists l: nat -> seq T,
         forall n, allLu R (l n) (k n) (k n.+1) /\ ~ R.+ (k n.+1, k n)
                   /\ uniq ((l n) ++ (l n.+1)).
+    (* end snippet AsymdPV *)  
     Proof.
       move => /Asym2P4 [f [h [p0 [H0 H1]]]].
       exists (fun n => (iterh h p0 n).1.1.2);exists (fun n => (iterh h p0 n.+1).1.1.1).
@@ -659,7 +661,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
     Qed.
 
   End Infinite_path. 
-
+  
   (** What is done here: 
     given a path (f 0) -> (g 0) -> (f 1) -> g(1) -> f(2) in a graph 
     defined by a relation R, where the function f and g are given.

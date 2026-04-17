@@ -214,6 +214,17 @@ Section Relation_Facts.
   Lemma union_inc_b (R S U:relation T): S `<=` U -> R `<=` U -> (S `|` R) `<=` U.
   Proof. by move => H1 H2;(have <- : U `|` R = U by apply setUidPl);apply setSU. Qed.
 
+  (** [Union_Setminus] states that the union of two sets [X] and [Y] can be
+      rewritten as the disjoint-style union of [X] with the set difference [Y \ X].
+      Formally: [X `|` Y = X `|` (Y `\` X)].
+
+      This holds because any element of [Y] is either already in [X] (and thus
+      covered by the left [X] component) or strictly in [Y] but not in [X]
+      (and thus belongs to [Y `\` X]).  The two sides are therefore equal as sets.
+
+      This identity is useful to decompose a union into disjoint parts, for
+      instance when reasoning about stable sets, closures, or restrictions where
+      one wants to avoid double-counting elements shared between [X] and [Y]. *)
   Lemma Union_Setminus X Y: X `|` Y = X `|` (Y `\` X). 
   Proof.
     rewrite /setU /setD /mkset predeqE => x.
