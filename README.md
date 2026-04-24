@@ -1,43 +1,70 @@
-# binary relations and extended oriented graphs
+# Binary relations and extended oriented graphs
 
-Coq code used to serve as companion code for the followind papers
+This repository contains Coq code used as companion material for the following papers:
+
 - [Conditional Separation as a Binary Relation. A Coq Assisted Proof](https://hal.science/hal-03315809v2)
 - [Topological Conditional Separation](https://hal.science/hal-03315811)
+- [A formal proof of the Sands-Sauer-Woodrow theorem](https://hal.science/xxxxxx)
 
 ## Meta
 
 - Author(s):
   - Jean-Philippe Chancelier
-- License: see LICENCE file
+- License: see `LICENCE`
 - Compatible Coq versions: 8.20.1
+- Build system: `dune`
 - Additional dependencies:
-  - dune
-  - coq-aac-tactics
-  - coq-mathcomp-ssreflect
-  - coq-mathcomp-classical
+  - `coq-aac-tactics`
+  - `coq-mathcomp-ssreflect`
+  - `coq-mathcomp-classical`
 - Related publication(s): see above
 
 ## What's inside?
 
-- aacset.v:  relations in aac-tactics
-- paper_relations.v: lemmata for binary relations used in the two papers
-- paper_csbr.v: companion code for Conditional Separation as a Binary Relation
-- paper_tcs_facts.v paper_tcs.v paper_tcs_rel.v : companion code for Topological Conditional Separation
-- seq1.v: edge, extended oriented paths and active extended oriented paths
-- rel.v: binary relations
-- ssrel.v: transitive closure (mathcomp/ssreflect version of existing lib/coq/theories/Relations)
-- doc/ : repository used to produce snippets of code 
+Binary relations: 
+
+- `rel.v`: binary relations as sets 
+
+Graphs and paths:
+
+- `seq1.v`: edges, extended oriented paths, and active extended oriented paths
+- `seq2.v`: additional results on paths using eqtype and uniq 
+
+Paper companion files:
+
+- `paper_relations.v`: lemmas for binary relations used in the two first papers
+- `paper_csbr.v`: companion code for *Conditional Separation as a Binary Relation*
+- `paper_csbr_paths.v`: path-related lemmas used in the CSBR development
+- `paper_tcs_facts.v`, `paper_tcs.v`: companion code for *Topological Conditional Separation*
+- `paper_monochromatic.v`, `paper_monochromatic_f.v`: companion developments for monochromatic-related results
+- `rel_dpdgraph.v`: utility to produce graphs for TeX files
+  
+Unused files:
+- `ssrel.v`: transitive closure (MathComp/SSReflect version of `Coq/theories/Relations`)
+- `topology.v`: topology notions associated to orders.
+- `mypreorder.v`: preorders and related utilities
+
+Documentation and misc:
+
+- `doc/`: material used to produce snippets of code
+
 ## How to get it
 
-You can:
-- either clone it from GitHub at: https://github.com/jpc-cermics/relations
+Clone from GitHub:
 
-### Compilation
+- https://github.com/jpc-cermics/relations
 
- make
+## Compilation
 
- The makefile will just call dune build
- 
- 
-    
+From the repository root:
+
+```sh
+make
+```
+
+The `Makefile` simply calls:
+
+```sh
+dune build
+```
 
