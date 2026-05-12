@@ -1145,7 +1145,7 @@ Section Relation_Facts.
       
   (** * Asymmetric part of a relation *) 
   (* begin snippet asym:: no-out *)  
-  Definition Asym (R: relation T): relation T := [set xy | R xy /\ ~ (R^-1 xy)].
+  Definition Asym R: relation T := [set xy | R xy /\ ~ (R^-1 xy)].
   (* end snippet asym *)    
 
   Lemma Asym_antisymmetric R: antisymmetric  (Asym R).

@@ -337,7 +337,8 @@ Section Paper.
     (* begin snippet Sinf:: no-out *)   
     Definition Sinf := 
       [ set v: T | 
-        exists S, (S \in C) /\ (v \in (sval S)) /\ (forall T, T \in C -> S [<=] T -> v \in (sval T))].
+        exists S, (S \in C) /\ (v \in (sval S)) /\
+               (forall T, T \in C -> S [<=] T -> v \in (sval T))].
     (* end snippet Sinf *)   
 
     (* A relation on the set Elt C, all the elements
@@ -345,7 +346,8 @@ Section Paper.
     (* begin snippet RC:: no-out *)   
     Definition RC:= [set xy: (Elt C)*(Elt C) |
                       ((sval xy.1) \in Sinf /\ xy.2 = xy.1)
-                      \/ (~ ((sval xy.1) \in Sinf) /\ (Asym Eb.+) (sval xy.1, sval xy.2))].
+                      \/ (~ ((sval xy.1) \in Sinf) /\
+                           (Asym Eb.+) (sval xy.1, sval xy.2))].
     (* end snippet RC*)   
         
     Lemma transitive_RC: transitive RC. 
@@ -478,7 +480,8 @@ Section Paper.
       Qed.
       (* begin snippet ChooseRCCi:: no-out *)    
       Lemma ChooseRC5:~ (iic (Asym Eb.+))
-            -> forall (s: Elt C), (sval s \in Sinf) \/ exists (s':T), (s' \in Sinf) /\ (Asym Eb.+) (sval s, s').
+            -> forall (s: Elt C), (sval s \in Sinf) \/ 
+                        exists (s':T), (s' \in Sinf) /\ (Asym Eb.+) (sval s, s').
       (* end snippet ChooseRCCi *)    
       Proof. 
         move => H1; move: (total_RC_P3 H1) => + s => /(_ s) [f [H2 [n [H3 H3']]]].
@@ -906,7 +909,8 @@ Section Paper.
   (* begin snippet MainTh:: no-out *)    
   Theorem SSWext:
     (exists (v0:T), (v0 \in setT)) -> ~ (iic (Asym Er.+)) -> ~ (iic (Asym Eb.+))
-    -> exists Sm, RelIndep Mono Sm /\  Sm != set0 /\  forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
+    -> exists Sm, RelIndep Mono Sm /\  Sm != set0 /\ 
+              forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
   (* end snippet MainTh:: no-out *)    
   Proof.
     move => A1 A2 A3.
@@ -921,7 +925,8 @@ Section Paper.
   (* begin snippet SSWTh:: no-out *)    
   Corollary SSW:
      (exists (v0:T), (v0 \in setT)) -> ~ (iic_inj Er) -> ~ (iic_inj Eb)
-     -> exists Sm, RelIndep Mono Sm /\  Sm != set0 /\ forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
+     -> exists Sm, RelIndep Mono Sm /\  Sm != set0 /\
+               forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
   (* end snippet SSWTh:: no-out *)    
   Proof.
     move => A1 /not_iic_inj_to_not_iic_asym A2 /not_iic_inj_to_not_iic_asym A3.
