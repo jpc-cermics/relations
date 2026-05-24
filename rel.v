@@ -1164,6 +1164,11 @@ Section Relation_Facts.
     by have: R (y,x) by apply: H0 H2 H3.
   Qed.
   
+  Lemma Asym_sporder R:  transitive R -> sporder (Asym R).
+  Proof.
+    by move => ?;split;[apply: Asym_irreflexive|apply: Asym_preserve_transitivity].
+  Qed.
+  
   Lemma AsymE R: antisymmetric R /\ irreflexive R <-> Asym R = R.
   Proof.
     split; last by move => <-;split;
@@ -1174,8 +1179,8 @@ Section Relation_Facts.
     by move: H3 => /[dup] H3 /H1 H3' /H3' H4; move: H3; rewrite H4 => /H2 H3.
   Qed.
 
-  Lemma AsymI R: forall (R: relation T), Asym R `<=` R.
-  Proof. by move => R' [a b] [? _]. Qed.
+  Lemma AsymI R: (Asym R) `<=` R.
+  Proof. by move => [a b] [? _]. Qed.
 
   Lemma AsymInvol R: Asym (Asym R) = (Asym R).
   Proof.
