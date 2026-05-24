@@ -1030,7 +1030,7 @@ Section Paper.
 
   (** * The Assumptions we use: weaker than the original paper assumptions *)
   (* begin snippet MainTh:: no-out *)    
-  Theorem SSWext
+  Theorem G_SSW
     (A1: Assumption1) (A2: Assumption2) (A3: Assumption3) (A4: Assumption4)
     (A5: Assumption5) (A6: Assumption6) (A7: Assumption7) (A8: Assumption8) (A9: Assumption9):
     exists X, RelIndep M X /\  X != set0 /\  forall x, ~ (x\in X) -> (x \in M#X). 
@@ -1044,7 +1044,64 @@ Section Paper.
   
 End Paper.
   
+Section SSW.
+  (** * Extended SSW Theorem *)
+  Variables (T:choiceType) (Eb Er: relation T).
 
+  Definition R := Er.+. 
+  Definition B := Eb.+. 
+  Definition D := (Asym B). 
 
+  Definition SSW_1:= (NotEmpty T).
+  Definition SSW_2:= ~ (iic (Asym R)).
+  Definition SSW_3:= ~ (iic (Asym B)).
+  
+  Lemma R_trans: transitive R.
+  Proof. by apply: (@TclosT _ Er). Qed.
 
+  Lemma B_trans: transitive B.
+  Proof. by apply: (@TclosT _ Eb). Qed.
+  
+  Lemma L4: (@Assumption4 T D). 
+  Proof. by apply: (@Asym_sporder _ B);apply: TclosT. Qed.
+  
+  Lemma L5: (@Assumption5 T R B D).
+  Proof. by apply: (@subset_trans _ B _ _ (@AsymI _ B)
+                      (@subsetUl _ B R)).
+  Qed.
+  
+  Lemma L6: (@Assumption6 T R B D).
+  Proof. move => x y [? ?];split;first exact.
+         move => ?; by have: M R B (y, x) by left.
+  Qed.
 
+  Lemma L7: (@Assumption7 T R B).
+  Proof. 
+    move => x x' y y' H1 H2 [H3|H3] H4 H5 H6 H7 H8 H9.
+    by left;apply: (B_trans H3 H4).
+    by have: M R B (x,x') by right;apply: (R_trans H2 H3).
+  Qed.
+  
+  Lemma L8: (@Assumption8 T R B).
+  Proof. 
+    move => x' y y' H1 [H2| H2] H3 [H4 H5].
+    by left;apply: (B_trans H2 H3).
+    by have H11: M R B (y,x') by right;apply: (R_trans H1 H2).
+  Qed.
+  
+  Lemma L9: (@Assumption9 T R B D).
+  Proof. 
+    move =>  x y x' y' H1 [H2|H2] H3 H4 H5 H6.
+    by move: H3 => /(@AsymI _ B) H3;left;apply: (B_trans H2 H3).
+    by have: M R B (x,x') by right;apply: (R_trans H1 H2).
+  Qed.
+
+  Theorem SSWext
+    (A1: SSW_1) (A2: SSW_2) (A3: SSW_3):
+    exists X, RelIndep (M R B) X /\  X != set0 /\  forall x, ~ (x\in X) -> (x \in (M R B)#X). 
+  (* end snippet MainTh:: no-out *)    
+  Proof.
+    by pose proof (@G_SSW _ R B D A1 A2 A3 L4 L5 L6 L7 L8 L9).
+  Qed.
+  
+End SSW.
