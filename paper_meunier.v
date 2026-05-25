@@ -1044,9 +1044,9 @@ Section Paper.
   
 End Paper.
   
-Section SSW.
+Module SSWext.
   (** * Extended SSW Theorem *)
-  Variables (T:choiceType) (Eb Er: relation T).
+  Parameter (T:choiceType) (Eb Er: relation T).
 
   Definition R := Er.+. 
   Definition B := Eb.+. 
@@ -1104,4 +1104,63 @@ Section SSW.
     by pose proof (@G_SSW _ R B D A1 A2 A3 L4 L5 L6 L7 L8 L9).
   Qed.
   
-End SSW.
+End SSWext.
+
+Module ABkernels.
+  (** * Extended SSW Theorem *)
+  Parameter (T:choiceType) (A1 A2: relation T).
+
+  Definition R := A1.
+  Definition B := A2.
+  Definition D := (Asym B). 
+
+  Definition AB_1:= (NotEmpty T).
+  Definition AB_2:= ~ (iic (Asym R)).
+  Definition AB_3:= ~ (iic (Asym B)).
+  Definition AB_4:= transitive R.
+  Definition AB_5:= transitive B.
+
+  Lemma L4 (A5: AB_5) : (@Assumption4 T D). 
+  Proof. by apply: (@Asym_sporder _ B). Qed.
+  
+  Lemma L5: (@Assumption5 T R B D).
+  Proof. by apply: (@subset_trans _ B _ _ (@AsymI _ B)
+                      (@subsetUl _ B R)).
+  Qed.
+  
+  Lemma L6: (@Assumption6 T R B D).
+  Proof. move => x y [? ?];split;first exact.
+         move => ?; by have: M R B (y, x) by left.
+  Qed.
+
+  Lemma L7 (A4: AB_4) (A5: AB_5): (@Assumption7 T R B).
+  Proof. 
+    move => x x' y y' H1 H2 [H3|H3] H4 H5 H6 H7 H8 H9.
+    by left;apply: (A5 y' x' y H3 H4).
+    by have: M R B (x,x') by right;apply: (A4 x y' x' H2 H3).
+  Qed.
+  
+  Lemma L8 (A4: AB_4) (A5: AB_5): (@Assumption8 T R B).
+  Proof. 
+    move => x' y y' H1 [H2| H2] H3 [H4 H5].
+    by left;apply: (A5 y' x' y H2 H3).
+    by have H11: M R B (y,x') by right;apply: (A4 y y' x' H1 H2).
+  Qed.
+  
+  Lemma L9(A4: AB_4) (A5: AB_5) : (@Assumption9 T R B D).
+  Proof. 
+    move =>  x y x' y' H1 [H2|H2] H3 H4 H5 H6.
+    by move: H3 => /(@AsymI _ B) H3;left;apply: (A5 y x' y' H2 H3).
+    by have: M R B (x,x') by right;apply: (A4 x y x' H1 H2).
+  Qed.
+
+  Theorem SSWext
+    (A1: AB_1) (A2: AB_2) (A3: AB_3) (A4: AB_4) (A5: AB_5):
+    exists X, RelIndep (M R B) X /\  X != set0 /\  forall x, ~ (x\in X) -> (x \in (M R B)#X). 
+  (* end snippet MainTh:: no-out *)    
+  Proof.
+    by pose proof (@G_SSW _ R B D A1 A2 A3 (L4 A5) L5 L6 (L7 A4 A5)
+                     (L8 A4 A5) (L9 A4 A5)).
+  Qed.
+  
+End ABkernels.
