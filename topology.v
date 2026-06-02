@@ -30,8 +30,8 @@ Section Preorder.
   Variables (T: Type) (R: relation T).
 
   Definition le := R2rel R.
-  Hypothesis le_trans : Coq.ssr.ssrbool.transitive R. (* using coercion *)
-  Hypothesis le_refl : Coq.ssr.ssrbool.reflexive R. (* using coercion *)
+  Hypothesis le_trans : Corelib.ssr.ssrbool.transitive R. (* using coercion *)
+  Hypothesis le_refl : Corelib.ssr.ssrbool.reflexive R. (* using coercion *)
   
   Fact rel_display : Order.disp_t. Proof. exact. Qed.
   
@@ -202,7 +202,7 @@ Section Alexandrov_props.
     have H4: forall (i:I ), (f i) `<=` (\bigcup_i (f i))
         by move => i; apply: bigcup_sup.
     have H5: forall (i:I ), (closure (f i)) `<=` closure (\bigcup_i (f i))
-        by move => i; apply: closure_subset.
+        by move => i; apply: closureS.
     have H6: \bigcup_i (closure (f i)) `<=` closure (\bigcup_i (f i))
       by move => i; apply: bigcup_sub.
     (** step 3 *)
@@ -468,7 +468,7 @@ Section Specialization_Porder.
     have H3: [set y] `<=` closure [set z] by rewrite sub1set inP. 
     have H4: closed (closure [set z]) by apply: closed_closure.
     move: H4 => /closure_id H4.
-    have H5: closure [set y] `<=` closure (closure [set z]) by apply: closure_subset.
+    have H5: closure [set y] `<=` closure (closure [set z]) by apply: closureS.
     move: H5; rewrite -H4 => H5.
     by apply: H5.
   Qed.
@@ -481,7 +481,7 @@ Section Specialization_Porder.
   Proof.
     move => C H1 c [c' [H2 H3]].
     have H4: [set c'] `<=` C by rewrite sub1set inP. 
-    move: H4 => /closure_subset H4.
+    move: H4 => /closureS H4.
     have ->: C = closure C by rewrite -closure_id.
     by apply H4.
   Qed.

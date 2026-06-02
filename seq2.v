@@ -15,7 +15,7 @@
 
 Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_boot seq order boolp classical_sets contra. 
-From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
+From mathcomp.zify Require Import zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
 
 From RL Require Import  seq1 rel.
