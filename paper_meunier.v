@@ -1107,7 +1107,7 @@ Module SSWext.
 End SSWext.
 
 Module ABkernels.
-  (** * Extended SSW Theorem *)
+  (** * The case of AB kernels  *)
   Parameter (T:choiceType) (A1 A2: relation T).
 
   Definition R := A1.
@@ -1164,3 +1164,87 @@ Module ABkernels.
   Qed.
   
 End ABkernels.
+
+
+Module MeunierLanglois. 
+  Parameter (T:choiceType) (R B: relation T).
+
+  Definition D := [set xy | (Asym B) (xy.1, xy.2) /\  ~ R (xy.2,xy.1)].
+  Definition AB_1:= (NotEmpty T).
+  Definition AB_2:= ~ (iic (Asym R)).
+  Definition AB_3:= ~ (iic (Asym B)).
+  Definition AB_4:=  forall x y z, R (x,y) -> R (y,z) -> R (x,z) \/ ( B (y,x) /\ B (z,x) ).
+  Definition AB_5:=  forall x y z, B (x,y) -> B (y,z) -> B (x,z) \/ ( R (z,x) /\ R (z,y) ).
+  Definition AB_6:=  forall x y z, B (x,y) -> ~ (R (y,x)) -> B (y, z) ->  ~ (R (z,y)) 
+                              -> B(x,z) /\ ~ (R (z,x)).
+  
+  Lemma L3 (A3: AB_3): (@Assumption3 T D).
+  Proof.
+    move: A3. contra => -[f H].
+    by exists f;move => n;move: H => /(_ n) [/= H1 _].
+  Qed.
+  
+  Lemma L4 (A5: AB_5) (A6: AB_6) : (@Assumption4 T D). 
+  Proof. 
+    split. 
+    + move => x [/= H1 _].
+      by pose proof (@Asym_irreflexive T B x). 
+    + move => x y z [/= [H1 H1'] H2] [/= [H3 H3'] H4].
+      move: (A6 x y z H1 H2 H3 H4) => [H5 H6].
+      move: (A5 x y z H1 H3) => [_ | [H7 _]]; last by exact.
+      by have H11: ~ B(z,x) 
+        by move => H12;move: (A5 z x y H12 H1) => [? // | [_ ?] //].
+  Qed.
+  
+  Lemma L5: (@Assumption5 T R B D).
+  Proof. by move => [x y] [[? _] _]; left. Qed.
+  
+  Lemma L6: (@Assumption6 T R B D).
+  Proof. move => x y [H1 H2].
+         split. 
+         split. by []. move => /= H3.
+         by have H4:  M R B (y, x) by left.
+         move => /= H3.
+         by have H4:  M R B (y, x) by right. 
+  Qed.
+
+  Lemma L7 (A4: AB_4) (A5: AB_5): (@Assumption7 T R B).
+  Proof. 
+    move => x x' y y' H1 H2 [H3|H3] H4 H5 H6 H7 H8 H9.
+    + left;move: (A5 y' x' y H3 H4) => [? // | [_ H10]]. 
+      (have H11: M R B(y,x') by right);by move : H6 => -[_ ?].
+    + move: (A4 x y' x' H2 H3) => [H10 | [_ H10]].
+      by (have H11: M R B(x, x') by right). 
+      by (have H11: M R B(x', x) by left).
+  Qed.
+  
+  Lemma L8 (A4: AB_4) (A5: AB_5): (@Assumption8 T R B).
+  Proof. 
+    move => x' y y' H1 [H2| H2] H3 [H4 H5].
+    + left;move: (A5 y' x' y H2 H3) => [? // | [_ H6]].
+      by have H11: M R B(y,x') by right.
+    + move: (A4 y y' x' H1 H2) => [H6 | [H6 _]].
+      by have H11: M R B(y,x') by right.
+      by left.
+  Qed.
+  
+  Lemma L9(A4: AB_4) (A5: AB_5) : (@Assumption9 T R B D).
+  Proof. 
+    move =>  x y x' y' H1 [H2|H2] [[/= H3 /=H3'] /=H3''] H4 H5 H6.
+    by move: (A5 y x' y' H2 H3) => [? | [_ ?] //];first by left.
+    move: (A4 x y x' H1 H2) => [? | [? _]].
+    by have: M R B (x, x') by right.
+    by have: M R B (y,x) by left.
+  Qed.
+  
+  Theorem MLinf
+    (A1: AB_1) (A2: AB_2) (A3: AB_3) (A4: AB_4) (A5: AB_5) (A6: AB_6):
+    exists X, RelIndep (M R B) X /\  X != set0 /\  forall x, ~ (x\in X) -> (x \in (M R B)#X). 
+  (* end snippet MainTh:: no-out *)    
+  Proof.
+    by pose proof (@G_SSW _ R B D A1 A2 (L3 A3) (L4 A5 A6) 
+                  L5 L6 (L7 A4 A5) (L8 A4 A5) (L9 A4 A5)).
+  Qed.
+  
+End MeunierLanglois. 
+
