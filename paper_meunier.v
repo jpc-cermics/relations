@@ -252,7 +252,7 @@ Section Paper.
     (forall x y, B (x,y) /\ ~ (M (y, x)) -> D (x,y)).
   
   Definition Assumption7:= 
-    (forall x x' y y', ~(x = x') 
+    (forall x x' y y', ~(x' = x) 
                   -> R (x,y') -> M (y', x')
                   -> (B (x',y)) -> ~ (B (x, y)) 
                   -> ~ (R (x',y)) /\ ~(M (y,x')) 
@@ -716,7 +716,7 @@ Section Paper.
     (* end snippet TmI *)       
     Proof. by move => x y [/inP H2 _]. Qed.
     
-    Lemma Xpart: forall y, X `\` (Xy y) `|` (Xy y) = X.
+    Lemma Xpart: forall y, ( X `\` (Xy y)) `|` (Xy y) = X.
     Proof. move => y;apply: (@setDKU T (Xy y) X);apply: XyI. Qed.
     
     (* begin snippet Sxm:: no-out *)    
@@ -754,22 +754,12 @@ Section Paper.
       + by have H3n: (exists y0 : T, M (y, y0) /\ X y0) by (exists x).
     Qed.
     
-    (* begin snippet factone:: no-out *)    
-    Lemma fact1: IsMaximal X -> (forall y, y\in X:#(R) -> y \in M#X).
-    (* end snippet factone*)       
-    Proof. by move => Xax t H3;move: Xax H3 => [/inP [_ [H8 _]] _] /inP/H8 H3;rewrite inP. Qed.
-    
-    (* begin snippet facttwo:: no-out *)    
-    Lemma fact2: forall x, (x \in Y) -> ~(x \in M#(Xy x)).
-    (* end snippet facttwo *)       
-    Proof.
-      move => x /inP [H2 H2'] H3;move: XyI => /(_ x)/Fset_inc1 => /(_ M) H4.
-      by have: x \in M#X by move: H3;rewrite inP => /H4 -/inP H3.
-    Qed.
-    
     Lemma fact3: forall x, forall y, x \in X `\` Xy y -> x \in X. 
     Proof. by move => x y /inP/(@subDsetl T X (Xy y))/inP. Qed.
     
+    
+    (** the case one:  ~ ( y \in X:#(B) ) and candidate  (X `|` [set y]) *)
+
     Lemma case1_nonempty: forall y,
         Scal X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> (X `|` [set y]) != set0.
     Proof.
@@ -843,6 +833,8 @@ Section Paper.
       exact.
     Qed.
 
+    (** the case one:  ( y \in X:#(B) ) and candidate  ((X `\` (Xy y)) `|` [set y]) *)
+
     Lemma case2_nonempty: forall y,
         Scal X -> y \in Y -> (SeP y) -> y \in X:#(B) -> ((X `\` (Xy y)) `|` [set y]) != set0.
     Proof.
@@ -893,19 +885,25 @@ Section Paper.
                   -> y' \in ((X `\` (Xy y)) `|` [set y]):#(R) -> y' \in M#((X `\` (Xy y)) `|` [set y])).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4 y' H4'.
+      (** on a necessairement ~ (y = y') **)
+      have P0: ~ (y = y')
+        by move => I1;(have I2: y \in  X `\` Xy y `|` [set y] by rewrite inP;right);rewrite -I1 in H4'.
       rewrite inP/Aset/Fset/mkset => -[x [H5 [/inP H6 | H6]]];rewrite inP/Aset/Fset/mkset.
-      + move: (H6) => /fact3/inP H6'. (** x \in X *)
+      + (** x \in X\X_y *)
+        move: (H6) => /fact3/inP H6'.
+        have P0': ~ (y' = x)
+          by move => I1;(have I2: x \in  X `\` Xy y `|` [set y] by rewrite inP;left;rewrite -inP);
+                    rewrite -I1 in I2.
         have H7: y' \in  X:#R by rewrite inP /Aset/Fset /mkset;(exists x).
         have H8: y' \in  M#X by move: H7 => /inP/H0'/inP.
         move: H8 => /inP [x' [H8 H9]].
         move: H9;rewrite -{1}(Xpart y) => -[H9 | H9];first  by (exists x');split;[by [] | left].
         (** x' \in Xy *)
-        case H10: ( M (y',x) == true).
-        ++ by move: H10 => /eqP H10; (exists x);split;[rewrite H10 | left;apply/inP].
-        ++ move: H10 => /eqP H10. 
-           (* we use A1 to conclude that M(y',y) *)
-           exists y. split; last by right. 
-           have P1: ~ (x = x') by move => H11;move: H6 H9;move: H11 => -> /inP [_ ?] ?. 
+        move: (EM (M (y',x))) => [H10 | H10].
+        ++ by (exists x);split;[ | left;apply/inP]. 
+        ++ (* we will use A7 to conclude that M(y',y) *)
+           exists y; split; last by right. 
+           have P1: ~ (x' = x) by move => H11;move: H6 H9;move: H11 => -> /inP [_ ?] ?. 
            have P2: R (x,y') by apply: H5.
            have P3: M (y',x')  by apply: H8.
            have P4: B (x',y) by move: H9;rewrite /Xy => -[H9 H9'].
@@ -914,15 +912,21 @@ Section Paper.
              by apply: (fact4 H0');rewrite inP;move: (@XyI y) => H11;move: H9 => /H11. 
            have P7: ~ (R (x,y)) /\ ~ (M (y,x)) 
              by apply: (fact4 H0');rewrite inP.
-           have P8:  ~ (M (x,x')). 
-           apply: H0. by rewrite inP.
-           by rewrite inP;move: (@XyI y) => H11;move: H9 => /H11. 
-           by [].
-           
-           have P9:  ~ (M (x',x)). 
-           apply: H0. by rewrite inP;move: (@XyI y) => H11;move: H9 => /H11. 
-           by rewrite inP.
-           by move => H11;rewrite H11 in P1.
+           have P8:  ~ (M (x,x'))
+             by apply: H0;[by rewrite inP
+                     | by rewrite inP;move: (@XyI y) => H11;move: H9 => /H11
+                     | by move => H11; rewrite H11 in P1].
+           have P9:  ~ (M (x',x))
+             by apply: H0;[rewrite inP;move: (@XyI y) => H11;move: H9 => /H11 
+                          | rewrite inP | move => H11;rewrite H11 in P1].
+           have P10: ~ (y = y') by apply: P0.
+           have P11: ~ (y' = x) by apply: P0'.
+           have P12: ~ (y' = x')
+             by move => I1;(have I2: M(x, x') by right ; rewrite -I1).
+           have P13: ~ (y = x ) by move => I1;rewrite -I1 -inP in H6'.
+           have P14: ~ (y = x' )
+             by move => I1;(have: M (x',y) by left);move: P6;rewrite I1 => -[_ I3] I4.
+           have P15: ~ (M (y',x)) by exact.
            by move: (A7 x x' y y' P1 P2 P3 P4 P5 P6 P7 P8 P9).
         ++ have H7: x = y. by [].
            have H8: R (y,y') by rewrite H7 in H5.
