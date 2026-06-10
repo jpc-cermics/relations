@@ -258,17 +258,21 @@ Section Paper.
                   -> ~ (R (x',y)) /\ ~(M (y,x')) 
                   -> ~(R (x,y)) /\ ~(M (y,x)) 
                   -> ~ (M (x,x')) -> ~ (M (x',x))
+                  -> ~ (y = y') -> ~ (y' = x) -> ~ (y' = x') -> ~ (y = x ) -> ~ (y = x' )
+                  -> ~ (M (y',x))
                   -> (M (y',y))).
-
+  
   Definition Assumption8:=
-    (forall x' y y', R (y,y') -> M (y',x') -> B (x',y) 
+    (forall x' y y', ~ (y' = x') -> ~ (y = y') -> ~ (y = x') 
+                -> R (y,y') -> M (y',x') -> B (x',y) 
                 -> ~ (R (x',y)) /\ ~ M (y, x')
                 -> (M (y',y))).
   
   Definition Assumption9:= 
-    (forall x y x' y' , R (x,y) -> M (y,x') -> (D (x',y'))
-                   -> ~ (M (x,x')) -> ~ (M (x',x))
-                   ->  ~(M (y,x)) -> (M (y,y'))).
+    (forall x y x' y' , ~ (x = y) ->  ~ (x = x') ->  ~ (y' = x') -> ~ (y = x') -> ~ (x' = y') -> ~ (y' = y) 
+                   -> R (x,y) -> M (y,x') -> (D (x',y'))
+                   -> ~(M (y,x)) -> ~ (M (x,x')) -> ~ (M (x',x))
+                   -> (M (y,y'))).
   
   Definition Scal := [set S| RelIndep M S /\ S:#(R) `<=` M#S/\S != set0 ].
 
@@ -598,52 +602,68 @@ Section Paper.
     
     (* begin snippet SinfScalP:: no-out *)    
     Lemma Sinf_ScalP (A2: Assumption2) (A3: Assumption3) 
-      (A4: Assumption4) (A9: Assumption9):
+      (A4: Assumption4) (A5:Assumption5) (A9: Assumption9):
       (Sinf C):#(R) `<=` M#(Sinf C).
      (* end snippet SinfScalP *)
     Proof.
-      move: Hc => H1 y [x [ H2 H3]].
+      move: Hc => H1 y [x [B1 H3]].
       move: (H3) => [X [H4 [H5 H6]]].
       move: (Chains_Scal H1 H4) => [H7 [H8 H9]].
-
-      have H10: (sval X):#R y. exists x. split. by []. by rewrite -inP.
-      have H10': y \in (M#_(x) `|` (M#_(x)).^c)
-        by rewrite (setUv M#_(x)) inP.
-      move: H10' => /inP [/Fset_s H10' | H10'].
-      +++ by exists x.
-      +++ move: H10'. rewrite -inP  in_setC notin_setE => H10'.
-          have P6:  ~(M (y,x))
-            by move => H11;have H12:  M#_(x) y by rewrite Fset_s.
-          move: H10 => /H8 [x' [H10 H11]].
-          case H12: (x' == x).
-               +  by move: H12 => /eqP H12;(exists x');split;[ | rewrite H12]. 
-               + (** ~ (x' == x ) *) move: H12 => /eqP H12.
-                 have H19: (sval X) [<= D] (Sinf C)  by apply: ChooseRC6. 
-                 move: (H11); rewrite -inP => /H19 [y' [/= H20 [H21 | H21]]].  
-                 ++ exists x'. split. by []. by rewrite -inP H21.
-                    have P1: R (x,y) by apply: H2.
-                    have P2: M (y,x') by apply: H10.
-                    have P3: D (x',y') by apply: H21.
-                    have P4:  ~ (M (x,x')). 
-                    apply: H7. by [].  by rewrite inP. move => H22. by rewrite H22 in H12. 
-
-                    have P5:  ~ (M (x',x)). 
-                    apply: H7.  by rewrite inP. by []. move => H22. by rewrite H22 in H12. 
-                    exists y'. split. by apply: (A9 x y x' y' P1 P2 P3 P4 P5 P6). by rewrite -inP.
+      move: (EM (y \in (Sinf C))) => [ H9' | H9'].
+      + (* we eliminate the case y \in Sinf C *)
+        move: H3 => /inP H3. 
+        move: (Sinf_indep H3 H9') => H10.
+        move: (EM (x = y)) H3 => [H11 | H11] /inP H3.
+        by (exists x);(have H12: M(y,x) by right;move: B1;rewrite H11).
+        by move: H11 => /H10 H11;(have H12: M(x,y) by right).
+      + (* now  ~ y \in Sinf C *)
+        have B2: ~ (x = y) by move => I1;rewrite -I1 inP in H9'.
+        move: (EM (M (y,x))) => [? | B3];first by (exists x).
+        have H10: (sval X):#R y by (exists x);split;[ |rewrite -inP].
+        move: H10 => /H8 [x' [B4 H11]].
+        
+        move: (EM (x' \in (Sinf C))) => [/inP ? | B5];first by (exists x').
+        have B6: ~ (x = x') by move => I1; move: H3;rewrite I1 => /inP H3. 
+        have H12: (sval X) [<= D] (Sinf C)  by apply: ChooseRC6. 
+        move: (H11); rewrite -inP => /H12 [y' [/= B7 [H21 | B8]]].  
+        by rewrite -H21 in B7.
+        
+        move: (EM (y = x')) => [-> | B3'].
+        by (exists y') ;move: B8 => /A5 B8; rewrite inP in B7. 
+        
+        move: (EM (x' = y')) B4 => [-> | B3''] B4.
+        by (exists y'); rewrite inP in B7. 
+        
+        have P1: ~ (x = y) by apply: B2.
+        have P2: ~ (x = x') by apply: B6. 
+        have P3: ~ (y' = x') by move => I1;rewrite I1 in B7.
+        have P4: ~ (y = x') by apply: B3'.
+        have P5: ~ (x' = y') by apply: B3''.
+        have P6: ~ (y' = y) by  move => I1; by rewrite I1 in B7.
+        have P7: R (x, y) by apply: B1.
+        have P8: M (y, x') by apply: B4.
+        have P9: D (x',y') by apply: B8.
+        have P10: ~ M (y, x) by apply: B3.
+        have P11: ~ (M (x,x'))
+          by apply: H7;[ |rewrite inP | move => H22;rewrite H22 in B6].
+        have P12:  ~ (M (x',x))
+          by apply: H7;[rewrite inP | | move => H22;rewrite H22 in B6].
+        
+        exists y'. split. by apply: (A9 x y x' y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12). by rewrite -inP.
     Qed.
     
     (* begin snippet SinfScal:: no-out *)    
-    Lemma Sinf_Scal (A2: Assumption2) (A3: Assumption3) (A4: Assumption4) (A9: Assumption9):
+    Lemma Sinf_Scal (A2: Assumption2) (A3: Assumption3) (A4: Assumption4)  (A5:Assumption5) (A9: Assumption9):
       (Sinf C) \in Scal. 
     (* end snippet SinfScal *)
     Proof.
       by rewrite inP;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
     Qed.
     
-    Lemma Sinf_final (A2: Assumption2) (A3: Assumption3) (A4: Assumption4) (A9: Assumption9):
+    Lemma Sinf_final (A2: Assumption2) (A3: Assumption3) (A4: Assumption4)   (A5:Assumption5) (A9: Assumption9):
       exists Si, forall (S: SType), C S -> S [<=] Si.
     Proof.
-      move: (Sinf_Scal A2 A3 A4 A9) => /inP H2;exists (exist _ (Sinf C) H2);move => S /inP H3. 
+      move: (Sinf_Scal A2 A3 A4 A5 A9) => /inP H2;exists (exist _ (Sinf C) H2);move => S /inP H3. 
       by apply: ChooseRC6.
     Qed.
 
@@ -660,7 +680,7 @@ Section Paper.
     apply: (@Zorn_relation SType leSet1 (leSet1_porder A4 A5)) => C.
     move: (@Sinf_final C) => H2 /inP H3.
     move: H3 => {}/H2 H3.
-    case H4: ( C != set0 ); first by apply: (H3 H4 A2 A3 A4 A9).
+    case H4: ( C != set0 ); first by apply: (H3 H4 A2 A3 A4 A5 A9).
     move: H4 => /negP/contrapT/eqP H4. 
     move: (SType_not_empty A1 A2) => /notempty_exists [Sm Ht].
     by exists Sm; move => S; rewrite H4 -inP in_set0. 
@@ -927,7 +947,7 @@ Section Paper.
            have P14: ~ (y = x' )
              by move => I1;(have: M (x',y) by left);move: P6;rewrite I1 => -[_ I3] I4.
            have P15: ~ (M (y',x)) by exact.
-           by move: (A7 x x' y y' P1 P2 P3 P4 P5 P6 P7 P8 P9).
+           by move: (A7 x x' y y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12 P13 P14 P15).
         ++ have H7: x = y. by [].
            have H8: R (y,y') by rewrite H7 in H5.
            case H9: (y' \in M#(X)); last first.
@@ -943,15 +963,26 @@ Section Paper.
                     (** * end H11 *)
                     have H12: M (y', y)  by rewrite /M;right;apply: (H3 y' H11 H8).
                     by (exists y);split;[ | right].
-           +++ move: H9. rewrite -{1}(Xpart y) => /inP [x' [H9 [[H10 H10'] | H10]]].
-               ++++ (exists x'). split. by []. by left.
-               ++++ have B1: R (y,y') by apply: H8.
+           +++ move: H9;rewrite -{1}(Xpart y) => /inP [x' [H9 [[H10 H10'] | H10]]].
+               ++++ by (exists x');split;[ | left].
+               ++++ move: (EM (y' = x')) => [H9'| H9'].
+                    by (have H11: M (y',y) by left;rewrite H9';move: H10 => [_ H10]);
+                    (exists y);split;[|  right].
+                    
+                    have H11: x' \in X by move: H10;rewrite /Xy => -[? _]. 
+                    have H12: y \in Y by rewrite inP/Y.
+                    
+                    have B0: ~ (y' = x') by apply: H9'.
+                    have B0': ~ (y = y') by apply: P0.
+                    have B0'': ~ (y = x') 
+                      by move: H12 => /inP [H12 _] H13;rewrite H13 in H12.
+                    
+                    have B1: R (y,y') by apply: H8.
                     have B2: M (y',x') by apply: H9.
                     have B3: B (x',y) by move: H10;rewrite /Xy => -[_ ?]. 
-                    have H11: x' \in X by move: H10;rewrite /Xy => -[? _]. 
-                    have H12: y \in Y. by rewrite inP/Y. 
                     have B4: ~ (R (x',y)) /\ ~ M (y, x') by apply: (fact4 H0' H11 H12). 
-                    move: (A8 x' y y' B1 B2 B3 B4) => B5.
+                    
+                    move: (A8 x' y y' B0 B0' B0'' B1 B2 B3 B4) => B5.
                     by (exists y);split;[ | right].
     Qed.
     
@@ -1031,7 +1062,7 @@ Section Paper.
   End Extend. 
 
   Implicit Type (S X: set T).
-
+  
   (** * The Assumptions we use: weaker than the original paper assumptions *)
   (* begin snippet MainTh:: no-out *)    
   Theorem G_SSW
@@ -1047,7 +1078,7 @@ Section Paper.
   Qed.
   
 End Paper.
-  
+
 Module SSWext.
   (** * Extended SSW Theorem *)
   Parameter (T:choiceType) (Eb Er: relation T).
@@ -1088,14 +1119,14 @@ Module SSWext.
   
   Lemma L8: (@Assumption8 T R B).
   Proof. 
-    move => x' y y' H1 [H2| H2] H3 [H4 H5].
+    move => x' y y' B0 B0' B0'' H1 [H2| H2] H3 [H4 H5].
     by left;apply: (B_trans H2 H3).
     by have H11: M R B (y,x') by right;apply: (R_trans H1 H2).
   Qed.
   
   Lemma L9: (@Assumption9 T R B D).
   Proof. 
-    move =>  x y x' y' H1 [H2|H2] H3 H4 H5 H6.
+    move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
     by move: H3 => /(@AsymI _ B) H3;left;apply: (B_trans H2 H3).
     by have: M R B (x,x') by right;apply: (R_trans H1 H2).
   Qed.
@@ -1146,14 +1177,14 @@ Module ABkernels.
   
   Lemma L8 (A4: AB_4) (A5: AB_5): (@Assumption8 T R B).
   Proof. 
-    move => x' y y' H1 [H2| H2] H3 [H4 H5].
+    move => x' y y' B0 B0' B0'' H1 [H2| H2] H3 [H4 H5].
     by left;apply: (A5 y' x' y H2 H3).
     by have H11: M R B (y,x') by right;apply: (A4 y y' x' H1 H2).
   Qed.
   
   Lemma L9(A4: AB_4) (A5: AB_5) : (@Assumption9 T R B D).
   Proof. 
-    move =>  x y x' y' H1 [H2|H2] H3 H4 H5 H6.
+    move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
     by move: H3 => /(@AsymI _ B) H3;left;apply: (A5 y x' y' H2 H3).
     by have: M R B (x,x') by right;apply: (A4 x y x' H1 H2).
   Qed.
@@ -1177,10 +1208,18 @@ Module MeunierLanglois.
   Definition AB_1:= (NotEmpty T).
   Definition AB_2:= ~ (iic (Asym R)).
   Definition AB_3:= ~ (iic (Asym B)).
-  Definition AB_4:=  forall x y z, R (x,y) -> R (y,z) -> R (x,z) \/ ( B (y,x) /\ B (z,x) ).
-  Definition AB_5:=  forall x y z, B (x,y) -> B (y,z) -> B (x,z) \/ ( R (z,x) /\ R (z,y) ).
-  Definition AB_6:=  forall x y z, B (x,y) -> ~ (R (y,x)) -> B (y, z) ->  ~ (R (z,y)) 
-                              -> B(x,z) /\ ~ (R (z,x)).
+  Definition AB_4:=  forall x y z, 
+      ~ (y = x) -> ~ (y = z) -> ~ (z = x)       
+      -> R (x,y) -> R (y,z) -> R (x,z) \/ ( B (y,x) /\ B (z,x) ).
+  
+  Definition AB_5:=  forall x y z, 
+      ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
+      -> B (x,y) -> B (y,z) -> B (x,z) \/ ( R (z,x) /\ R (z,y) ).
+  
+  Definition AB_6:=  forall x y z, 
+      B (x,y) -> ~ (B^-1 (x,y)) -> ~ (R (y,x)) 
+      -> B (y,z) -> ~ (B^-1 (y,z)) -> ~ (R (z,y))
+      -> B (x,z) /\ ~ (B^-1 (x,z)) /\ ~ (R (z,x)).
   
   Lemma L3 (A3: AB_3): (@Assumption3 T D).
   Proof.
@@ -1194,10 +1233,8 @@ Module MeunierLanglois.
     + move => x [/= H1 _].
       by pose proof (@Asym_irreflexive T B x). 
     + move => x y z [/= [H1 H1'] H2] [/= [H3 H3'] H4].
-      move: (A6 x y z H1 H2 H3 H4) => [H5 H6].
-      move: (A5 x y z H1 H3) => [_ | [H7 _]]; last by exact.
-      by have H11: ~ B(z,x) 
-        by move => H12;move: (A5 z x y H12 H1) => [? // | [_ ?] //].
+      move: (A6 x y z H1 H1' H2 H3 H3' H4) => [H5 [H6 H7]].
+      by split. 
   Qed.
   
   Lemma L5: (@Assumption5 T R B D).
@@ -1214,29 +1251,36 @@ Module MeunierLanglois.
 
   Lemma L7 (A4: AB_4) (A5: AB_5): (@Assumption7 T R B).
   Proof. 
-    move => x x' y y' H1 H2 [H3|H3] H4 H5 H6 H7 H8 H9.
-    + left;move: (A5 y' x' y H3 H4) => [? // | [_ H10]]. 
-      (have H11: M R B(y,x') by right);by move : H6 => -[_ ?].
-    + move: (A4 x y' x' H2 H3) => [H10 | [_ H10]].
-      by (have H11: M R B(x, x') by right). 
-      by (have H11: M R B(x', x) by left).
+    move => x x' y y' H1 H2 [H3|H3] H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15.
+    + left;move: (A5  y' x' y H12 H14 H10 H3 H4) => [? // | [_ H10']]. 
+      (have H11': M R B(y,x') by right);by move : H6 => -[_ ?].
+    + move: (A4 x y' x' H11 H12 H1 H2 H3) => [H10' | [_ H10']].
+      by (have H11': M R B(x, x') by right). 
+      by (have H11': M R B(x', x) by left).
   Qed.
   
   Lemma L8 (A4: AB_4) (A5: AB_5): (@Assumption8 T R B).
   Proof. 
-    move => x' y y' H1 [H2| H2] H3 [H4 H5].
-    + left;move: (A5 y' x' y H2 H3) => [? // | [_ H6]].
+    move => x' y y' P0 P0' P0'' H1 [H2| H2] H3 [H4 H5].
+    + left;move: (A5 y' x' y P0 P0'' P0' H2 H3) => [? // | [_ H6]].
       by have H11: M R B(y,x') by right.
-    + move: (A4 y y' x' H1 H2) => [H6 | [H6 _]].
+    + have H6: y' <> y by move => I7;rewrite I7 in P0'.
+      have H7: x' <> y by move => I7;rewrite I7 in P0''.
+      
+      move: (A4 y y' x' H6 P0 H7 H1 H2) => [H6' | [H6' _]].
       by have H11: M R B(y,x') by right.
       by left.
   Qed.
   
-  Lemma L9(A4: AB_4) (A5: AB_5) : (@Assumption9 T R B D).
+  Lemma L9 (A4: AB_4) (A5: AB_5) : (@Assumption9 T R B D).
   Proof. 
-    move =>  x y x' y' H1 [H2|H2] [[/= H3 /=H3'] /=H3''] H4 H5 H6.
-    by move: (A5 y x' y' H2 H3) => [? | [_ ?] //];first by left.
-    move: (A4 x y x' H1 H2) => [? | [? _]].
+    move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] [[/= H3 /=H3'] /=H3''] H4 H5 H6.
+    
+    pose proof A5. rewrite /AB_5 in H.
+    by move: (A5 y x' y' P3 P2 P5 H2 H3) => [? | [_ ?] //];first by left.
+    have P0': ~ (y = x) by move => I1;rewrite I1 in P0.
+    have P1': ~ (x' = x) by move => I1;rewrite I1 in P1.
+    move: (A4 x y x' P0' P3 P1' H1 H2) => [? | [? _]].
     by have: M R B (x, x') by right.
     by have: M R B (y,x) by left.
   Qed.
