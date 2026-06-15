@@ -1210,6 +1210,15 @@ Section Relation_Facts.
   Lemma RelIndep_I R S X: R `<=` S -> RelIndep S X -> RelIndep R X.
   Proof. by move => H1 H2 x y H3 H4 H5;move: (H2 x y H3 H4 H5) => ? /H1 ?. Qed.
 
+  Lemma RelIndep_Is R X: RelIndep R X <-> RelIndep (R `|` R^-1) X.
+  Proof. 
+    have H1:  R `<=` R `|` R^-1 by apply: subsetUl.
+    split => [H2 x y P1 P2 P3 [H3| H3]|];last by apply: (RelIndep_I H1).
+    by apply: (H2 x y _ _ _).
+    have P3': y <> x by move => H5;rewrite H5 in P3.
+    by apply: (H2 y x _ _ _).
+  Qed.
+
   Lemma RelIndep_Ir R X Y: X `<=` Y -> RelIndep R Y -> RelIndep R X.
   Proof. by move => H1 H2 x y /inP/H1/inP H3 /inP/H1/inP H4 H5;move: (H2 x y H3 H4 H5).
   Qed.

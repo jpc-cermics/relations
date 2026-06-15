@@ -247,7 +247,7 @@ Section Paper.
   Definition Assumption2:= ~ (iic (Asym R)).
   Definition Assumption3:= ~ (iic D).
   Definition Assumption4:= sporder D.
-  Definition Assumption5:= D  `<=` M.
+  Definition Assumption5:= D  `<=` M `|` M^-1.
   Definition Assumption6:= 
     (forall x y, B (x,y) /\ ~ (M (y, x)) -> D (x,y)).
   
@@ -269,11 +269,13 @@ Section Paper.
                 -> (M (y',y))).
   
   Definition Assumption9:= 
-    (forall x y x' y' , ~ (x = y) ->  ~ (x = x') ->  ~ (y' = x') -> ~ (y = x') -> ~ (x' = y') -> ~ (y' = y) 
-                   -> R (x,y) -> M (y,x') -> (D (x',y'))
-                   -> ~(M (y,x)) -> ~ (M (x,x')) -> ~ (M (x',x))
-                   -> (M (y,y'))).
-  
+    (forall x y x' y' , ~ (x = y) ->  ~ (x = x') ->  ~ (y = x') -> ~ (x' = y') -> ~ (y' = y) 
+                   -> R (x,y) -> M (y,x') -> D (x',y')
+                   -> ~(M (y,x)) 
+                   -> ~ (M (x,x')) -> ~ (M (x',x))
+                   -> ((x = y') \/ ( ~(x = y') /\ ~ (M (x,y')) /\  ~ (M (y',x))))
+                   -> M (y,y')).
+     
   Definition Scal := [set S| RelIndep M S /\ S:#(R) `<=` M#S/\S != set0 ].
 
   Definition SType := {S | RelIndep M S /\ S:#(R) `<=` M#S/\S != set0}.
@@ -322,16 +324,16 @@ Section Paper.
     Proof. by move => [A ?];apply: le_refl. Qed.
     
     Lemma le_antisym_l1: forall A B, 
-        sporder D -> D  `<=` M ->  (RelIndep M A) -> (RelIndep M B)
+        sporder D -> D  `<=` M `|` M^-1 ->  (RelIndep M A) -> (RelIndep M B)
         -> A [<= D] B -> B  [<= D] A -> A = B.
     Proof.
-      move => X Y H1 H3 H4 H5. 
-      apply/le_antisym_if_sp. by []. 
-      apply/(@RelIndep_I T D M X H3 H4).
-      apply/(@RelIndep_I T D M Y H3 H5).
+      move => X Y H1 H3 /RelIndep_Is H4 /RelIndep_Is H5. 
+      apply/le_antisym_if_sp. exact.
+      by apply/(@RelIndep_I T D (M `|` M^-1) X H3 H4).
+      by apply/(@RelIndep_I T D (M `|` M^-1) Y H3 H5).
     Qed.
     
-    Lemma leSet1_antisymmetric: sporder D -> D  `<=` M -> @antisymmetric SType leSet1.
+    Lemma leSet1_antisymmetric: sporder D -> D `<=` M `|` M^-1 -> @antisymmetric SType leSet1.
     Proof. 
       move => H1 H2 [X [Hx Hx']] [Y [Hy Hy']] H3 H4.
       move: (le_antisym_l1 H1 H2 Hx Hy H3 H4) => H5.
@@ -340,7 +342,7 @@ Section Paper.
       apply: proof_irrelevance.
     Qed.
     
-    Lemma leSet1_porder: sporder D -> D  `<=` M -> @porder SType leSet1. 
+    Lemma leSet1_porder: sporder D -> D  `<=`  M `|` M^-1 -> @porder SType leSet1. 
     Proof.
       move => ? ?; split. 
       + by apply/leSet1_reflexive.
@@ -620,23 +622,25 @@ Section Paper.
         have B2: ~ (x = y) by move => I1;rewrite -I1 inP in H9'.
         move: (EM (M (y,x))) => [? | B3];first by (exists x).
         have H10: (sval X):#R y by (exists x);split;[ |rewrite -inP].
-        move: H10 => /H8 [x' [B4 H11]].
+        move: H10 => /H8 [x' [B4 /inP H11]].
         
         move: (EM (x' \in (Sinf C))) => [/inP ? | B5];first by (exists x').
+        (* now x' not in Sinf C *)
         have B6: ~ (x = x') by move => I1; move: H3;rewrite I1 => /inP H3. 
-        have H12: (sval X) [<= D] (Sinf C)  by apply: ChooseRC6. 
-        move: (H11); rewrite -inP => /H12 [y' [/= B7 [H21 | B8]]].  
-        by rewrite -H21 in B7.
+        have B3': ~ (y = x')
+          by move => I1;rewrite I1 in B1;
+                    (have I3: M (x,x') by right);move: (H7 x x' H5 H11 B6).
         
-        move: (EM (y = x')) => [-> | B3'].
-        by (exists y') ;move: B8 => /A5 B8; rewrite inP in B7. 
+        have H12: (sval X) [<= D] (Sinf C)  by apply: ChooseRC6. 
+        move: (H11) => /H12 [y' [/= B7 [H21 | B8]]].  
+        by rewrite -H21 in B7.
         
         move: (EM (x' = y')) B4 => [-> | B3''] B4.
         by (exists y'); rewrite inP in B7. 
+
         
         have P1: ~ (x = y) by apply: B2.
         have P2: ~ (x = x') by apply: B6. 
-        have P3: ~ (y' = x') by move => I1;rewrite I1 in B7.
         have P4: ~ (y = x') by apply: B3'.
         have P5: ~ (x' = y') by apply: B3''.
         have P6: ~ (y' = y) by  move => I1; by rewrite I1 in B7.
@@ -645,11 +649,18 @@ Section Paper.
         have P9: D (x',y') by apply: B8.
         have P10: ~ M (y, x) by apply: B3.
         have P11: ~ (M (x,x'))
-          by apply: H7;[ |rewrite inP | move => H22;rewrite H22 in B6].
+          by apply: H7;[ | | move => H22;rewrite H22 in B6].
         have P12:  ~ (M (x',x))
-          by apply: H7;[rewrite inP | | move => H22;rewrite H22 in B6].
-        
-        exists y'. split. by apply: (A9 x y x' y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12). by rewrite -inP.
+          by apply: H7;[ | | move => H22;rewrite H22 in B6].
+
+        have P13: (x = y') \/ ( ~(x = y') /\ ~ (M (x,y')) /\  ~ (M (y',x))).
+        move: (EM (x = y')) => [| I1];first by left.
+        move: H3 => /inP H3.
+        move: (Sinf_indep H3 B7 I1) => H10.        
+        have I2: ~ (y' = x) by move => I4;rewrite I4 in I1.
+        move: (Sinf_indep B7 H3 I2) => H13. 
+        by right.
+        exists y'. split. by apply: (A9 x y x' y' P1 P2 P4 P5 P6 P7 P8 P9 P10 P11 P12 P13). by rewrite -inP.
     Qed.
     
     (* begin snippet SinfScal:: no-out *)    
@@ -1101,8 +1112,11 @@ Module SSWext.
   Proof. by apply: (@Asym_sporder _ B);apply: TclosT. Qed.
   
   Lemma L5: (@Assumption5 T R B D).
-  Proof. by apply: (@subset_trans _ B _ _ (@AsymI _ B)
-                      (@subsetUl _ B R)).
+  Proof. 
+    have H1: D `<=` M R B
+      by apply: (@subset_trans _ B _ _ (@AsymI _ B)
+                   (@subsetUl _ B R)).
+    by pose proof (@subset_trans _ _ D _  H1 (@subsetUl _ (M R B) (M R B)^-1)).
   Qed.
   
   Lemma L6: (@Assumption6 T R B D).
@@ -1126,7 +1140,7 @@ Module SSWext.
   
   Lemma L9: (@Assumption9 T R B D).
   Proof. 
-    move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
+    move =>  x y x' y' P0 P1 P2 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
     by move: H3 => /(@AsymI _ B) H3;left;apply: (B_trans H2 H3).
     by have: M R B (x,x') by right;apply: (R_trans H1 H2).
   Qed.
@@ -1159,8 +1173,11 @@ Module ABkernels.
   Proof. by apply: (@Asym_sporder _ B). Qed.
   
   Lemma L5: (@Assumption5 T R B D).
-  Proof. by apply: (@subset_trans _ B _ _ (@AsymI _ B)
-                      (@subsetUl _ B R)).
+  Proof. 
+    have H1: D `<=` M R B
+      by apply: (@subset_trans _ B _ _ (@AsymI _ B)
+                   (@subsetUl _ B R)).
+    by pose proof (@subset_trans _ _ D _  H1 (@subsetUl _ (M R B) (M R B)^-1)).
   Qed.
   
   Lemma L6: (@Assumption6 T R B D).
@@ -1184,7 +1201,7 @@ Module ABkernels.
   
   Lemma L9(A4: AB_4) (A5: AB_5) : (@Assumption9 T R B D).
   Proof. 
-    move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
+    move =>  x y x' y' P0 P1 P2 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
     by move: H3 => /(@AsymI _ B) H3;left;apply: (A5 y x' y' H2 H3).
     by have: M R B (x,x') by right;apply: (A4 x y x' H1 H2).
   Qed.
@@ -1238,17 +1255,18 @@ Module MeunierLanglois.
   Qed.
   
   Lemma L5: (@Assumption5 T R B D).
-  Proof. by move => [x y] [[? _] _]; left. Qed.
+  Proof. by move => [x y] [[/= ? _] _];left;left.  Qed.
   
   Lemma L6: (@Assumption6 T R B D).
-  Proof. move => x y [H1 H2].
-         split. 
-         split. by []. move => /= H3.
-         by have H4:  M R B (y, x) by left.
-         move => /= H3.
-         by have H4:  M R B (y, x) by right. 
+  Proof.
+    move => x y [H1 H2].
+    split. 
+    split. by []. move => /= H3.
+    by have H4:  M R B (y, x) by left.
+    move => /= H3.
+    by have H4:  M R B (y, x) by right. 
   Qed.
-
+  
   Lemma L7 (A4: AB_4) (A5: AB_5): (@Assumption7 T R B).
   Proof. 
     move => x x' y y' H1 H2 [H3|H3] H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15.
@@ -1274,15 +1292,14 @@ Module MeunierLanglois.
   
   Lemma L9 (A4: AB_4) (A5: AB_5) : (@Assumption9 T R B D).
   Proof. 
-    move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] [[/= H3 /=H3'] /=H3''] H4 H5 H6.
-    
-    pose proof A5. rewrite /AB_5 in H.
-    by move: (A5 y x' y' P3 P2 P5 H2 H3) => [? | [_ ?] //];first by left.
-    have P0': ~ (y = x) by move => I1;rewrite I1 in P0.
-    have P1': ~ (x' = x) by move => I1;rewrite I1 in P1.
-    move: (A4 x y x' P0' P3 P1' H1 H2) => [? | [? _]].
-    by have: M R B (x, x') by right.
-    by have: M R B (y,x) by left.
+    move =>  x y x' y' P0 P1 P2 P4 P5 H1 [H2|H2] [[/= H3 /=H3'] /=H3''] H4 H5 H6 _.
+    + have P4': ~ (y' = x') by move => I1;rewrite I1 in P4.
+      move: (A5 y x' y' P2 P4' P5 H2 H3) => [? | [_ ?] //];first by left.
+    + have P0': ~ (y = x) by move => I1;rewrite I1 in P0.
+      have P1': ~ (x' = x) by move => I1;rewrite I1 in P1.
+      move: (A4 x y x' P0' P2 P1' H1 H2) => [? | [? _]].
+      by have: M R B (x, x') by right.
+      by have: M R B (y,x) by left.
   Qed.
   
   Theorem MLinf
@@ -1295,4 +1312,59 @@ Module MeunierLanglois.
   Qed.
   
 End MeunierLanglois. 
+
+
+Module BlidiaEngel.
+  
+  (* O is an orientation:  Asym, irreflexive relation *)
+  (* D irreflexive D est inclue dans O `|` O^-1 *)
+  
+  (* O is acycliq *)
+  
+  Parameter (T:choiceType) (O D: relation T).
+  
+  Definition C := O.
+  Definition R := D `&` O. 
+  Definition B := D `&` O^-1. 
+
+  Definition AB_1:= (NotEmpty T).
+  Definition AB_2:= ~ (iic R).
+  Definition AB_3:= ~ (iic B).
+  
+  Definition AB_4:=  forall x y z t, 
+      ~ (y = x) -> ~ (y = z) -> ~ (z = x) -> ~ (z = t)
+      -> ~ (z = y) ->  ~ (y = t) -> ~ (x = t)
+      -> O (x,y) -> (O (y,z) \/ O (z,y)) -> O (t,z) 
+      -> O (x,z) \/ O (z,x) \/ O (y,t) \/ O (t,y) \/ O (x,t) \/ O (t,x).
+  
+  Definition AB_5:=  forall x y z, 
+      ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
+      -> O (x,y) -> O (y,z) -> O (z,x)
+      -> (O (y,x) /\ O (z,y)).
+  
+End BlidiaEngel.
+
+Module Champetier.
+  
+  (* O is an orientation:  Asym, irreflexive relation *)
+  (* D irreflexive D est inclue dans O `|` O^-1 *)
+  
+  (* ZZZ O is Transitive *)
+  
+  Parameter (T:choiceType) (O D: relation T).
+  
+  Definition C := O.
+  Definition R := D `&` O. 
+  Definition B := D `&` O^-1. 
+
+  Definition AB_1:= (NotEmpty T).
+  Definition AB_2:= ~ (iic R).
+  Definition AB_3:= ~ (iic B).
+  
+  Definition AB_5:=  forall x y z, 
+      ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
+      -> O (x,y) -> O (y,z) -> O (z,x)
+      -> (O (y,x) /\ O (z,y)).
+  
+End Champetier.
 
