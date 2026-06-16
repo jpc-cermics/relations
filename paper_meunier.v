@@ -269,11 +269,11 @@ Section Paper.
                 -> (M (y',y))).
   
   Definition Assumption9:= 
-    (forall x y x' y' , ~ (x = y) ->  ~ (x = x') ->  ~ (y = x') -> ~ (x' = y') -> ~ (y' = y) 
-                   -> R (x,y) -> M (y,x') -> D (x',y')
-                   -> ~(M (y,x)) 
-                   -> ~ (M (x,x')) -> ~ (M (x',x))
-                   -> ((x = y') \/ ( ~(x = y') /\ ~ (M (x,y')) /\  ~ (M (y',x))))
+    (forall x y x' y' , ~ (x = y) -> ~ (x = x') -> ~ (x = y')
+                   -> ~ (y = x') -> ~ (x' = y') -> ~ (y' = y) 
+                   -> R (x,y) -> M (y,x') -> D (x',y') -> ~(M (y,x)) 
+                   -> ~ ((M `|` M^-1) (x',x))
+                   ->  ~ ((M `|` M^-1) (y',x))
                    -> M (y,y')).
      
   Definition Scal := [set S| RelIndep M S /\ S:#(R) `<=` M#S/\S != set0 ].
@@ -320,7 +320,7 @@ Section Paper.
     Lemma leSet1_transitive: sporder D -> @transitive SType leSet1.
     Proof. by move => [? ?] [X ?] [Y ?] [Z ?];apply/le_trans_if_tr. Qed.
            
-    Lemma leSet1_reflexive: @reflexive SType leSet1.
+    Lemma leSet1_reflexive: @reflexive _ leSet1.
     Proof. by move => [A ?];apply: le_refl. Qed.
     
     Lemma le_antisym_l1: forall A B, 
@@ -333,7 +333,7 @@ Section Paper.
       by apply/(@RelIndep_I T D (M `|` M^-1) Y H3 H5).
     Qed.
     
-    Lemma leSet1_antisymmetric: sporder D -> D `<=` M `|` M^-1 -> @antisymmetric SType leSet1.
+    Lemma leSet1_antisymmetric: sporder D -> D `<=` M `|` M^-1 -> @antisymmetric _ leSet1.
     Proof. 
       move => H1 H2 [X [Hx Hx']] [Y [Hy Hy']] H3 H4.
       move: (le_antisym_l1 H1 H2 Hx Hy H3 H4) => H5.
@@ -342,7 +342,7 @@ Section Paper.
       apply: proof_irrelevance.
     Qed.
     
-    Lemma leSet1_porder: sporder D -> D  `<=`  M `|` M^-1 -> @porder SType leSet1. 
+    Lemma leSet1_porder: sporder D -> D  `<=`  M `|` M^-1 -> @porder _ leSet1. 
     Proof.
       move => ? ?; split. 
       + by apply/leSet1_reflexive.
@@ -637,10 +637,15 @@ Section Paper.
         
         move: (EM (x' = y')) B4 => [-> | B3''] B4.
         by (exists y'); rewrite inP in B7. 
-
+        
+        have P11': ~ ((M `|` M^-1) (x',x))
+          by pose proof (@RelIndep_E _ x x' M _ H5 H11 B6 H7).
+        
+        move: (EM (x = y')) B8 => [<- /A5 B10 //| B9 /[dup] B8 /A5 B10].
         
         have P1: ~ (x = y) by apply: B2.
         have P2: ~ (x = x') by apply: B6. 
+        have P3: ~ (x = y') by apply: B9.
         have P4: ~ (y = x') by apply: B3'.
         have P5: ~ (x' = y') by apply: B3''.
         have P6: ~ (y' = y) by  move => I1; by rewrite I1 in B7.
@@ -648,19 +653,12 @@ Section Paper.
         have P8: M (y, x') by apply: B4.
         have P9: D (x',y') by apply: B8.
         have P10: ~ M (y, x) by apply: B3.
-        have P11: ~ (M (x,x'))
-          by apply: H7;[ | | move => H22;rewrite H22 in B6].
-        have P12:  ~ (M (x',x))
-          by apply: H7;[ | | move => H22;rewrite H22 in B6].
-
-        have P13: (x = y') \/ ( ~(x = y') /\ ~ (M (x,y')) /\  ~ (M (y',x))).
-        move: (EM (x = y')) => [| I1];first by left.
-        move: H3 => /inP H3.
-        move: (Sinf_indep H3 B7 I1) => H10.        
-        have I2: ~ (y' = x) by move => I4;rewrite I4 in I1.
-        move: (Sinf_indep B7 H3 I2) => H13. 
-        by right.
-        exists y'. split. by apply: (A9 x y x' y' P1 P2 P4 P5 P6 P7 P8 P9 P10 P11 P12 P13). by rewrite -inP.
+        have P11: ~ ((M `|` M^-1) (x',x)) by apply: P11'.
+        have P12: ~ ((M `|` M^-1) (y',x))
+          by move: H3 => /inP H3;
+                        pose proof (@RelIndep_E _ x y' M _ H3 B7 P3 (Sinf_indep)).
+        
+        exists y'. split. by apply: (A9 x y x' y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12). by rewrite -inP.
     Qed.
     
     (* begin snippet SinfScal:: no-out *)    
@@ -1140,11 +1138,11 @@ Module SSWext.
   
   Lemma L9: (@Assumption9 T R B D).
   Proof. 
-    move =>  x y x' y' P0 P1 P2 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
+    move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
     by move: H3 => /(@AsymI _ B) H3;left;apply: (B_trans H2 H3).
-    by have: M R B (x,x') by right;apply: (R_trans H1 H2).
+    by have: (M R B `|` (M R B)^-1) (x',x) by right;right;apply: (R_trans H1 H2).
   Qed.
-
+  
   Theorem SSWext
     (A1: SSW_1) (A2: SSW_2) (A3: SSW_3):
     exists X, RelIndep (M R B) X /\  X != set0 /\  forall x, ~ (x\in X) -> (x \in (M R B)#X). 
@@ -1201,9 +1199,9 @@ Module ABkernels.
   
   Lemma L9(A4: AB_4) (A5: AB_5) : (@Assumption9 T R B D).
   Proof. 
-    move =>  x y x' y' P0 P1 P2 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
+    move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
     by move: H3 => /(@AsymI _ B) H3;left;apply: (A5 y x' y' H2 H3).
-    by have: M R B (x,x') by right;apply: (A4 x y x' H1 H2).
+    by have: (M R B `|` (M R B)^-1) (x',x) by right;right;apply: (A4 x y x' H1 H2).
   Qed.
 
   Theorem SSWext
@@ -1292,13 +1290,13 @@ Module MeunierLanglois.
   
   Lemma L9 (A4: AB_4) (A5: AB_5) : (@Assumption9 T R B D).
   Proof. 
-    move =>  x y x' y' P0 P1 P2 P4 P5 H1 [H2|H2] [[/= H3 /=H3'] /=H3''] H4 H5 H6 _.
+    move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] [[/= H3 /=H3'] /=H3''] H4 H5 H6.
     + have P4': ~ (y' = x') by move => I1;rewrite I1 in P4.
-      move: (A5 y x' y' P2 P4' P5 H2 H3) => [? | [_ ?] //];first by left.
+      move: (A5 y x' y' P3 P4' P5 H2 H3) => [? | [_ ?] //];first by left.
     + have P0': ~ (y = x) by move => I1;rewrite I1 in P0.
       have P1': ~ (x' = x) by move => I1;rewrite I1 in P1.
-      move: (A4 x y x' P0' P2 P1' H1 H2) => [? | [? _]].
-      by have: M R B (x, x') by right.
+      move: (A4 x y x' P0' P3 P1' H1 H2) => [? | [? _]].
+      by have: (M R B (x', x) \/ (M R B)^-1 (x', x)) by right;right.
       by have: M R B (y,x) by left.
   Qed.
   

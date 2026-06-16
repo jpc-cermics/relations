@@ -1219,6 +1219,15 @@ Section Relation_Facts.
     by apply: (H2 y x _ _ _).
   Qed.
 
+  Lemma RelIndep_E x y R X: x \in X -> y \in X -> ~ (x = y) -> RelIndep R X 
+                            -> ~ (( R `|` R^-1) (y,x)).
+  Proof.
+    move => H1 H2 H3 H4. 
+    have H6: ~ (y = x) by move =>I1;rewrite I1 in H3.
+    move => [ ? | ? ];first by move: H4 => /(_ y x H2 H1 H6).
+    by move: H4 => /(_ x y H1 H2 H3).
+  Qed.
+  
   Lemma RelIndep_Ir R X Y: X `<=` Y -> RelIndep R Y -> RelIndep R X.
   Proof. by move => H1 H2 x y /inP/H1/inP H3 /inP/H1/inP H4 H5;move: (H2 x y H3 H4 H5).
   Qed.
