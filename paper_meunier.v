@@ -49,7 +49,7 @@ Module Infinite_paths.
     Variable (T : Type).
     Implicit Types (T : Type) (R: relation T) (A B: set T).
     
-    Local Lemma iic_asym_L1 (f : nat -> T) R:
+    #[local] Lemma iic_asym_L1 (f : nat -> T) R:
       (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
       forall p n, 0 < p -> (Asym R.+) (f n, f (n + p)). 
     Proof.
@@ -64,14 +64,14 @@ Module Infinite_paths.
       by rewrite -addn1 -[p.+1]addn1 addnA.
     Qed.
     
-    Local Lemma iic_asym_L2 (f : nat -> T) R:
+    #[local] Lemma iic_asym_L2 (f : nat -> T) R:
       (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
       forall p n, 0 < p -> ~ (f n) = f (n + p). 
     Proof.
       by move => + p n H1 => /iic_asym_L1 /(_ p n H1) + H2;rewrite -H2; apply: Asym_irreflexive.
     Qed.
     
-    Local Lemma iic_asym_L3 (f : nat -> T) R:
+    #[local] Lemma iic_asym_L3 (f : nat -> T) R:
       (forall n, (Asym R.+) ((f n),(f (S n)))) -> injective f.
     Proof.
       have H0 n m: m < n -> exists p, p> 0 /\ n = m + p by move => H1;exists (n-m); lia.
@@ -91,8 +91,9 @@ Module Infinite_paths.
   
 End Infinite_paths. 
 
-Arguments Infinite_paths.iic_asym_injective {T} {R}.
-Definition iic_asym_injective {T} {R} := @Infinite_paths.iic_asym_injective T R. 
+Export Infinite_paths.
+Arguments iic_asym_injective {T}.
+Arguments sporder_iic_injective {T}.
 
 Section Infinite_paths_X.
   (** * Assumptions on infinite paths *)
@@ -107,7 +108,8 @@ Section Infinite_paths_X.
     have setTypeP: (exists x : X, x \in [set: X]) <-> (exists (t:T), (t \in X))
       by split => [[v ?] |[v H0]];[exists (sval v) | exists (exist _ v H0)];
                  rewrite inP;[apply: set_valP|].
-    by move => /setTypeP H0; apply: notiic_rloop. Qed. 
+    by move => /setTypeP H0; apply: notiic_rloop. 
+  Qed. 
   
   Lemma notiic_rloop_sub_L2 X R:
     ~ (iic (Asym R)) -> (exists (v0:T), (v0 \in X)) -> (Rloop (@Restrict' T X R)).
@@ -133,9 +135,6 @@ Section Infinite_paths_X.
   Qed.
   
 End Infinite_paths_X.
-
-
-
 
 Reserved Notation "A [<=] B" (at level 4, no associativity). 
 Reserved Notation "A [<= R ] S" (at level 4, no associativity). 
@@ -249,6 +248,7 @@ Section Set_order.
   Qed.
   
 End Set_order. 
+
 
 
 Section Paper. 

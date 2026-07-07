@@ -38,10 +38,11 @@ Section FinsetToClassical.
   Variable (T : finType).
   Implicit Types (A B : {set T}) (x: T).
   
-  (* ou bien coercion directe ? *)
   Definition set_of_fin A : set T := [set x | x \in A ].
   Notation "[ ':set:' A ]" := (set_of_fin A) (format "[ ':set:'  A ]").
+  (* Coercion set_of_fin : set_of >-> set. *)
   
+  (* reverse conversion which works for finType *)
   Definition fin_of_set (A: set T) : {set T} := [set x in A]. 
   Notation "[:fin: A ]" := (fin_of_set A).    
   
