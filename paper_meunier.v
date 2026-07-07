@@ -25,7 +25,7 @@ Local Open Scope classical_set_scope.
 Definition NotEmpty (T: Type) := (exists (v0:T), (v0 \in setT)).
 
 Section CheckAsym. 
-  (** * main result from paper_monochromatic_f *)
+  (** * Import main result from paper_monochromatic_f *)
   Context (T : choiceType) (R: relation T).
   Hypothesis A1: (NotEmpty T).
 
@@ -40,6 +40,102 @@ Section CheckAsym.
   Proof. by move => ? /iic_asym_to_iic_inj ?. Qed.
 
 End  CheckAsym. 
+
+Module Infinite_paths.
+  (** * iic_asym_injective:  iic (Asym R.+) -> iic_inj (Asym R.+) *) 
+
+  Section iic_asym. 
+
+    Variable (T : Type).
+    Implicit Types (T : Type) (R: relation T) (A B: set T).
+    
+    Local Lemma iic_asym_L1 (f : nat -> T) R:
+      (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
+      forall p n, 0 < p -> (Asym R.+) (f n, f (n + p)). 
+    Proof.
+      move => Hi. 
+      elim => [// | p Hr n' _].
+      case H2: (p == 0); first by move: H2 => /eqP ->;rewrite addn1;apply: Hi. 
+      move: H2 =>  /neq0_lt0n /(Hr n') H2.
+      have H4: transitive (Asym R.+) by apply: Asym_preserve_transitivity;apply: TclosT.
+      have H5: Asym R.+ (f (n' + p), f (n' + p).+1) by apply: Hi.
+      rewrite /transitive in H4.
+      move: (H4 (f n') (f (n' + p)) (f (n'+p).+1) H2 H5).
+      by rewrite -addn1 -[p.+1]addn1 addnA.
+    Qed.
+    
+    Local Lemma iic_asym_L2 (f : nat -> T) R:
+      (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
+      forall p n, 0 < p -> ~ (f n) = f (n + p). 
+    Proof.
+      by move => + p n H1 => /iic_asym_L1 /(_ p n H1) + H2;rewrite -H2; apply: Asym_irreflexive.
+    Qed.
+    
+    Local Lemma iic_asym_L3 (f : nat -> T) R:
+      (forall n, (Asym R.+) ((f n),(f (S n)))) -> injective f.
+    Proof.
+      have H0 n m: m < n -> exists p, p> 0 /\ n = m + p by move => H1;exists (n-m); lia.
+      move => /iic_asym_L2 Hi p q;apply contraPP => H1.
+      have [H2|H2]: (p < q \/ q < p) by lia.
+      by pose proof (H0 q p H2) as [p' [H3 ->]]; apply: Hi.
+      by move: (H0 p q H2) => [p' [H3 ->]];move: (Hi p' q H3);symmetry.
+    Qed.
+    
+    Lemma iic_asym_injective R: iic (Asym R.+) -> iic_inj (Asym R.+).
+    Proof. by move => [f /[dup] ? /iic_asym_L3  ?];exists f. Qed.
+
+    Lemma sporder_iic_injective R: (sporder R) -> iic R -> iic_inj R.
+    Proof. by move => /sporderEq <-;apply: iic_asym_injective. Qed.
+    
+    End iic_asym.
+  
+End Infinite_paths. 
+
+Arguments Infinite_paths.iic_asym_injective {T} {R}.
+Definition iic_asym_injective {T} {R} := @Infinite_paths.iic_asym_injective T R. 
+
+Section Infinite_paths_X.
+  (** * Assumptions on infinite paths *)
+  (* should be move on rel.v *)
+
+  Context (T : Type).
+  Implicit Types (R: relation T) (X: set T).
+
+  Lemma notiic_rloop_sub_L1 X (S: relation X):
+    (exists (v0:T), (v0 \in X)) -> ~ (iic (Asym S)) -> (Rloop S).
+  Proof. 
+    have setTypeP: (exists x : X, x \in [set: X]) <-> (exists (t:T), (t \in X))
+      by split => [[v ?] |[v H0]];[exists (sval v) | exists (exist _ v H0)];
+                 rewrite inP;[apply: set_valP|].
+    by move => /setTypeP H0; apply: notiic_rloop. Qed. 
+  
+  Lemma notiic_rloop_sub_L2 X R:
+    ~ (iic (Asym R)) -> (exists (v0:T), (v0 \in X)) -> (Rloop (@Restrict' T X R)).
+  Proof.
+    move => H1 H0.
+    have H2: (iic (@Restrict' T X (Asym R))) -> (iic (Asym R))
+      by move => [f // ?];exists (fun n => (sval (f n))). 
+    have H3:  ~ (iic (Asym R)) -> ~ (iic (@Restrict' T X (Asym R)))
+      by contra => -[f H4];apply: H2; by (exists f).
+    by apply/(notiic_rloop_sub_L1 H0)/H3.
+  Qed.
+  
+  (* notiic_rloop for a subset X *)
+  Lemma notiic_rloop_sub X R:
+    ~ (iic (Asym R)) ->(exists (v0:T), (v0 \in X))
+    -> (exists (v:T), v \in X /\ forall w, w \in X -> R (v,w) -> R (w,v)).
+  Proof.
+    move => Ninf H0.
+    move: (notiic_rloop_sub_L2 Ninf H0) => [v H1];exists (sval v).
+    split=> [| w H2];first by rewrite inP;apply: set_valP.
+    have [w' <-]: exists (w': X), (sval w') = w by (exists (exist _ w H2)).
+    by move => ?;apply: H1.
+  Qed.
+  
+End Infinite_paths_X.
+
+
+
 
 Reserved Notation "A [<=] B" (at level 4, no associativity). 
 Reserved Notation "A [<= R ] S" (at level 4, no associativity). 
@@ -154,88 +250,6 @@ Section Set_order.
   
 End Set_order. 
 
-Section Infinite_paths.
-  (** * iic_asym_injective:  iic (Asym R.+) -> iic_inj (Asym R.+) *) 
-
-  Context (T : Type).
-  Implicit Types (T : Type) (R S: relation T) (A B: set T).
-  
-  Lemma iic_asym_L1 (f : nat -> T) R:
-    (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
-     forall p n, 0 < p -> (Asym R.+) (f n, f (n + p)). 
-  Proof.
-    move => Hi. 
-    elim => [// | p Hr n' _].
-    case H2: (p == 0); first by move: H2 => /eqP ->;rewrite addn1;apply: Hi. 
-    move: H2 =>  /neq0_lt0n /(Hr n') H2.
-    have H4: transitive (Asym R.+) by apply: Asym_preserve_transitivity;apply: TclosT.
-    have H5: Asym R.+ (f (n' + p), f (n' + p).+1) by apply: Hi.
-    rewrite /transitive in H4.
-    move: (H4 (f n') (f (n' + p)) (f (n'+p).+1) H2 H5).
-    by rewrite -addn1 -[p.+1]addn1 addnA.
-  Qed.
-  
-  Lemma iic_asym_L2 (f : nat -> T) R:
-    (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
-    forall p n, 0 < p -> ~ (f n) = f (n + p). 
-  Proof.
-    by move => + p n H1 => /iic_asym_L1 /(_ p n H1) + H2;rewrite -H2; apply: Asym_irreflexive.
-  Qed.
-  
-  Lemma iic_asym_L3 (f : nat -> T) R:
-    (forall n, (Asym R.+) ((f n),(f (S n)))) -> injective f.
-  Proof.
-    have H0 n m: m < n -> exists p, p> 0 /\ n = m + p by move => H1;exists (n-m); lia.
-    move => /iic_asym_L2 Hi p q;apply contraPP => H1.
-    have [H2|H2]: (p < q \/ q < p) by lia.
-    by pose proof (H0 q p H2) as [p' [H3 ->]]; apply: Hi.
-    by move: (H0 p q H2) => [p' [H3 ->]];move: (Hi p' q H3);symmetry.
-  Qed.
-  
-  Lemma iic_asym_injective R: iic (Asym R.+) -> iic_inj (Asym R.+).
-  Proof. by move => [f /[dup] ? /iic_asym_L3  ?];exists f. Qed.
-  
-End Infinite_paths.
-
-Section Infinite_paths_X.
-  (** * Assumptions on infinite paths *)
-  (* should be move on rel.v *)
-
-  Context (T : Type).
-  Implicit Types (R: relation T) (X: set T).
-
-  Lemma notiic_rloop_sub_L1 X (S: relation X):
-    (exists (v0:T), (v0 \in X)) -> ~ (iic (Asym S)) -> (Rloop S).
-  Proof. 
-    have setTypeP: (exists x : X, x \in [set: X]) <-> (exists (t:T), (t \in X))
-      by split => [[v ?] |[v H0]];[exists (sval v) | exists (exist _ v H0)];
-                 rewrite inP;[apply: set_valP|].
-    by move => /setTypeP H0; apply: notiic_rloop. Qed. 
-  
-  Lemma notiic_rloop_sub_L2 X R:
-    ~ (iic (Asym R)) -> (exists (v0:T), (v0 \in X)) -> (Rloop (@Restrict' T X R)).
-  Proof.
-    move => H1 H0.
-    have H2: (iic (@Restrict' T X (Asym R))) -> (iic (Asym R))
-      by move => [f // ?];exists (fun n => (sval (f n))). 
-    have H3:  ~ (iic (Asym R)) -> ~ (iic (@Restrict' T X (Asym R)))
-      by contra => -[f H4];apply: H2; by (exists f).
-    by apply/(notiic_rloop_sub_L1 H0)/H3.
-  Qed.
-  
-  (* notiic_rloop for a subset X *)
-  Lemma notiic_rloop_sub X R:
-    ~ (iic (Asym R)) ->(exists (v0:T), (v0 \in X))
-    -> (exists (v:T), v \in X /\ forall w, w \in X -> R (v,w) -> R (w,v)).
-  Proof.
-    move => Ninf H0.
-    move: (notiic_rloop_sub_L2 Ninf H0) => [v H1];exists (sval v).
-    split=> [| w H2];first by rewrite inP;apply: set_valP.
-    have [w' <-]: exists (w': X), (sval w') = w by (exists (exist _ w H2)).
-    by move => ?;apply: H1.
-  Qed.
-  
-End Infinite_paths_X.
 
 Section Paper. 
   (*  abstract version *)

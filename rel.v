@@ -170,19 +170,26 @@ Section Relation_Facts.
          by move: (Atsy x y H1 H2) H0 => ->;apply: Ir.
   Qed.
 
-  (* sorder is also asymmetric *)
+  (* sporder is also asymmetric *)
   Lemma sporder_asym R: transitive R -> irreflexive R -> asymmetric R.
   Proof. by move => Tr Ir x y H1 H2; pose proof (Ir x (Tr x y x H1 H2)). Qed.
 
-  (* sorder is also antisymmetric *)
+  (* sporder is also antisymmetric *)
   Lemma sporder_antisym R: transitive R -> irreflexive R -> antisymmetric R.
   Proof. by move => Tr Ir x y H1 H2; pose proof (Ir x (Tr x y x H1 H2)). Qed.
+
+  Lemma asym_ir R: asymmetric R -> irreflexive R. 
+  Proof. by move => + x + => /(_ x x) As /[dup] Rxx /As notRxx. Qed.
+
   
   (** * Sets_facts *)
   
-  (* should be replaced by in_setE *)
+  (* should be replaced by in_setE ? *)
   Lemma inP (T': Type) (x:T') (X: set T'): x \in X <-> X x. 
   Proof. by rewrite in_setE. Qed.
+  
+  Lemma inP' (T': Type) (x:T') (X: set T'): reflect (X x) (x\in X).
+  Proof. by apply: (iffP idP);rewrite in_setE. Qed.
   
   Lemma notempty_exists (T': Type) (X:set T'): (exists z, z \in X) <-> (X != set0).
   Proof.
@@ -1148,7 +1155,7 @@ Section Relation_Facts.
   Definition Asym R: relation T := [set xy | R xy /\ ~ (R^-1 xy)].
   (* end snippet asym *)    
 
-  Lemma Asym_antisymmetric R: antisymmetric  (Asym R).
+  Lemma Asym_antisymmetric R: antisymmetric (Asym R).
   Proof. by move => x y [_ ?] [? _]. Qed.
 
   Lemma Asym_irreflexive R: irreflexive (Asym R).
@@ -1169,27 +1176,28 @@ Section Relation_Facts.
     by move => ?;split;[apply: Asym_irreflexive|apply: Asym_preserve_transitivity].
   Qed.
   
-  Lemma AsymE R: antisymmetric R /\ irreflexive R <-> Asym R = R.
+  Lemma AsymEq R: asymmetric R <-> Asym R = R.
   Proof.
-    split; last by move => <-;split;
-                          [apply: Asym_antisymmetric | apply: Asym_irreflexive].
-    move => [H1 H2].
-    rewrite predeqE => [[x y]]; split => [[H3 _] // | H3]. 
-    split; first by [].
-    by move: H3 => /[dup] H3 /H1 H3' /H3' H4; move: H3; rewrite H4 => /H2 H3.
+    split => [Has | <-];last by apply: Asym_asymmetric.
+    by rewrite predeqE => -[x y];split => [[_ ?]// | /[dup] ? /Has ?].
   Qed.
-
+  
+  Lemma AsymP R: antisymmetric R /\ irreflexive R <-> asymmetric R.
+  Proof.
+    split => [[Has Hi] | /[dup] /asym_ir Hi /(irP Hi) ? //].
+    by rewrite (irP Hi).
+  Qed.
+  
+  Lemma AsymE R: antisymmetric R /\ irreflexive R <-> Asym R = R.
+  Proof. rewrite -AsymEq;apply:AsymP. Qed.
+  
   Lemma AsymI R: (Asym R) `<=` R.
   Proof. by move => [a b] [? _]. Qed.
 
   Lemma AsymInvol R: Asym (Asym R) = (Asym R).
-  Proof.
-    rewrite predeqE => [[a b]];split => [[? _] //| H1]. 
-    split => [// | H2];pose proof (Asym_antisymmetric H1 H2) as H3.
-    by move: H1;rewrite H3;apply: Asym_irreflexive.
-  Qed.
+  Proof. by move: (@Asym_asymmetric R) => /AsymEq. Qed.
   
-  Lemma AsymIncl R: R.+ `;` Asym(R.+) `<=`  Asym(R.+).
+  Lemma AsymIncl R: R.+ `;` Asym(R.+) `<=` Asym(R.+).
   Proof.
     move: AsymI => /(_ R.+) H3 => [[x y] [z /= [H1 /[dup] H2 /H3 H4]]].
     split =>[| H5]; first by apply: (TclosT H1 H4).
@@ -1205,6 +1213,11 @@ Section Relation_Facts.
     by move: H2 => [_ H2 ].
   Qed.
 
+  Lemma sporderEq R: sporder R -> (Asym R.+) = R.
+  Proof.
+    by move => [Hi /[dup] Ht /Tclos_iff <-];apply/AsymEq/sporder_asym.
+  Qed.
+  
   (** * Independent sets with respect to a relation *)
   
   Lemma RelIndep_I R S X: R `<=` S -> RelIndep S X -> RelIndep R X.
@@ -1473,6 +1486,13 @@ Section Infinite_paths.
   (* begin snippet Rloop:: no-out *)    
   Definition Rloop (R: relation T) := exists v, forall w,  R (v,w) -> R (w,v).
   (* end snippet Rloop *)
+  
+  Lemma RloopE v R:  (forall w,  R (v,w) -> R (w,v)) -> [set v]:#(R) `<=` R#([set v]).
+  Proof.
+    move => Rl w H1;move: Rl => /(_ w) H2.
+    rewrite /Fset;exists v;split;last by [].
+    by apply/H2;move: H1;rewrite /Aset Fset_s => H1.
+  Qed.
   
   Lemma test R: (antisymmetric R /\ irreflexive R /\ Rloop R) -> (~ (total_rel R)).
   Proof.
