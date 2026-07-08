@@ -60,9 +60,9 @@ Section Paper.
                    -> ~ ((M `|` M^-1) (x',x))
                    ->  ~ ((M `|` M^-1) (y',x))
                    -> M (y,y')).
-     
+  
   Definition Scal := [set S| RelIndep M S /\ S:#(R) `<=` M#S/\S != set0 ].
-
+  
   Definition SType := {S | RelIndep M S /\ S:#(R) `<=` M#S/\S != set0}.
 
   Definition Elt (C: set SType) := {x : T |exists (S: SType), S \in C /\ x \in (sval S)}.
@@ -71,7 +71,7 @@ Section Paper.
   Proof. by move => [S [H1 [H2 H3]]];rewrite inP. Qed.
 
   Lemma Scal2S: forall S, S \in Scal -> exists (S': SType), (sval S') = S.
-  Proof.  by move => S /inP H1; exists (exist _ S H1). Qed.
+  Proof. by move => S /inP H1; exists (exist _ S H1). Qed.
 
   Lemma ScalProp: forall S S1,
       RelIndep M S -> S1 `<=` S -> (S1:#(R) `<=` M#S <-> forall y, ~ (y \in S) -> y \in S1:#(R) -> y \in  M#S).

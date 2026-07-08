@@ -351,7 +351,6 @@ Section SubSetPType_order.
   Context (T : finType).
   Implicit Types (O R M: relation T) (S: {set T}).
   
-  Definition setRM R M (S:set T) := S:#R `<=` M#S.
   Definition setRM_fin R M S := (asbool ([:set: S]:#R `<=` M#([:set: S]))).
 
   Definition prekernelP O R M: pred {set T} := 
@@ -436,6 +435,22 @@ Section SubSetPType_order.
   
 End SubSetPType_order.
 
+Section test_Theorem.
+
+  Context (T : finType) (O R B: relation T).
+  Implicit Types (O R B: relation T) (X: {set T}).
+  
+  Context (A2 : Assumption2 R) (A6 : Assumption6 R B O) 
+    (A7 : Assumption7 R B) (A8 : Assumption8 R B).
+  (* 
+  Lemma XXX X : True.
+  Proof.
+    move:  (@extend T R B O) => /(_ X). 
+    
+    A2 A6 A7 A8). 
+    A2 A6 A7).
+  *)
+End test_Theorem.
 
 Section test.
 
