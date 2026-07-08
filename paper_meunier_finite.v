@@ -19,7 +19,7 @@ Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_boot seq order finset boolp classical_sets contra. 
 From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
-From RL Require Import  seq1 seq2 rel paper_meunier.
+From RL Require Import  seq1 seq2 rel paper_meunier_common.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -129,9 +129,11 @@ Section Finite.
   Variable (T : finType).
   Implicit Types (R U O D: relation T).
 
-  (* begin snippet Rloop:: no-out *)    
-  Definition Sink (R: relation T) v := forall w, ~ R (v,w).
-  (* end snippet Rloop *)
+  Definition Sink R v := forall w, ~ R (v,w).
+  Definition vRloop R v := forall w, R (v, w) -> R(w,v).
+  
+  Lemma Sink_to_Rloop R v: Sink R v -> vRloop R v.
+  Proof. by move => + w H1 => /(_ w) H2. Qed.
   
   Lemma fin_not_iic_inj R: ~ (iic_inj R). 
   Proof. 
@@ -144,30 +146,21 @@ Section Finite.
 
   Lemma fin_not_iic R: (sporder R) -> ~ (iic R).
   Proof.
-    move => [Hi /[dup] Ht /Tclos_iff H2] Hiic. 
-    pose proof (@sporder_antisym _ R Ht Hi) as Has.
-    pose proof (@fin_not_iic_inj R) as H4.
-    have H5: Asym R = R by apply/(@AsymE T R).
-    by move: (@iic_asym_injective T R);rewrite -H2 H5 => /(_ Hiic) ?.
+    move => /[dup] Hsp /sporder_antisym Ha.
+    by move: (@fin_not_iic_inj R) => H1 /(sporder_iic_injective R Hsp)H2. 
   Qed.
-
-  Lemma fin_rloop R: (NotEmpty T) -> (sporder R) -> (Rloop R).
+  
+  Lemma fin_rloop R: (NotEmpty T) -> (sporder R) -> exists v, (vRloop R v).
   Proof.
-    move => Hne /[dup] Hsp [Hi Ht].
-    pose proof (@sporder_antisym _ R Ht Hi) as Has.
-    have H1: Asym R = R by apply/(@AsymE T R).
-    move: (@fin_not_iic R Hsp);rewrite -{1}H1 => H2.
-    by apply: notiic_rloop.  
+    move => Hne /[dup] /fin_not_iic Hniic /sporder_asym/AsymEq Has.
+    by rewrite -Has in Hniic;move: (@notiic_rloop _ R Hne Hniic). 
   Qed.
-
+  
   Lemma fin_sink R: (NotEmpty T) -> (sporder R) -> exists v, (Sink R v).
   Proof.
-    move => Hne Hsp;move: (fin_rloop Hne Hsp) => [v H1].
-    exists v. move => w /[dup] H2 /H1 H3. 
-    move: Hsp => [Hi Ht].
-    pose proof (@sporder_asym _ R Ht Hi) as Has.
-    rewrite /asymmetric in Has.
-    by move: H2 => /Has H2.
+    move => Hne /[dup] /sporder_asym Has Hsp.
+    move: (fin_rloop Hne Hsp) => [v H1].
+    by exists v;move => w /[dup] Rvw /[dup] /Has nRwv /H1 Rwv. 
   Qed.
   
   Lemma fin_rloop1 R U: (NotEmpty T) -> (sporder R)
@@ -177,10 +170,6 @@ Section Finite.
     exists v;move: Rl => /[swap] w /(_ w) Rl.
     by rewrite /Aset 2!Fset_s => ?.
   Qed.
-  
-  (** * the one we need for champetier *)
-  (** * O: orientation, D: direction, R = D `&` O, B = D  `&` O^-1 *)
-  (** * D is equal to R `|` B which is also M *)
   
   Lemma fin_rloop2 O R D:
     (NotEmpty T) -> (sporder O) -> R `<=` O -> exists v, (v)_:#(R) `<=` D#_(v).
@@ -290,7 +279,7 @@ Section SubSetPType.
 End SubSetPType.
 #[local] Set Warnings "+projection-no-head-constant,+redundant-canonical-projection".
 
-Section Maximal.
+Module fin_Maximal.
   (** * There's always a maximal element in a finite nonempty poset *)
   (** we consider here the simplest case *)
   (** and give a proof by recursion 
@@ -300,15 +289,17 @@ Section Maximal.
   (** Note that this proof is valid for R: relation T 
       R: {relation T} is not requested *)
 
+  Section fin_maximal.
+    
   Variables (T: finType).
-  
-  Definition seq_maximal (m : T) (s : seq T) (R: relation T): Prop :=
+  Implicit Types (m : T) (s : seq T) (R: relation T).
+
+  Definition seq_maximal m s R : Prop :=
     forall x, x \in s -> R (m,x) -> m = x.
 
-  Definition maximal (m : T) R: Prop :=
-    forall x,  R (m,x) -> m = x.
+  Definition maximal m R: Prop := forall x,  R (m,x) -> m = x.
   
-  Local Lemma seq_has_maximal_step (s : seq T) (h : T) R:
+  #[local] Lemma seq_has_maximal_step (s : seq T) (h : T) R:
     porder R -> (exists m, m \in s /\ seq_maximal m s R) \/  s = [::]
     ->  exists m, m \in h :: s /\ seq_maximal m (h :: s) R.
   Proof.
@@ -331,7 +322,7 @@ Section Maximal.
       by move => x; rewrite mem_seq1 => /eqP ->.
   Qed.
   
-  Local Lemma seq_has_maximal R: 
+  #[local] Lemma seq_has_maximal R: 
     porder R -> forall s, ~ (s = [::]) -> (exists m, m \in s /\ seq_maximal m s R).
   Proof.
     move => ?;elim => [// | a s Hr _ ].
@@ -339,8 +330,7 @@ Section Maximal.
     by move: (EM (s = [::])) => [-> | /Hr ?];[right | left].
   Qed.    
   
-  Lemma has_maximal R: 
-    porder R -> (exists x, x\in T) -> (exists m, maximal m R).
+  Lemma has_maximal R: porder R -> (exists x, x\in T) -> (exists m, maximal m R).
   Proof.
     move => Hp [x -];rewrite -mem_enum => Hx.
     have H2: ~ (enum T = [::]) by move: Hx => /[swap] ->.
@@ -348,8 +338,12 @@ Section Maximal.
     exists m;move: HM => /[swap] x' /(_ x') HM H5.
     by apply: HM;[rewrite  mem_enum |].
   Qed.
+  
+  End fin_maximal.
 
-End Maximal.
+End fin_Maximal.
+
+Export fin_Maximal.
 
 Section SubSetPType_order.
   (** * When O is a sporder then [:<=: O] restricted to M-independent sets is a porder *)
@@ -377,13 +371,8 @@ Section SubSetPType_order.
     (A1: NotEmpty T) (At: sporder O) (Au: R `<=` O):
     exists v, prekernelP O R M [set v].
   Proof.
-    move: (At) (@fin_not_iic_inj T O) => [H1 /[dup] Ht /Tclos_iff H2] H3.
-    pose proof (@sporder_antisym _ O Ht H1) as Has.
-    have H4: Asym O = O
-      by apply/(@AsymE T O).
-    move: (@iic_asym_injective T O).
-    rewrite -H2 H4 => H5.
-    have A2: ~ iic O by move => /H5/H3.
+    move: (At) (@fin_not_iic_inj T O) => /[dup] Hsp [H1 /[dup] Ht /Tclos_iff H2] H3.
+    have H4: ~(iic O) by move => /(@sporder_iic_injective _ _ At) ?.
     move: (@fin_rloop2 T O R M A1 At Au) => [v H6].
     exists v.
     apply/andP.
@@ -446,4 +435,19 @@ Section SubSetPType_order.
   Qed.
   
 End SubSetPType_order.
+
+
+Section test.
+
+Variable T : Type.
+Variable s : seq T.   (* s = [:: x1; x2; ...; xk] *)
+Variable x1: T.
+Hypothesis Hs : ~ (s = [::]).
+
+Definition f (n : nat) : T := nth x1 s (n %% size s).
+
+Lemma f_periodic n : f (n + (size s)) = f n.
+Proof. by rewrite /f (modnDr n (size s)). Qed.
+  
+End test.
 

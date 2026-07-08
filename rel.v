@@ -171,16 +171,21 @@ Section Relation_Facts.
   Qed.
 
   (* sporder is also asymmetric *)
-  Lemma sporder_asym R: transitive R -> irreflexive R -> asymmetric R.
+  Lemma tr_ir_to_asym R: transitive R -> irreflexive R -> asymmetric R.
+  Proof. by move => Tr Ir x y H1 H2; pose proof (Ir x (Tr x y x H1 H2)). Qed.
+  
+  Lemma sporder_asym R: sporder R -> asymmetric R.
+  Proof. by move => [Hir Ht];apply: tr_ir_to_asym. Qed.
+  
+  (* sporder is also antisymmetric *)
+  Lemma tr_ir_to_antisym R: transitive R -> irreflexive R -> antisymmetric R.
   Proof. by move => Tr Ir x y H1 H2; pose proof (Ir x (Tr x y x H1 H2)). Qed.
 
-  (* sporder is also antisymmetric *)
-  Lemma sporder_antisym R: transitive R -> irreflexive R -> antisymmetric R.
-  Proof. by move => Tr Ir x y H1 H2; pose proof (Ir x (Tr x y x H1 H2)). Qed.
+  Lemma sporder_antisym R: sporder R -> antisymmetric R.
+  Proof. by move => [Hir Ht];apply: tr_ir_to_antisym. Qed.
 
   Lemma asym_ir R: asymmetric R -> irreflexive R. 
   Proof. by move => + x + => /(_ x x) As /[dup] Rxx /As notRxx. Qed.
-
   
   (** * Sets_facts *)
   

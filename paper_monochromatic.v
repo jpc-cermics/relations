@@ -108,10 +108,8 @@ Section Set_order.
     Lemma le_antisym_if_sp' R: 
       sporder R -> forall A B, (RelIndep R A) -> A [<= R] B -> B  [<= R] A -> A `<=` B.
     Proof.
-      move => [Ir H0] A B H1 H2 H3 a H4.
-      pose proof (sporder_antisym H0 Ir) as Asy.
-      have H0': Asym R = R by rewrite -AsymE.
-      move: H2 H3; rewrite -H0' => H2 H3.
+      move => /[dup] -[_ Htr] /sporder_asym/AsymEq Asy A B H1 + +  a H4.
+      rewrite -Asy => H2 H3.
       move: (H4) => /inP /H2 [b [/inP /= H5 [-> // | [H6 H6']]]]. 
       move: (H5) => /inP /H3 /= [c [/inP H8 H9]].
       case H10: (a == b ); first by move: H10 => /eqP ->.
@@ -121,7 +119,8 @@ Section Set_order.
         by have: False by move: H4 H8 => /inP H4 /inP H8;apply: (H1 a b). 
       - move: H12 H9 => /eqP H12 [H9 // | [H9 H9']].
         case H13: (a == c); first by move: H13 H9' => /eqP <- H9'.
-        have H14: R (a,c) by apply: H0 H6 H9.
+        pose proof Htr.
+        have H14: R (a,c) by apply: Htr H6 H9.
         by have: False by move: H13 H4 H8 => /eqP H13 /inP H4 /inP H8; apply: (H1 a c). 
     Qed.
     
