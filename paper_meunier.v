@@ -25,45 +25,12 @@ Local Open Scope classical_set_scope.
 Section Paper. 
   (*  abstract version *)
   Variables (T:choiceType) (R B D: relation T).
-
-  Definition M := B `|` R.
-
-  Definition Assumption1:= (NotEmpty T).
-  Definition Assumption2:= ~ (iic (Asym R)).
-  Definition Assumption3:= ~ (iic D).
-  Definition Assumption4:= sporder D.
-  Definition Assumption5:= D  `<=` M `|` M^-1.
-  Definition Assumption6:= 
-    (forall x y, B (x,y) /\ ~ (M (y, x)) -> D (x,y)).
   
-  Definition Assumption7:= 
-    (forall x x' y y', ~(x' = x) 
-                  -> R (x,y') -> M (y', x')
-                  -> (B (x',y)) -> ~ (B (x, y)) 
-                  -> ~ (R (x',y)) /\ ~(M (y,x')) 
-                  -> ~(R (x,y)) /\ ~(M (y,x)) 
-                  -> ~ (M (x,x')) -> ~ (M (x',x))
-                  -> ~ (y = y') -> ~ (y' = x) -> ~ (y' = x') -> ~ (y = x ) -> ~ (y = x' )
-                  -> ~ (M (y',x))
-                  -> (M (y',y))).
+  Definition M' := B `|` R.
   
-  Definition Assumption8:=
-    (forall x' y y', ~ (y' = x') -> ~ (y = y') -> ~ (y = x') 
-                -> R (y,y') -> M (y',x') -> B (x',y) 
-                -> ~ (R (x',y)) /\ ~ M (y, x')
-                -> (M (y',y))).
+  Definition Scal := [set S| RelIndep M' S /\ S:#(R) `<=` M'#S/\S != set0 ].
   
-  Definition Assumption9:= 
-    (forall x y x' y' , ~ (x = y) -> ~ (x = x') -> ~ (x = y')
-                   -> ~ (y = x') -> ~ (x' = y') -> ~ (y' = y) 
-                   -> R (x,y) -> M (y,x') -> D (x',y') -> ~(M (y,x)) 
-                   -> ~ ((M `|` M^-1) (x',x))
-                   ->  ~ ((M `|` M^-1) (y',x))
-                   -> M (y,y')).
-  
-  Definition Scal := [set S| RelIndep M S /\ S:#(R) `<=` M#S/\S != set0 ].
-  
-  Definition SType := {S | RelIndep M S /\ S:#(R) `<=` M#S/\S != set0}.
+  Definition SType := {S | RelIndep M' S /\ S:#(R) `<=` M'#S/\S != set0}.
 
   Definition Elt (C: set SType) := {x : T |exists (S: SType), S \in C /\ x \in (sval S)}.
   
@@ -74,7 +41,7 @@ Section Paper.
   Proof. by move => S /inP H1; exists (exist _ S H1). Qed.
 
   Lemma ScalProp: forall S S1,
-      RelIndep M S -> S1 `<=` S -> (S1:#(R) `<=` M#S <-> forall y, ~ (y \in S) -> y \in S1:#(R) -> y \in  M#S).
+      RelIndep M' S -> S1 `<=` S -> (S1:#(R) `<=` M'#S <-> forall y, ~ (y \in S) -> y \in S1:#(R) -> y \in  M'#S).
   Proof.
     move => S S1 H1 H1';split => [H2 y _ /inP/H2/inP H4 //| H2 y H3].
     case H5: (y \in S);last first.
@@ -82,17 +49,17 @@ Section Paper.
     + move: H3. rewrite /Aset => -[y' [H6 H7]].      
       rewrite /RelIndep in H1.
       case H8: (y == y').
-      ++ move: H8 => /eqP H8; have H9: M(y,y) by rewrite -H8 in H6;rewrite /M;right.
+      ++ move: H8 => /eqP H8; have H9: M'(y,y) by rewrite -H8 in H6;rewrite /M';right.
          by move: H7 => /H1' H7;(exists y);rewrite -H8 in H7.
       ++ move: H8 H7 => /eqP H8 /inP H7.
          have H9:  y' <> y by move => H10;rewrite H10 in H8.
          move: H7 => /inP/H1'/inP H7.
          move: (H1 y' y H7 H5 H9) => H10.
-         by have H11: M (y', y) by rewrite /M;right.
+         by have H11: M' (y', y) by rewrite /M;right.
   Qed.
 
   Lemma ScalProp1: forall S,
-      RelIndep M S -> (S:#(R) `<=` M#S <-> forall y, ~ (y \in S) -> y \in S:#(R) -> y \in  M#S).
+      RelIndep M' S -> (S:#(R) `<=` M'#S <-> forall y, ~ (y \in S) -> y \in S:#(R) -> y \in  M'#S).
   Proof. move => S H1; apply: (ScalProp H1 (@subset_refl T S)).  Qed.
   
   (** * The relation on sets restricted to Stype subsets *)
@@ -109,16 +76,16 @@ Section Paper.
     Proof. by move => [A ?];apply: le_refl. Qed.
     
     Lemma le_antisym_l1: forall A B, 
-        sporder D -> D  `<=` M `|` M^-1 ->  (RelIndep M A) -> (RelIndep M B)
+        sporder D -> D  `<=` M' `|` M'^-1 ->  (RelIndep M' A) -> (RelIndep M' B)
         -> A [<= D] B -> B  [<= D] A -> A = B.
     Proof.
       move => X Y H1 H3 /RelIndep_Is H4 /RelIndep_Is H5. 
       apply/le_antisym_if_sp. exact.
-      by apply/(@RelIndep_I T D (M `|` M^-1) X H3 H4).
-      by apply/(@RelIndep_I T D (M `|` M^-1) Y H3 H5).
+      by apply/(@RelIndep_I T D (M' `|` M'^-1) X H3 H4).
+      by apply/(@RelIndep_I T D (M' `|` M'^-1) Y H3 H5).
     Qed.
     
-    Lemma leSet1_antisymmetric: sporder D -> D `<=` M `|` M^-1 -> @antisymmetric _ leSet1.
+    Lemma leSet1_antisymmetric: sporder D -> D `<=` M' `|` M'^-1 -> @antisymmetric _ leSet1.
     Proof. 
       move => H1 H2 [X [Hx Hx']] [Y [Hy Hy']] H3 H4.
       move: (le_antisym_l1 H1 H2 Hx Hy H3 H4) => H5.
@@ -127,7 +94,7 @@ Section Paper.
       apply: proof_irrelevance.
     Qed.
     
-    Lemma leSet1_porder: sporder D -> D  `<=`  M `|` M^-1 -> @porder _ leSet1. 
+    Lemma leSet1_porder: sporder D -> D  `<=`  M' `|` M'^-1 -> @porder _ leSet1. 
     Proof.
       move => ? ?; split. 
       + by apply/leSet1_reflexive.
@@ -344,8 +311,8 @@ Section Paper.
     Hypothesis Hc: C \in ChainsB. 
     Hypothesis Hne: C != set0.
         
-    (* Sinf is a Mono-independent set when C is a chain *)
-    Lemma Sinf_indep: RelIndep M (Sinf C).
+    (* Sinf is a M'ono-independent set when C is a chain *)
+    Lemma Sinf_indep: RelIndep M' (Sinf C).
     Proof.
       move: Hc => /inP H1 x y /inP H2 /inP H3 H4 /= H5.
       move: H2 H3 =>[S [/[dup] H6 /inP P6 [/= H7 H8]]]
@@ -361,26 +328,26 @@ Section Paper.
     Qed.
     
     (* begin snippet Scalnotempty:: no-out *) 
-    Lemma Scal_not_empty (A1: Assumption1) (A2: Assumption2):
+    Lemma Scal_not_empty (A1: Assumption1 T) (A2: Assumption2 R):
       exists v, Scal [set v].
     (* end snippet Scalnotempty *)
     Proof.
       have: Rloop R by apply: notiic_rloop.
       move => [v H1]; exists v.
-      have H2':  R `<=` M by rewrite /M;apply: subsetUr.
+      have H2':  R `<=` M' by rewrite /M';apply: subsetUr.
       split;first by rewrite /RelIndep;move => x y /inP /= -> /inP /= ->.
       split;first by move => t [y [/= H3 H4]];move: H3; rewrite H4 /= => /H1/H2' H3;exists v.
       by rewrite -notempty_exists;(exists v);rewrite inP.
     Qed.
     
-    Lemma SType_not_empty (A1: Assumption1) (A2: Assumption2):
+    Lemma SType_not_empty (A1: Assumption1 T) (A2: Assumption2 R):
       (@setT SType) != set0.
     Proof.
       rewrite -notempty_exists;move: (Scal_not_empty A1 A2) => [v H2].
       by exists (exist _ [set v] H2);rewrite inP.
     Qed.
     
-    Lemma Sinf_not_empty (A3: Assumption3) (A4: Assumption4):
+    Lemma Sinf_not_empty (A3: Assumption3 D) (A4: Assumption4 D):
       (Sinf C) != set0.
     Proof.
       move: (@Elt_not_empty C Hne) => [s _];rewrite -notempty_exists.
@@ -388,9 +355,9 @@ Section Paper.
     Qed.
     
     (* begin snippet SinfScalP:: no-out *)    
-    Lemma Sinf_ScalP (A2: Assumption2) (A3: Assumption3) 
-      (A4: Assumption4) (A5:Assumption5) (A9: Assumption9):
-      (Sinf C):#(R) `<=` M#(Sinf C).
+    Lemma Sinf_ScalP (A2: Assumption2 R) (A3: Assumption3 D) 
+      (A4: Assumption4 D) (A5:Assumption5 D M') (A9: Assumption9 R B D M'):
+      (Sinf C):#(R) `<=` M'#(Sinf C).
      (* end snippet SinfScalP *)
     Proof.
       move: Hc => H1 y [x [B1 H3]].
@@ -401,11 +368,11 @@ Section Paper.
         move: H3 => /inP H3. 
         move: (Sinf_indep H3 H9') => H10.
         move: (EM (x = y)) H3 => [H11 | H11] /inP H3.
-        by (exists x);(have H12: M(y,x) by right;move: B1;rewrite H11).
-        by move: H11 => /H10 H11;(have H12: M(x,y) by right).
+        by (exists x);(have H12: M'(y,x) by right;move: B1;rewrite H11).
+        by move: H11 => /H10 H11;(have H12: M'(x,y) by right).
       + (* now  ~ y \in Sinf C *)
         have B2: ~ (x = y) by move => I1;rewrite -I1 inP in H9'.
-        move: (EM (M (y,x))) => [? | B3];first by (exists x).
+        move: (EM (M' (y,x))) => [? | B3];first by (exists x).
         have H10: (sval X):#R y by (exists x);split;[ |rewrite -inP].
         move: H10 => /H8 [x' [B4 /inP H11]].
         
@@ -414,7 +381,7 @@ Section Paper.
         have B6: ~ (x = x') by move => I1; move: H3;rewrite I1 => /inP H3. 
         have B3': ~ (y = x')
           by move => I1;rewrite I1 in B1;
-                    (have I3: M (x,x') by right);move: (H7 x x' H5 H11 B6).
+                    (have I3: M' (x,x') by right);move: (H7 x x' H5 H11 B6).
         
         have H12: (sval X) [<= D] (Sinf C)  by apply: ChooseRC6. 
         move: (H11) => /H12 [y' [/= B7 [H21 | B8]]].  
@@ -423,8 +390,8 @@ Section Paper.
         move: (EM (x' = y')) B4 => [-> | B3''] B4.
         by (exists y'); rewrite inP in B7. 
         
-        have P11': ~ ((M `|` M^-1) (x',x))
-          by pose proof (@RelIndep_E _ x x' M _ H5 H11 B6 H7).
+        have P11': ~ ((M' `|` M'^-1) (x',x))
+          by pose proof (@RelIndep_E _ x x' M' _ H5 H11 B6 H7).
         
         move: (EM (x = y')) B8 => [<- /A5 B10 //| B9 /[dup] B8 /A5 B10].
         
@@ -435,26 +402,27 @@ Section Paper.
         have P5: ~ (x' = y') by apply: B3''.
         have P6: ~ (y' = y) by  move => I1; by rewrite I1 in B7.
         have P7: R (x, y) by apply: B1.
-        have P8: M (y, x') by apply: B4.
+        have P8: M' (y, x') by apply: B4.
         have P9: D (x',y') by apply: B8.
-        have P10: ~ M (y, x) by apply: B3.
-        have P11: ~ ((M `|` M^-1) (x',x)) by apply: P11'.
-        have P12: ~ ((M `|` M^-1) (y',x))
+        have P10: ~ M' (y, x) by apply: B3.
+        have P11: ~ ((M' `|` M'^-1) (x',x)) by apply: P11'.
+        have P12: ~ ((M' `|` M'^-1) (y',x))
           by move: H3 => /inP H3;
-                        pose proof (@RelIndep_E _ x y' M _ H3 B7 P3 (Sinf_indep)).
+                        pose proof (@RelIndep_E _ x y' M' _ H3 B7 P3 (Sinf_indep)).
         
         exists y'. split. by apply: (A9 x y x' y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12). by rewrite -inP.
     Qed.
     
     (* begin snippet SinfScal:: no-out *)    
-    Lemma Sinf_Scal (A2: Assumption2) (A3: Assumption3) (A4: Assumption4)  (A5:Assumption5) (A9: Assumption9):
+    Lemma Sinf_Scal (A2: Assumption2 R) (A3: Assumption3 D) (A4: Assumption4 D)
+      (A5:Assumption5 D M') (A9: Assumption9 R B D M'):
       (Sinf C) \in Scal. 
     (* end snippet SinfScal *)
     Proof.
       by rewrite inP;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
     Qed.
     
-    Lemma Sinf_final (A2: Assumption2) (A3: Assumption3) (A4: Assumption4)   (A5:Assumption5) (A9: Assumption9):
+    Lemma Sinf_final (A2: Assumption2 R) (A3: Assumption3 D) (A4: Assumption4 D)   (A5:Assumption5 D M') (A9: Assumption9 R B D M'):
       exists Si, forall (S: SType), C S -> S [<=] Si.
     Proof.
       move: (Sinf_Scal A2 A3 A4 A5 A9) => /inP H2;exists (exist _ (Sinf C) H2);move => S /inP H3. 
@@ -466,8 +434,8 @@ Section Paper.
   (** * existence of Smax with Zorn Lemma for type SType *)
   (* begin snippet SmaxSType:: no-out *)    
   Lemma Smax_SType
-    (A1: Assumption1) (A2: Assumption2) (A3: Assumption3) (A4: Assumption4) (A5: Assumption5)
-    (A9: Assumption9):
+    (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 D) (A4: Assumption4 D) (A5: Assumption5 D M')
+    (A9: Assumption9 R B D M'):
     exists Sm, forall S, Sm [<=] S -> S = Sm.
   (* end snippet SmaxSType *)
   Proof.
@@ -483,8 +451,8 @@ Section Paper.
   (** * existence of Smax in set T *)
   (* begin snippet SmaxE:: no-out *)    
   Lemma Smax_Scal 
-    (A1: Assumption1) (A2: Assumption2) (A3: Assumption3) (A4: Assumption4) (A5: Assumption5)
-    (A9: Assumption9):
+    (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 D) (A4: Assumption4 D) (A5: Assumption5 D M')
+    (A9: Assumption9 R B D M'):
     exists Sm, Sm \in Scal /\ forall T, T \in Scal -> Sm [<= D] T -> T = Sm.
   (* end snippet SmaxE *)    
   Proof.
@@ -498,371 +466,37 @@ Section Paper.
       S \in Scal /\ forall T, T \in Scal -> S [<= D] T -> T = S.
   (* end snippet IsMaximal:: no-out *)  
   (* begin snippet Smax:: no-out *)    
-  Lemma Smax (A1: Assumption1) (A2: Assumption2) (A3: Assumption3) (A4: Assumption4)
-    (A5: Assumption5) (A9: Assumption9):
+  Lemma Smax (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 D) (A4: Assumption4 D)
+    (A5: Assumption5 D M') (A9: Assumption9 R B D M'):
     exists Sm, IsMaximal Sm.
   (* end snippet Smax *)    
   Proof. by move: (Smax_Scal A1 A2 A3 A4 A5 A9) => [Sm HH];exists Sm. Qed.
   
-  Section Extend.
-    
-    (** * if X is in Scal but not a kernel there exists X' such that *)
-    (** * X <= X' (X != X') and X' is also in Scal *)
-    
-    Variable (X: set T).
-
-    (* begin snippet Sx:: no-out *)    
-    Definition Y:= [set y | ~ (y \in X) /\ ~ (y \in M#X)].
-    (* end snippet Sx *)       
-
-    Definition Mabsorbant := forall y, ~ (y \in X) -> (y \in M#X).
-
-    Definition Non_Mabsorbant := exists y, y \in Y.
-
-    (** * C'est l'ensemble X_y de la nouvelle preuve *)
-
-    (* begin snippet Tm:: no-out *)    
-    Definition Xy y:= [set x | x \in X /\ (B (x,y))].
-    (* end snippet Tm *)       
-    
-    (* begin snippet TmI:: no-out *)    
-    Lemma XyI: forall y, Xy y `<=` X.
-    (* end snippet TmI *)       
-    Proof. by move => x y [/inP H2 _]. Qed.
-    
-    Lemma Xpart: forall y, ( X `\` (Xy y)) `|` (Xy y) = X.
-    Proof. move => y;apply: (@setDKU T (Xy y) X);apply: XyI. Qed.
-    
-    (* begin snippet Sxm:: no-out *)    
-    Definition SeP y := forall y', y' \in Y -> R(y,y') -> R(y',y).
-    (* end snippet Sxm*)       
-    
-    (* A consequence of A2 *)
-    (* begin snippet Sxone:: no-out *)    
-    Lemma Sx_1 (A2: Assumption2):
-      (exists y, (y \in Y)) -> (exists (y:T), y \in Y /\ SeP y).
-    (* end snippet Sxone*)       
-    Proof.  by move => H1; move: (notiic_rloop_sub A2 H1) => H2.  Qed.
-
-    Lemma NonMabsorbant (A2: Assumption2):
-      Non_Mabsorbant -> exists y, y \in Y /\ (SeP y).
-    Proof. by move => H0;pose proof (Sx_1 A2 H0). Qed.
-    
-    (* begin snippet Sbunp:: no-out *)    
-    Lemma fact0: forall x y, x \in X `\` (Xy y) -> ~ B (x,y).
-    (* end snippet Sbunp*)       
-    Proof. 
-      move => x y /inP [/inP H3 /inP H4].
-      have H0: x \in X -> ~(x \in (Xy y)) -> ~ B (x,y).
-      by move => H3';rewrite inP not_andE => [[? // | /contrapT ? //]].
-      by apply: (H0 H3 H4). 
-    Qed.
-    
-    Lemma fact4: (X:#(R) `<=` M#X) -> forall x y, x \in X -> y \in Y -> (~ (R (x,y))) /\ (~ (M (y,x))).
-    Proof.
-      move => H0 x y /inP H1 /inP [H2 H3].
-      move: H3; rewrite inP/Aset/Fset/mkset => H3.
-      rewrite -not_orP => -[ H4 | H4]. 
-      + have /H0 H5:  X:#R y by rewrite /Aset/Fset/mkset;(exists x).
-        by have H3n: (exists y0 : T, M (y, y0) /\ X y0) by [].
-      + by have H3n: (exists y0 : T, M (y, y0) /\ X y0) by (exists x).
-    Qed.
-    
-    Lemma fact3: forall x, forall y, x \in X `\` Xy y -> x \in X. 
-    Proof. by move => x y /inP/(@subDsetl T X (Xy y))/inP. Qed.
-    
-    
-    (** the case one:  ~ ( y \in X:#(B) ) and candidate  (X `|` [set y]) *)
-
-    Lemma case1_nonempty: forall y,
-        Scal X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> (X `|` [set y]) != set0.
-    Proof.
-      by move => y [_ [_ /notempty_iff H0]] _ _ _;rewrite -notempty_iff setU_eq0 => -[? _].
-    Qed.
-
-    Lemma case1_indep: forall y, 
-        Scal X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> RelIndep M (X `|` [set y]).
-    Proof.
-      rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4.
-      have H5: ~ y \in X:#(R) by move => /inP/H0'/inP ?. 
-      have H6: ~ y \in X:#(M) by rewrite /M /Aset inverseU -FsetUl => /inP [/inP ? |/inP ?].
-      by apply: RelIndep_U.
-    Qed.
-    
-    Lemma case1_RMprop: forall y, 
-        Scal X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) ->
-        forall y', ~ (y' \in (X `|` [set y])) -> y' \in (X `|` [set y]):#(R) -> y' \in M#(X `|` [set y]).
-    Proof.
-      rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4 y' H5.
-      rewrite /Aset FsetUr => /inP [/H0' H6 | /Fset_s H6].
-      + by rewrite FsetUr inP;left.
-      + (* two subcases *)
-        case H7: ( y' \in M#(X));first by rewrite FsetUr inP;left;rewrite -inP.
-        have H8: y' \in Y. rewrite /Y inP;split.
-        move => H9.
-        by have H10: y' \in X `|` [set y] by rewrite inP;left;rewrite -inP.
-        by rewrite H7.
-        (* end of H8 *)
-        move: (H3 y' H8 H6) => H11.
-        have H12: y' \in M#([set y]). rewrite inP. exists y.
-        split. rewrite /M. by right. by [].
-        by rewrite FsetUr inP;right; by rewrite -inP.
-    Qed.
-
-    Lemma case1_RMprop1: forall y, 
-        Scal X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> (X `|` [set y]):#(R) `<=` M#(X `|` [set y]).
-    Proof.
-      move => y H1 H2 H3 H4.
-      pose proof (case1_RMprop H1 H2 H3 H4) as H5.
-      pose proof (case1_indep  H1 H2 H3 H4) as H6.
-      pose proof (ScalProp1 H6) as H7.
-      by rewrite H7.
-    Qed.
-    
-    Lemma case1_Cprop: forall y,
-      Scal X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> X [<= D] (X `|` [set y]).
-    Proof.
-      rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4 y' /= H5.
-      by exists y';split;[rewrite inP;left; rewrite -inP |left].
-    Qed.
-    
-    Lemma case1_notequal: forall y,
-      Scal X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) ->
-      (exists x' : T, x' \in X `|` [set y] /\ ~ x' \in X).
-    Proof.
-      by move => y _ /inP [H1 _]; exists y;split;[rewrite inP;right|].
-    Qed.
-    
-    Lemma case1: forall y,
-        Scal X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) )
-        -> Scal (X `|` [set y]) /\  X [<= D] (X `|` [set y]) 
-          /\ (exists x' : T, x' \in X `|` [set y] /\ ~ x' \in X).
-    Proof.
-      move => y H1 H2 H3 H4. 
-      pose proof (case1_nonempty H1 H2 H3 H4).
-      pose proof (case1_indep H1 H2 H3 H4).
-      pose proof (case1_RMprop1 H1 H2 H3 H4).
-      pose proof (case1_Cprop H1 H2 H3 H4).
-      pose proof (case1_notequal H1 H2 H3 H4).
-      exact.
-    Qed.
-
-    (** the case one:  ( y \in X:#(B) ) and candidate  ((X `\` (Xy y)) `|` [set y]) *)
-
-    Lemma case2_nonempty: forall y,
-        Scal X -> y \in Y -> (SeP y) -> y \in X:#(B) -> ((X `\` (Xy y)) `|` [set y]) != set0.
-    Proof.
-      move => y [_ [_ /notempty_iff H0]] _ _ _;rewrite -notempty_iff setU_eq0 => -[_ H1].
-      have: y \in [set y] by rewrite inP. 
-      by rewrite H1 in_set0. 
-    Qed.
-    
-    Lemma case2_indep: forall y, 
-        Scal X -> y \in Y -> (SeP y) -> y \in X:#(B) -> RelIndep M ((X `\` (Xy y)) `|` [set y]).
-    Proof.
-      rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4.
-      have H5: X `\` Xy y `<=` X by apply: subDsetl.
-      pose proof (@RelIndep_Ir T M (X `\` Xy y) X H5 H0) as H6.
-      pose proof fact0 as H7.
-      have H8: ~ y \in X:#(R) by move => /inP/H0'/inP ?. 
-
-      have H9:  forall x : T, x \in X `\` Xy y -> ~ M (x, y).
-      move => x H10. rewrite /M => -[ H11 | H11].
-      by have H12: ~ B(x,y) by apply: H7.
-      have H12:  X `\` Xy y `<=` X by apply: subDsetl.
-      move: H10 => /inP/H12 H10.
-      move: H8. rewrite inP /Aset/Fset /mkset => H13.
-      have H14: (exists x : T, R^-1 (y, x) /\ X x).
-      by (exists x). by [].
-      (** fin de H9 *)
-      
-      have H10:  forall x : T, x \in X `\` Xy y -> ~ M (y, x).
-      move => x H11.
-      move: H2. rewrite inP /Aset/Fset /mkset => H12.
-      have H13:  X `\` Xy y `<=` X by apply: subDsetl.
-      move: H11 => /inP/H13 H11.
-      move => H14.
-      by have H15: (exists y0 : T, M (y, y0) /\ X y0) by (exists x).
-      
-      have H11: ~ y \in M#(X `\` Xy y).
-      by rewrite inP /Aset/Fset /mkset => -[x [H12 /inP/H10 H13]].
-
-      have H12: ~ y \in (X `\` Xy y):#M.
-      by rewrite inP /Aset/Fset /mkset => -[x [H12 /inP/H9 H13]].
-
-      by apply: RelIndep_U.
-    Qed.
-      
-    Lemma case2_RMprop (A7:Assumption7) (A8:Assumption8): forall y, 
-        Scal X -> y \in Y -> (SeP y) -> y \in X:#(B) 
-        -> ( forall y', ~ (y' \in ((X `\` (Xy y)) `|` [set y]))
-                  -> y' \in ((X `\` (Xy y)) `|` [set y]):#(R) -> y' \in M#((X `\` (Xy y)) `|` [set y])).
-    Proof.
-      rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4 y' H4'.
-      (** on a necessairement ~ (y = y') **)
-      have P0: ~ (y = y')
-        by move => I1;(have I2: y \in  X `\` Xy y `|` [set y] by rewrite inP;right);rewrite -I1 in H4'.
-      rewrite inP/Aset/Fset/mkset => -[x [H5 [/inP H6 | H6]]];rewrite inP/Aset/Fset/mkset.
-      + (** x \in X\X_y *)
-        move: (H6) => /fact3/inP H6'.
-        have P0': ~ (y' = x)
-          by move => I1;(have I2: x \in  X `\` Xy y `|` [set y] by rewrite inP;left;rewrite -inP);
-                    rewrite -I1 in I2.
-        have H7: y' \in  X:#R by rewrite inP /Aset/Fset /mkset;(exists x).
-        have H8: y' \in  M#X by move: H7 => /inP/H0'/inP.
-        move: H8 => /inP [x' [H8 H9]].
-        move: H9;rewrite -{1}(Xpart y) => -[H9 | H9];first  by (exists x');split;[by [] | left].
-        (** x' \in Xy *)
-        move: (EM (M (y',x))) => [H10 | H10].
-        ++ by (exists x);split;[ | left;apply/inP]. 
-        ++ (* we will use A7 to conclude that M(y',y) *)
-           exists y; split; last by right. 
-           have P1: ~ (x' = x) by move => H11;move: H6 H9;move: H11 => -> /inP [_ ?] ?. 
-           have P2: R (x,y') by apply: H5.
-           have P3: M (y',x')  by apply: H8.
-           have P4: B (x',y) by move: H9;rewrite /Xy => -[H9 H9'].
-           have P5: ~ (B (x,y)) by apply: fact0. 
-           have P6: ~ (R (x',y)) /\ ~ (M (y,x')) 
-             by apply: (fact4 H0');rewrite inP;move: (@XyI y) => H11;move: H9 => /H11. 
-           have P7: ~ (R (x,y)) /\ ~ (M (y,x)) 
-             by apply: (fact4 H0');rewrite inP.
-           have P8:  ~ (M (x,x'))
-             by apply: H0;[by rewrite inP
-                     | by rewrite inP;move: (@XyI y) => H11;move: H9 => /H11
-                     | by move => H11; rewrite H11 in P1].
-           have P9:  ~ (M (x',x))
-             by apply: H0;[rewrite inP;move: (@XyI y) => H11;move: H9 => /H11 
-                          | rewrite inP | move => H11;rewrite H11 in P1].
-           have P10: ~ (y = y') by apply: P0.
-           have P11: ~ (y' = x) by apply: P0'.
-           have P12: ~ (y' = x')
-             by move => I1;(have I2: M(x, x') by right ; rewrite -I1).
-           have P13: ~ (y = x ) by move => I1;rewrite -I1 -inP in H6'.
-           have P14: ~ (y = x' )
-             by move => I1;(have: M (x',y) by left);move: P6;rewrite I1 => -[_ I3] I4.
-           have P15: ~ (M (y',x)) by exact.
-           by move: (A7 x x' y y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12 P13 P14 P15).
-        ++ have H7: x = y. by [].
-           have H8: R (y,y') by rewrite H7 in H5.
-           case H9: (y' \in M#(X)); last first.
-           +++ case H10: (y' \in (Xy y)).
-               ++++ move: H10;rewrite /Xy => /inP [H11 H12].
-                    exists y. split. by rewrite /M;left. by right.
-               ++++ have H11: y' \in Y. 
-                    rewrite inP/Y. split.
-                    rewrite -{1}(Xpart y) inP => -[H12| /inP H12]. 
-                    by have H13: y' \in X `\` Xy y `|` [set y] by rewrite inP; left.
-                    by rewrite H10 in H12.
-                    by rewrite H9. 
-                    (** * end H11 *)
-                    have H12: M (y', y)  by rewrite /M;right;apply: (H3 y' H11 H8).
-                    by (exists y);split;[ | right].
-           +++ move: H9;rewrite -{1}(Xpart y) => /inP [x' [H9 [[H10 H10'] | H10]]].
-               ++++ by (exists x');split;[ | left].
-               ++++ move: (EM (y' = x')) => [H9'| H9'].
-                    by (have H11: M (y',y) by left;rewrite H9';move: H10 => [_ H10]);
-                    (exists y);split;[|  right].
-                    
-                    have H11: x' \in X by move: H10;rewrite /Xy => -[? _]. 
-                    have H12: y \in Y by rewrite inP/Y.
-                    
-                    have B0: ~ (y' = x') by apply: H9'.
-                    have B0': ~ (y = y') by apply: P0.
-                    have B0'': ~ (y = x') 
-                      by move: H12 => /inP [H12 _] H13;rewrite H13 in H12.
-                    
-                    have B1: R (y,y') by apply: H8.
-                    have B2: M (y',x') by apply: H9.
-                    have B3: B (x',y) by move: H10;rewrite /Xy => -[_ ?]. 
-                    have B4: ~ (R (x',y)) /\ ~ M (y, x') by apply: (fact4 H0' H11 H12). 
-                    
-                    move: (A8 x' y y' B0 B0' B0'' B1 B2 B3 B4) => B5.
-                    by (exists y);split;[ | right].
-    Qed.
-    
-    Lemma case2_RMprop1 (A7:Assumption7) (A8:Assumption8):
-      forall y, Scal X -> y \in Y -> (SeP y) -> y \in X:#(B) 
-           -> ((X `\` (Xy y)) `|` [set y]):#(R) `<=` M#((X `\` (Xy y)) `|` [set y]).
-    Proof.
-      move => y H1 H2 H3 H4.
-      pose proof (case2_RMprop A7 A8 H1 H2 H3 H4) as H7.
-      pose proof (case2_indep  H1 H2 H3 H4) as H8.
-      pose proof (ScalProp1 H8) as H9.
-      by rewrite H9.
-    Qed.
-
-    Lemma case2_Cprop (A6: Assumption6): forall y,
-      Scal X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
-      -> X [<= D] ((X`\` (Xy y)) `|` [set y]).
-    Proof.
-      rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4 x /=.
-      rewrite -{1}(Xpart y) inP => -[ H5 | H5].
-      + (* x \in  X `\` Xy *) by (exists x);split;[rewrite inP;left | left].
-      + (* x \in Xy y *) exists y;split;first by rewrite inP;right. 
-        have H6: B (x,y) by move: H5 => [_ ?].
-        move: H2;rewrite inP/Fset/mkset => H2.
-        have H7: X x  by rewrite -{1}(Xpart y);right.
-        have H8: ~ (M (y, x))
-          by move => H8;have H9: (exists y0 : T, M (y, y0) /\ X y0) by (exists x).
-        by right; apply: A6.
-    Qed.
-    
-    Lemma case2_notequal: forall y,
-      Scal X -> y \in Y -> (SeP y) -> ( y \in X:#(B) ) ->
-      (exists x' : T, x' \in ((X`\` (Xy y)) `|` [set y]) /\ ~ x' \in X).
-    Proof.
-      by move => y _ /inP [H1 _]; exists y;split;[rewrite inP;right|].
-    Qed.
-
-    Lemma case2 (A6: Assumption6)(A7: Assumption7)(A8: Assumption8) : forall y,
-        Scal X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
-        -> Scal ((X`\` (Xy y)) `|` [set y]) /\  X [<= D] ((X`\` (Xy y)) `|` [set y])
-          /\ (exists x' : T, x' \in ((X`\` (Xy y)) `|` [set y]) /\ ~ x' \in X).
-    Proof.
-      move => y H1 H2 H3 H4. 
-      pose proof (case2_nonempty H1 H2 H3 H4).
-      pose proof (case2_indep H1 H2 H3 H4).
-      pose proof (case2_RMprop1 A7 A8 H1 H2 H3 H4).
-      pose proof (case2_Cprop A6 H1 H2 H3 H4).
-      pose proof (case2_notequal H1 H2 H3 H4).
-      exact.
-    Qed.
-
-    Lemma extend (A2: Assumption2) (A6: Assumption6) (A7: Assumption7) (A8: Assumption8) :
-        Scal X -> Non_Mabsorbant ->
-        exists X', Scal X' /\  X [<= D] X' /\ (exists x', x' \in X' /\ ~ (x' \in X)).
-    Proof.
-      move => H1 /(NonMabsorbant A2) [y [H2 H3]]. 
-      have H4: y \in (X:#(B) `|` (X:#(B)).^c) by rewrite (setUv X:#(B)) inP.
-      move: H4 => /inP [/inP H4 | H4].
-      by move: (case2 A6 A7 A8 H1 H2 H3 H4) => H5;exists (X `\` Xy y `|` [set y]).
-      move: H4;rewrite -inP  in_setC notin_setE => /inP H4.
-      by move: (case1 H1 H2 H3 H4) => H5;exists (X `|` [set y]).
-    Qed.
-    
-    Lemma main_lemma
-      (A2: Assumption2) (A6: Assumption6) (A7: Assumption7) (A8: Assumption8) :
-      IsMaximal X -> Mabsorbant.
-    Proof.
-      contra; move => H1 /inP H2. 
-      have H3: Non_Mabsorbant. move: H1 => [y H1] H3. exists y. rewrite inP.
-      split. by []. rewrite notin_setE in H3. by rewrite inP.
-      move: (extend A2 A6 A7 A8 H2 H3) => [X' [/inP H4 [H5 [x' [H6 H7]]]]].
-      exists X'. by []. split. by [].
-      apply /eqP => /seteqP [H8 H9].
-      by move: H6 => /inP/H8/inP H6.
-    Qed.
-    
-  End Extend. 
-
+  Lemma main_lemma X 
+    (A2: Assumption2 R) (A6: Assumption6 B M' D) (A7: Assumption7 R B M') 
+    (A8: Assumption8 R B M') :
+    IsMaximal X -> Mabsorbant R B X.
+  Proof.
+    Print Mabsorbant.
+    contra; move => H1 /inP H2. 
+    have H3: Non_Mabsorbant R B X. move: H1 => [y H1] H3. exists y. rewrite inP.
+    split. by []. rewrite notin_setE in H3. by rewrite inP.
+    move: (extend A2 A6 A7 A8 H2 H3) => [X' [/inP H4 [H5 [x' [H6 H7]]]]].
+    exists X'. by []. split. by [].
+    apply /eqP => /seteqP [H8 H9].
+    by move: H6 => /inP/H8/inP H6.
+  Qed.
+  
+  
   Implicit Type (S X: set T).
   
   (** * The Assumptions we use: weaker than the original paper assumptions *)
   (* begin snippet MainTh:: no-out *)    
   Theorem G_SSW
-    (A1: Assumption1) (A2: Assumption2) (A3: Assumption3) (A4: Assumption4)
-    (A5: Assumption5) (A6: Assumption6) (A7: Assumption7) (A8: Assumption8) (A9: Assumption9):
-    exists X, RelIndep M X /\  X != set0 /\  forall x, ~ (x\in X) -> (x \in M#X). 
+    (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 D) (A4: Assumption4 D)
+    (A5: Assumption5 D M') (A6: Assumption6 B M' D) (A7: Assumption7 R B M') (A8: Assumption8 R B M')
+    (A9: Assumption9 R B D M'):
+    exists X, RelIndep M' X /\  X != set0 /\  forall x, ~ (x\in X) -> (x \in M'#X). 
   (* end snippet MainTh:: no-out *)    
   Proof.
     move: (Smax A1 A2 A3 A4 A5 A9) => [Sm H1].
@@ -891,46 +525,46 @@ Module SSWext.
   Lemma B_trans: transitive B.
   Proof. by apply: (@TclosT _ Eb). Qed.
   
-  Lemma L4: (@Assumption4 T D). 
+  Lemma L4: (Assumption4 D). 
   Proof. by apply: (@Asym_sporder _ B);apply: TclosT. Qed.
   
-  Lemma L5: (@Assumption5 T R B D).
+  Lemma L5: (Assumption5 D (M R B)).
   Proof. 
-    have H1: D `<=` M R B
+    have H1: D `<=` M' R B
       by apply: (@subset_trans _ B _ _ (@AsymI _ B)
                    (@subsetUl _ B R)).
-    by pose proof (@subset_trans _ _ D _  H1 (@subsetUl _ (M R B) (M R B)^-1)).
+    by pose proof (@subset_trans _ _ D _  H1 (@subsetUl _ (M' R B) (M' R B)^-1)).
   Qed.
   
-  Lemma L6: (@Assumption6 T R B D).
+  Lemma L6: (Assumption6 B (M R B) D).
   Proof. move => x y [? ?];split;first exact.
-         move => ?; by have: M R B (y, x) by left.
+         move => ?; by have: M' R B (y, x) by left.
   Qed.
 
-  Lemma L7: (@Assumption7 T R B).
+  Lemma L7: (Assumption7 R B (M R B)).
   Proof. 
     move => x x' y y' H1 H2 [H3|H3] H4 H5 H6 H7 H8 H9.
     by left;apply: (B_trans H3 H4).
-    by have: M R B (x,x') by right;apply: (R_trans H2 H3).
+    by have: M' R B (x,x') by right;apply: (R_trans H2 H3).
   Qed.
   
-  Lemma L8: (@Assumption8 T R B).
+  Lemma L8: (Assumption8 R B (M R B)).
   Proof. 
     move => x' y y' B0 B0' B0'' H1 [H2| H2] H3 [H4 H5].
     by left;apply: (B_trans H2 H3).
-    by have H11: M R B (y,x') by right;apply: (R_trans H1 H2).
+    by have H11: M' R B (y,x') by right;apply: (R_trans H1 H2).
   Qed.
   
-  Lemma L9: (@Assumption9 T R B D).
+  Lemma L9: (Assumption9 R B D (M R B)).
   Proof. 
     move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
     by move: H3 => /(@AsymI _ B) H3;left;apply: (B_trans H2 H3).
-    by have: (M R B `|` (M R B)^-1) (x',x) by right;right;apply: (R_trans H1 H2).
+    by have: (M' R B `|` (M' R B)^-1) (x',x) by right;right;apply: (R_trans H1 H2).
   Qed.
   
   Theorem SSWext
     (A1: SSW_1) (A2: SSW_2) (A3: SSW_3):
-    exists X, RelIndep (M R B) X /\  X != set0 /\  forall x, ~ (x\in X) -> (x \in (M R B)#X). 
+    exists X, RelIndep (M' R B) X /\  X != set0 /\  forall x, ~ (x\in X) -> (x \in (M' R B)#X). 
   (* end snippet MainTh:: no-out *)    
   Proof.
     by pose proof (@G_SSW _ R B D A1 A2 A3 L4 L5 L6 L7 L8 L9).
@@ -952,10 +586,10 @@ Module ABkernels.
   Definition AB_4:= transitive R.
   Definition AB_5:= transitive B.
 
-  Lemma L4 (A5: AB_5) : (@Assumption4 T D). 
+  Lemma L4 (A5: AB_5) : (Assumption4 D). 
   Proof. by apply: (@Asym_sporder _ B). Qed.
   
-  Lemma L5: (@Assumption5 T R B D).
+  Lemma L5: (Assumption5 D (M R B)).
   Proof. 
     have H1: D `<=` M R B
       by apply: (@subset_trans _ B _ _ (@AsymI _ B)
@@ -963,26 +597,26 @@ Module ABkernels.
     by pose proof (@subset_trans _ _ D _  H1 (@subsetUl _ (M R B) (M R B)^-1)).
   Qed.
   
-  Lemma L6: (@Assumption6 T R B D).
+  Lemma L6: (Assumption6 B (M R B) D).
   Proof. move => x y [? ?];split;first exact.
          move => ?; by have: M R B (y, x) by left.
   Qed.
 
-  Lemma L7 (A4: AB_4) (A5: AB_5): (@Assumption7 T R B).
+  Lemma L7 (A4: AB_4) (A5: AB_5): (Assumption7 R B (M R B)).
   Proof. 
     move => x x' y y' H1 H2 [H3|H3] H4 H5 H6 H7 H8 H9.
     by left;apply: (A5 y' x' y H3 H4).
     by have: M R B (x,x') by right;apply: (A4 x y' x' H2 H3).
   Qed.
   
-  Lemma L8 (A4: AB_4) (A5: AB_5): (@Assumption8 T R B).
+  Lemma L8 (A4: AB_4) (A5: AB_5): (Assumption8 R B (M R B)).
   Proof. 
     move => x' y y' B0 B0' B0'' H1 [H2| H2] H3 [H4 H5].
     by left;apply: (A5 y' x' y H2 H3).
     by have H11: M R B (y,x') by right;apply: (A4 y y' x' H1 H2).
   Qed.
   
-  Lemma L9(A4: AB_4) (A5: AB_5) : (@Assumption9 T R B D).
+  Lemma L9(A4: AB_4) (A5: AB_5) : (Assumption9 R B D (M R B)). 
   Proof. 
     move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
     by move: H3 => /(@AsymI _ B) H3;left;apply: (A5 y x' y' H2 H3).
@@ -1021,13 +655,13 @@ Module MeunierLanglois.
       -> B (y,z) -> ~ (B^-1 (y,z)) -> ~ (R (z,y))
       -> B (x,z) /\ ~ (B^-1 (x,z)) /\ ~ (R (z,x)).
   
-  Lemma L3 (A3: AB_3): (@Assumption3 T D).
+  Lemma L3 (A3: AB_3): (Assumption3 D).
   Proof.
     move: A3. contra => -[f H].
     by exists f;move => n;move: H => /(_ n) [/= H1 _].
   Qed.
   
-  Lemma L4 (A5: AB_5) (A6: AB_6) : (@Assumption4 T D). 
+  Lemma L4 (A5: AB_5) (A6: AB_6) : (Assumption4 D). 
   Proof. 
     split. 
     + move => x [/= H1 _].
@@ -1037,10 +671,10 @@ Module MeunierLanglois.
       by split. 
   Qed.
   
-  Lemma L5: (@Assumption5 T R B D).
+  Lemma L5: (Assumption5 D (M R B)).
   Proof. by move => [x y] [[/= ? _] _];left;left.  Qed.
   
-  Lemma L6: (@Assumption6 T R B D).
+  Lemma L6: (Assumption6 B (M R B) D).
   Proof.
     move => x y [H1 H2].
     split. 
@@ -1050,7 +684,7 @@ Module MeunierLanglois.
     by have H4:  M R B (y, x) by right. 
   Qed.
   
-  Lemma L7 (A4: AB_4) (A5: AB_5): (@Assumption7 T R B).
+  Lemma L7 (A4: AB_4) (A5: AB_5): (Assumption7 R B (M R B)).
   Proof. 
     move => x x' y y' H1 H2 [H3|H3] H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15.
     + left;move: (A5  y' x' y H12 H14 H10 H3 H4) => [? // | [_ H10']]. 
@@ -1060,7 +694,7 @@ Module MeunierLanglois.
       by (have H11': M R B(x', x) by left).
   Qed.
   
-  Lemma L8 (A4: AB_4) (A5: AB_5): (@Assumption8 T R B).
+  Lemma L8 (A4: AB_4) (A5: AB_5): (Assumption8 R B (M R B)).
   Proof. 
     move => x' y y' P0 P0' P0'' H1 [H2| H2] H3 [H4 H5].
     + left;move: (A5 y' x' y P0 P0'' P0' H2 H3) => [? // | [_ H6]].
@@ -1073,7 +707,7 @@ Module MeunierLanglois.
       by left.
   Qed.
   
-  Lemma L9 (A4: AB_4) (A5: AB_5) : (@Assumption9 T R B D).
+  Lemma L9 (A4: AB_4) (A5: AB_5) : (Assumption9 R B D (M R B)).
   Proof. 
     move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] [[/= H3 /=H3'] /=H3''] H4 H5 H6.
     + have P4': ~ (y' = x') by move => I1;rewrite I1 in P4.
