@@ -292,10 +292,12 @@ Section Assumptions.
 
 End Assumptions. 
 
-Section Extend.
+Module Extend_nonMabsorbant_prekernel.
   (** * if X is in preKernel but not a kernel there exists X' such that *)
   (** * X <= X' (X != X') and X' is also in preKernel *)
 
+  Section Extend_nonMabsorbant_prekernel.
+    
   Variables (T:choiceType) (R B D: relation T).
   
   Definition M := B `|` R.
@@ -641,6 +643,7 @@ Section Extend.
       exact.
     Qed.
 
+    (** * main result *)
     Lemma extend (A2: Assumption2 R) (A6: Assumption6 B M D) (A7: Assumption7 R B M) (A8: Assumption8 R B M):
         preKernel  R M X -> Non_Mabsorbant ->
         exists X', preKernel  R M X' /\  X [<= D] X' /\ (exists x', x' \in X' /\ ~ (x' \in X)).
@@ -652,7 +655,10 @@ Section Extend.
       move: H4;rewrite -inP  in_setC notin_setE => /inP H4.
       by move: (case1 H1 H2 H3 H4) => H5;exists (X `|` [set y]).
     Qed.
-    
-End Extend. 
 
+    End Extend_nonMabsorbant_prekernel.
+        
+End Extend_nonMabsorbant_prekernel.
+
+Export Extend_nonMabsorbant_prekernel (extend, M, Mabsorbant, Non_Mabsorbant).
 
