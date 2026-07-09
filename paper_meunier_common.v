@@ -251,21 +251,21 @@ Section Set_order.
   
 End Set_order. 
 
-Section Paper. 
+Section Assumptions. 
+
   (*  abstract version *)
-  Variables (T:choiceType) (R B D: relation T).
-
-  Definition M := B `|` R.
-
+  Context (T: Type). 
+  Implicit Types (R B D M: relation T).
+  
   Definition Assumption1:= (NotEmpty T).
-  Definition Assumption2:= ~ (iic (Asym R)).
-  Definition Assumption3:= ~ (iic D).
-  Definition Assumption4:= sporder D.
-  Definition Assumption5:= D  `<=` M `|` M^-1.
-  Definition Assumption6:= 
+  Definition Assumption2 R:= ~ (iic (Asym R)).
+  Definition Assumption3 D:= ~ (iic D).
+  Definition Assumption4 D:= sporder D.
+  Definition Assumption5 D M := D  `<=` M `|` M^-1.
+  Definition Assumption6 B M D:= 
     (forall x y, B (x,y) /\ ~ (M (y, x)) -> D (x,y)).
   
-  Definition Assumption7:= 
+  Definition Assumption7 R B M:= 
     (forall x x' y y', ~(x' = x) 
                   -> R (x,y') -> M (y', x')
                   -> (B (x',y)) -> ~ (B (x, y)) 
@@ -276,13 +276,13 @@ Section Paper.
                   -> ~ (M (y',x))
                   -> (M (y',y))).
   
-  Definition Assumption8:=
+  Definition Assumption8 R B M:=
     (forall x' y y', ~ (y' = x') -> ~ (y = y') -> ~ (y = x') 
                 -> R (y,y') -> M (y',x') -> B (x',y) 
                 -> ~ (R (x',y)) /\ ~ M (y, x')
                 -> (M (y',y))).
   
-  Definition Assumption9:= 
+  Definition Assumption9 R B D M:= 
     (forall x y x' y' , ~ (x = y) -> ~ (x = x') -> ~ (x = y')
                    -> ~ (y = x') -> ~ (x' = y') -> ~ (y' = y) 
                    -> R (x,y) -> M (y,x') -> D (x',y') -> ~(M (y,x)) 
@@ -290,9 +290,18 @@ Section Paper.
                    ->  ~ ((M `|` M^-1) (y',x))
                    -> M (y,y')).
 
+End Assumptions. 
+
+Section Extend.
+  (** * if X is in preKernel but not a kernel there exists X' such that *)
+  (** * X <= X' (X != X') and X' is also in preKernel *)
+
+  Variables (T:choiceType) (R B D: relation T).
   
+  Definition M := B `|` R.
+
   Lemma preKernelProp: forall S S1,
-      RelIndep M S -> S1 `<=` S -> (S1:#(R) `<=` M#S <-> forall y, ~ (y \in S) -> y \in S1:#(R) -> y \in  M#S).
+      RelIndep M S -> S1 `<=` S -> (S1:#(R) `<=` M#S <-> forall y, ~ (y \in S) -> y \in S1:#(R) -> y \in M#S).
   Proof.
     move => S S1 H1 H1';split => [H2 y _ /inP/H2/inP H4 //| H2 y H3].
     case H5: (y \in S);last first.
@@ -300,7 +309,7 @@ Section Paper.
     + move: H3. rewrite /Aset => -[y' [H6 H7]].      
       rewrite /RelIndep in H1.
       case H8: (y == y').
-      ++ move: H8 => /eqP H8; have H9: M(y,y) by rewrite -H8 in H6;rewrite /M;right.
+      ++ move: H8 => /eqP H8; have H9: M (y,y) by rewrite -H8 in H6;rewrite /M;right.
          by move: H7 => /H1' H7;(exists y);rewrite -H8 in H7.
       ++ move: H8 H7 => /eqP H8 /inP H7.
          have H9:  y' <> y by move => H10;rewrite H10 in H8.
@@ -308,27 +317,22 @@ Section Paper.
          move: (H1 y' y H7 H5 H9) => H10.
          by have H11: M (y', y) by rewrite /M;right.
   Qed.
-
+  
   Lemma preKernelProp1: forall S,
       RelIndep M S -> (S:#(R) `<=` M#S <-> forall y, ~ (y \in S) -> y \in S:#(R) -> y \in  M#S).
   Proof. move => S H1; apply: (preKernelProp H1 (@subset_refl T S)).  Qed.
   
-  Section Extend.
+  Variable (X: set T).
     
-    (** * if X is in preKernel but not a kernel there exists X' such that *)
-    (** * X <= X' (X != X') and X' is also in preKernel *)
-    
-    Variable (X: set T).
+  (* begin snippet Sx:: no-out *)    
+  Definition Y:= [set y | ~ (y \in X) /\ ~ (y \in M#X)].
+  (* end snippet Sx *)       
 
-    (* begin snippet Sx:: no-out *)    
-    Definition Y:= [set y | ~ (y \in X) /\ ~ (y \in M#X)].
-    (* end snippet Sx *)       
+  Definition Mabsorbant := forall y, ~ (y \in X) -> (y \in M#X).
 
-    Definition Mabsorbant := forall y, ~ (y \in X) -> (y \in M#X).
+  Definition Non_Mabsorbant := exists y, y \in Y.
 
-    Definition Non_Mabsorbant := exists y, y \in Y.
-
-    (** * C'est l'ensemble X_y de la nouvelle preuve *)
+  (** * C'est l'ensemble X_y de la nouvelle preuve *)
 
     (* begin snippet Tm:: no-out *)    
     Definition Xy y:= [set x | x \in X /\ (B (x,y))].
@@ -348,12 +352,12 @@ Section Paper.
     
     (* A consequence of A2 *)
     (* begin snippet Sxone:: no-out *)    
-    Lemma Sx_1 (A2: Assumption2):
+    Lemma Sx_1 (A2: Assumption2 R):
       (exists y, (y \in Y)) -> (exists (y:T), y \in Y /\ SeP y).
     (* end snippet Sxone*)       
     Proof.  by move => H1; move: (notiic_rloop_sub A2 H1) => H2.  Qed.
 
-    Lemma NonMabsorbant (A2: Assumption2):
+    Lemma NonMabsorbant (A2: Assumption2 R):
       Non_Mabsorbant -> exists y, y \in Y /\ (SeP y).
     Proof. by move => H0;pose proof (Sx_1 A2 H0). Qed.
     
@@ -502,7 +506,7 @@ Section Paper.
       by apply: RelIndep_U.
     Qed.
       
-    Lemma case2_RMprop (A7:Assumption7) (A8:Assumption8): forall y, 
+    Lemma case2_RMprop (A7:Assumption7 R B M) (A8:Assumption8 R B M): forall y, 
         preKernel  R M X -> y \in Y -> (SeP y) -> y \in X:#(B) 
         -> ( forall y', ~ (y' \in ((X `\` (Xy y)) `|` [set y]))
                   -> y' \in ((X `\` (Xy y)) `|` [set y]):#(R) -> y' \in M#((X `\` (Xy y)) `|` [set y])).
@@ -589,7 +593,7 @@ Section Paper.
                     by (exists y);split;[ | right].
     Qed.
     
-    Lemma case2_RMprop1 (A7:Assumption7) (A8:Assumption8):
+    Lemma case2_RMprop1 (A7:Assumption7 R B M) (A8:Assumption8 R B M):
       forall y, preKernel  R M X -> y \in Y -> (SeP y) -> y \in X:#(B) 
            -> ((X `\` (Xy y)) `|` [set y]):#(R) `<=` M#((X `\` (Xy y)) `|` [set y]).
     Proof.
@@ -600,7 +604,7 @@ Section Paper.
       by rewrite H9.
     Qed.
 
-    Lemma case2_Cprop (A6: Assumption6): forall y,
+    Lemma case2_Cprop (A6: Assumption6 B M D): forall y,
       preKernel R M  X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
       -> X [<= D] ((X`\` (Xy y)) `|` [set y]).
     Proof.
@@ -623,7 +627,7 @@ Section Paper.
       by move => y _ /inP [H1 _]; exists y;split;[rewrite inP;right|].
     Qed.
 
-    Lemma case2 (A6: Assumption6)(A7: Assumption7)(A8: Assumption8) : forall y,
+    Lemma case2 (A6: Assumption6 B M D)(A7: Assumption7 R B M)(A8: Assumption8 R B M) : forall y,
         preKernel  R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
         -> preKernel  R M ((X`\` (Xy y)) `|` [set y]) /\  X [<= D] ((X`\` (Xy y)) `|` [set y])
           /\ (exists x' : T, x' \in ((X`\` (Xy y)) `|` [set y]) /\ ~ x' \in X).
@@ -637,7 +641,7 @@ Section Paper.
       exact.
     Qed.
 
-    Lemma extend (A2: Assumption2) (A6: Assumption6) (A7: Assumption7) (A8: Assumption8):
+    Lemma extend (A2: Assumption2 R) (A6: Assumption6 B M D) (A7: Assumption7 R B M) (A8: Assumption8 R B M):
         preKernel  R M X -> Non_Mabsorbant ->
         exists X', preKernel  R M X' /\  X [<= D] X' /\ (exists x', x' \in X' /\ ~ (x' \in X)).
     Proof.
@@ -649,8 +653,6 @@ Section Paper.
       by move: (case1 H1 H2 H3 H4) => H5;exists (X `|` [set y]).
     Qed.
     
-  End Extend. 
-  
-End Paper.
+End Extend. 
 
 

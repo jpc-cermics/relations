@@ -445,8 +445,8 @@ Section ChampetierExt_Theorem.
   Context (T : finType) (O R B: relation T).
   Implicit Types (O R B: relation T) (X: {set T}).
   
-  Context (A2 : Assumption2 R) (A6 : Assumption6 R B O) 
-    (A7 : Assumption7 R B) (A8 : Assumption8 R B).
+  Context (A2 : Assumption2 R) (A6 : Assumption6 B (M R B) O) 
+    (A7 : Assumption7 R B (M R B)) (A8 : Assumption8 R B (M R B)).
   Context (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O).
   Context (Apk : forall X , RelIndep O [:set: X] <->  RelIndep (M R B) [:set: X]).
 
