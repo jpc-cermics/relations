@@ -440,7 +440,7 @@ Section SubSetPType_order.
 
 End SubSetPType_order.
 
-Section test_Theorem.
+Section ChampetierExt_Theorem.
 
   Context (T : finType) (O R B: relation T).
   Implicit Types (O R B: relation T) (X: {set T}).
@@ -448,57 +448,40 @@ Section test_Theorem.
   Context (A2 : Assumption2 R) (A6 : Assumption6 R B O) 
     (A7 : Assumption7 R B) (A8 : Assumption8 R B).
   Context (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O).
+  Context (Apk : forall X , RelIndep O [:set: X] <->  RelIndep (M R B) [:set: X]).
+
+  Lemma prekernelP S: 
+    (prekernel_fin O R (M R B) S) <-> preKernel R (M R B) [:set: S].
+  Proof. by rewrite (@prekernelE T O R (M R B) S) Apk. Qed.
   
-  Context (Apk : forall X , RelIndep O [:set: X] ->  RelIndep (M R B) [:set: X]).
-  
-  Lemma main_lemma S:
+  Lemma maximal_mabsorbant S:
     (prekernel_fin O R (M R B) S) /\ (forall U, prekernel_fin O R (M R B) U ->
                                   [:set: S] [<= O] [:set: U] -> S = U)
     -> Mabsorbant R B [:set: S].
   Proof.
-    contra; move => H1 Hpk.
+    contra; move => H1 /prekernelP Hpk.
     have H3: Non_Mabsorbant R B [:set: S].
     move: H1 => [y H1] H3. exists y. rewrite inP.
     split. by []. rewrite notin_setE in H3. by rewrite inP.
-    
-    (* from prekernel_fin O R (M R B) S to preKernel *)
-    move: (@prekernelE T O R (M R B) S) => HH1.  
-    move: (Hpk) => /HH1 [HH2 [HH3 HH4]].
-    move: (HH2) => /Apk  H2'.
-    (* *)
-    have H6: preKernel R (M R B) [:set: S].
-    split;first exact. by split.
-    
-    pose proof (@extend T R B O [:set: S] A2 A6 A7 A8 H6 H3).
-  Admitted.
-  (* 
-    move: (extend A2 A6 A7 A8 H2 H3) => [X' [/inP H4 [H5 [x' [H6 H7]]]]].
-    exists X'. by []. split. by [].
-    apply /eqP => /seteqP [H8 H9].
-    by move: H6 => /inP/H8/inP H6.
+    move: (@extend T R B O [:set: S] A2 A6 A7 A8 Hpk H3) 
+        => [S' [Hpre [H7 [x' [H8 H9]]]]].
+    exists [:fin: S'].
+    by rewrite prekernelP set_finInvol.
+    split;first by  rewrite set_finInvol.
+    apply/negP => /eqP Heq.
+    by rewrite Heq set_finInvol in H9.
   Qed.
-  *)
   
   Lemma Kernel_Champetier: 
     exists (S : {set T}), RelIndep (M R B) [:set: S] /\ Mabsorbant R B [:set: S].
-       Proof.
+  Proof.
     (* There exist a maximal set *)
-    move: (@Maximal T O R (M R B) A1 Asp Au) => [S [Hpk  Hm]].
-    move: (@prekernelE T O R (M R B) S) => H1.  
-    move: (Hpk) => /H1 [H2 [H3 H4]].
-    move: (H2) => /Apk  H2'.
-    have H5: preKernel R (M R B) [:set: S] by split. 
-    exists S. split;first exact.
-    move: H5 => /(@extend T R B O [:set: S] A2 A6 A7 A8) H5.
+    move: (@Maximal T O R (M R B) A1 Asp Au) => [S Hm].
+    move: Hm => /[dup] /maximal_mabsorbant Ma [/prekernelP [Hpk _] _].
+    by (exists S).
+  Qed.
 
-
-
-    
-  Admitted.
-
-
-             
-End test_Theorem.
+End ChampetierExt_Theorem.
 
 Section test.
 
