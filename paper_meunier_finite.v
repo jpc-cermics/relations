@@ -353,22 +353,27 @@ Section SubSetPType_order.
   
   Definition setRM_fin R M S := (asbool ([:set: S]:#R `<=` M#([:set: S]))).
 
-  Definition prekernelP O R M: pred {set T} := 
+  Definition prekernel_fin O R M: pred {set T} := 
     fun S => (RelIndep_fin O S) && ((setRM_fin R M S) && (([:set: S]) != set0)).
   
   (** * setIndep doit s'appeller  prekernelfinType ? *)
-  Definition setIndep O R M := setP_type (prekernelP O R M). 
-  
-  Lemma prekernel O R M S: 
-    prekernelP O R M S ->
+  Definition setIndep O R M := setP_type (prekernel_fin O R M). 
+
+  Lemma prekernelE O R M S: 
+    prekernel_fin O R M S <->
     RelIndep O [:set: S] /\ setRM R M [:set: S] /\ [:set: S] != set0.
   Proof.
-    by rewrite /prekernelP => /andP [/RelIndepE H1 /andP [/asboolP H2 H3]].
+    split.
+    by move => /andP [/RelIndepE H1 /andP [/asboolP H2 H3]].
+    move => [H1 [H2 H3]].
+    apply/andP;rewrite -RelIndepE H3 andbT.
+    split;first exact.
+    by  apply/asboolP.
   Qed.
   
   Lemma prekernel_notempty O R M 
     (A1: NotEmpty T) (At: sporder O) (Au: R `<=` O):
-    exists v, prekernelP O R M [set v].
+    exists v, prekernel_fin O R M [set v].
   Proof.
     move: (At) (@fin_not_iic_inj T O) => /[dup] Hsp [H1 /[dup] Ht /Tclos_iff H2] H3.
     have H4: ~(iic O) by move => /(@sporder_iic_injective _ _ At) ?.
@@ -424,7 +429,7 @@ Section SubSetPType_order.
   
   Lemma Maximal O R M
     (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O):
-    exists S, prekernelP O R M S /\ (forall U, prekernelP O R M U ->
+    exists S, prekernel_fin O R M S /\ (forall U, prekernel_fin O R M U ->
                                     [:set: S] [<= O] [:set: U] -> S = U).
   Proof.
     move: (@Maximal_fin O R M A1 Asp Au)  => [S H3].
@@ -432,7 +437,7 @@ Section SubSetPType_order.
     move => U H4; move: H3 => /(_ (SetP H4)) H3.
     by move => /H3/eqP ?;apply/eqP. 
   Qed.
-  
+
 End SubSetPType_order.
 
 Section test_Theorem.
@@ -442,14 +447,57 @@ Section test_Theorem.
   
   Context (A2 : Assumption2 R) (A6 : Assumption6 R B O) 
     (A7 : Assumption7 R B) (A8 : Assumption8 R B).
-  (* 
-  Lemma XXX X : True.
+  Context (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O).
+  
+  Context (Apk : forall X , RelIndep O [:set: X] ->  RelIndep (M R B) [:set: X]).
+  
+  Lemma main_lemma S:
+    (prekernel_fin O R (M R B) S) /\ (forall U, prekernel_fin O R (M R B) U ->
+                                  [:set: S] [<= O] [:set: U] -> S = U)
+    -> Mabsorbant R B [:set: S].
   Proof.
-    move:  (@extend T R B O) => /(_ X). 
+    contra; move => H1 Hpk.
+    have H3: Non_Mabsorbant R B [:set: S].
+    move: H1 => [y H1] H3. exists y. rewrite inP.
+    split. by []. rewrite notin_setE in H3. by rewrite inP.
     
-    A2 A6 A7 A8). 
-    A2 A6 A7).
+    (* from prekernel_fin O R (M R B) S to preKernel *)
+    move: (@prekernelE T O R (M R B) S) => HH1.  
+    move: (Hpk) => /HH1 [HH2 [HH3 HH4]].
+    move: (HH2) => /Apk  H2'.
+    (* *)
+    have H6: preKernel R (M R B) [:set: S].
+    split;first exact. by split.
+    
+    pose proof (@extend T R B O [:set: S] A2 A6 A7 A8 H6 H3).
+  Admitted.
+  (* 
+    move: (extend A2 A6 A7 A8 H2 H3) => [X' [/inP H4 [H5 [x' [H6 H7]]]]].
+    exists X'. by []. split. by [].
+    apply /eqP => /seteqP [H8 H9].
+    by move: H6 => /inP/H8/inP H6.
+  Qed.
   *)
+  
+  Lemma Kernel_Champetier: 
+    exists (S : {set T}), RelIndep (M R B) [:set: S] /\ Mabsorbant R B [:set: S].
+       Proof.
+    (* There exist a maximal set *)
+    move: (@Maximal T O R (M R B) A1 Asp Au) => [S [Hpk  Hm]].
+    move: (@prekernelE T O R (M R B) S) => H1.  
+    move: (Hpk) => /H1 [H2 [H3 H4]].
+    move: (H2) => /Apk  H2'.
+    have H5: preKernel R (M R B) [:set: S] by split. 
+    exists S. split;first exact.
+    move: H5 => /(@extend T R B O [:set: S] A2 A6 A7 A8) H5.
+
+
+
+    
+  Admitted.
+
+
+             
 End test_Theorem.
 
 Section test.
