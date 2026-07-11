@@ -477,7 +477,6 @@ Section Paper.
     (A8: Assumption8 R B M') :
     IsMaximal X -> Mabsorbant R B X.
   Proof.
-    Print Mabsorbant.
     contra; move => H1 /inP H2. 
     have H3: Non_Mabsorbant R B X. move: H1 => [y H1] H3. exists y. rewrite inP.
     split. by []. rewrite notin_setE in H3. by rewrite inP.
@@ -486,7 +485,6 @@ Section Paper.
     apply /eqP => /seteqP [H8 H9].
     by move: H6 => /inP/H8/inP H6.
   Qed.
-  
   
   Implicit Type (S X: set T).
   

@@ -25,31 +25,31 @@ Local Open Scope classical_set_scope.
 Definition NotEmpty (T: Type) := (exists (v0:T), (v0 \in setT)).
 
 Reserved Notation "A [<=] B" (at level 4, no associativity). 
-Reserved Notation "A [<= R ] S" (at level 4, no associativity). 
+Reserved Notation "A [<= U ] B" (at level 4, no associativity). 
 
-Definition leSet T R: relation (set T) := 
-  [set AB |forall (a:T), (a \in AB.1) -> exists b, b \in AB.2 /\ ( a = b \/ R (a,b)) ].
+Definition leSet T U: relation (set T) := 
+  [set AB |forall (a:T), (a \in AB.1) -> exists b, b \in AB.2 /\ ( a = b \/ U (a,b)) ].
 
-Notation "A [<= R ] B" := (leSet R (A,B)).
+Notation "A [<= U ] B" := (leSet U (A,B)).
 
-Definition setRM (T: Type) (R M: relation T) (S:set T) := S:#R `<=` M#S.
+Definition setRM (T: Type) (U M: relation T) (S:set T) := S:#U `<=` M#S.
 
-Definition preKernel (T: Type) (R M: relation T) :=
-  [set S| RelIndep M S /\ (setRM R M S) /\ S != set0 ].
+Definition preKernel (T: Type) (U M: relation T) :=
+  [set S| RelIndep M S /\ (setRM U M S) /\ S != set0 ].
 
 Section CheckAsym. 
   (** * Import main result from paper_monochromatic_f *)
-  Context (T : choiceType) (R: relation T).
+  Context (T : choiceType) (U: relation T).
   Hypothesis A1: (NotEmpty T).
 
   Import Asyminf2Inf(Asym2P5', allL_rc_asym).
 
   (* begin snippet infasym:: no-out *) 
-  Lemma iic_asym_to_iic_inj:  (iic (Asym R.+)) -> (iic_inj R). 
+  Lemma iic_asym_to_iic_inj:  (iic (Asym U.+)) -> (iic_inj U). 
   (* end snippet infasym *)  
-  Proof. by apply: (@Asym2P5' T R A1). Qed.
+  Proof. by apply: (@Asym2P5' T U A1). Qed.
 
-  Lemma not_iic_inj_to_not_iic_asym: ~ (iic_inj R) -> ~ (iic (Asym R.+)).
+  Lemma not_iic_inj_to_not_iic_asym: ~ (iic_inj U) -> ~ (iic (Asym U.+)).
   Proof. by move => ? /iic_asym_to_iic_inj ?. Qed.
 
 End  CheckAsym. 
@@ -60,32 +60,32 @@ Module Infinite_paths.
   Section iic_asym. 
 
     Variable (T : Type).
-    Implicit Types (T : Type) (R: relation T) (A B: set T).
+    Implicit Types (T : Type) (U: relation T) (A B: set T).
     
-    #[local] Lemma iic_asym_L1 (f : nat -> T) R:
-      (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
-      forall p n, 0 < p -> (Asym R.+) (f n, f (n + p)). 
+    #[local] Lemma iic_asym_L1 (f : nat -> T) U:
+      (forall n, (Asym U.+) ((f n),(f (S n)))) -> 
+      forall p n, 0 < p -> (Asym U.+) (f n, f (n + p)). 
     Proof.
       move => Hi. 
       elim => [// | p Hr n' _].
       case H2: (p == 0); first by move: H2 => /eqP ->;rewrite addn1;apply: Hi. 
       move: H2 =>  /neq0_lt0n /(Hr n') H2.
-      have H4: transitive (Asym R.+) by apply: Asym_preserve_transitivity;apply: TclosT.
-      have H5: Asym R.+ (f (n' + p), f (n' + p).+1) by apply: Hi.
+      have H4: transitive (Asym U.+) by apply: Asym_preserve_transitivity;apply: TclosT.
+      have H5: Asym U.+ (f (n' + p), f (n' + p).+1) by apply: Hi.
       rewrite /transitive in H4.
       move: (H4 (f n') (f (n' + p)) (f (n'+p).+1) H2 H5).
       by rewrite -addn1 -[p.+1]addn1 addnA.
     Qed.
     
-    #[local] Lemma iic_asym_L2 (f : nat -> T) R:
-      (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
+    #[local] Lemma iic_asym_L2 (f : nat -> T) U:
+      (forall n, (Asym U.+) ((f n),(f (S n)))) -> 
       forall p n, 0 < p -> ~ (f n) = f (n + p). 
     Proof.
       by move => + p n H1 => /iic_asym_L1 /(_ p n H1) + H2;rewrite -H2; apply: Asym_irreflexive.
     Qed.
     
-    #[local] Lemma iic_asym_L3 (f : nat -> T) R:
-      (forall n, (Asym R.+) ((f n),(f (S n)))) -> injective f.
+    #[local] Lemma iic_asym_L3 (f : nat -> T) U:
+      (forall n, (Asym U.+) ((f n),(f (S n)))) -> injective f.
     Proof.
       have H0 n m: m < n -> exists p, p> 0 /\ n = m + p by move => H1;exists (n-m); lia.
       move => /iic_asym_L2 Hi p q;apply contraPP => H1.
@@ -94,10 +94,10 @@ Module Infinite_paths.
       by move: (H0 p q H2) => [p' [H3 ->]];move: (Hi p' q H3);symmetry.
     Qed.
     
-    Lemma iic_asym_injective R: iic (Asym R.+) -> iic_inj (Asym R.+).
+    Lemma iic_asym_injective U: iic (Asym U.+) -> iic_inj (Asym U.+).
     Proof. by move => [f /[dup] ? /iic_asym_L3  ?];exists f. Qed.
 
-    Lemma sporder_iic_injective R: (sporder R) -> iic R -> iic_inj R.
+    Lemma sporder_iic_injective U: (sporder U) -> iic U -> iic_inj U.
     Proof. by move => /sporderEq <-;apply: iic_asym_injective. Qed.
     
     End iic_asym.
@@ -113,7 +113,7 @@ Section Infinite_paths_X.
   (* should be move on rel.v *)
 
   Context (T : Type).
-  Implicit Types (R: relation T) (X: set T).
+  Implicit Types (U: relation T) (X: set T).
 
   Lemma notiic_rloop_sub_L1 X (S: relation X):
     (exists (v0:T), (v0 \in X)) -> ~ (iic (Asym S)) -> (Rloop S).
@@ -124,21 +124,21 @@ Section Infinite_paths_X.
     by move => /setTypeP H0; apply: notiic_rloop. 
   Qed. 
   
-  Lemma notiic_rloop_sub_L2 X R:
-    ~ (iic (Asym R)) -> (exists (v0:T), (v0 \in X)) -> (Rloop (@Restrict' T X R)).
+  Lemma notiic_rloop_sub_L2 X U:
+    ~ (iic (Asym U)) -> (exists (v0:T), (v0 \in X)) -> (Rloop (@Restrict' T X U)).
   Proof.
     move => H1 H0.
-    have H2: (iic (@Restrict' T X (Asym R))) -> (iic (Asym R))
+    have H2: (iic (@Restrict' T X (Asym U))) -> (iic (Asym U))
       by move => [f // ?];exists (fun n => (sval (f n))). 
-    have H3:  ~ (iic (Asym R)) -> ~ (iic (@Restrict' T X (Asym R)))
+    have H3:  ~ (iic (Asym U)) -> ~ (iic (@Restrict' T X (Asym U)))
       by contra => -[f H4];apply: H2; by (exists f).
     by apply/(notiic_rloop_sub_L1 H0)/H3.
   Qed.
   
   (* notiic_rloop for a subset X *)
-  Lemma notiic_rloop_sub X R:
-    ~ (iic (Asym R)) ->(exists (v0:T), (v0 \in X))
-    -> (exists (v:T), v \in X /\ forall w, w \in X -> R (v,w) -> R (w,v)).
+  Lemma notiic_rloop_sub X U:
+    ~ (iic (Asym U)) ->(exists (v0:T), (v0 \in X))
+    -> (exists (v:T), v \in X /\ forall w, w \in X -> U (v,w) -> U (w,v)).
   Proof.
     move => Ninf H0.
     move: (notiic_rloop_sub_L2 Ninf H0) => [v H1];exists (sval v).
@@ -149,15 +149,15 @@ Section Infinite_paths_X.
   
 End Infinite_paths_X.
 
-Definition leSet' T R: relation (set T) := [set AB | AB.1 `<=` ('Δ  `|` R)#AB.2]. 
+Definition leSet' T U: relation (set T) := [set AB | AB.1 `<=` ('Δ  `|` U)#AB.2]. 
 
 Section Set_relation. 
   (** * A relation on sets induced by a relation on elements *)
 
   Context (T : eqType).
-  Implicit Types (T : eqType) (R S: relation T) (A B: set T).
+  Implicit Types (T : eqType) (U S: relation T) (A B: set T).
   
-  Lemma lesetE R: leSet R = leSet' R. 
+  Lemma lesetE U: leSet U = leSet' U. 
   Proof.
     rewrite predeqE => -[A B];split. 
     - move => H1 a /inP/H1 [b [/inP H2 [->| H3]]]; first by (exists b);split;[left|].
@@ -169,11 +169,11 @@ Section Set_relation.
   Qed.
 
   (* begin snippet lesetI:: no-out *)   
-  Lemma Ile R A B: A `<=` B -> A [<= R] B.
+  Lemma Ile U A B: A `<=` B -> A [<= U] B.
   (* end snippet lesetI *)
   Proof. by move => H1 /= a /inP/H1 ?;exists a;split;[rewrite inP|left]. Qed.
 
-  Lemma leI R S: S `<=` R -> (leSet S)  `<=` (leSet R).
+  Lemma leI U S: S `<=` U -> (leSet S)  `<=` (leSet U).
   Proof.
     move => H1;rewrite 2!lesetE => [[A B]] H2.
     by apply: subset_trans H2 _;apply: Fset_inc; apply: setUS.
@@ -183,28 +183,28 @@ End Set_relation.
 
 
 Section Set_order. 
-  (** * the previous relation [<= R] is an order relation on R-independent sets *)
+  (** * the previous relation [<= U] is an order relation on U-independent sets *)
 
   Context (T : eqType).
-  Implicit Types (R S: relation T) (A B: set T).
+  Implicit Types (U S: relation T) (A B: set T).
   
   Axiom proof_irrelevance: forall (P : Prop) (p q : P), p = q.
   
   Section Util.
     (** ingredients *)
-    Lemma le_trans_if_tr R: transitive R -> transitive (leSet R).
+    Lemma le_trans_if_tr U: transitive U -> transitive (leSet U).
     Proof.
       rewrite lesetE => /Tclos_iff H0 A B C /= H1 H2.
-      have : ('Δ  `|` R)#B `<=` ('Δ  `|` R)#(('Δ  `|` R)#C) by apply: Fset_inc1.
+      have : ('Δ  `|` U)#B `<=` ('Δ  `|` U)#(('Δ  `|` U)#C) by apply: Fset_inc1.
       rewrite Fset_comp H0 DuT_eq_Tstar compose_rt_rt -DuT_eq_Tstar -H0 => H3.
       by apply: subset_trans H1 H3.
     Qed.
 
-    Lemma le_refl  R: reflexive (leSet R).
+    Lemma le_refl  U: reflexive (leSet U).
     Proof. by move => A r H1;exists r;split;[| left]. Qed.
     
-    Lemma le_antisym_if_sp' R: 
-      sporder R -> forall A B, (RelIndep R A) -> A [<= R] B -> B  [<= R] A -> A `<=` B.
+    Lemma le_antisym_if_sp' U: 
+      sporder U -> forall A B, (RelIndep U A) -> A [<= U] B -> B  [<= U] A -> A `<=` B.
     Proof.
       move => /[dup] -[_ Htr] /sporder_asym/AsymEq Asy A B H1 + +  a H4.
       rewrite -Asy => H2 H3.
@@ -218,14 +218,14 @@ Section Set_order.
       - move: H12 H9 => /eqP H12 [H9 // | [H9 H9']].
         case H13: (a == c); first by move: H13 H9' => /eqP <- H9'.
         pose proof Htr.
-        have H14: R (a,c) by apply: Htr H6 H9.
+        have H14: U (a,c) by apply: Htr H6 H9.
         by have: False by move: H13 H4 H8 => /eqP H13 /inP H4 /inP H8; apply: (H1 a c). 
     Qed.
     
-    Lemma le_antisym_if_sp R: 
-      sporder R ->
-      forall A B, (RelIndep R A) -> (RelIndep R B) 
-             -> A [<= R] B -> B  [<= R] A -> A = B.
+    Lemma le_antisym_if_sp U: 
+      sporder U ->
+      forall A B, (RelIndep U A) -> (RelIndep U B) 
+             -> A [<= U] B -> B  [<= U] A -> A = B.
     Proof.
       move => Hsp A B H1 H2 H3 H4.
       by move: (le_antisym_if_sp' Hsp H1 H3 H4)
@@ -235,9 +235,9 @@ Section Set_order.
   End Util.
   
   (* begin snippet lesetporder:: no-out *)   
-  Lemma leSet2_porder R: 
-    sporder R -> 
-    @porder {S: set T| RelIndep R S} [set AB | (sval AB.1) [<= R] (sval AB.2)].
+  Lemma leSet2_porder U: 
+    sporder U -> 
+    @porder {S: set T| RelIndep U S} [set AB | (sval AB.1) [<= U] (sval AB.2)].
   (* end snippet lesetporder  *)   
   Proof.
     move => H_sp.
@@ -255,15 +255,15 @@ Section Assumptions.
 
   (*  abstract version *)
   Context (T: Type). 
-  Implicit Types (R B D M: relation T).
+  Implicit Types (R B O M: relation T).
   
   Definition Assumption1:= (NotEmpty T).
   Definition Assumption2 R:= ~ (iic (Asym R)).
-  Definition Assumption3 D:= ~ (iic D).
-  Definition Assumption4 D:= sporder D.
-  Definition Assumption5 D M := D  `<=` M `|` M^-1.
-  Definition Assumption6 B M D:= 
-    (forall x y, B (x,y) /\ ~ (M (y, x)) -> D (x,y)).
+  Definition Assumption3 O:= ~ (iic O).
+  Definition Assumption4 O:= sporder O.
+  Definition Assumption5 O M := O  `<=` M `|` M^-1.
+  Definition Assumption6 B M O:= 
+    (forall x y, B (x,y) /\ ~ (M (y, x)) -> O (x,y)).
   
   Definition Assumption7 R B M:= 
     (forall x x' y y', ~(x' = x) 
@@ -282,10 +282,10 @@ Section Assumptions.
                 -> ~ (R (x',y)) /\ ~ M (y, x')
                 -> (M (y',y))).
   
-  Definition Assumption9 R B D M:= 
+  Definition Assumption9 R B O M:= 
     (forall x y x' y' , ~ (x = y) -> ~ (x = x') -> ~ (x = y')
                    -> ~ (y = x') -> ~ (x' = y') -> ~ (y' = y) 
-                   -> R (x,y) -> M (y,x') -> D (x',y') -> ~(M (y,x)) 
+                   -> R (x,y) -> M (y,x') -> O (x',y') -> ~(M (y,x)) 
                    -> ~ ((M `|` M^-1) (x',x))
                    ->  ~ ((M `|` M^-1) (y',x))
                    -> M (y,y')).
@@ -298,7 +298,7 @@ Module Extend_nonMabsorbant_prekernel.
 
   Section Extend_nonMabsorbant_prekernel.
     
-  Variables (T:choiceType) (R B D: relation T).
+  Variables (T:choiceType) (R B O: relation T).
   
   Definition M := B `|` R.
 
@@ -435,7 +435,7 @@ Module Extend_nonMabsorbant_prekernel.
     Qed.
     
     Lemma case1_Cprop: forall y,
-      preKernel R M  X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> X [<= D] (X `|` [set y]).
+      preKernel R M  X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> X [<= O] (X `|` [set y]).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4 y' /= H5.
       by exists y';split;[rewrite inP;left; rewrite -inP |left].
@@ -450,7 +450,7 @@ Module Extend_nonMabsorbant_prekernel.
     
     Lemma case1: forall y,
         preKernel R M  X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) )
-        -> preKernel  R M (X `|` [set y]) /\  X [<= D] (X `|` [set y]) 
+        -> preKernel  R M (X `|` [set y]) /\  X [<= O] (X `|` [set y]) 
           /\ (exists x' : T, x' \in X `|` [set y] /\ ~ x' \in X).
     Proof.
       move => y H1 H2 H3 H4. 
@@ -606,9 +606,9 @@ Module Extend_nonMabsorbant_prekernel.
       by rewrite H9.
     Qed.
     
-    Lemma case2_Cprop (A6: Assumption6 B M D): forall y,
+    Lemma case2_Cprop (A6: Assumption6 B M O): forall y,
       preKernel R M  X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
-      -> X [<= D] ((X`\` (Xy y)) `|` [set y]).
+      -> X [<= O] ((X`\` (Xy y)) `|` [set y]).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4 x /=.
       rewrite -{1}(Xpart y) inP => -[ H5 | H5].
@@ -629,9 +629,9 @@ Module Extend_nonMabsorbant_prekernel.
       by move => y _ /inP [H1 _]; exists y;split;[rewrite inP;right|].
     Qed.
 
-    Lemma case2 (A6: Assumption6 B M D)(A7: Assumption7 R B M)(A8: Assumption8 R B M) : forall y,
+    Lemma case2 (A6: Assumption6 B M O)(A7: Assumption7 R B M)(A8: Assumption8 R B M) : forall y,
         preKernel  R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
-        -> preKernel  R M ((X`\` (Xy y)) `|` [set y]) /\  X [<= D] ((X`\` (Xy y)) `|` [set y])
+        -> preKernel  R M ((X`\` (Xy y)) `|` [set y]) /\  X [<= O] ((X`\` (Xy y)) `|` [set y])
           /\ (exists x' : T, x' \in ((X`\` (Xy y)) `|` [set y]) /\ ~ x' \in X).
     Proof.
       move => y H1 H2 H3 H4. 
@@ -644,9 +644,9 @@ Module Extend_nonMabsorbant_prekernel.
     Qed.
 
     (** * main result *)
-    Lemma extend (A2: Assumption2 R) (A6: Assumption6 B M D) (A7: Assumption7 R B M) (A8: Assumption8 R B M):
+    Lemma extend (A2: Assumption2 R) (A6: Assumption6 B M O) (A7: Assumption7 R B M) (A8: Assumption8 R B M):
         preKernel  R M X -> Non_Mabsorbant ->
-        exists X', preKernel  R M X' /\  X [<= D] X' /\ (exists x', x' \in X' /\ ~ (x' \in X)).
+        exists X', preKernel R M X' /\  X [<= O] X' /\ (exists x', x' \in X' /\ ~ (x' \in X)).
     Proof.
       move => H1 /(NonMabsorbant A2) [y [H2 H3]]. 
       have H4: y \in (X:#(B) `|` (X:#(B)).^c) by rewrite (setUv X:#(B)) inP.
