@@ -388,12 +388,13 @@ Section SubSetPType_order.
   Qed.
   
   Lemma prekernel_notempty O R M 
-    (A1: NotEmpty T) (At: sporder O) (Au: R `<=` O):
+    (A1: NotEmpty T) (At: sporder O^-1) (Au: R `<=` O^-1):
     exists v, prekernel_fin O R M [set v].
   Proof.
-    move: (At) (@fin_not_iic_inj T O) => /[dup] Hsp [H1 /[dup] Ht /Tclos_iff H2] H3.
-    have H4: ~(iic O) by move => /(@sporder_iic_injective _ _ At) ?.
-    move: (@fin_rloop2 T O R M A1 At Au) => [v H6].
+    move: (At) (@fin_not_iic_inj T O^-1) => /[dup] Hsp [H1 /[dup] Ht /Tclos_iff H2] H3.
+    have H4: ~(iic O^-1)
+      by move => /(@sporder_iic_injective _ _ At ) ?.
+    move: (@fin_rloop2 T O^-1 R M A1 At Au) => [v H6].
     exists v.
     apply/andP.
     split;first by apply: RelIndep_fin1.
@@ -424,31 +425,33 @@ Section SubSetPType_order.
   Qed.
   
   Lemma exists_setIndep O R M 
-    (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O):
+    (A1: NotEmpty T) (Asp: sporder O^-1) (Au: R `<=` O^-1):
       (exists x : setIndep O R M, x \in {: (setIndep O R M)}).
   Proof.
     move: (@prekernel_notempty O R M A1 Asp Au) => [v Pv].
     by exists (SetP Pv).
   Qed.
   
+  (* XXXX if O is a sporder O^-1 also *)
   Lemma Maximal_fin O R M 
-    (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O):
+    (A1: NotEmpty T) (Asp: sporder O^-1) (Asp': sporder O) (Au: R `<=` O^-1):
     exists (m: (setIndep O R M)),
       @maximal (setIndep O R M) m [set AB | [:set: (val AB.1)] [<= O] [:set: (val AB.2)]]%classic.
   Proof.
     move: (Asp) => /(leSet2_porder R M) po.
+    move: (Asp') => /(leSet2_porder R M) po'.
     pose proof (@exists_setIndep O R M A1 Asp Au) as Hne.
-    by move: (@has_maximal (setIndep O R M)
-                [set AB | [:set: (val AB.1)] [<= O] [:set: (val AB.2)]]%classic
-              po Hne).
+    by move: (@has_maximal (setIndep O R M) 
+            [set AB | [:set: (val AB.1)] [<= O] [:set: (val AB.2)]]%classic
+         po' Hne).
   Qed.
   
   Lemma Maximal O R M
-    (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O):
+    (A1: NotEmpty T) (Asp: sporder O^-1) (Asp': sporder O) (Au: R `<=` O^-1):
     exists S, prekernel_fin O R M S /\ (forall U, prekernel_fin O R M U ->
                                     [:set: S] [<= O] [:set: U] -> S = U).
   Proof.
-    move: (@Maximal_fin O R M A1 Asp Au)  => [S H3].
+    move: (@Maximal_fin O R M A1 Asp Asp' Au)  => [S H3].
     exists S;move: (valP S) => Pr;split; first exact.
     move => U H4; move: H3 => /(_ (SetP H4)) H3.
     by move => /H3/eqP ?;apply/eqP. 
@@ -463,7 +466,8 @@ Section ChampetierExt_Theorem.
   
   Context (A2 : Assumption2 R) (A6 : Assumption6 B (M R B) O) 
     (A7 : Assumption7 R B (M R B)) (A8 : Assumption8 R B (M R B)).
-  Context (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O).
+  Context (A1: NotEmpty T) (Asp: sporder O^-1) (Asp': sporder O) 
+    (Au: R `<=` O^-1).
   Context (Apk : forall X , RelIndep O [:set: X] <->  RelIndep (M R B) [:set: X]).
   
   Lemma prekernelP S: 
@@ -492,7 +496,7 @@ Section ChampetierExt_Theorem.
     exists (S : {set T}), RelIndep (M R B) [:set: S] /\ Mabsorbant R B [:set: S].
   Proof.
     (* There exist a maximal set *)
-    move: (@Maximal T O R (M R B) A1 Asp Au) => [S Hm].
+    move: (@Maximal T O R (M R B) A1 Asp Asp' Au) => [S Hm].
     move: Hm => /[dup] /maximal_mabsorbant Ma [/prekernelP [Hpk _] _].
     by (exists S).
   Qed.
@@ -539,7 +543,8 @@ Section Champ.
 
   Context 
     (A1: NotEmpty T) 
-    (Asp: sporder O)
+    (Asp: sporder O^-1)
+    (Asp': sporder O)
     (A6 : Assumption6 B (M R B) O) 
     (A7 : Assumption7 R B (M R B))
     (A8 : Assumption8 R B (M R B)).
@@ -574,11 +579,11 @@ Section Champ.
   Proof. by rewrite /R;apply: subIsetr. Qed.
 
   Lemma Onoticc': ~ (iic  O). 
-  Proof. by apply: (@fin_not_iic _ O Asp). Qed.
+  Proof. by apply: (@fin_not_iic _ O Asp'). Qed.
 
   (** * si O est un porder O^-1 aussi *)
   Lemma Onoticc: ~ (iic  O^-1). 
-  Admitted.
+  Proof. by apply: (@fin_not_iic _ O^-1 Asp). Qed.
 
   Lemma Rnotiic: ~ (iic R).
   Proof. by move: Onoticc => ? /(@iic_sub T R O^-1 (Au)) ?. Qed.

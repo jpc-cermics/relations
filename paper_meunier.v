@@ -792,8 +792,8 @@ Module Champetier.
   Parameter (T:choiceType) (O D: relation T).
   
   Definition C := O.
-  Definition R := D `&` O. 
-  Definition B := D `&` O^-1. 
+  Definition R := D `&` O^-1. 
+  Definition B := D `&` O. 
 
   Definition AB_1:= (NotEmpty T).
   Definition AB_2:= ~ (iic R).
