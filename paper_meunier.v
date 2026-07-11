@@ -24,7 +24,7 @@ Local Open Scope classical_set_scope.
 
 Section Paper. 
   (*  abstract version *)
-  Variables (T:choiceType) (R B D: relation T).
+  Variables (T:choiceType) (R B O: relation T).
   
   Definition M' := B `|` R.
   
@@ -64,28 +64,28 @@ Section Paper.
   
   (** * The relation on sets restricted to Stype subsets *)
   Definition leSet1 (AB: SType*SType) :=
-    leSet D ((sval AB.1), (sval AB.2)).
+    leSet O ((sval AB.1), (sval AB.2)).
   Notation "A [<=] B" := (leSet1 (A,B)).
     
   Section Scal_order. 
         
-    Lemma leSet1_transitive: sporder D -> @transitive SType leSet1.
+    Lemma leSet1_transitive: sporder O -> @transitive SType leSet1.
     Proof. by move => [? ?] [X ?] [Y ?] [Z ?];apply/le_trans_if_tr. Qed.
            
     Lemma leSet1_reflexive: @reflexive _ leSet1.
     Proof. by move => [A ?];apply: le_refl. Qed.
     
     Lemma le_antisym_l1: forall A B, 
-        sporder D -> D  `<=` M' `|` M'^-1 ->  (RelIndep M' A) -> (RelIndep M' B)
-        -> A [<= D] B -> B  [<= D] A -> A = B.
+        sporder O -> O  `<=` M' `|` M'^-1 ->  (RelIndep M' A) -> (RelIndep M' B)
+        -> A [<= O] B -> B  [<= O] A -> A = B.
     Proof.
       move => X Y H1 H3 /RelIndep_Is H4 /RelIndep_Is H5. 
       apply/le_antisym_if_sp. exact.
-      by apply/(@RelIndep_I T D (M' `|` M'^-1) X H3 H4).
-      by apply/(@RelIndep_I T D (M' `|` M'^-1) Y H3 H5).
+      by apply/(@RelIndep_I T O (M' `|` M'^-1) X H3 H4).
+      by apply/(@RelIndep_I T O (M' `|` M'^-1) Y H3 H5).
     Qed.
     
-    Lemma leSet1_antisymmetric: sporder D -> D `<=` M' `|` M'^-1 -> @antisymmetric _ leSet1.
+    Lemma leSet1_antisymmetric: sporder O -> O `<=` M' `|` M'^-1 -> @antisymmetric _ leSet1.
     Proof. 
       move => H1 H2 [X [Hx Hx']] [Y [Hy Hy']] H3 H4.
       move: (le_antisym_l1 H1 H2 Hx Hy H3 H4) => H5.
@@ -94,7 +94,7 @@ Section Paper.
       apply: proof_irrelevance.
     Qed.
     
-    Lemma leSet1_porder: sporder D -> D  `<=`  M' `|` M'^-1 -> @porder _ leSet1. 
+    Lemma leSet1_porder: sporder O -> O  `<=`  M' `|` M'^-1 -> @porder _ leSet1. 
     Proof.
       move => ? ?; split. 
       + by apply/leSet1_reflexive.
@@ -124,10 +124,10 @@ Section Paper.
     Definition RC:= [set xy: (Elt C)*(Elt C) |
                       ((sval xy.1) \in Sinf /\ xy.2 = xy.1)
                       \/ (~ ((sval xy.1) \in Sinf) /\
-                           D (sval xy.1, sval xy.2))].
+                           O (sval xy.1, sval xy.2))].
     (* end snippet RC*)   
         
-    Lemma transitive_RC:  sporder D -> transitive RC. 
+    Lemma transitive_RC:  sporder O -> transitive RC. 
     Proof.
       move => [_ H3].
       by move => x y z [/= [H0 ->]| [H1 H1']] [ /= [H0' /= ->]| /= [H2 H2']]; 
@@ -163,7 +163,7 @@ Section Paper.
       
       Lemma total_RC_L2: forall (S: SType) (s:T), 
           (S \in C) -> (s \in (sval S)) -> ( ~ (s \in Sinf)) 
-          -> exists S1, exists s1, S1 \in C /\ s1 \in (sval S1) /\ D (s,s1).
+          -> exists S1, exists s1, S1 \in C /\ s1 \in (sval S1) /\ O (s,s1).
       Proof.
         move => S s H2 H3 H4.
         move: (total_RC_L1 H2 H3 H4) => [S1 [H5 [H6 H7]]].
@@ -171,7 +171,7 @@ Section Paper.
       Qed.
       
       Lemma total_RC_L3: forall (s: Elt C), 
-          ~ ((sval s) \in Sinf) -> exists (s1: Elt C), D (sval s,sval s1).
+          ~ ((sval s) \in Sinf) -> exists (s1: Elt C), O (sval s,sval s1).
       Proof.
         move => [s [S [H1 H2]]] H3.
         move: (total_RC_L2 H1 H2 H3) => [S1 [s1 [H4 [H5 H6]]]].
@@ -208,14 +208,14 @@ Section Paper.
         
       Lemma total_RC_P1 s f: 
         f 0=s /\ (forall n, RC ((f n),(f (S n)))) 
-        -> (forall n, ~ (sval (f n)) \in Sinf) -> iic D. 
+        -> (forall n, ~ (sval (f n)) \in Sinf) -> iic O. 
       Proof. 
         move => H1 H2;exists (fun n => (sval (f n))) => n.
         by move: H1 H2 => [H0 /(_ n) [/=[H1 H1'] | /= [H1 H1']]] /(_ n) H2.
       Qed.
       
       Lemma total_RC_P2:
-        ~ (iic D)
+        ~ (iic O)
         -> forall s, exists f, (f 0=s /\ (forall n, RC ((f n),(f (S n)))))
                     /\ exists n, (sval (f n)) \in Sinf.
       Proof. 
@@ -226,7 +226,7 @@ Section Paper.
       Qed.
       
       Lemma transitiveN_RC f:  
-        sporder D -> (forall n, RC ((f n),(f (S n))))   -> (forall n, n > 1 -> RC (f 0, f n)).
+        sporder O -> (forall n, RC ((f n),(f (S n))))   -> (forall n, n > 1 -> RC (f 0, f n)).
       Proof.
         move => H0 H1;elim => [// | n Hn H2 ].
         case H3: (1 < n). 
@@ -240,7 +240,7 @@ Section Paper.
       
       (* begin snippet totalRCPTr:: no-out *)    
       Lemma total_RC_P3:
-        sporder D ->  ~ (iic D) ->
+        sporder O ->  ~ (iic O) ->
         forall s, exists f, f 0=s /\ (exists n, (sval (f n)) \in Sinf /\ RC ((f 0), (f n))).
       (* end snippet totalRCPTr *)
       Proof.
@@ -257,9 +257,9 @@ Section Paper.
       Qed.
 
       (* begin snippet ChooseRCCi:: no-out *)    
-      Lemma ChooseRC5:sporder D -> ~ (iic D)
+      Lemma ChooseRC5:sporder O -> ~ (iic O)
             -> forall (s: Elt C), (sval s \in Sinf) \/ 
-                        exists (s':T), (s' \in Sinf) /\ D (sval s, s').
+                        exists (s':T), (s' \in Sinf) /\ O (sval s, s').
       (* end snippet ChooseRCCi *)    
       Proof. 
         move => H0 H1; move: (total_RC_P3 H0 H1) => + s => /(_ s) [f [H2 [n [H3 H3']]]].
@@ -270,8 +270,8 @@ Section Paper.
       Qed.
 
       (* begin snippet ChooseRCSi:: no-out *)    
-      Lemma ChooseRC6:sporder D -> ~ (iic D)
-            -> forall (S: SType), (S \in C) -> (sval S) [<= D] Sinf.
+      Lemma ChooseRC6:sporder O -> ~ (iic O)
+            -> forall (S: SType), (S \in C) -> (sval S) [<= O] Sinf.
       (* end snippet ChooseRCSi *) 
       Proof. 
         move => H0 H1 S H2 s /= H3.
@@ -347,7 +347,7 @@ Section Paper.
       by exists (exist _ [set v] H2);rewrite inP.
     Qed.
     
-    Lemma Sinf_not_empty (A3: Assumption3 D) (A4: Assumption4 D):
+    Lemma Sinf_not_empty (A3: Assumption3 O) (A4: Assumption4 O):
       (Sinf C) != set0.
     Proof.
       move: (@Elt_not_empty C Hne) => [s _];rewrite -notempty_exists.
@@ -355,8 +355,8 @@ Section Paper.
     Qed.
     
     (* begin snippet SinfScalP:: no-out *)    
-    Lemma Sinf_ScalP (A2: Assumption2 R) (A3: Assumption3 D) 
-      (A4: Assumption4 D) (A5:Assumption5 D M') (A9: Assumption9 R B D M'):
+    Lemma Sinf_ScalP (A2: Assumption2 R) (A3: Assumption3 O) 
+      (A4: Assumption4 O) (A5:Assumption5 O M') (A9: Assumption9 R B O M'):
       (Sinf C):#(R) `<=` M'#(Sinf C).
      (* end snippet SinfScalP *)
     Proof.
@@ -383,7 +383,7 @@ Section Paper.
           by move => I1;rewrite I1 in B1;
                     (have I3: M' (x,x') by right);move: (H7 x x' H5 H11 B6).
         
-        have H12: (sval X) [<= D] (Sinf C)  by apply: ChooseRC6. 
+        have H12: (sval X) [<= O] (Sinf C)  by apply: ChooseRC6. 
         move: (H11) => /H12 [y' [/= B7 [H21 | B8]]].  
         by rewrite -H21 in B7.
         
@@ -403,7 +403,7 @@ Section Paper.
         have P6: ~ (y' = y) by  move => I1; by rewrite I1 in B7.
         have P7: R (x, y) by apply: B1.
         have P8: M' (y, x') by apply: B4.
-        have P9: D (x',y') by apply: B8.
+        have P9: O (x',y') by apply: B8.
         have P10: ~ M' (y, x) by apply: B3.
         have P11: ~ ((M' `|` M'^-1) (x',x)) by apply: P11'.
         have P12: ~ ((M' `|` M'^-1) (y',x))
@@ -414,15 +414,15 @@ Section Paper.
     Qed.
     
     (* begin snippet SinfScal:: no-out *)    
-    Lemma Sinf_Scal (A2: Assumption2 R) (A3: Assumption3 D) (A4: Assumption4 D)
-      (A5:Assumption5 D M') (A9: Assumption9 R B D M'):
+    Lemma Sinf_Scal (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O)
+      (A5:Assumption5 O M') (A9: Assumption9 R B O M'):
       (Sinf C) \in Scal. 
     (* end snippet SinfScal *)
     Proof.
       by rewrite inP;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
     Qed.
     
-    Lemma Sinf_final (A2: Assumption2 R) (A3: Assumption3 D) (A4: Assumption4 D)   (A5:Assumption5 D M') (A9: Assumption9 R B D M'):
+    Lemma Sinf_final (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O)   (A5:Assumption5 O M') (A9: Assumption9 R B O M'):
       exists Si, forall (S: SType), C S -> S [<=] Si.
     Proof.
       move: (Sinf_Scal A2 A3 A4 A5 A9) => /inP H2;exists (exist _ (Sinf C) H2);move => S /inP H3. 
@@ -434,8 +434,8 @@ Section Paper.
   (** * existence of Smax with Zorn Lemma for type SType *)
   (* begin snippet SmaxSType:: no-out *)    
   Lemma Smax_SType
-    (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 D) (A4: Assumption4 D) (A5: Assumption5 D M')
-    (A9: Assumption9 R B D M'):
+    (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O) (A5: Assumption5 O M')
+    (A9: Assumption9 R B O M'):
     exists Sm, forall S, Sm [<=] S -> S = Sm.
   (* end snippet SmaxSType *)
   Proof.
@@ -451,9 +451,9 @@ Section Paper.
   (** * existence of Smax in set T *)
   (* begin snippet SmaxE:: no-out *)    
   Lemma Smax_Scal 
-    (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 D) (A4: Assumption4 D) (A5: Assumption5 D M')
-    (A9: Assumption9 R B D M'):
-    exists Sm, Sm \in Scal /\ forall T, T \in Scal -> Sm [<= D] T -> T = Sm.
+    (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O) (A5: Assumption5 O M')
+    (A9: Assumption9 R B O M'):
+    exists Sm, Sm \in Scal /\ forall T, T \in Scal -> Sm [<= O] T -> T = Sm.
   (* end snippet SmaxE *)    
   Proof.
     move: (Smax_SType A1 A2 A3 A4 A5 A9) => [Sm H1];exists (sval Sm); split; first by  apply: S2Scal.
@@ -463,17 +463,17 @@ Section Paper.
   (** * existence of Smax in set T *)
   (* begin snippet IsMaximal:: no-out *)  
   Definition IsMaximal (S: set T):= 
-      S \in Scal /\ forall T, T \in Scal -> S [<= D] T -> T = S.
+      S \in Scal /\ forall T, T \in Scal -> S [<= O] T -> T = S.
   (* end snippet IsMaximal:: no-out *)  
   (* begin snippet Smax:: no-out *)    
-  Lemma Smax (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 D) (A4: Assumption4 D)
-    (A5: Assumption5 D M') (A9: Assumption9 R B D M'):
+  Lemma Smax (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O)
+    (A5: Assumption5 O M') (A9: Assumption9 R B O M'):
     exists Sm, IsMaximal Sm.
   (* end snippet Smax *)    
   Proof. by move: (Smax_Scal A1 A2 A3 A4 A5 A9) => [Sm HH];exists Sm. Qed.
   
   Lemma main_lemma X 
-    (A2: Assumption2 R) (A6: Assumption6 B M' D) (A7: Assumption7 R B M') 
+    (A2: Assumption2 R) (A6: Assumption6 B M' O) (A7: Assumption7 R B M') 
     (A8: Assumption8 R B M') :
     IsMaximal X -> Mabsorbant R B X.
   Proof.
@@ -491,9 +491,9 @@ Section Paper.
   (** * The Assumptions we use: weaker than the original paper assumptions *)
   (* begin snippet MainTh:: no-out *)    
   Theorem G_SSW
-    (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 D) (A4: Assumption4 D)
-    (A5: Assumption5 D M') (A6: Assumption6 B M' D) (A7: Assumption7 R B M') (A8: Assumption8 R B M')
-    (A9: Assumption9 R B D M'):
+    (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O)
+    (A5: Assumption5 O M') (A6: Assumption6 B M' O) (A7: Assumption7 R B M') (A8: Assumption8 R B M')
+    (A9: Assumption9 R B O M'):
     exists X, RelIndep M' X /\  X != set0 /\  forall x, ~ (x\in X) -> (x \in M'#X). 
   (* end snippet MainTh:: no-out *)    
   Proof.
@@ -511,7 +511,7 @@ Module SSWext.
 
   Definition R := Er.+. 
   Definition B := Eb.+. 
-  Definition D := (Asym B). 
+  Definition O := (Asym B). 
 
   Definition SSW_1:= (NotEmpty T).
   Definition SSW_2:= ~ (iic (Asym R)).
@@ -523,18 +523,18 @@ Module SSWext.
   Lemma B_trans: transitive B.
   Proof. by apply: (@TclosT _ Eb). Qed.
   
-  Lemma L4: (Assumption4 D). 
+  Lemma L4: (Assumption4 O). 
   Proof. by apply: (@Asym_sporder _ B);apply: TclosT. Qed.
   
-  Lemma L5: (Assumption5 D (M R B)).
+  Lemma L5: (Assumption5 O (M R B)).
   Proof. 
-    have H1: D `<=` M' R B
+    have H1: O `<=` M' R B
       by apply: (@subset_trans _ B _ _ (@AsymI _ B)
                    (@subsetUl _ B R)).
-    by pose proof (@subset_trans _ _ D _  H1 (@subsetUl _ (M' R B) (M' R B)^-1)).
+    by pose proof (@subset_trans _ _ O _  H1 (@subsetUl _ (M' R B) (M' R B)^-1)).
   Qed.
   
-  Lemma L6: (Assumption6 B (M R B) D).
+  Lemma L6: (Assumption6 B (M R B) O).
   Proof. move => x y [? ?];split;first exact.
          move => ?; by have: M' R B (y, x) by left.
   Qed.
@@ -553,7 +553,7 @@ Module SSWext.
     by have H11: M' R B (y,x') by right;apply: (R_trans H1 H2).
   Qed.
   
-  Lemma L9: (Assumption9 R B D (M R B)).
+  Lemma L9: (Assumption9 R B O (M R B)).
   Proof. 
     move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
     by move: H3 => /(@AsymI _ B) H3;left;apply: (B_trans H2 H3).
@@ -565,7 +565,7 @@ Module SSWext.
     exists X, RelIndep (M' R B) X /\  X != set0 /\  forall x, ~ (x\in X) -> (x \in (M' R B)#X). 
   (* end snippet MainTh:: no-out *)    
   Proof.
-    by pose proof (@G_SSW _ R B D A1 A2 A3 L4 L5 L6 L7 L8 L9).
+    by pose proof (@G_SSW _ R B O A1 A2 A3 L4 L5 L6 L7 L8 L9).
   Qed.
   
 End SSWext.
@@ -576,7 +576,7 @@ Module ABkernels.
 
   Definition R := A1.
   Definition B := A2.
-  Definition D := (Asym B). 
+  Definition O := (Asym B). 
 
   Definition AB_1:= (NotEmpty T).
   Definition AB_2:= ~ (iic (Asym R)).
@@ -584,18 +584,18 @@ Module ABkernels.
   Definition AB_4:= transitive R.
   Definition AB_5:= transitive B.
 
-  Lemma L4 (A5: AB_5) : (Assumption4 D). 
+  Lemma L4 (A5: AB_5) : (Assumption4 O). 
   Proof. by apply: (@Asym_sporder _ B). Qed.
   
-  Lemma L5: (Assumption5 D (M R B)).
+  Lemma L5: (Assumption5 O (M R B)).
   Proof. 
-    have H1: D `<=` M R B
+    have H1: O `<=` M R B
       by apply: (@subset_trans _ B _ _ (@AsymI _ B)
                    (@subsetUl _ B R)).
-    by pose proof (@subset_trans _ _ D _  H1 (@subsetUl _ (M R B) (M R B)^-1)).
+    by pose proof (@subset_trans _ _ O _  H1 (@subsetUl _ (M R B) (M R B)^-1)).
   Qed.
   
-  Lemma L6: (Assumption6 B (M R B) D).
+  Lemma L6: (Assumption6 B (M R B) O).
   Proof. move => x y [? ?];split;first exact.
          move => ?; by have: M R B (y, x) by left.
   Qed.
@@ -614,7 +614,7 @@ Module ABkernels.
     by have H11: M R B (y,x') by right;apply: (A4 y y' x' H1 H2).
   Qed.
   
-  Lemma L9(A4: AB_4) (A5: AB_5) : (Assumption9 R B D (M R B)). 
+  Lemma L9(A4: AB_4) (A5: AB_5) : (Assumption9 R B O (M R B)). 
   Proof. 
     move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
     by move: H3 => /(@AsymI _ B) H3;left;apply: (A5 y x' y' H2 H3).
@@ -626,7 +626,7 @@ Module ABkernels.
     exists X, RelIndep (M R B) X /\  X != set0 /\  forall x, ~ (x\in X) -> (x \in (M R B)#X). 
   (* end snippet MainTh:: no-out *)    
   Proof.
-    by pose proof (@G_SSW _ R B D A1 A2 A3 (L4 A5) L5 L6 (L7 A4 A5)
+    by pose proof (@G_SSW _ R B O A1 A2 A3 (L4 A5) L5 L6 (L7 A4 A5)
                      (L8 A4 A5) (L9 A4 A5)).
   Qed.
   
@@ -636,7 +636,7 @@ End ABkernels.
 Module MeunierLanglois. 
   Parameter (T:choiceType) (R B: relation T).
 
-  Definition D := [set xy | (Asym B) (xy.1, xy.2) /\  ~ R (xy.2,xy.1)].
+  Definition O := [set xy | (Asym B) (xy.1, xy.2) /\  ~ R (xy.2,xy.1)].
   Definition AB_1:= (NotEmpty T).
   Definition AB_2:= ~ (iic (Asym R)).
   Definition AB_3:= ~ (iic (Asym B)).
@@ -653,13 +653,13 @@ Module MeunierLanglois.
       -> B (y,z) -> ~ (B^-1 (y,z)) -> ~ (R (z,y))
       -> B (x,z) /\ ~ (B^-1 (x,z)) /\ ~ (R (z,x)).
   
-  Lemma L3 (A3: AB_3): (Assumption3 D).
+  Lemma L3 (A3: AB_3): (Assumption3 O).
   Proof.
     move: A3. contra => -[f H].
     by exists f;move => n;move: H => /(_ n) [/= H1 _].
   Qed.
   
-  Lemma L4 (A5: AB_5) (A6: AB_6) : (Assumption4 D). 
+  Lemma L4 (A5: AB_5) (A6: AB_6) : (Assumption4 O). 
   Proof. 
     split. 
     + move => x [/= H1 _].
@@ -669,10 +669,10 @@ Module MeunierLanglois.
       by split. 
   Qed.
   
-  Lemma L5: (Assumption5 D (M R B)).
+  Lemma L5: (Assumption5 O (M R B)).
   Proof. by move => [x y] [[/= ? _] _];left;left.  Qed.
   
-  Lemma L6: (Assumption6 B (M R B) D).
+  Lemma L6: (Assumption6 B (M R B) O).
   Proof.
     move => x y [H1 H2].
     split. 
@@ -705,7 +705,7 @@ Module MeunierLanglois.
       by left.
   Qed.
   
-  Lemma L9 (A4: AB_4) (A5: AB_5) : (Assumption9 R B D (M R B)).
+  Lemma L9 (A4: AB_4) (A5: AB_5) : (Assumption9 R B O (M R B)).
   Proof. 
     move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] [[/= H3 /=H3'] /=H3''] H4 H5 H6.
     + have P4': ~ (y' = x') by move => I1;rewrite I1 in P4.
@@ -722,7 +722,7 @@ Module MeunierLanglois.
     exists X, RelIndep (M R B) X /\  X != set0 /\  forall x, ~ (x\in X) -> (x \in (M R B)#X). 
   (* end snippet MainTh:: no-out *)    
   Proof.
-    by pose proof (@G_SSW _ R B D A1 A2 (L3 A3) (L4 A5 A6) 
+    by pose proof (@G_SSW _ R B O A1 A2 (L3 A3) (L4 A5 A6) 
                   L5 L6 (L7 A4 A5) (L8 A4 A5) (L9 A4 A5)).
   Qed.
   
