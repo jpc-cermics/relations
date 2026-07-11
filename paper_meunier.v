@@ -728,20 +728,20 @@ Module MeunierLanglois.
   
 End MeunierLanglois. 
 
-
 Module BlidiaEngel.
-  
+    
   (* O is an orientation:  Asym, irreflexive relation *)
   (* D irreflexive D est inclue dans O `|` O^-1 *)
-  
   (* O is acycliq *)
+  Section test.
   
   Parameter (T:choiceType) (O D: relation T).
   
-  Definition C := O.
-  Definition R := D `&` O. 
-  Definition B := D `&` O^-1. 
-
+  Definition R := D `&` O^-1. 
+  Definition B := D `&` O. 
+  
+  Context (OD: O `|` O^-1 = (M R B) `|` (M R B)^-1).
+  
   Definition AB_1:= (NotEmpty T).
   Definition AB_2:= ~ (iic R).
   Definition AB_3:= ~ (iic B).
@@ -756,6 +756,29 @@ Module BlidiaEngel.
       ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
       -> O (x,y) -> O (y,z) -> O (z,x)
       -> (O (y,x) /\ O (z,y)).
+
+  (* O and D are both directions of a same graph *)
+
+  Lemma haveA5: ( O  `<=` (M R B) `|` (M R B)^-1).
+  Proof. by rewrite -OD;apply: subsetUl. Qed.
+  
+  Lemma haveA6: forall x y, B (x,y) /\ ~ ((M R B) (y, x)) -> O (x,y).
+  Proof. by move => x y [[_ Hb] _]. Qed.
+  
+  Theorem BE 
+    (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O)
+    (A7: Assumption7 R B (M R B)) (A8: Assumption8 R B (M R B))
+    (A9: Assumption9 R B O (M R B)):
+    exists X, RelIndep (M R B) X /\  X != set0 /\  forall x, ~ (x\in X) -> (x \in (M R B)#X). 
+  (* end snippet MainTh:: no-out *)    
+  Proof.
+    move: (Smax A1 A2 A3 A4 haveA5 A9) => [Sm H1].
+    move: (main_lemma A2 haveA6 A7 A8 H1) => H2.
+    move: H1 => [/inP [H1 [H4 H5]] H3].
+    by exists Sm. 
+  Qed.
+
+  End test.
   
 End BlidiaEngel.
 
