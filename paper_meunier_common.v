@@ -605,7 +605,7 @@ Module Extend_nonMabsorbant_prekernel.
       pose proof (preKernelProp1 H8) as H9.
       by rewrite H9.
     Qed.
-
+    
     Lemma case2_Cprop (A6: Assumption6 B M D): forall y,
       preKernel R M  X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
       -> X [<= D] ((X`\` (Xy y)) `|` [set y]).

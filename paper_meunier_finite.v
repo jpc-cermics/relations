@@ -260,6 +260,16 @@ Section RelIndep_fin.
          
   Lemma RelIndep_fin1 R a : RelIndep_fin R [set a].
   Proof. apply/RelIndepP;rewrite set_of_sfin;apply/RelIndep_set1. Qed.
+
+  Lemma RelIndep_fin_Iv R S: RelIndep_fin R S <-> RelIndep_fin R^-1 S.
+  Proof. 
+    by split;rewrite -RelIndepE;move => /RelIndep_Iv/RelIndepP;
+                                       [| rewrite inverseK].
+  Qed.
+
+  Lemma RelIndep_fin_IE R S: RelIndep_fin R S = RelIndep_fin R^-1 S.
+  Proof. 
+  Admitted.
   
 End RelIndep_fin. 
 
@@ -359,6 +369,12 @@ Section SubSetPType_order.
   (** * setIndep doit s'appeller  prekernelfinType ? *)
   Definition setIndep O R M := setP_type (prekernel_fin O R M). 
 
+  Lemma prekernel_fin_Iv O R M S: 
+    prekernel_fin O R M S = prekernel_fin O^-1 R M S.
+  Proof.
+    by rewrite /prekernel_fin RelIndep_fin_IE.
+  Qed.
+  
   Lemma prekernelE O R M S: 
     prekernel_fin O R M S <->
     RelIndep O [:set: S] /\ setRM R M [:set: S] /\ [:set: S] != set0.
@@ -449,7 +465,7 @@ Section ChampetierExt_Theorem.
     (A7 : Assumption7 R B (M R B)) (A8 : Assumption8 R B (M R B)).
   Context (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O).
   Context (Apk : forall X , RelIndep O [:set: X] <->  RelIndep (M R B) [:set: X]).
-
+  
   Lemma prekernelP S: 
     (prekernel_fin O R (M R B) S) <-> preKernel R (M R B) [:set: S].
   Proof. by rewrite (@prekernelE T O R (M R B) S) Apk. Qed.
@@ -472,7 +488,7 @@ Section ChampetierExt_Theorem.
     by rewrite Heq set_finInvol in H9.
   Qed.
   
-  Lemma Kernel_Champetier: 
+  Lemma Kernel_ChampetierExt: 
     exists (S : {set T}), RelIndep (M R B) [:set: S] /\ Mabsorbant R B [:set: S].
   Proof.
     (* There exist a maximal set *)
@@ -482,6 +498,122 @@ Section ChampetierExt_Theorem.
   Qed.
 
 End ChampetierExt_Theorem.
+
+Section simpleGraph. 
+
+  Context (T : Type).
+  Implicit Types (G D O Re: relation T).
+
+  Definition simpleGraph G := symmetric G /\ irreflexive G.
+  Definition Direction G D := D `|` D^-1 = G. 
+  Definition Orientation G O := Direction G O /\ asymmetric O.
+
+  Lemma RelIndep_sym Re S: (RelIndep Re S) <-> (RelIndep (Re `|` Re^-1) S).
+  Proof.
+    split => [+ x y Hx Hy Hne|+ x y Hx Hy Hne].
+    have Hne': ~ (y = x). by move => H1;rewrite H1 in Hne.
+    by move => /[dup] /(_ y x Hy Hx Hne') H1 /(_ x y Hx Hy Hne) H2 [H3 | H3].
+    by move => /(_ x y Hx Hy Hne);contra => ?;left.
+  Qed.
+  
+  Lemma direction_relIndep G D S: 
+    Direction G D -> (RelIndep D S <-> RelIndep G S).
+  Proof. by move => Hd;rewrite RelIndep_sym Hd. Qed.
+
+  Lemma orientation_relIndep G D S: 
+    Orientation G D -> (RelIndep D S <-> RelIndep G S).
+  Proof. by move => [Hd _];rewrite RelIndep_sym Hd. Qed.
+  
+End simpleGraph.
+
+Section Champ.
+
+  Context (T : finType) (G D O: relation T).
+  
+  Context (Asg: simpleGraph G).
+  Context (Ao: Orientation G O).
+  Context (Ad: Direction G D).
+
+  Definition R := D `&` O^-1.
+  Definition B := D `&` O.
+
+  Context 
+    (A1: NotEmpty T) 
+    (Asp: sporder O)
+    (A6 : Assumption6 B (M R B) O) 
+    (A7 : Assumption7 R B (M R B))
+    (A8 : Assumption8 R B (M R B)).
+  
+  Lemma RB: (M R B) = D.
+  Proof.
+    have H1:  R `<=` D. by rewrite /R;apply: subIsetl.
+    have H2:  B `<=` D. by rewrite /R;apply: subIsetl.
+    rewrite predeqE => -[x y].
+    split => [[/H2 H0 | /H1 H0] // | H3].
+    case H4: ((x,y) \in O).
+    + move: H4 => /inP H4.
+      ++ case H5: ((y,x) \in O).
+         move: H5 => /inP H5.
+         by right;split.
+         by left;split.
+    + case H5: ((y,x) \in O).
+      move: H5 => /inP H5.
+      by right;split.
+      (** (x, y) \in O) = false /\ (y, x) \in O) = false *)
+      (** is not possible *)
+      have H6: D `|` D^-1 = G by [].
+      have H7: O `|` O^-1 = G by move: (Ao) => [Do _].
+      have H8:  D `|` D^-1 = O `|` O^-1. by rewrite H6 H7. 
+      have [/inP //| H9]: (O `|` O^-1) (x,y) by rewrite -H8; left.
+      by rewrite H4.
+      have: (y,x) \in O by rewrite inP.  
+      by rewrite H5.
+  Qed.
+  
+  Lemma Au:  R `<=` O^-1. 
+  Proof. by rewrite /R;apply: subIsetr. Qed.
+
+  Lemma Onoticc': ~ (iic  O). 
+  Proof. by apply: (@fin_not_iic _ O Asp). Qed.
+
+  (** * si O est un porder O^-1 aussi *)
+  Lemma Onoticc: ~ (iic  O^-1). 
+  Admitted.
+
+  Lemma Rnotiic: ~ (iic R).
+  Proof. by move: Onoticc => ? /(@iic_sub T R O^-1 (Au)) ?. Qed.
+
+  Lemma Apk:  forall X , RelIndep O [:set: X] <->  RelIndep (M R B) [:set: X].
+  Proof. move => X. rewrite RB. 
+         rewrite (@direction_relIndep T G D [:set: X] Ad).
+         by rewrite (@orientation_relIndep T G O [:set: X] Ao).
+  Qed.
+  
+  Lemma Rsym : asymmetric R.
+  Proof.
+    move => x y /Au H1 /Au H2.
+    by move: H1 Ao => + [_ /(_ x y) Ha] => /Ha H3.
+  Qed.
+  
+  Lemma haveA2 : ~ (iic (Asym R)).
+    move: Rsym => /AsymEq ->;apply: Rnotiic.
+  Qed.
+
+  Lemma haveA6 : forall x y : T, B (x, y) /\ ~ (M R B) (y, x) -> O (x, y).
+  Proof. by move => x y [[_ H1] _]. Qed.
+
+  (* 
+  Lemma Kernel_Champetier: 
+    exists (S : {set T}), RelIndep (M R B) [:set: S] /\ Mabsorbant R B [:set: S].
+  Proof.
+    by pose proof (@Kernel_ChampetierExt T O R B (haveA2) (haveA6)
+                     A7 A8 A1 Asp (Au) (Apk)).
+  Qed.
+  *)
+
+End Champ.
+
+
 
 Section test.
 

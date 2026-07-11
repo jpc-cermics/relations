@@ -1236,7 +1236,12 @@ Section Relation_Facts.
     have P3': y <> x by move => H5;rewrite H5 in P3.
     by apply: (H2 y x _ _ _).
   Qed.
-
+  
+  Lemma RelIndep_Iv R X: RelIndep R X -> RelIndep R^-1 X.
+  Proof. 
+    by move => H1;rewrite RelIndep_Is inverseK setUC -RelIndep_Is.
+  Qed.
+  
   Lemma RelIndep_E x y R X: x \in X -> y \in X -> ~ (x = y) -> RelIndep R X 
                             -> ~ (( R `|` R^-1) (y,x)).
   Proof.
@@ -1528,7 +1533,12 @@ Section Infinite_paths.
   
   Lemma notiic_rloop R: (exists (v0:T), (v0 \in setT)) -> ~ (iic (Asym R)) -> (Rloop R).
   Proof. by move => H0; apply contraPP => /test3/(DC H0) H1.  Qed.
-
+  
+  Lemma iic_sub R S: R `<=` S -> (iic R) -> (iic S).
+  Proof.
+    by move => Hsub [f H];exists f;move: H => + n =>/(_ n)/Hsub ?.
+  Qed.
+    
   
 End Infinite_paths.
 
