@@ -170,6 +170,9 @@ Section Relation_Facts.
          by move: (Atsy x y H1 H2) H0 => ->;apply: Ir.
   Qed.
 
+  Lemma asym_ir R: asymmetric R -> irreflexive R. 
+  Proof. by move => + x + => /(_ x x) As /[dup] Rxx /As notRxx. Qed.
+  
   (* sporder is also asymmetric *)
   Lemma tr_ir_to_asym R: transitive R -> irreflexive R -> asymmetric R.
   Proof. by move => Tr Ir x y H1 H2; pose proof (Ir x (Tr x y x H1 H2)). Qed.
@@ -184,9 +187,15 @@ Section Relation_Facts.
   Lemma sporder_antisym R: sporder R -> antisymmetric R.
   Proof. by move => [Hir Ht];apply: tr_ir_to_antisym. Qed.
 
-  Lemma asym_ir R: asymmetric R -> irreflexive R. 
-  Proof. by move => + x + => /(_ x x) As /[dup] Rxx /As notRxx. Qed.
+  Lemma sporder_inv R: sporder R -> sporder R^-1.
+  Proof.
+    move => [Hi Ht];split => [x /Hi //|]. 
+    by move: Ht => + x y z /[swap] => /(_ z y x) Ht /Ht H2 /H2.
+  Qed.
   
+  Lemma asymmetric_inv R: asymmetric R ->  asymmetric R^-1.
+  Proof. by move => + x y => /(_ x y) Ha /Ha . Qed.
+
   (** * Sets_facts *)
   
   (* should be replaced by in_setE ? *)
