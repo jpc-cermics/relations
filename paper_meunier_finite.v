@@ -456,7 +456,66 @@ Section SubSetPType_order.
     move => U H4; move: H3 => /(_ (SetP H4)) H3.
     by move => /H3/eqP ?;apply/eqP. 
   Qed.
+
+  Variables (x y z :T ).
+  Compute (nth x [:: x;y] 1).
+  Compute (size [:: x;y]).
+
+  Definition Inc O R M (SS: (setIndep O R M)*(setIndep O R M))
+    := [:set: (val SS.1)] `<=` [:set: (val SS.2)].
   
+  Lemma Inc_Tr  O R M: transitive (@Inc O R M).
+  Admitted.
+
+  Lemma poo O R M  (Sq: seq (setIndep O R M)) (S1:(setIndep O R M)) : 
+    0 < size Sq
+    -> (forall j, j <= (size Sq) -> ~ ([:set: (val (nth S1 (S1::(rcons Sq S1)) j))] = 
+                 [:set: (val (nth S1 (S1::(rcons Sq S1)) j.+1))]))
+    -> exists j, j <= (size Sq) /\ exists aj, aj \in (val (nth S1 (S1::(rcons Sq S1)) j))
+                 /\ ~( aj \in (val (nth S1 (S1::(rcons Sq S1)) j.+1))).
+  Proof.
+    move => H1. contra => H2.
+    have H4: forall j, j <= (size Sq) -> [:set: (val (nth S1 (S1::(rcons Sq S1)) j))] `<=`
+                    [:set: (val (nth S1 (S1::(rcons Sq S1)) j.+1))]
+        by move => j Hs b;rewrite -inP => /in_finP/(H2 j Hs)/in_finP/inP.
+    
+    rewrite -(@allL_nth' (setIndep O R M) (@Inc O R M) Sq S1 S1 S1
+      ) in H4.
+        
+    move: (H4) => /(@allL_All (setIndep O R M)) H4'.
+    move: (@Inc_Tr O R M) => /Tclos_iff H5.
+    rewrite -H5 in H4'.
+    
+    have H6: forall S:(setIndep O R M) , S \in (S1 :: Sq) -> ((@Inc O R M) (S, S1)).
+    move => S H7.
+    move: (@allset_in _ (S1 :: Sq) S (Inc (M:=M))#_(S1) H7 H4').
+    by move => /inP/Fset_s HH. 
+
+    move: H4 => /(@allL_AllA (setIndep O R M)) H4''.
+    rewrite -H5 in H4''.
+
+    have H6': forall S:(setIndep O R M) , S \in (rcons Sq S1) -> ((@Inc O R M) (S1, S)).
+    move => S H7.
+    move: (@allset_in _ (rcons Sq S1) S ((S1)_:#(Inc (M:=M))) H7 H4'').
+    by move => /inP/Fset_s HH. 
+    
+    have H8:  forall S : setIndep O R M, S \in Sq -> S = S1.
+    move => S P1.
+    have P2: S \in S1 :: Sq by rewrite in_cons P1 orbT.
+    have P3: S \in rcons Sq S1 by rewrite in_rcons P1 orTb.
+    move: P2 P3 => /(H6 S) P2 /(H6' S) P3.
+
+    have P4: [:set: (val S)] = [:set: (val S1)].
+    rewrite eqEsubset. by split.
+    by move: P4 => /set_of_fin_inj/val_inj P4.
+
+    exists 0. lia.
+    rewrite /= // nth_rcons H1. 
+    have P5: (nth S1 Sq 0) \in Sq.
+    by apply: mem_nth.
+    by move: P5 => /H8 ->.
+  Qed.
+
 End SubSetPType_order.
 
 Section ChampetierExt_Theorem.
