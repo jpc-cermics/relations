@@ -84,7 +84,7 @@ Section Seq1_plus.
     rewrite in_cons allset_cons.
     move => /orP [/eqP -> | H1] [/inP H2 H3];[exact | by apply: Hr].
   Qed.
-  
+
   Lemma in_rev s x: x \in s <-> x \in (rev s).
   Proof.
     have Impl s': (x \in s') -> (x \in (rev s'))

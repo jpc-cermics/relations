@@ -269,7 +269,13 @@ Section RelIndep_fin.
 
   Lemma RelIndep_fin_IE R S: RelIndep_fin R S = RelIndep_fin R^-1 S.
   Proof. 
-  Admitted.
+    case H1 : (RelIndep_fin R S).
+    by move: H1 => /RelIndepP/RelIndep_Iv/RelIndepP ->.
+    move: H1 => /RelIndepP. 
+    contra. 
+    rewrite eq_sym eqbF_neg negbK -RelIndepE => /RelIndep_Iv.
+    by rewrite inverseK.
+  Qed.
   
 End RelIndep_fin. 
 
@@ -457,66 +463,213 @@ Section SubSetPType_order.
     by move => /H3/eqP ?;apply/eqP. 
   Qed.
 
-  Variables (x y z :T ).
-  Compute (nth x [:: x;y] 1).
-  Compute (size [:: x;y]).
+End SubSetPType_order.
 
-  Definition Inc O R M (SS: (setIndep O R M)*(setIndep O R M))
-    := [:set: (val SS.1)] `<=` [:set: (val SS.2)].
+Section Acyclicity.
+  (** The case of acyclicity **)
   
-  Lemma Inc_Tr  O R M: transitive (@Inc O R M).
+  Definition Diff {T} (SS: T*T) := ~ ( SS.1 = SS.2).
+
+  Definition Cyclic {T} (R: relation T):= 
+    exists sq, exists s, 0 < size sq /\ allL R sq s s /\ allL Diff sq s s.
+
+  Lemma CyclicE (T: eqType) (R: relation T): 
+    Cyclic R -> irreflexive R -> exists s, R.+ (s,s).
+  Proof.
+    move => [sq [s [Hs [HR Hd]]]] Hi.
+  Admitted.
+  
+  Context (T : eqType).
+  Implicit Types (O R M: relation T) (S: set T).
+
+  Definition Inc (SS: (set T)*(set T)) := SS.1 `<=` SS.2.
+
+  Lemma Inc_Tr : transitive Inc.
   Admitted.
 
-  Lemma poo O R M  (Sq: seq (setIndep O R M)) (S1:(setIndep O R M)) : 
-    0 < size Sq
-    -> (forall j, j <= (size Sq) -> ~ ([:set: (val (nth S1 (S1::(rcons Sq S1)) j))] = 
-                 [:set: (val (nth S1 (S1::(rcons Sq S1)) j.+1))]))
-    -> exists j, j <= (size Sq) /\ exists aj, aj \in (val (nth S1 (S1::(rcons Sq S1)) j))
-                 /\ ~( aj \in (val (nth S1 (S1::(rcons Sq S1)) j.+1))).
+  Definition strictInc (SS: (set T)*(set T)) :=
+    SS.1 `<=` SS.2 /\ ~ ( SS.1 = SS.2).
+  
+  Lemma step T' (sq: seq T') s (S : set T'): 
+    ~(nth s sq 0) \in S -> (exists k, (nth s sq k) \in S )
+    -> exists j,  ~(nth s sq j) \in S /\ (nth s sq j.+1) \in S.
   Proof.
-    move => H1. contra => H2.
-    have H4: forall j, j <= (size Sq) -> [:set: (val (nth S1 (S1::(rcons Sq S1)) j))] `<=`
-                    [:set: (val (nth S1 (S1::(rcons Sq S1)) j.+1))]
-        by move => j Hs b;rewrite -inP => /in_finP/(H2 j Hs)/in_finP/inP.
-    
-    rewrite -(@allL_nth' (setIndep O R M) (@Inc O R M) Sq S1 S1 S1
-      ) in H4.
-        
-    move: (H4) => /(@allL_All (setIndep O R M)) H4'.
-    move: (@Inc_Tr O R M) => /Tclos_iff H5.
-    rewrite -H5 in H4'.
-    
-    have H6: forall S:(setIndep O R M) , S \in (S1 :: Sq) -> ((@Inc O R M) (S, S1)).
-    move => S H7.
-    move: (@allset_in _ (S1 :: Sq) S (Inc (M:=M))#_(S1) H7 H4').
-    by move => /inP/Fset_s HH. 
+    move => H0 [k Hk];elim: k Hk => [// | n Hr Hl].
+    by case H1: (nth s sq n \in S);[move: H1 => /Hr H1 |exists n;rewrite H1 Hl].
+  Qed.
+  (* 
+  Variables (T': eqType) (x1 s v z a b c d: T').
+  
+  Compute (head z[:: a;b ;c])::(rcons (behead (rot 1 (x1::[:: a;b ;c])))
+                                (head z[:: a;b ;c])).
 
-    move: H4 => /(@allL_AllA (setIndep O R M)) H4''.
-    rewrite -H5 in H4''.
+  Compute (head z [::])::(rcons (behead (rot 1 (x1::[:: a;b ;c])))
+                                (head z[:: a;b ;c])).
+  
+  Definition sq := [:: a].
 
-    have H6': forall S:(setIndep O R M) , S \in (rcons Sq S1) -> ((@Inc O R M) (S1, S)).
-    move => S H7.
-    move: (@allset_in _ (rcons Sq S1) S ((S1)_:#(Inc (M:=M))) H7 H4'').
-    by move => /inP/Fset_s HH. 
-    
-    have H8:  forall S : setIndep O R M, S \in Sq -> S = S1.
-    move => S P1.
-    have P2: S \in S1 :: Sq by rewrite in_cons P1 orbT.
-    have P3: S \in rcons Sq S1 by rewrite in_rcons P1 orTb.
-    move: P2 P3 => /(H6 S) P2 /(H6' S) P3.
+  Compute (nth v (rcons sq s) 0, nth v (rcons sq s) 1). 
+  Compute (head v sq, nth v (rcons (behead (rcons sq s)) (head v sq)) 0).
 
-    have P4: [:set: (val S)] = [:set: (val S1)].
-    rewrite eqEsubset. by split.
-    by move: P4 => /set_of_fin_inj/val_inj P4.
+  Definition sq' := [:: a;b].
 
-    exists 0. lia.
-    rewrite /= // nth_rcons H1. 
-    have P5: (nth S1 Sq 0) \in Sq.
-    by apply: mem_nth.
-    by move: P5 => /H8 ->.
+  Compute (nth v (rcons sq' s) 0, nth v (rcons sq' s) 1). 
+  Compute (head v sq', nth v (rcons (behead (rcons sq' s)) (head v sq')) 0).
+  *) 
+
+  (* apply rot1 on (s::sq) *)
+  Definition circrot {T': eqType} (ssq: T'*seq T') := locked
+    (head (ssq.1) (ssq.2), (behead (rot 1 (ssq.1::ssq.2)))).
+
+  (* 
+  Variables (T': eqType) (a b c d: T').
+  Definition ssq: T'*seq T' := (a, [:: b;c;d]).
+
+  Compute (ssq.1, (circrot ssq)). 
+  Compute (nth ssq.1 (circrot ssq).2 (size ssq.2).-1).
+  Compute (nth ssq.1 ssq.2 (size ssq.2)).
+  *)
+
+  Lemma circrotE {T': eqType} (ssq: T'*seq T'):
+    circrot ssq = (head (ssq.1) (ssq.2), (behead (rot 1 (ssq.1::ssq.2)))).
+  Proof. by rewrite /circrot -lock. Qed.
+  
+  Lemma nth_circrot (T': eqType) (ssq: T'*seq T') (v: T'):
+    forall j, j.+1 < size ssq.2 -> (nth v (circrot ssq).2 j) = (nth v ssq.2 j.+1).
+  Proof.
+    by move => j Hj;rewrite circrotE /= rot1_cons nth_behead nth_rcons Hj. 
   Qed.
 
-End SubSetPType_order.
+  Lemma nth_circrot_l (T': eqType) (ssq: T'*seq T') (v: T'):
+    0 < (size ssq.2) -> (nth v (circrot ssq).2 (size ssq.2).-1) = ssq.1.
+  Proof.
+    move => Hsp.
+    have H0: (size ssq.2) = (size ssq.2).-1.+1 by lia.
+    by rewrite circrotE /= rot1_cons nth_behead nth_rcons -H0 ltnn eq_refl. 
+  Qed.
+    
+  (** * plus rapide un seul lemme *)
+  Lemma nth_circrot' (T': eqType) (ssq: T'*seq T') :
+    forall j, j.+1 <= size ssq.2 -> (nth ssq.1 (circrot ssq).2 j) = (nth ssq.1 ssq.2 j.+1).
+  Proof.
+    move => j Hj.
+    rewrite circrotE /= rot1_cons nth_behead nth_rcons. 
+    case H1: (j.+1 < size ssq.2);first exact.
+    have H0: (size ssq.2) = (size ssq.2).-1.+1 by lia.
+    have ->: (j.+1 = size ssq.2) by lia.
+    by rewrite eq_refl nth_default. 
+  Qed.
+  
+  Lemma nth_circrot_0 (T': eqType) (ssq: T'*seq T') :
+    (circrot ssq).1 = (nth ssq.1 ssq.2 0).
+  Proof.  by rewrite circrotE /=. Qed.
+
+  Lemma size_circrot (T': eqType) (ssq: T'*seq T'):
+    size (circrot ssq).2 = size ssq.2.
+  Proof. by rewrite circrotE /= size_behead size_rot /=. Qed.
+    
+  Lemma nth_rcons_circrot (T': eqType) (ssq: T'*seq T') n:
+    0 < n -> n <= (size ssq.2)
+    -> (nth ssq.1 ((circrot ssq).1 :: (rcons (circrot ssq).2 (circrot ssq).1)) n) 
+      = nth ssq.1 ssq.2 n.
+  Proof. 
+    move => Hsp Hn.
+    have H0: n < (size ssq.2).+1 by lia.
+    rewrite -rcons_cons nth_rcons nth_circrot_0 /= size_circrot H0.
+    have H2: n = n.-1.+1 by lia.
+    rewrite H2 /=.
+    move: (@nth_circrot' T' ssq n.-1).
+    by rewrite -H2 Hn => ->.
+  Qed.
+  
+  Lemma nth_rcons_circrot0 (T': eqType) (ssq: T'*seq T') :
+    (nth ssq.1 ((circrot ssq).1 :: (rcons (circrot ssq).2) (circrot ssq).1) 0) 
+      = nth ssq.1 ssq.2 0.
+  Proof. by rewrite /= nth_circrot_0. Qed.
+    
+  Lemma allL_rot_s1 (T': eqType) (sq: seq T') (s v: T'): 
+    0 < size sq -> 
+    (nth v (rcons sq s) 0, nth v (rcons sq s) 1)
+    = (head v sq, nth v (rcons (behead (rcons sq s)) (head v sq)) 0).
+  Proof.
+    move => H1;rewrite nth_rcons H1 /= nth_rcons. 
+    case H2: (size sq == 1);first  by move: H2 => /eqP/seq_1 [x' ->] /=.
+    have H3: 1 < size sq by lia.
+    by move: (H3) => /seq_cc [sq' [x' [y' ->]]] /=.
+  Qed.
+  
+  Lemma allL_rot (T': eqType) (R: relation T') (sq: seq T') (s v: T'): 
+    0 < size (sq) -> allL R sq s s -> 
+    allL R (behead (rot 1 (s::sq))) (head s sq) (head s sq).
+  Proof.
+    move => H1 H2.
+    rewrite (@allL_nth' T' R _ _ _ s) rot1_cons size_behead size_rcons /=.
+    move => n Hn.
+    have H0': 0 <= size sq by lia.
+    (* we keep assumption for n= 0 and n.+1 *)
+    move: H2;rewrite (@allL_nth' T' R _ _ _ s)  => /[dup] /(_ 0 H0') H0 /(_ n.+1) H3.
+    move: H0;rewrite /= nth_rcons H1 => H0.
+    
+    case H4: (n == 0). 
+    by move: H4 H3 (H1) => /eqP -> /= H3 /H3 H1';rewrite -allL_rot_s1. 
+    case H5: (n < size sq);last first.
+    + have -> : n = size sq by lia.
+      rewrite nth_rcons size_behead size_rcons ltnn eq_refl /=.
+      rewrite -rcons_cons nth_rcons /= size_behead size_rcons /=.         
+      rewrite ltnSn /= -headI nth_rcons ltnn eq_refl /=.
+      exact. 
+    + move: (H5) => /H3 /=.
+      rewrite  2!nth_rcons H5 /=.
+      case H6: (n.+1 < size sq).
+      ++ rewrite -rcons_cons 2!nth_rcons /= size_behead size_rcons /=.
+         have ->: n < (size sq).+1 by lia.
+         by rewrite H5 -headI nth_rcons H5 nth_behead nth_rcons H6.
+         have H7 : n.+1 == size sq by lia.
+         rewrite H7 /= nth_rcons !size_behead size_rcons /= H5.
+         rewrite -rcons_cons nth_behead 2!nth_rcons /= size_behead size_rcons /=.
+         rewrite H6 H7.
+         have ->:n < (size sq).+1 by lia.
+         by rewrite -headI nth_rcons H5.
+  Qed.
+    
+  Lemma allL_Tr (T': eqType) (R: relation T') (sq: seq T') (s: T'): 
+    0 < size sq -> allL R sq s s -> transitive R 
+    -> forall s', s' \in sq -> R (s, s') /\ R (s',s).
+  Proof.
+    move => H1 H2 /Tclos_iff H3 s' H4. 
+    move: (@allL_to_Tclos_left _ R sq s s s' H4 H2). 
+    move: (@allL_to_Tclos_right _ R sq s s s' H4 H2). 
+    by rewrite -H3.
+  Qed.
+  
+  Lemma DiffE (Sq: seq (set T)) S: 
+    0 < size Sq 
+    -> @allL (set T) Diff Sq S S 
+    -> exists j, j <= (size Sq) 
+                /\ exists aj, aj \in (nth S (S::(rcons Sq S)) j)
+                        /\ ~( aj \in (nth S (S::(rcons Sq S)) j.+1)).
+  Proof.
+    move => H1;rewrite (@allL_nth' (set T) Diff Sq S S S).
+    contra => H2.
+    have H4: allL Inc Sq S S
+      by rewrite (@allL_nth' (set T));move => j Hs b /inP/(H2 j Hs b)/inP.
+    have H6: forall S', S' \in Sq -> S = S'.
+    move => S' Hs;move: (@allL_Tr (set T) Inc Sq S H1 H4 Inc_Tr S' Hs).
+    by rewrite eqEsubset.
+    by exists 0;[lia | rewrite /= // nth_rcons H1;apply: H6;apply: mem_nth].
+  Qed.
+  
+  (** * without loss of generality
+  Lemma DiffE' (Sq: seq (set T)) S: 
+    0 < size Sq 
+    -> @allL (set T) Diff Sq S S 
+    -> exists a0, a0 \in (nth S (S::Sq) 0) /\ ~( a0 \in (nth S (S::Sq) 1)).
+  Proof.
+  Admitted.
+
+  *) 
+
+End Acyclicity.
 
 Section ChampetierExt_Theorem.
 
