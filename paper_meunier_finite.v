@@ -478,7 +478,7 @@ Section Acyclicity.
     Cyclic R -> irreflexive R -> exists s, R.+ (s,s).
   Proof.
     move => [sq [s [Hs [HR Hd]]]] Hi.
-  Admitted.
+
   *)
 
   Context (T : eqType).
@@ -667,7 +667,6 @@ Section Acyclicity.
     -> @allL (set T) Diff Sq S S 
     -> exists a0, a0 \in (nth S (S::Sq) 0) /\ ~( a0 \in (nth S (S::Sq) 1)).
   Proof.
-  Admitted.
 
   *) 
 

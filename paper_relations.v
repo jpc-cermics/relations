@@ -244,7 +244,6 @@ Section CwCw_s_facts.
     split => [[[n H1 H2] | H2] | ];first by (exists n);[| apply: (iter_include H3)].
     by apply: TclosSu; left.
     move => [n /= H1 H2 ].
-  Admitted.
   *)
 
   Lemma C_n (X: set T) : forall (w w': T),
