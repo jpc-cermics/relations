@@ -473,19 +473,21 @@ Section Acyclicity.
   Definition Cyclic {T} (R: relation T):= 
     exists sq, exists s, 0 < size sq /\ allL R sq s s /\ allL Diff sq s s.
 
+  (* 
   Lemma CyclicE (T: eqType) (R: relation T): 
     Cyclic R -> irreflexive R -> exists s, R.+ (s,s).
   Proof.
     move => [sq [s [Hs [HR Hd]]]] Hi.
   Admitted.
-  
+  *)
+
   Context (T : eqType).
   Implicit Types (O R M: relation T) (S: set T).
 
   Definition Inc (SS: (set T)*(set T)) := SS.1 `<=` SS.2.
 
   Lemma Inc_Tr : transitive Inc.
-  Admitted.
+  Proof. by move => A B C;apply: subset_trans. Qed.
 
   Definition strictInc (SS: (set T)*(set T)) :=
     SS.1 `<=` SS.2 /\ ~ ( SS.1 = SS.2).
