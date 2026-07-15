@@ -140,7 +140,7 @@ Section Relation_Facts.
   Context (T : Type).
   Implicit Types (T : Type) (R S U: relation T) (X Y: set T).
 
-  (** We could use reflexive, transitive, ... from  Coq.ssr.ssrbool 
+  (** XXXX We could use reflexive, transitive, ... from  Coq.ssr.ssrbool 
       using the coercion to rel T *)
   
   Definition reflexive R : Prop := forall x:T, R (x,x).
@@ -198,7 +198,7 @@ Section Relation_Facts.
 
   (** * Sets_facts *)
   
-  (* should be replaced by in_setE ? *)
+  (* should be replaced by in_setE or inE ? *)
   Lemma inP (T': Type) (x:T') (X: set T'): x \in X <-> X x. 
   Proof. by rewrite in_setE. Qed.
   
@@ -211,6 +211,7 @@ Section Relation_Facts.
   Qed.
     
   (* begin snippet Sone:: no-out *)  
+  (** * XXXX regarder  nonemptyPn *)
   Lemma empty_notexists (T': Type) (X:set T'): X = set0 <-> ~ (exists z, z \in X).
   Proof.
     split =>[-> [z]| H1];first by rewrite in_set0. 
@@ -229,9 +230,14 @@ Section Relation_Facts.
     by move => /notempty_exists H1 /empty_notexists H2.
   Qed.
   
+  (** * relID0  plutot :  (Y `<=` X) ->  Y `&` (X `\` Y) = set0.  *)
+      
   Lemma W_part X Y Z: (Y `<=` X) /\ (Z= X `\` Y) -> Y `&` Z = set0.
   Proof. by move => [? H2];rewrite empty_notexists H2;move => [z /inP [? [_ ?]]]. Qed.
   
+  (** * XXX regarder subUset *)
+  (** * subUset : forall {T : Type} (A B C : set T), (B `|` C `<=` A) = (B `<=` A /\ C `<=` A) *)
+
   Lemma union_inc_b (R S U:relation T): S `<=` U -> R `<=` U -> (S `|` R) `<=` U.
   Proof. by move => H1 H2;(have <- : U `|` R = U by apply setUidPl);apply setSU. Qed.
 

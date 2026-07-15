@@ -325,7 +325,7 @@ Section Relation_Topology.
   
   Definition aset_topology {T : Type} (V: relation T) : Type := T.
   
-  Variables (T: choiceType) (S: relation T).
+  Variables (T: Type) (S: relation T).
 
   Local Notation W := (aset_topology S).
   
@@ -347,11 +347,24 @@ Section Relation_Topology.
     (forall (i : I), tau (f i)) -> tau (\bigcap_i f i).
   Proof. by apply:Aset_stableI. Qed.
   
-  HB.instance Definition _ := Choice.on W.
+  (* HB.instance Definition _ := Choice.on W. *)
+  HB.instance Definition _ := gen_eqMixin W.   
+  HB.instance Definition _ := gen_choiceMixin W.   
   Set Warnings "-redundant-canonical-projection".
   HB.instance Definition _ := isOpenTopological.Build W openT' openI' open_bigU'.
   
 End Relation_Topology.
+
+Section test.
+  (* pr 1807 *)
+  Context (T: Type) (v: relation T). 
+  Check aset_topology v : topologicalType. 
+  Let U := aset_topology v.
+  Variable (A: set U).
+  Check (closure A).
+  
+End test.
+
  
 Section Relation_Topology_props.
   (** * Checking the AsetTopology *)

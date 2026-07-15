@@ -87,7 +87,17 @@ Section FinsetToClassical.
     by move => /orP [? | ?];apply/inP;[left| right];apply/inP/in_finP.
     by move/inP => [/inP/in_finP -> |/inP/in_finP ->];[rewrite orTb| rewrite orbT].
   Qed.
-  
+
+  (** * aller voir 
+  Definition in_set T (A : set T) : pred T := (fun x => `[<A x>]).
+Canonical set_predType T := @PredType T (set T) (@in_set T).
+
+Lemma in_setE T (A : set T) x : x \in A = A x :> Prop.
+Proof. by rewrite propeqE; split => [] /asboolP. Qed.
+
+Definition inE := (inE, in_setE).
+  *) 
+
   Lemma set_of_finI A B : 
     set_of_fin (A :&: B) = (set_of_fin A) `&` (set_of_fin B).
   Proof.
