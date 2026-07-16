@@ -90,7 +90,7 @@ Definition RelIndep (T:Type) (R: relation T) (S: set T) :=
 (* end snippet RelIndep *)    
 
 (* possible Corecion of relation T to rel T *)
-Definition R2rel (T: Type) (R: relation T) : rel T := (fun x y => ((x,y) \in R)).
+Definition R2rel (T: Type) (R: relation T) : rel T := (fun x y => asbool (R (x,y))).
 Definition rel2R (T: Type) (R: rel T) : relation T := (fun xy => R xy.1 xy.2).
 Global Coercion R2rel : relation >-> rel.
 
@@ -144,6 +144,13 @@ Section Relation_Facts.
       using the coercion to rel T *)
   
   Definition reflexive R : Prop := forall x:T, R (x,x).
+
+  Lemma reflexiveE R : reflexive R <-> ssrbool.reflexive (R2rel R).
+  Proof. 
+    rewrite /reflexive/ssrbool.reflexive/R2rel.
+    by split;move => ? x;apply/asboolP.
+  Qed.
+  
   Definition transitive R: Prop := forall x y z:T, R (x,y) -> R (y,z) -> R (x,z).
   Definition symmetric R: Prop := forall x y:T, R (x,y) -> R (y,x).
   Definition antisymmetric R: Prop := forall x y:T, R (x,y) -> R (y,x) -> x = y.
