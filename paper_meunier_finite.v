@@ -475,22 +475,21 @@ Section SubSetPType_order.
 
 End SubSetPType_order.
 
+Definition Diff {T: Type} (SS: T*T) := ~ ( SS.1 = SS.2).
+  
+Definition Cyclic {T: Type} (R: relation T):= exists sq, exists s, allL R sq s s.
+
 Section Acyclicity.
   (** The case of acyclicity **)
   
-  Definition Diff {T} (SS: T*T) := ~ ( SS.1 = SS.2).
-
-  Definition Cyclic {T} (R: relation T):= 
-    exists sq, exists s, 0 < size sq /\ allL R sq s s /\ allL Diff sq s s.
-
-  (* 
-  Lemma CyclicE (T: eqType) (R: relation T): 
-    Cyclic R -> irreflexive R -> exists s, R.+ (s,s).
+  Lemma CyclicE (T: Type) (R: relation T): 
+    Cyclic R <-> exists s, R.+ (s,s).
   Proof.
-    move => [sq [s [Hs [HR Hd]]]] Hi.
-
-  *)
-
+    split => [ [sq [s +]] | [ s +]].
+    by move: (@allL_to_Tclos T R sq s s) => H1 /H1 H2;exists s.
+    by rewrite (TCP R) /= => -[sp H1];exists sp;exists s.
+  Qed.
+  
   Context (T : eqType).
   Implicit Types (O R M: relation T) (S: set T).
 

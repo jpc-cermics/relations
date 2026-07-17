@@ -144,7 +144,8 @@ Section Relation_Facts.
       using the coercion to rel T *)
   
   Definition reflexive R : Prop := forall x:T, R (x,x).
-
+  Ltac unfold_reflexive := rewrite /reflexive/ssrbool.reflexive/R2rel.
+  
   Lemma reflexiveE R : reflexive R <-> ssrbool.reflexive (R2rel R).
   Proof. 
     rewrite /reflexive/ssrbool.reflexive/R2rel.
@@ -211,7 +212,7 @@ Section Relation_Facts.
   
   Lemma inP' (T': Type) (x:T') (X: set T'): reflect (X x) (x\in X).
   Proof. by apply: (iffP idP);rewrite in_setE. Qed.
-  
+
   Lemma notempty_exists (T': Type) (X:set T'): (exists z, z \in X) <-> (X != set0).
   Proof.
     by rewrite set0P;split;[move => [z /set_mem ?]|move => [z /mem_set ?]];exists z.
