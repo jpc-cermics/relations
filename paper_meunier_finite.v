@@ -77,6 +77,8 @@ Module seq_leSet_choice.
     Context (A2: @allL (set T) Diff Sq S S).
     
     Implicit Types (sq: seq T) (s: T).
+
+    Definition f (n : nat) := nth S (S::Sq) (n %% size (S::Sq)).
     
     Lemma Inc_Tr : transitive (@Inc T).
     Proof. by move => A B C;apply: subset_trans. Qed.
@@ -106,8 +108,6 @@ Module seq_leSet_choice.
       by rewrite eqEsubset.
       by exists 0;[lia | rewrite /= // nth_rcons H1;apply: H6;apply: mem_nth].
     Qed.
-    
-    Definition f (n : nat) := nth S (S::Sq) (n %% size (S::Sq)).
 
     Lemma f_periodic n: f (n + (size (S::Sq))) = f n.
     Proof. by rewrite /f (modnDr n (size (S::Sq))). Qed.
@@ -126,6 +126,44 @@ Module seq_leSet_choice.
       by rewrite {1}(divn_eq n (size (S :: Sq))) addnC f_periodic'.
     Qed.
 
+    Lemma DiffE': 
+      0 < size Sq 
+      -> exists j, j <= (size Sq) /\ exists aj, aj \in (f j) /\ ~( aj \in (f j.+1)).
+    Proof.
+      move => /DiffE [j [H1 [aj]]].
+      rewrite -rcons_cons 2!nth_rcons. 
+      have ->: j < (size Sq).+1 by lia.
+      case H2: (j.+1 < size (S :: Sq)).
+      + move => HH.
+        exists j. split. by [].
+        exists aj.
+        have H3: j %% size (S :: Sq) = j 
+          by apply: modn_small; lia. 
+        have H4: j.+1  %% size (S :: Sq) = j.+1
+          by  apply: modn_small; lia. 
+        move: HH. rewrite -{1}H3 -{1}H4 => -[H5 H6].
+        by split.
+      + have H1': j.+1 <= size (S::Sq). rewrite /=;lia.
+        have H2': j.+1 = (size (S::Sq)). by lia.
+        rewrite -H2' eq_refl => -[H3 H4].
+        have H5: j %% size (S :: Sq) = j 
+          by apply: modn_small;rewrite /=; lia. 
+        exists j.
+        split. by [].
+        exists aj.
+        rewrite -H5 in H3.
+        split. by [].
+        have H7: f (j %% size (S :: Sq)).+1 = f (j.+1)
+          by rewrite -addn1 f_tosmall (modnDml j 1 (size (S :: Sq))) -f_tosmall addn1.
+        have H9: f ( (j + 1) %% size (S :: Sq)) = f (j.+1)
+          by rewrite -(f_tosmall (j + 1)) addn1.
+        have HH : f(j.+1) = S.
+        rewrite H2'.
+        have H10: size (S :: Sq) = 0 + size (S :: Sq) by rewrite add0n.
+        by rewrite H10 f_periodic /=.
+        by rewrite HH.
+    Qed.
+    
     Lemma f_inc n: (f n) [<= R] (f n.+1).
     Proof.
       move: (@allL_nth' (set T) (leSet R) Sq S S S) A1 => H1 /H1 /(_ (n %% size (S::Sq))) H2.
@@ -177,13 +215,13 @@ Module seq_leSet_choice.
 End seq_leSet_choice.
 
 Export seq_leSet_choice.
-
-(* 
+(*
 Section test.
   
   Context (T: choiceType) (S S1 S2: set T).
   Let Sq : seq (set T) := [:: S1;S2].
-    
+  
+  Compute (nth S (S::Sq) (size Sq).+1).
   Compute (f S Sq 0).
   Compute (f S Sq 1).
   Compute (f S Sq 2).
