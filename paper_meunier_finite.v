@@ -31,6 +31,168 @@ Local Open Scope set_scope. (* we can use %SET *)
 Definition fin_relation (T: finType) := {set (T * T)}.
 Notation "{ 'relation' T }" := (fin_relation T) (format "{ 'relation'  T }"): type_scope.
 
+Module leSet_choice.
+
+  Section Hn0.
+    (** * a choice lemma for S1 <= S2  *) 
+    Context {T:choiceType} (R: relation T) (S1 S2: set T).
+    Context (A0: (NotEmpty T)) (A1: S1 [<= R] S2).
+
+    Definition R' s1 := 
+      [set u | (u \in S2 /\ (s1 \in S1 /\ (s1 = u \/ R (s1,u)))) \/ ~(s1 \in S1)]%classic.
+    
+    #[local] Lemma Au1_P1 (s1: T): exists s2, s2 \in R' s1.
+    Proof. 
+      move: A1 => /(_ s1)/= Au1;case H1: (s1 \in S1).
+      by move: (H1) => /Au1 [s2 [? ?]];(exists s2);rewrite inP;left;split. 
+      by move: A0 H1 => [v0 ?] /negP HH;exists v0;rewrite inP;right.
+    Qed.
+    
+    Lemma Au1_G: exists (h: T -> T), forall s1, s1 \in S1 -> (h s1) \in S2 /\ (s1 = (h s1) \/ R (s1,h s1)).
+    Proof.
+      exists (fun t => xchoose (Au1_P1 t)).
+      move => s1.
+      have H0: xchoose (Au1_P1 s1) \in R' s1 by apply: xchooseP.
+      by move: H0 => /inP /= [[H1 [_ H2]] _ // | ? ? ]. 
+    Qed.
+    
+  End Hn0.
+
+End leSet_choice.
+
+Export leSet_choice (Au1_G). 
+
+Definition Diff {T: Type} (SS: T*T) := ~ ( SS.1 = SS.2).
+Definition Inc {T: Type} (SS: (set T)*(set T)) := SS.1 `<=` SS.2.
+Definition strictInc {T: Type} (SS: (set T)*(set T)) :=
+  SS.1 `<=` SS.2 /\ ~ ( SS.1 = SS.2).
+
+Module seq_leSet_choice.
+
+  Section seq_leSet.
+    (** * a choice lemma for S1 <= S2  *) 
+    Context {T:choiceType} (R: relation T) (S: set T) (Sq: seq (set T)).
+    Context (A0: (NotEmpty T)).
+    Context (A1: @allL (set T) (leSet R) Sq S S).
+    Context (A2: @allL (set T) Diff Sq S S).
+    
+    Implicit Types (sq: seq T) (s: T).
+    
+    Lemma Inc_Tr : transitive (@Inc T).
+    Proof. by move => A B C;apply: subset_trans. Qed.
+    
+    Lemma allL_Tr (Rset: relation (set T)): 
+      0 < size Sq -> @allL (set T) Rset Sq S S -> transitive Rset 
+      -> forall S', (S' \in Sq) -> (Rset (S, S')) /\ (Rset (S',S)).
+    Proof.
+      move => H1 H2 /Tclos_iff H3 S' H4. 
+      move: (@allL_to_Tclos_left _ Rset Sq S S S' H4 H2). 
+      move: (@allL_to_Tclos_right _ Rset Sq S S S' H4 H2). 
+      by rewrite -H3.
+    Qed.
+    
+    Lemma DiffE: 
+      0 < size Sq 
+      -> exists j, j <= (size Sq) 
+             /\ exists aj, aj \in (nth S (S::(rcons Sq S)) j)
+                     /\ ~( aj \in (nth S (S::(rcons Sq S)) j.+1)).
+    Proof.
+      move => H1;move: A2;rewrite (@allL_nth' (set T) Diff Sq S S S).
+      contra => H2.
+      have H4: allL Inc Sq S S
+        by rewrite (@allL_nth' (set T));move => j Hs b /inP/(H2 j Hs b)/inP.
+      have H6: forall S', S' \in Sq -> S = S'.
+      move => S' Hs;move: (@allL_Tr Inc H1 H4 Inc_Tr S' Hs).
+      by rewrite eqEsubset.
+      by exists 0;[lia | rewrite /= // nth_rcons H1;apply: H6;apply: mem_nth].
+    Qed.
+    
+    Definition f (n : nat) := nth S (S::Sq) (n %% size (S::Sq)).
+
+    Lemma f_periodic n: f (n + (size (S::Sq))) = f n.
+    Proof. by rewrite /f (modnDr n (size (S::Sq))). Qed.
+
+    Lemma f_periodic' k n: f (n + k*(size (S::Sq))) = f n.
+    Proof.
+      elim: k n => [n |k Hk n];first by rewrite mul0n addn0.
+      rewrite mulSnr.
+      have ->: n + (k * size (S :: Sq) + size (S :: Sq)) = 
+                 (n + (k * size (S :: Sq)) + size (S :: Sq)) by lia.
+      by rewrite f_periodic Hk. 
+    Qed.
+
+    Lemma f_tosmall n: f n = f (n %% size (S :: Sq)).
+    Proof.
+      by rewrite {1}(divn_eq n (size (S :: Sq))) addnC f_periodic'.
+    Qed.
+
+    Lemma f_inc n: (f n) [<= R] (f n.+1).
+    Proof.
+      move: (@allL_nth' (set T) (leSet R) Sq S S S) A1 => H1 /H1 /(_ (n %% size (S::Sq))) H2.
+      have H3: n %% size (S :: Sq) < size (S::Sq)
+        by rewrite  ltn_pmod.
+      have: n %% size (S :: Sq) <= size (Sq) by [].
+      move => /H2 H4.
+      clear H1 H2.
+      rewrite -rcons_cons nth_rcons H3 nth_rcons in H4.
+      have H7: f (n %% size (S :: Sq)).+1 = f (n.+1)
+        by rewrite -addn1 f_tosmall (modnDml n 1 (size (S :: Sq))) -f_tosmall addn1.
+      have H9: f ( (n + 1) %% size (S :: Sq)) = f (n.+1)
+        by rewrite -(f_tosmall (n + 1)) addn1.
+      
+      case H5: ((n %% size (S :: Sq)).+1 == size (S :: Sq)).
+      + move: H5 => /eqP  H5.
+        rewrite H5 ltnn eq_refl in H4.
+        have H6: (f n) [<=R] S. by [].
+        have -> : f(n.+1) = S
+          by rewrite -H7 H5 -[size _]add0n f_periodic /f mod0n /=. 
+        exact.
+      + have H6: (n %% size (S :: Sq)).+1 < size (S :: Sq) by lia.
+        rewrite H6 in H4. 
+        have H8: (f n) [<=R] (nth S (S :: Sq) (n %% size (S :: Sq)).+1) 
+                  by [].
+        have H10: (n %% size (S :: Sq) + 1) %% size (S :: Sq) = (n %% size (S :: Sq) + 1)
+          by apply: modn_small;lia.
+
+        rewrite -addn1 -H10 in H8. 
+        have H11: (f n) [<=R] (f (n %% size (S :: Sq) + 1)) by [].
+        by rewrite addn1 H7 in H11.
+    Qed.
+
+    Lemma exists_seq : (forall n, exists x, x \in (f n)) -> exists g : nat -> T, forall n, (g n) \in (f n).
+    Proof.
+      move => H1;exists (fun t => xchoose (H1 t)).
+      by move => n';have H0: xchoose (H1 n') \in (f n') by apply: xchooseP.
+    Qed.
+
+    Lemma seq_not (g: nat -> T) (A : set T): 
+      ~ (g 0) \in A -> (exists k, (g k) \in A) -> exists j,  ~ (g j) \in A /\  (g j.+1) \in A.
+    Proof.
+      move => H0 [k Hk];elim: k Hk => [// | n Hr Hl].
+      by case H1: ((g n) \in A);[move: H1 => /Hr H1 |exists n;rewrite H1 Hl].
+    Qed.
+    
+  End seq_leSet.
+
+End seq_leSet_choice.
+
+Export seq_leSet_choice.
+
+(* 
+Section test.
+  
+  Context (T: choiceType) (S S1 S2: set T).
+  Let Sq : seq (set T) := [:: S1;S2].
+    
+  Compute (f S Sq 0).
+  Compute (f S Sq 1).
+  Compute (f S Sq 2).
+  Compute (f S Sq 3).
+  Compute (f S Sq (size (S::Sq))).
+
+End test. 
+*)
+
 Section FinsetToClassical.
   (** * from {set T} to (set T) classicals_sets and finTYpe *) 
   (** * from fin_relation {set T} to relation {set T} *)
@@ -475,7 +637,6 @@ Section SubSetPType_order.
 
 End SubSetPType_order.
 
-Definition Diff {T: Type} (SS: T*T) := ~ ( SS.1 = SS.2).
   
 Definition Cyclic {T: Type} (R: relation T):= exists sq, exists s, allL R sq s s.
 
@@ -493,13 +654,6 @@ Section Acyclicity.
   Context (T : eqType).
   Implicit Types (O R M: relation T) (S: set T).
 
-  Definition Inc (SS: (set T)*(set T)) := SS.1 `<=` SS.2.
-
-  Lemma Inc_Tr : transitive Inc.
-  Proof. by move => A B C;apply: subset_trans. Qed.
-
-  Definition strictInc (SS: (set T)*(set T)) :=
-    SS.1 `<=` SS.2 /\ ~ ( SS.1 = SS.2).
   
   Lemma step T' (sq: seq T') s (S : set T'): 
     ~(nth s sq 0) \in S -> (exists k, (nth s sq k) \in S )
@@ -643,32 +797,6 @@ Section Acyclicity.
          by rewrite -headI nth_rcons H5.
   Qed.
     
-  Lemma allL_Tr (T': eqType) (R: relation T') (sq: seq T') (s: T'): 
-    0 < size sq -> allL R sq s s -> transitive R 
-    -> forall s', s' \in sq -> R (s, s') /\ R (s',s).
-  Proof.
-    move => H1 H2 /Tclos_iff H3 s' H4. 
-    move: (@allL_to_Tclos_left _ R sq s s s' H4 H2). 
-    move: (@allL_to_Tclos_right _ R sq s s s' H4 H2). 
-    by rewrite -H3.
-  Qed.
-  
-  Lemma DiffE (Sq: seq (set T)) S: 
-    0 < size Sq 
-    -> @allL (set T) Diff Sq S S 
-    -> exists j, j <= (size Sq) 
-                /\ exists aj, aj \in (nth S (S::(rcons Sq S)) j)
-                        /\ ~( aj \in (nth S (S::(rcons Sq S)) j.+1)).
-  Proof.
-    move => H1;rewrite (@allL_nth' (set T) Diff Sq S S S).
-    contra => H2.
-    have H4: allL Inc Sq S S
-      by rewrite (@allL_nth' (set T));move => j Hs b /inP/(H2 j Hs b)/inP.
-    have H6: forall S', S' \in Sq -> S = S'.
-    move => S' Hs;move: (@allL_Tr (set T) Inc Sq S H1 H4 Inc_Tr S' Hs).
-    by rewrite eqEsubset.
-    by exists 0;[lia | rewrite /= // nth_rcons H1;apply: H6;apply: mem_nth].
-  Qed.
   
   (** * without loss of generality
   Lemma DiffE' (Sq: seq (set T)) S: 
@@ -678,6 +806,19 @@ Section Acyclicity.
   Proof.
 
   *) 
+
+  Lemma choice (T': Type) (R: relation T') (S1 S2: set T'):
+    forall (x: S1), exists (y: S2), R (val x,val y).
+  Admitted.
+  
+  Lemma Sq_choice (T': Type) (R: relation T') (Sq: seq (set T')) (S: set T'): 
+    @allL (set T') (leSet R) Sq S S
+    -> forall j, j <= (size Sq) -> 
+           (exists (f : T' -> T' ),
+               (forall x, x \in (nth S (S::(rcons Sq S)) j) -> R (x, f x))).
+  Proof.
+  Admitted.
+  
 
 End Acyclicity.
 
