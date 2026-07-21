@@ -32,35 +32,90 @@ Definition fin_relation (T: finType) := {set (T * T)}.
 Notation "{ 'relation' T }" := (fin_relation T) (format "{ 'relation'  T }"): type_scope.
 
 Module leSet_choice.
+  (** * an increasing selection lemma *)
 
-  Section Hn0.
-    (** * a choice lemma for S1 <= S2  *) 
-    Context {T:choiceType} (R: relation T) (S1 S2: set T).
-    Context (A0: (NotEmpty T)) (A1: S1 [<= R] S2).
+  Section leSet_choice_sec.
 
-    Definition R' s1 := 
-      [set u | (u \in S2 /\ (s1 \in S1 /\ (s1 = u \/ R (s1,u)))) \/ ~(s1 \in S1)]%classic.
+    Context {T:choiceType} (R: relation T) (f : nat -> set T).
+  Context (A0: (NotEmpty T)) (A1: forall n, (f n) [<= R] (f n.+1)).
     
-    #[local] Lemma Au1_P1 (s1: T): exists s2, s2 \in R' s1.
+    Definition R'' (p1: nat*T) := 
+      [set p | ((p.2 \in (f p.1) /\ (p1.2 \in (f p1.1) /\ (p1.2 = p.2 \/ R (p1.2,p.2)))) 
+               \/ ~(p1.2 \in (f p1.1))) /\ p.1 = p1.1.+1 ]%classic.
+
+    #[local] Lemma Au1_P2 (p1: nat*T): exists p, p \in R'' p1.
     Proof. 
-      move: A1 => /(_ s1)/= Au1;case H1: (s1 \in S1).
-      by move: (H1) => /Au1 [s2 [? ?]];(exists s2);rewrite inP;left;split. 
-      by move: A0 H1 => [v0 ?] /negP HH;exists v0;rewrite inP;right.
+      move: A1 =>/(_ p1.1) Hp1.
+      case H1: (p1.2 \in (f p1.1)).
+      by move: (H1) => /Hp1 [s2 /= [? ?]];(exists (p1.1.+1,s2));
+                      rewrite inE;split;[left|].
+      by move: A0 H1 => [v0 ?] /negP ?;exists (p1.1.+1,v0);rewrite inE;split;[right|].
     Qed.
-    
-    Lemma Au1_G: exists (h: T -> T), forall s1, s1 \in S1 -> (h s1) \in S2 /\ (s1 = (h s1) \/ R (s1,h s1)).
-    Proof.
-      exists (fun t => xchoose (Au1_P1 t)).
-      move => s1.
-      have H0: xchoose (Au1_P1 s1) \in R' s1 by apply: xchooseP.
-      by move: H0 => /inP /= [[H1 [_ H2]] _ // | ? ? ]. 
-    Qed.
-    
-  End Hn0.
 
+    #[local] Lemma Au1_G2: exists (j: nat*T -> nat*T),
+      forall p, p.2 \in (f p.1) -> ((j p).2 \in (f (j p).1) /\ (p.2 = (j p).2 \/ R (p.2,(j p).2)))
+                             /\ (j p).1 = p.1.+1.
+    Proof.
+      exists (fun t => xchoose (Au1_P2 t)).
+      move => p1.
+      have H0: xchoose (Au1_P2 p1) \in R'' p1 by apply: xchooseP.
+      by move: H0 => /inP /= [[[? [_ ?]] _ // |? ? //] ?].
+    Qed.
+
+    #[local] Lemma Au1_G3:
+      exists (k: nat -> (T -> T)),
+      forall n, forall s, s \in (f n) -> ((k n s) \in (f n.+1) /\ (s = (k n s) \/ R (s,(k n s)))).
+    Proof.
+      move: Au1_G2 => [j H1].
+      exists (fun k => (fun s => (j (k,s)).2)).
+      move => n s.
+      move: H1 => /(_ (n,s))/= H1. 
+      move => /H1 /= [+ H2].
+      by rewrite H2.
+    Qed.
+    
+    #[local] Fixpoint kiter (k: nat-> (T -> T)) n :=
+      if n is n'.+1 then (k n) \o kiter k n' else (k 0).
+
+    #[local]Lemma kiterP1 (k: nat -> (T -> T)) (s:T) (A:set T):
+      s\in A -> (forall n s', s' \in A -> (k n s') \in A) -> (forall n, (kiter k n s) \in A).
+    Proof. by move => H0 Hn;elim => [| n Hr/=];apply: Hn. Qed.
+
+    #[local] Lemma kiterP2 (k: nat -> (T -> T)) s:
+      (forall n, forall s, s \in (f n) -> (k n s) \in (f n.+1) /\ (s = (k n s) \/ R (s,(k n s))))
+      -> s \in (f 0)
+      -> forall n, (kiter k n s) \in (f n.+1).
+    Proof.
+      move => Hn H0;elim;first by move: Hn => /(_ 0 s H0) [? _].
+      by move => n' Hr;move: Hn => /(_ n'.+1 _ Hr) => -[? _].
+    Qed.
+    
+    #[local] Lemma kiterP3 (k: nat -> (T -> T)) s:
+      (forall n, forall s, s \in (f n) -> (k n s) \in (f n.+1) /\ (s = (k n s) \/ R (s,(k n s))))
+      -> s \in (f 0)
+      -> forall n, (kiter k n s) = (kiter k n.+1 s) \/ R ((kiter k n s),(kiter k n.+1 s)).
+    Proof.
+      move => Hn H0;elim.
+      by move: (@kiterP2 k s Hn H0 0) => /Hn [_ ?].
+      by move => n Hr;move: (@kiterP2 k s Hn H0 n.+1) => /Hn [_ ?].
+    Qed.
+    
+    (* this is the main lemma *)
+    Lemma choose_inc_seq:
+      forall s, s\in (f 0) -> exists (h1: nat -> T), 
+          (forall n, (h1 n) \in (f n.+1)) /\ (forall n, (h1 n)=(h1 n.+1) \/ R (h1 n, h1 n.+1)).
+    Proof.
+      move => s H0;move: Au1_G3 => [k H1].
+      exists (fun n => (kiter k n s)).
+      by split;[apply:  kiterP2| apply: kiterP3].
+    Qed.
+    
+  End leSet_choice_sec.
+  
 End leSet_choice.
 
-Export leSet_choice (Au1_G). 
+Export leSet_choice.
+
 
 Definition Diff {T: Type} (SS: T*T) := ~ ( SS.1 = SS.2).
 Definition Inc {T: Type} (SS: (set T)*(set T)) := SS.1 `<=` SS.2.
@@ -226,7 +281,7 @@ Module seq_leSet_choice.
       by rewrite -addn1 addnA.
     Qed.
     
-    Lemma exists_seq : exists g: nat -> set T, exists h : nat -> T,
+    Lemma exists_h : exists g: nat -> set T, exists h : nat -> T,
         (forall n, (g n) [<= R] (g n.+1) /\ preKernel U R (g n))
         /\ (forall n, (h n) \in (g n)) /\  ~ ((h 0) \in (g 1)).
     Proof.
@@ -241,13 +296,38 @@ Module seq_leSet_choice.
       case H5: (n == 0);first by move: H5 => /eqP ->.
       apply: xchooseP.
     Qed.
-    
+
     Lemma seq_not (h: nat -> T) (A : set T): 
       ~ (h 0) \in A -> (exists k, (h k) \in A) -> exists j, ~ (h j) \in A /\ (h j.+1) \in A.
     Proof.
       move => H0 [k Hk];elim: k Hk => [// | n Hr Hl].
       by case H1: ((h n) \in A);[move: H1 => /Hr H1 |exists n;rewrite H1 Hl].
     Qed.
+
+    Definition Ig (g: nat -> set T) := [set x | forall n, x \in (g n)]%classic.
+
+    Lemma exists_hP (g: nat -> set T) ( h : nat -> T):
+        (forall n, (g n) [<= R] (g n.+1) /\ preKernel U R (g n))
+        /\ (forall n, (h n) \in (g n)) /\  ~ ((h 0) \in (g 1))
+        -> ~(exists n, (h n) \in (Ig g)).
+    Proof.
+      move => [H1 [H2 H3]] /[dup] H4' [n' H4].
+      have H5:  ~ ( h 0 \in (Ig g)) by move => /inP /(_ 1) HH.
+      move: (seq_not H5 H4') => [j [H6 H7]].
+      
+      have H8:  h j.+1 \in (g j) by move: H7 => /inP/(_ j).
+      have H9:  h j \in (g j) by apply: H2.
+      have H10: ~ ( h j = h j.+1)
+        by move => He;rewrite He in H6.
+      move: H1 => /(_ j) [HRj [Hindep _]].
+      move: Hindep => /(_ (h j) (h j.+1) H9 H8 H10) HnotR.
+      move: HRj => /(_ (h j)) /= HRj.
+      move: H9 => /HRj H9.
+      
+      rewrite /leSet /= in HRj.
+      
+      rewrite /RelIndep. 
+    Admitted.
     
   End seq_leSet.
 
