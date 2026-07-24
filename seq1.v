@@ -472,7 +472,8 @@ Section Lift_in_facts.
   Lemma Lift_in_F R st y: (rcons st y) [L\in] R -> st [\in] (R.+)#_(y).
   Proof.
     elim: st y  => [// | x st Hr y];rewrite rcons_cons. 
-    elim: st Hr => [_ | z st _ H1];first by rewrite /= => /andP [/inP /(@Fset_t1 _ R)/inP -> _].
+    elim: st Hr => [_ | z st _ H1];
+                  first by rewrite /= 2!andbT inE [X in _ -> X]inE => /(@Fset_t1 _ R). 
     rewrite Lift_crc 2!allset_cons => [[? /H1 /[dup] ?]];rewrite allset_cons => -[? ?].
     by split;[apply Fset_t2; exists z|].
   Qed.
@@ -507,11 +508,12 @@ Section Lift_in_facts.
 
   Lemma lift2all st X x x': [::x, x' & st] [L\in] (X `*` X) -> [::x, x' & st] [\in] X.
   Proof.
-    elim: st x x' => [x x' // | x st Hr y y'].
-    by rewrite Lift_cc allset_cons => -[/= [/inP -> /inP ->] _].
+    elim: st x x' => [x x' // | x st Hr y y'];last first.
     by rewrite Lift_cc allset_cons => -[[H1 _] /Hr H2];rewrite allset_cons.
+    rewrite Lift_cc allset_cons => -[/= ?] _.
+    by apply/andP;rewrite andbT 2!inE.
   Qed.
-
+  
   (* begin snippet RpathLone:: no-out *)  
   Lemma Rpath_L1 st X: st [\in] X -> st [L\in] (X `*` X). 
   (* end snippet RpathLone *)  
@@ -579,10 +581,11 @@ Section allset_Lifted.
   Lemma allL_rc R st x y z: allL R (rcons st z) x y <-> ((z,y) \in R) && allL R st x z.
   Proof.
     split.
-    by rewrite /allL -rcons_cons Lift_rcc allset_rcons last_rcons;move => [-> /inP ->].
-    by move => /andP [/inP ? ?];rewrite /allL -rcons_cons Lift_rcc allset_rcons last_rcons. 
+    by rewrite /allL -rcons_cons Lift_rcc allset_rcons last_rcons;
+      move => [-> ?];rewrite andbT inE.
+    by move => /andP [/inP ? ?];rewrite /allL -rcons_cons Lift_rcc allset_rcons last_rcons.
   Qed.
-
+  
   Lemma allset_Rr X x y st: (Lift (x::(rcons st y))) [\in] R_(X) <-> (rcons st y) [\in] X.
   Proof.
     elim: st x => [| z st Hr x];last first.
@@ -847,14 +850,14 @@ Section Lift_bijective.
   
   Lemma Lift_image st: st \in Lift_Dom -> (Lift st) \in Lift_Im.
   Proof.
-    rewrite /Lift_Dom /Lift_Im /mkset => /inP H1;rewrite inP Lift_sz2.
+    rewrite /Lift_Dom /Lift_Im /mkset => /inP H1;rewrite inE Lift_sz2.
     by split;[ | apply Lift_Lift].
   Qed.
   
   Lemma UnLift_image (spt: seq (T*T)): 
     spt \in Lift_Im -> (forall (z:T), (UnLift spt z) \in Lift_Dom).
   Proof.
-    move => /inP [H1 _] z; apply inP.
+    move => /inP [H1 _] z; apply/inP.
     rewrite /Lift_Dom /mkset.
     elim: spt H1 => [// | [x y] spt _ /= _].
     elim: spt y => [ // | [x' y'] st' _ z'].
@@ -863,18 +866,18 @@ Section Lift_bijective.
   
   Lemma Lift_UnLift spt: spt \in Lift_Im -> (forall (z:T), Lift (UnLift spt z) = spt).
   Proof.
-    move => /inP [H1 H2] z; apply inP.
+    move => /inP [H1 H2] z; apply/inP.
     elim: spt H1 H2 => [// | [x y] st Hr H1 H2].
     rewrite UnLift_c.
     elim: st y x Hr H1 H2 => [y x _ _ _ /= // | [x' y'] st Hr y x H1 H2 H3].
-    by apply inP.
+    by apply/inP.
     rewrite UnLift_c in H1.
     rewrite UnLift_c Lift_cc.
     move: (H3). rewrite Lift_cc allset_cons => [[H4 H5]].
     move: H4. rewrite /Chrel /mkset => [H4].
     have H6:  (Lift (x' :: UnLift st y'))= ((x', y') :: st)
-      by apply inP; apply H1. 
-    apply inP. rewrite H6.
+      by apply/inP; apply H1. 
+    apply/inP. rewrite H6.
     by have -> : y=x' by [].
   Qed.
   
@@ -919,7 +922,7 @@ Section Lift_bijective.
     elim:spt => [ | [x y] spt _ ];first by split => ?;[(exists [::]) |].
     have H1: size ((x, y) :: spt) > 0 by [].
     split => [H2 |].
-    - have H5: ((x, y) :: spt) \in Lift_Im by rewrite inP /Lift_Im /mkset.  
+    - have H5: ((x, y) :: spt) \in Lift_Im by rewrite inE /Lift_Im /mkset.  
       pose proof Lift_UnLift H5 as H6.
       by (exists (UnLift ((x, y) :: spt) x));rewrite H6.
     - by move => [st <-]; apply Lift_Lift.
@@ -958,8 +961,8 @@ Section PathRel.
       by (exists [::]); rewrite allL0' /=.
       by move => [p [/size0nil -> /allL0' H2]].
     - rewrite -add1n iter_compose H /iter DeltaCl /mkset predeqE => [[x y]].
-      split => [[z [/= /inP H1 [p [H2 /= H3]]]] |[p [H1 H2]]];
-                first by (exists (z::p));rewrite -H2 allL_c H3 andbT H1. 
+      split => [[z [/= H1 [p [H2 /= H3]]]] |[p [H1 H2]]];
+                first by (exists (z::p));rewrite -H2 allL_c H3 andbT /= inE. 
       elim: p H1 H2 => [ // | z p' _ H1].
       move: H1;rewrite /size -/size -/addn1 => /succn_inj H1.
       rewrite allL_c /= => [/andP [/inP H2 H3]].

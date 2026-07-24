@@ -478,7 +478,7 @@ Section Specialization_Porder.
   Proof.
     move => x y z. 
     rewrite /specialization_porder /= => H1 H2.
-    have H3: [set y] `<=` closure [set z] by rewrite sub1set inP. 
+    have H3: [set y] `<=` closure [set z] by rewrite sub1set inE. 
     have H4: closed (closure [set z]) by apply: closed_closure.
     move: H4 => /closure_id H4.
     have H5: closure [set y] `<=` closure (closure [set z]) by apply: closureS.
@@ -493,7 +493,7 @@ Section Specialization_Porder.
       closed C -> (downset C) `<=` C.
   Proof.
     move => C H1 c [c' [H2 H3]].
-    have H4: [set c'] `<=` C by rewrite sub1set inP. 
+    have H4: [set c'] `<=` C by rewrite sub1set inE. 
     move: H4 => /closureS H4.
     have ->: C = closure C by rewrite -closure_id.
     by apply H4.

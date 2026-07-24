@@ -73,7 +73,7 @@ Section Set_relation.
   (* begin snippet lesetI:: no-out *)   
   Lemma Ile R A B: A `<=` B -> A [<= R] B.
   (* end snippet lesetI *)
-  Proof. by move => H1 /= a /inP/H1 ?;exists a;split;[rewrite inP|left]. Qed.
+  Proof. by move => H1 /= a /inP/H1 ?;exists a;split;[rewrite inE|left]. Qed.
 
   Lemma leI R S: S `<=` R -> (leSet S)  `<=` (leSet R).
   Proof.
@@ -208,7 +208,7 @@ Section Infinite_paths_X.
   Proof. 
     have setTypeP: (exists x : X, x \in [set: X]) <-> (exists (t:T), (t \in X))
       by split => [[v ?] |[v H0]];[exists (sval v) | exists (exist _ v H0)];
-                 rewrite inP;[apply: set_valP|].
+                 rewrite inE;[apply: set_valP|].
     by move => /setTypeP H0; apply: notiic_rloop. Qed. 
   
   Lemma notiic_rloop_sub_L2 X R:
@@ -229,7 +229,7 @@ Section Infinite_paths_X.
   Proof.
     move => Ninf H0.
     move: (notiic_rloop_sub_L2 Ninf H0) => [v H1];exists (sval v).
-    split=> [| w H2];first by rewrite inP;apply: set_valP.
+    split=> [| w H2];first by rewrite inE;apply: set_valP.
     have [w' <-]: exists (w': X), (sval w') = w by (exists (exist _ w H2)).
     by move => ?;apply: H1.
   Qed.
@@ -261,7 +261,7 @@ Section Paper.
   (* end snippet Elt:: no-out *)   
   
   Lemma S2Scal: forall (S: SType), (sval S) \in Scal.
-  Proof. by move => [S [H1 [H2 H3]]];rewrite inP. Qed.
+  Proof. by move => [S [H1 [H2 H3]]];rewrite inE. Qed.
 
   Lemma Scal2S: forall S, S \in Scal -> exists (S': SType), (sval S') = S.
   Proof.  by move => S /inP H1; exists (exist _ S H1). Qed.
@@ -378,7 +378,7 @@ Section Paper.
           -> exists S1, S1 \in C /\ S [<=] S1 /\ ~ (s \in (sval S1)).
       Proof.
         move => S s H2 H3. 
-        apply contraPP;rewrite not_existsP 2!not_notE inP /Sinf => H4;exists S.
+        apply contraPP;rewrite not_existsP 2!not_notE inE /Sinf => H4;exists S.
         split => [// | ];split => [// |A ? ?].
         by move: H4 => /(_ A) /not_andP [? //|/not_andP [// | /contrapT ?]].
       Qed.
@@ -558,14 +558,14 @@ Section Paper.
       have H2': Er.+ `<=` Mono by apply: subsetUr.
       split;first by rewrite /RelIndep;move => x y /inP /= -> /inP /= ->.
       split;first by move => t [y [/= H3 H4]];move: H3; rewrite H4 /= => /H1/H2' H3;exists v.
-      by rewrite -notempty_exists;(exists v);rewrite inP.
+      by rewrite -notempty_exists;(exists v);rewrite inE.
     Qed.
     
     Lemma SType_not_empty (A1: NotEmpty T) (A2: ~ (iic (Asym Er.+))):
       (@setT SType) != set0.
     Proof.
       rewrite -notempty_exists;move: (Scal_not_empty A1 A2) => [v H2].
-      by exists (exist _ [set v] H2);rewrite inP.
+      by exists (exist _ [set v] H2);rewrite inE.
     Qed.
     
     Lemma Sinf_not_empty (A3: ~ (iic (Asym Eb.+))) : (Sinf C) != set0.
@@ -582,10 +582,10 @@ Section Paper.
       move: (H3) => [S [H4 [H5 H6]]].
       move: (Chains_Scal H1 H4) => [H7 [H8 H9]].
       have H13: y \in Er.+^-1#(sval S)
-          by rewrite inP /Fset;exists s;split;[exact | rewrite -inP].
+          by rewrite inE /Fset;exists s;split;[exact | rewrite -inE].
       move: H13 => /inP/H8 [t [H13 H14]]. 
-      case H15: (t \in (Sinf C)); first by (exists t); split;[ exact | rewrite -inP].
-      have H16: (s <> t) by move => H17;rewrite -inP H17 in H3;rewrite H3 in H15.
+      case H15: (t \in (Sinf C)); first by (exists t); split;[ exact | rewrite -inE].
+      have H16: (s <> t) by move => H17;rewrite -inE H17 in H3;rewrite H3 in H15.
       have H17: ~ ( Er.+ (y,t)). 
       move => H18.
       have H19: Mono (s,t) by right; apply: (TclosT H2 H18).
@@ -596,14 +596,14 @@ Section Paper.
       have H19: (sval S) [<= (Asym Eb.+)] (Sinf C) by apply: ChooseRC6. 
       move: H14 => /inP/H19 [tinf [/= H20 [H21 | [H21 H22]]]].
       + by rewrite -H21 in H20;rewrite H20 in H15. 
-      + by exists tinf;split;[ left;apply: (TclosT H18 H21) | rewrite -inP].
+      + by exists tinf;split;[ left;apply: (TclosT H18 H21) | rewrite -inE].
     Qed.
     
     (* begin snippet SinfScal:: no-out *)    
     Lemma Sinf_Scal (A3: ~ iic (Asym Eb.+)): (Sinf C) \in Scal. 
     (* end snippet SinfScal *)
     Proof.
-      by rewrite inP;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
+      by rewrite inE;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
     Qed.
     
     Lemma Sinf_final (A3: ~ iic (Asym Eb.+)): exists Si, forall (S: SType), C S -> S [<=] Si.
@@ -627,7 +627,7 @@ Section Paper.
     case H4: ( C != set0 );first by move: H4 A3 => /H3 H4 {}/H4 H5.
     move: H4 => /negP/contrapT/eqP H4. 
     move: (SType_not_empty A1 A2) => /notempty_exists [Sm Ht].
-    by exists Sm; move => S; rewrite H4 -inP in_set0. 
+    by exists Sm; move => S; rewrite H4 -inE in_set0. 
   Qed.
   
   (** * existence of Smax in set T *)
@@ -684,23 +684,24 @@ Section Paper.
     Lemma fact0: forall x y, y \in Sm `\` (Tm x) -> Eb.+ (y,x).
     (* end snippet Sbunp*)       
     Proof. 
-      move => x y /inP [/inP H3 /inP H4].
-      have H0: y \in Sm -> ~(y \in (Tm x)) -> Eb.+ (y,x).
-      by move => H3';rewrite inP not_andE => [[? // | /contrapT ? //]].
+      move => x y /inP [H3 H4'].
+      have H4:  ~(y \in (Tm x)) by move => /inP.
+      have H0: Sm y -> ~(y \in (Tm x)) -> Eb.+ (y,x).
+      by move => /inP H3';rewrite inE not_andE => [[? // | /contrapT ? //]].
       by apply: (H0 H3 H4). 
     Qed.
     
     (* begin snippet factone:: no-out *)    
     Lemma fact1: IsMaximal Sm -> (forall y, y\in Sm:#(Er.+) -> y \in Mono#Sm).
     (* end snippet factone*)       
-    Proof. by move => Smax t H3;move: Smax H3 => [/inP [_ [H8 _]] _] /inP/H8 H3;rewrite inP. Qed.
+    Proof. by move => Smax t H3;move: Smax H3 => [/inP [_ [H8 _]] _] /inP/H8 H3;rewrite inE. Qed.
     
     (* begin snippet facttwo:: no-out *)    
     Lemma fact2: forall x, (x \in Se) -> ~(x \in Mono#(Tm x)).
     (* end snippet facttwo *)       
     Proof.
       move => x /inP [H2 H2'] H3;move: TmI => /(_ x)/Fset_inc1 => /(_ Mono) H4.
-      by have: x \in Mono#Sm by move: H3;rewrite inP => /H4 -/inP H3.
+      by have: x \in Mono#Sm by move: H3;rewrite inE => /H4 -/inP H3.
     Qed.
 
     (* begin snippet factthree:: no-out *)    
@@ -710,7 +711,7 @@ Section Paper.
       move => Smax x /inP [_ H2'] /inP [x1 [H5 [H3 H3']]]. 
       move: (H5) => [H5' // | /= H5'] .
       move: Smax => [/inP [_ [H6 _]] _].
-      have H7: x \in Sm:#(Er.+) by rewrite inP;exists x1;rewrite inP in H3.
+      have H7: x \in Sm:#(Er.+) by rewrite inE;exists x1;rewrite inE in H3.
       by move: H7 => /inP/H6 -/inP H7.
     Qed.
 
@@ -727,16 +728,18 @@ Section Paper.
     (* begin snippet factfive:: no-out *)    
     Lemma fact5: forall x, x \in Se -> Sm [<= (Asym Eb.+)] ((Tm x) `|` [set x]).
     (* end snippet factfive *)       
-      move => x H2 x1 /= H3.
+      move => x H2 x1 /= /inP H3.
       case H4: (x1 \in Tm x).
-      by (exists x1);split;[rewrite inP;left;rewrite -inP| left].
-      exists x;split; first by rewrite inP;right. 
+      by (exists x1);split;[rewrite inE;left;rewrite -inE| left].
+      exists x;split; first by rewrite inE;right. 
       right. 
       move: H2 H4 => /inP [_ H2'] /negP H4.
       move: (@fact0 x x1) => H5'.
-      have: x1 \in Sm `\` Tm x by rewrite inP;split;apply/inP.
+      have: x1 \in Sm `\` Tm x 
+        by rewrite inE;split;[|rewrite -[X in ~ X]inE].
       move => /H5' ?; split => [// | H6].
-      by have: x \in Mono#Sm by rewrite inP;(exists x1);split;[left|rewrite -inP].
+      by have: x \in Mono#Sm
+        by rewrite inE;(exists x1);split;[left|].
     Qed.
     
     (* begin snippet factsix:: no-out *)    
@@ -744,7 +747,7 @@ Section Paper.
     (* end snippet factsix *)       
     Proof.
       have fact6': forall x, x \in Se -> Sm = ((Tm x) `|` [set x]) -> False
-          by move => x /inP [H2 _] H3;have: x \in Sm by rewrite H3 inP; right.
+          by move => x /inP [H2 _] H3;have: x \in Sm by rewrite H3 inE; right.
       move => Smax x H2 H3; move: (fact5 H2) Smax => H4 [H5 H6].
       have: Sm = ((Tm x) `|` [set x]) by symmetry;apply: H6.
       by apply: (fact6' x H2).
@@ -758,11 +761,12 @@ Section Paper.
     (* end snippet factseven*)       
     Proof.
       move => Smax x H2.
-      move: (fact6 Smax H2) => /inP /not_andP [H3 | /not_andP [H3 | H3]].  
+      move: (fact6 Smax H2);rewrite inE => /not_andP [H3 | /not_andP [H3 | H3]].  
       by move: (fact4 Smax H2).
-      by move: H3 => /existsNP [y /not_implyP [/inP H3 /inP H4]];exists y.
+      move: H3 => /existsNP [y /not_implyP [H3 H4]];exists y.
+      by rewrite inE [X in ~ X]inE.
       
-      have H4: exists y, y \in (Tm x `|` [set x]) by (exists x);rewrite inP; right.
+      have H4: exists y, y \in (Tm x `|` [set x]) by (exists x);rewrite inE; right.
       have H5: Tm x `|` [set x] = set0 by rewrite -empty_iff;move => H6.
       move: H4;rewrite H5 => [[z H4]].
       by rewrite in_set0 in H4.
@@ -786,7 +790,7 @@ Section Paper.
     Proof.
       move => x X Y R /inP H2.
       have H3: R#(X `\` Y) `<=` R#(X) by apply: Fset_inc1;rewrite setDE; apply: subIsetl.
-      by move: H2 => /H3 H2;rewrite inP.
+      by move: H2 => /H3 H2;rewrite inE.
     Qed.
     
     (** strangely it is not necessary to separate the two cases 
@@ -812,17 +816,17 @@ Section Paper.
         have H8: y \in Er.+^-1#Sm
             by move: TmI => /(_ x)/Fset_inc1 
              => /(_ Er.+^-1) H9;
-               move: H6; rewrite inP => /H9 H6;rewrite inP.
+               move: H6; rewrite inE => /H9 H6;rewrite inE.
         have H9: y \in Mono#Sm by apply: fact1.
         move: (fact8 H2) => H12.
         move: H9;rewrite -H12 => /FsetUO [H9 | H9].
         by have H13:  y \in Mono#(Tm x `|` [set x]) by apply: FsetlU.
-        move: H9;rewrite -FsetUl inP => [[H9 | H9]].
+        move: H9;rewrite -FsetUl inE => [[H9 | H9]].
         + move: H9 => [t [H13 /inP H14]].
           move: H14 => /fact0 H14.
           have H15: Eb.+ (y,x) by apply: (TclosT H13 H14).
           have H16: y \in Mono#_(x)
-              by rewrite -FsetUl inP;left;rewrite -Fset_t0.
+              by rewrite -FsetUl inE;left;rewrite -Fset_t0.
           have H17: y \in Mono#(Tm x `|` [set x])
               by rewrite setUC; apply: FsetlU.
           by [].
@@ -846,41 +850,41 @@ Section Paper.
           have H22: ~( Mono(z1,z2)) by apply: (ISm H14 H16 H19).
           by [].
       - (* x -R-> y est contradictoire *)
-        move: H6; rewrite inP -Fset_t0 /inverse /= => H6.
+        move: H6; rewrite inE -Fset_t0 /inverse /= => H6.
         have H8: ~(y \in Mono#Sm).
         rewrite -FsetUl => /inP [H9 | H9].
         + (* de H9 on a aussi Eb.+#(Sm\ T) y car ~ (y -M-> T) 
          on en deduit que y -B-> x quicontredit 5 *)
           move: (fact8 H2) H9 => <- /inP/FsetUO [H9 | H9].
           by have H11: y \in Mono#(Tm x `|` [set x])
-              by apply: FsetlU;rewrite -FsetUl inP;left;rewrite -inP.
-          move: H9; rewrite inP => [[z1 [H10 /inP H11]]].
+              by apply: FsetlU;rewrite -FsetUl inE;left;rewrite -inE.
+          move: H9; rewrite inE => [[z1 [H10 /inP H11]]].
           move: (fact0 H11) => H12.
           have H13: Eb.+ (y,x) by apply: (TclosT H10 H12).
           have H14: y \in Mono#(Tm x `|` [set x])
-              by rewrite setUC;apply: FsetlU;rewrite -FsetUl inP;
+              by rewrite setUC;apply: FsetlU;rewrite -FsetUl inE;
             left;rewrite -Fset_t0.
           by [].
         + (* ici y-R-> S et x-R-> y => x -R-> S contredit def de x *)
           move: H9 => [z1 [H9 H10]].
           have H11: x \in Mono#Sm
-              by rewrite inP;exists z1;split;[right;apply: (TclosT H6 H9) |].
-          by move: H2; rewrite inP => [[_ H13]].
+              by rewrite inE;exists z1;split;[right;apply: (TclosT H6 H9) |].
+          by move: H2; rewrite inE => [[_ H13]].
           (** end of H8 *)
           have H13: ~ (y \in Sm).
           move => H14.
           have H15: x \in Mono#Sm. 
-          rewrite inP.
+          rewrite inE.
           exists y;split. 
-          by right. by rewrite -inP.
-          by move: H2; rewrite inP => [[_ H13]].
+          by right. by rewrite -inE.
+          by move: H2; rewrite inE => [[_ H13]].
           (** end of H13 *)
-          have H14: y \in Se. by rewrite inP;split.        
+          have H14: y \in Se. by rewrite inE;split.        
           
           rewrite /SeP in H3.
           have H15: Er.+ (y, x). apply: ((H3 y) H14 H6). 
           have H16: y \in Mono#(Tm x `|` [set x])
-              by rewrite setUC;apply: FsetlU;rewrite -FsetUl inP;
+              by rewrite setUC;apply: FsetlU;rewrite -FsetUl inE;
             right;rewrite -Fset_t0.
           by [].
     Qed.
@@ -896,7 +900,7 @@ Section Paper.
     Lemma fact11:  ~(exists x, x \in Se) -> (forall x, ~ (x\in Sm) -> (x \in Mono#Sm)).
     (* end snippet facteleven*)       
     Proof.
-      have H3 x: ~ (x \in Se) <-> (x \in Sm) \/ (x \in Mono#Sm) by rewrite inP not_andE 2!not_notP.
+      have H3 x: ~ (x \in Se) <-> (x \in Sm) \/ (x \in Mono#Sm) by rewrite inE not_andE 2!not_notP.
       by rewrite -forallNE => + x H2 => /(_ x)/H3 [H4| H4]. 
     Qed.
     
@@ -917,7 +921,7 @@ Section Paper.
     move: (H1); rewrite /Scal => -[P1 [_ P1']].
     exists Sm. split. by []. split. by [].
     move => x;apply/fact11/(fact10 A2).
-    split => [ |U H3 H4];first by rewrite inP.
+    split => [ |U H3 H4];first by rewrite inE.
     by have ->: U = Sm by apply: H2 H3 H4.
   Qed.
   
@@ -940,7 +944,7 @@ Section Paper.
                           /\ (allL Eb s x y \/ allL Er s x y).
   (* end snippet Monotopath *)    
   Proof.
-    rewrite inP /Mono /Fset => -[y [[H1 | H1] /inP H2]];(exists y;split;first by []).
+    rewrite inE /Mono /Fset => -[y [[H1 | H1] /inP H2]];(exists y;split;first by []).
     + move: H1 => /(@TCP_uniq T Eb) [s [H3 [H4 [H5 H6]]]].
       by (exists s;have H7: (allL Eb s x y \/ allL Er s x y) by left).
     + move: H1 => /(@TCP_uniq T Er) [s [H3 [H4 [H5 H6]]]].

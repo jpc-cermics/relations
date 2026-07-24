@@ -35,7 +35,7 @@ Section Paper.
   Definition Elt (C: set SType) := {x : T |exists (S: SType), S \in C /\ x \in (sval S)}.
   
   Lemma S2Scal: forall (S: SType), (sval S) \in Scal.
-  Proof. by move => [S [H1 [H2 H3]]];rewrite inP. Qed.
+  Proof. by move => [S [H1 [H2 H3]]];rewrite inE. Qed.
 
   Lemma Scal2S: forall S, S \in Scal -> exists (S': SType), (sval S') = S.
   Proof. by move => S /inP H1; exists (exist _ S H1). Qed.
@@ -156,7 +156,7 @@ Section Paper.
           -> exists S1, S1 \in C /\ S [<=] S1 /\ ~ (s \in (sval S1)).
       Proof.
         move => S s H2 H3. 
-        apply contraPP;rewrite not_existsP 2!not_notE inP /Sinf => H4;exists S.
+        apply contraPP;rewrite not_existsP 2!not_notE inE /Sinf => H4;exists S.
         split => [// | ];split => [// |A ? ?].
         by move: H4 => /(_ A) /not_andP [? //|/not_andP [// | /contrapT ?]].
       Qed.
@@ -337,14 +337,14 @@ Section Paper.
       have H2':  R `<=` M' by rewrite /M';apply: subsetUr.
       split;first by rewrite /RelIndep;move => x y /inP /= -> /inP /= ->.
       split;first by move => t [y [/= H3 H4]];move: H3; rewrite H4 /= => /H1/H2' H3;exists v.
-      by rewrite -notempty_exists;(exists v);rewrite inP.
+      by rewrite -notempty_exists;(exists v);rewrite inE.
     Qed.
     
     Lemma SType_not_empty (A1: Assumption1 T) (A2: Assumption2 R):
       (@setT SType) != set0.
     Proof.
       rewrite -notempty_exists;move: (Scal_not_empty A1 A2) => [v H2].
-      by exists (exist _ [set v] H2);rewrite inP.
+      by exists (exist _ [set v] H2);rewrite inE.
     Qed.
     
     Lemma Sinf_not_empty (A3: Assumption3 O) (A4: Assumption4 O):
@@ -371,9 +371,9 @@ Section Paper.
         by (exists x);(have H12: M'(y,x) by right;move: B1;rewrite H11).
         by move: H11 => /H10 H11;(have H12: M'(x,y) by right).
       + (* now  ~ y \in Sinf C *)
-        have B2: ~ (x = y) by move => I1;rewrite -I1 inP in H9'.
+        have B2: ~ (x = y) by move => I1;rewrite -I1 inE in H9'.
         move: (EM (M' (y,x))) => [? | B3];first by (exists x).
-        have H10: (sval X):#R y by (exists x);split;[ |rewrite -inP].
+        have H10: (sval X):#R y by (exists x);split;[ |rewrite -inE].
         move: H10 => /H8 [x' [B4 /inP H11]].
         
         move: (EM (x' \in (Sinf C))) => [/inP ? | B5];first by (exists x').
@@ -388,7 +388,7 @@ Section Paper.
         by rewrite -H21 in B7.
         
         move: (EM (x' = y')) B4 => [-> | B3''] B4.
-        by (exists y'); rewrite inP in B7. 
+        by (exists y'); rewrite inE in B7. 
         
         have P11': ~ ((M' `|` M'^-1) (x',x))
           by pose proof (@RelIndep_E _ x x' M' _ H5 H11 B6 H7).
@@ -410,7 +410,7 @@ Section Paper.
           by move: H3 => /inP H3;
                         pose proof (@RelIndep_E _ x y' M' _ H3 B7 P3 (Sinf_indep)).
         
-        exists y'. split. by apply: (A9 x y x' y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12). by rewrite -inP.
+        exists y'. split. by apply: (A9 x y x' y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12). by rewrite -inE.
     Qed.
     
     (* begin snippet SinfScal:: no-out *)    
@@ -419,7 +419,7 @@ Section Paper.
       (Sinf C) \in Scal. 
     (* end snippet SinfScal *)
     Proof.
-      by rewrite inP;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
+      by rewrite inE;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
     Qed.
     
     Lemma Sinf_final (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O)   (A5:Assumption5 O M') (A9: Assumption9 R B O M'):
@@ -445,7 +445,7 @@ Section Paper.
     case H4: ( C != set0 ); first by apply: (H3 H4 A2 A3 A4 A5 A9).
     move: H4 => /negP/contrapT/eqP H4. 
     move: (SType_not_empty A1 A2) => /notempty_exists [Sm Ht].
-    by exists Sm; move => S; rewrite H4 -inP in_set0. 
+    by exists Sm; move => S; rewrite H4 -inE in_set0. 
   Qed.
   
   (** * existence of Smax in set T *)
@@ -478,8 +478,8 @@ Section Paper.
     IsMaximal X -> Mabsorbant R B X.
   Proof.
     contra; move => H1 /inP H2. 
-    have H3: Non_Mabsorbant R B X. move: H1 => [y H1] H3. exists y. rewrite inP.
-    split. by []. rewrite notin_setE in H3. by rewrite inP.
+    have H3: Non_Mabsorbant R B X. move: H1 => [y H1] H3. exists y. rewrite inE.
+    split. by []. rewrite notin_setE in H3. by rewrite inE.
     move: (extend A2 A6 A7 A8 H2 H3) => [X' [/inP H4 [H5 [x' [H6 H7]]]]].
     exists X'. by []. split. by [].
     apply /eqP => /seteqP [H8 H9].

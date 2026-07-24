@@ -393,7 +393,7 @@ Section FinsetToClassical.
   Proof. 
     rewrite predeqE => x. 
     split => [/inP/in_set_of_fin/in_fin_of_set/inP // | /inP H1].
-    by rewrite -inP in_set_of_fin in_fin_of_set.
+    by rewrite -inE in_set_of_fin in_fin_of_set.
   Qed.
   
   Lemma set_of_fin0 : [:set: finset.set0] = set0.
@@ -432,7 +432,7 @@ Definition inE := (inE, in_setE).
     rewrite in_set_of_fin finset.in_setI.
     split;last by move => /inP [/inP/in_finP -> /inP/in_finP ->].
     move => /andP [/in_finP ? /in_finP ?].
-    by rewrite inP;split;by rewrite -inP.
+    by rewrite inE;split;by rewrite -inE.
   Qed.
   
   Lemma set_of_fin_inj: injective set_of_fin.
@@ -446,13 +446,13 @@ Definition inE := (inE, in_setE).
   Lemma set_of_sfin v:  [:set: [set v]] = [set v]%classic.
   Proof.
     rewrite predeqE => x. 
-    split;first by rewrite -inP in_set_of_fin inE => /eqP ->.
-    by move => ->;rewrite -inP in_set_of_fin inE.
+    split;first by rewrite -inE in_set_of_fin inE => /eqP ->.
+    by move => ->;rewrite -inE in_set_of_fin inE.
   Qed.
 
   Lemma set_of_set0 :  [:set: finset.set0] = set0.
   Proof.
-    by rewrite predeqE => x;split;[rewrite -inP in_set_of_fin inE |].
+    by rewrite predeqE => x;split;[rewrite -inE in_set_of_fin inE |].
   Qed.
 
 End FinsetToClassical.
@@ -576,8 +576,8 @@ Section RelIndep_fin.
       split; last exact.
       by move: Hxy => /[swap] ->;rewrite eqxx.
     + have H2: x != y by apply/negP => /eqP H3.
-      move: H1 => /(_ x y xS yS H2) H1 /inP H3.
-      by rewrite H3 in H1.
+      move: H1 => /(_ x y xS yS H2) H1 H3.
+      by rewrite -inE in H3;rewrite H3 in H1.
   Qed.
   
   Lemma RelIndepP R S: 
@@ -1007,8 +1007,8 @@ Section ChampetierExt_Theorem.
   Proof.
     contra; move => H1 /prekernelP Hpk.
     have H3: Non_Mabsorbant R B [:set: S]
-      by move: H1 => [y H1] H3;exists y;rewrite inP;
-                    split;[ |rewrite notin_setE in H3;rewrite inP].
+      by move: H1 => [y H1] H3;exists y;rewrite inE;
+                    split;[ |rewrite notin_setE in H3;rewrite inE].
     
     move: (@extend T R B O [:set: S] A2 A6 A7 A8 Hpk H3) 
         => [S' [Hpre [H7 [x' [H8 H9]]]]].
@@ -1095,9 +1095,9 @@ Section Champ.
       have H6: D `|` D^-1 = G by [].
       have H7: O `|` O^-1 = G by move: (Ao) => [Do _].
       have H8:  D `|` D^-1 = O `|` O^-1. by rewrite H6 H7. 
-      have [/inP //| H9]: (O `|` O^-1) (x,y) by rewrite -H8; left.
-      by rewrite H4.
-      have: (y,x) \in O by rewrite inP.  
+      have [ //| H9]: (O `|` O^-1) (x,y) by rewrite -H8; left.
+      by rewrite -inE H4.
+      have: (y,x) \in O by rewrite inE.  
       by rewrite H5.
   Qed.
   

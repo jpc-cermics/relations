@@ -416,10 +416,10 @@ Section Tcs.
     Proof.
       rewrite predeqE /Restrict /mkset => [[x y]].
       split => [[? [? ?]] | [? [? ?]]].
-      - have [H4 H5]: x \in W.^c /\  y \in W.^c by split;rewrite inP.
+      - have [H4 H5]: x \in W.^c /\  y \in W.^c by split;rewrite inE.
         pose proof (T5 H4 H5) as H6.
         by rewrite -H6;split;[ | split].
-      - have [H4 H5]: x \in W.^c /\  y \in W.^c by split;rewrite inP.
+      - have [H4 H5]: x \in W.^c /\  y \in W.^c by split;rewrite inE.
         pose proof (T5 H4 H5) as H6.
         by rewrite H6;split;[ | split].
     Qed.

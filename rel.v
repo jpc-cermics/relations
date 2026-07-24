@@ -207,10 +207,12 @@ Section Relation_Facts.
   (** * Sets_facts *)
   
   (* should be replaced by in_setE or inE ? *)
-  Lemma inP (T': Type) (x:T') (X: set T'): x \in X <-> X x. 
-  Proof. by rewrite in_setE. Qed. 
-  
-  Lemma inP' (T': Type) (x:T') (X: set T'): reflect (X x) (x\in X).
+  (* Lemma inP (T': Type) (x:T') (X: set T'): x \in X <-> X x. 
+  Proof. by rewrite in_setE. Qed.  *)
+
+  Definition inP := asboolP.
+
+  Lemma ZZinP' (T': Type) (x:T') (X: set T'): reflect (X x) (x\in X).
   Proof. by apply: (iffP idP);rewrite in_setE. Qed.
 
   Lemma notempty_exists (T': Type) (X:set T'): (exists z, z \in X) <-> (X != set0).
@@ -1292,9 +1294,9 @@ Section Relation_Facts.
     rewrite /RelIndep in H2.
     + by apply: ((H2 x1 x2) H5 H6 H7 H8).
     + move: H6 H4 => /inP <- H4. 
-      by have H9: x2 \in X:#R by rewrite inP;exists x1; rewrite inP in H5.
+      by have H9: x2 \in X:#R by rewrite inE;exists x1; rewrite inE in H5.
     + move: H5 H3 => /inP <- H3. 
-      by have H9: x1 \in R#X by rewrite inP;exists x2;rewrite inP in H6.
+      by have H9: x1 \in R#X by rewrite inE;exists x2;rewrite inE in H6.
     + by move: H5 H6 H7 => /inP -> /inP ->. 
   Qed.
   
@@ -1363,7 +1365,7 @@ Section Restrict_to_subset.
 
   (** some helpers to understand sval *)
   Lemma Inset X (v: X) : ((sval v) \in X).
-  Proof. by rewrite inP; apply: set_valP. Qed.
+  Proof. by rewrite inE; apply: set_valP. Qed.
 
   Lemma setIn X v: (v \in X) -> exists v' : X, v = sval v'.
   Proof. by move => H0;exists (exist _ v H0). Qed.

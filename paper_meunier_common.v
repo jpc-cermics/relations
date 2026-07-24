@@ -120,7 +120,7 @@ Section Infinite_paths_X.
   Proof. 
     have setTypeP: (exists x : X, x \in [set: X]) <-> (exists (t:T), (t \in X))
       by split => [[v ?] |[v H0]];[exists (sval v) | exists (exist _ v H0)];
-                 rewrite inP;[apply: set_valP|].
+                 rewrite inE;[apply: set_valP|].
     by move => /setTypeP H0; apply: notiic_rloop. 
   Qed. 
   
@@ -142,7 +142,7 @@ Section Infinite_paths_X.
   Proof.
     move => Ninf H0.
     move: (notiic_rloop_sub_L2 Ninf H0) => [v H1];exists (sval v).
-    split=> [| w H2];first by rewrite inP;apply: set_valP.
+    split=> [| w H2];first by rewrite inE;apply: set_valP.
     have [w' <-]: exists (w': X), (sval w') = w by (exists (exist _ w H2)).
     by move => ?;apply: H1.
   Qed.
@@ -171,7 +171,7 @@ Section Set_relation.
   (* begin snippet lesetI:: no-out *)   
   Lemma Ile U A B: A `<=` B -> A [<= U] B.
   (* end snippet lesetI *)
-  Proof. by move => H1 /= a /inP/H1 ?;exists a;split;[rewrite inP|left]. Qed.
+  Proof. by move => H1 /= a /inP/H1 ?;exists a;split;[rewrite inE|left]. Qed.
 
   Lemma leI U S: S `<=` U -> (leSet S)  `<=` (leSet U).
   Proof.
@@ -367,16 +367,18 @@ Module Extend_nonMabsorbant_prekernel.
     Lemma fact0: forall x y, x \in X `\` (Xy y) -> ~ B (x,y).
     (* end snippet Sbunp*)       
     Proof. 
-      move => x y /inP [/inP H3 /inP H4].
+      move => x y /inP [H3 H4].
+      rewrite -inE in H3.
+      rewrite -[X in ~X]inE in H4.
       have H0: x \in X -> ~(x \in (Xy y)) -> ~ B (x,y).
-      by move => H3';rewrite inP not_andE => [[? // | /contrapT ? //]].
+      by move => H3';rewrite inE not_andE => [[? // | /contrapT ? //]].
       by apply: (H0 H3 H4). 
     Qed.
     
     Lemma fact4: (X:#(R) `<=` M#X) -> forall x y, x \in X -> y \in Y -> (~ (R (x,y))) /\ (~ (M (y,x))).
     Proof.
       move => H0 x y /inP H1 /inP [H2 H3].
-      move: H3; rewrite inP/Aset/Fset/mkset => H3.
+      move: H3; rewrite inE/Aset/Fset/mkset => H3.
       rewrite -not_orP => -[ H4 | H4]. 
       + have /H0 H5:  X:#R y by rewrite /Aset/Fset/mkset;(exists x).
         by have H3n: (exists y0 : T, M (y, y0) /\ X y0) by [].
@@ -410,18 +412,18 @@ Module Extend_nonMabsorbant_prekernel.
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4 y' H5.
       rewrite /Aset FsetUr => /inP [/H0' H6 | /Fset_s H6].
-      + by rewrite FsetUr inP;left.
+      + by rewrite FsetUr inE;left.
       + (* two subcases *)
-        case H7: ( y' \in M#(X));first by rewrite FsetUr inP;left;rewrite -inP.
-        have H8: y' \in Y. rewrite /Y inP;split.
+        case H7: ( y' \in M#(X));first by rewrite FsetUr inE;left;rewrite -inE.
+        have H8: y' \in Y. rewrite /Y inE;split.
         move => H9.
-        by have H10: y' \in X `|` [set y] by rewrite inP;left;rewrite -inP.
+        by have H10: y' \in X `|` [set y] by rewrite inE;left;rewrite -inE.
         by rewrite H7.
         (* end of H8 *)
         move: (H3 y' H8 H6) => H11.
-        have H12: y' \in M#([set y]). rewrite inP. exists y.
+        have H12: y' \in M#([set y]). rewrite inE. exists y.
         split. rewrite /M. by right. by [].
-        by rewrite FsetUr inP;right; by rewrite -inP.
+        by rewrite FsetUr inE;right; by rewrite -inE.
     Qed.
 
     Lemma case1_RMprop1: forall y, 
@@ -438,14 +440,14 @@ Module Extend_nonMabsorbant_prekernel.
       preKernel R M  X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> X [<= O] (X `|` [set y]).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4 y' /= H5.
-      by exists y';split;[rewrite inP;left; rewrite -inP |left].
+      by exists y';split;[rewrite inE;left; rewrite -inE |left].
     Qed.
     
     Lemma case1_notequal: forall y,
       preKernel R M  X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) ->
       (exists x' : T, x' \in X `|` [set y] /\ ~ x' \in X).
     Proof.
-      by move => y _ /inP [H1 _]; exists y;split;[rewrite inP;right|].
+      by move => y _ /inP [H1 _]; exists y;split;[rewrite inE;right|].
     Qed.
     
     Lemma case1: forall y,
@@ -468,7 +470,7 @@ Module Extend_nonMabsorbant_prekernel.
         preKernel R M  X -> y \in Y -> (SeP y) -> y \in X:#(B) -> ((X `\` (Xy y)) `|` [set y]) != set0.
     Proof.
       move => y [_ [_ /notempty_iff H0]] _ _ _;rewrite -notempty_iff setU_eq0 => -[_ H1].
-      have: y \in [set y] by rewrite inP. 
+      have: y \in [set y] by rewrite inE. 
       by rewrite H1 in_set0. 
     Qed.
     
@@ -486,24 +488,24 @@ Module Extend_nonMabsorbant_prekernel.
       by have H12: ~ B(x,y) by apply: H7.
       have H12:  X `\` Xy y `<=` X by apply: subDsetl.
       move: H10 => /inP/H12 H10.
-      move: H8. rewrite inP /Aset/Fset /mkset => H13.
+      move: H8. rewrite inE /Aset/Fset /mkset => H13.
       have H14: (exists x : T, R^-1 (y, x) /\ X x).
       by (exists x). by [].
       (** fin de H9 *)
       
       have H10:  forall x : T, x \in X `\` Xy y -> ~ M (y, x).
       move => x H11.
-      move: H2. rewrite inP /Aset/Fset /mkset => H12.
+      move: H2. rewrite inE /Aset/Fset /mkset => H12.
       have H13:  X `\` Xy y `<=` X by apply: subDsetl.
       move: H11 => /inP/H13 H11.
       move => H14.
       by have H15: (exists y0 : T, M (y, y0) /\ X y0) by (exists x).
       
       have H11: ~ y \in M#(X `\` Xy y).
-      by rewrite inP /Aset/Fset /mkset => -[x [H12 /inP/H10 H13]].
+      by rewrite inE /Aset/Fset /mkset => -[x [H12 /inP/H10 H13]].
 
       have H12: ~ y \in (X `\` Xy y):#M.
-      by rewrite inP /Aset/Fset /mkset => -[x [H12 /inP/H9 H13]].
+      by rewrite inE /Aset/Fset /mkset => -[x [H12 /inP/H9 H13]].
 
       by apply: RelIndep_U.
     Qed.
@@ -516,14 +518,14 @@ Module Extend_nonMabsorbant_prekernel.
       rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4 y' H4'.
       (** on a necessairement ~ (y = y') **)
       have P0: ~ (y = y')
-        by move => I1;(have I2: y \in  X `\` Xy y `|` [set y] by rewrite inP;right);rewrite -I1 in H4'.
-      rewrite inP/Aset/Fset/mkset => -[x [H5 [/inP H6 | H6]]];rewrite inP/Aset/Fset/mkset.
+        by move => I1;(have I2: y \in  X `\` Xy y `|` [set y] by rewrite inE;right);rewrite -I1 in H4'.
+      rewrite inE/Aset/Fset/mkset => -[x [H5 [/inP H6 | H6]]];rewrite inE/Aset/Fset/mkset.
       + (** x \in X\X_y *)
         move: (H6) => /fact3/inP H6'.
         have P0': ~ (y' = x)
-          by move => I1;(have I2: x \in  X `\` Xy y `|` [set y] by rewrite inP;left;rewrite -inP);
+          by move => I1;(have I2: x \in  X `\` Xy y `|` [set y] by rewrite inE;left;rewrite -inE);
                     rewrite -I1 in I2.
-        have H7: y' \in  X:#R by rewrite inP /Aset/Fset /mkset;(exists x).
+        have H7: y' \in  X:#R by rewrite inE /Aset/Fset /mkset;(exists x).
         have H8: y' \in  M#X by move: H7 => /inP/H0'/inP.
         move: H8 => /inP [x' [H8 H9]].
         move: H9;rewrite -{1}(Xpart y) => -[H9 | H9];first  by (exists x');split;[by [] | left].
@@ -538,21 +540,21 @@ Module Extend_nonMabsorbant_prekernel.
            have P4: B (x',y) by move: H9;rewrite /Xy => -[H9 H9'].
            have P5: ~ (B (x,y)) by apply: fact0. 
            have P6: ~ (R (x',y)) /\ ~ (M (y,x')) 
-             by apply: (fact4 H0');rewrite inP;move: (@XyI y) => H11;move: H9 => /H11. 
+             by apply: (fact4 H0');rewrite inE;move: (@XyI y) => H11;move: H9 => /H11. 
            have P7: ~ (R (x,y)) /\ ~ (M (y,x)) 
-             by apply: (fact4 H0');rewrite inP.
+             by apply: (fact4 H0');rewrite inE.
            have P8:  ~ (M (x,x'))
-             by apply: H0;[by rewrite inP
-                     | by rewrite inP;move: (@XyI y) => H11;move: H9 => /H11
+             by apply: H0;[by rewrite inE
+                     | by rewrite inE;move: (@XyI y) => H11;move: H9 => /H11
                      | by move => H11; rewrite H11 in P1].
            have P9:  ~ (M (x',x))
-             by apply: H0;[rewrite inP;move: (@XyI y) => H11;move: H9 => /H11 
-                          | rewrite inP | move => H11;rewrite H11 in P1].
+             by apply: H0;[rewrite inE;move: (@XyI y) => H11;move: H9 => /H11 
+                          | rewrite inE | move => H11;rewrite H11 in P1].
            have P10: ~ (y = y') by apply: P0.
            have P11: ~ (y' = x) by apply: P0'.
            have P12: ~ (y' = x')
              by move => I1;(have I2: M(x, x') by right ; rewrite -I1).
-           have P13: ~ (y = x ) by move => I1;rewrite -I1 -inP in H6'.
+           have P13: ~ (y = x ) by move => I1;rewrite -I1 -inE in H6'.
            have P14: ~ (y = x' )
              by move => I1;(have: M (x',y) by left);move: P6;rewrite I1 => -[_ I3] I4.
            have P15: ~ (M (y',x)) by exact.
@@ -564,10 +566,10 @@ Module Extend_nonMabsorbant_prekernel.
                ++++ move: H10;rewrite /Xy => /inP [H11 H12].
                     exists y. split. by rewrite /M;left. by right.
                ++++ have H11: y' \in Y. 
-                    rewrite inP/Y. split.
-                    rewrite -{1}(Xpart y) inP => -[H12| /inP H12]. 
-                    by have H13: y' \in X `\` Xy y `|` [set y] by rewrite inP; left.
-                    by rewrite H10 in H12.
+                    rewrite inE/Y. split.
+                    rewrite -{1}(Xpart y) inE => -[H12| H12]. 
+                    by have H13: y' \in X `\` Xy y `|` [set y] by rewrite inE; left.
+                    by rewrite -inE H10 in H12.
                     by rewrite H9. 
                     (** * end H11 *)
                     have H12: M (y', y)  by rewrite /M;right;apply: (H3 y' H11 H8).
@@ -579,7 +581,7 @@ Module Extend_nonMabsorbant_prekernel.
                     (exists y);split;[|  right].
                     
                     have H11: x' \in X by move: H10;rewrite /Xy => -[? _]. 
-                    have H12: y \in Y by rewrite inP/Y.
+                    have H12: y \in Y by rewrite inE/Y.
                     
                     have B0: ~ (y' = x') by apply: H9'.
                     have B0': ~ (y = y') by apply: P0.
@@ -611,11 +613,11 @@ Module Extend_nonMabsorbant_prekernel.
       -> X [<= O] ((X`\` (Xy y)) `|` [set y]).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4 x /=.
-      rewrite -{1}(Xpart y) inP => -[ H5 | H5].
-      + (* x \in  X `\` Xy *) by (exists x);split;[rewrite inP;left | left].
-      + (* x \in Xy y *) exists y;split;first by rewrite inP;right. 
+      rewrite -{1}(Xpart y) inE => -[ H5 | H5].
+      + (* x \in  X `\` Xy *) by (exists x);split;[rewrite inE;left | left].
+      + (* x \in Xy y *) exists y;split;first by rewrite inE;right. 
         have H6: B (x,y) by move: H5 => [_ ?].
-        move: H2;rewrite inP/Fset/mkset => H2.
+        move: H2;rewrite inE/Fset/mkset => H2.
         have H7: X x  by rewrite -{1}(Xpart y);right.
         have H8: ~ (M (y, x))
           by move => H8;have H9: (exists y0 : T, M (y, y0) /\ X y0) by (exists x).
@@ -626,7 +628,7 @@ Module Extend_nonMabsorbant_prekernel.
       preKernel  R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) ) ->
       (exists x' : T, x' \in ((X`\` (Xy y)) `|` [set y]) /\ ~ x' \in X).
     Proof.
-      by move => y _ /inP [H1 _]; exists y;split;[rewrite inP;right|].
+      by move => y _ /inP [H1 _]; exists y;split;[rewrite inE;right|].
     Qed.
 
     Lemma case2 (A6: Assumption6 B M O)(A7: Assumption7 R B M)(A8: Assumption8 R B M) : forall y,
@@ -649,10 +651,10 @@ Module Extend_nonMabsorbant_prekernel.
         exists X', preKernel R M X' /\  X [<= O] X' /\ (exists x', x' \in X' /\ ~ (x' \in X)).
     Proof.
       move => H1 /(NonMabsorbant A2) [y [H2 H3]]. 
-      have H4: y \in (X:#(B) `|` (X:#(B)).^c) by rewrite (setUv X:#(B)) inP.
-      move: H4 => /inP [/inP H4 | H4].
+      have H4: y \in (X:#(B) `|` (X:#(B)).^c) by rewrite (setUv X:#(B)) inE.
+      move: H4 => /inP [ H4 | H4];rewrite -inE in H4.
       by move: (case2 A6 A7 A8 H1 H2 H3 H4) => H5;exists (X `\` Xy y `|` [set y]).
-      move: H4;rewrite -inP  in_setC notin_setE => /inP H4.
+      move: H4;rewrite in_setC notin_setE -[X in ~ X]inE => H4.
       by move: (case1 H1 H2 H3 H4) => H5;exists (X `|` [set y]).
     Qed.
 
