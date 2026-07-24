@@ -89,7 +89,7 @@ Definition RelIndep (T:Type) (R: relation T) (S: set T) :=
   forall (x y:T),  x \in S -> y \in S -> ~(x = y) -> ~( R (x,y)).
 (* end snippet RelIndep *)    
 
-(* possible Corecion of relation T to rel T *)
+(* possible Coercion of relation T to rel T *)
 Definition R2rel (T: Type) (R: relation T) : rel T := (fun x y => asbool (R (x,y))).
 Definition rel2R (T: Type) (R: rel T) : relation T := (fun xy => R xy.1 xy.2).
 Global Coercion R2rel : relation >-> rel.
@@ -208,7 +208,7 @@ Section Relation_Facts.
   
   (* should be replaced by in_setE or inE ? *)
   Lemma inP (T': Type) (x:T') (X: set T'): x \in X <-> X x. 
-  Proof. by rewrite in_setE. Qed.
+  Proof. by rewrite in_setE. Qed. 
   
   Lemma inP' (T': Type) (x:T') (X: set T'): reflect (X x) (x\in X).
   Proof. by apply: (iffP idP);rewrite in_setE. Qed.

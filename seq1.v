@@ -251,14 +251,22 @@ Section allset.
   Lemma allset_cat X st st': (st++st') [\in] X <-> st [\in] X /\ st' [\in] X.
   Proof. by rewrite all_cat;split => [/andP | [-> ->]].  Qed.
 
-  (** XXX faire les liens avec les predicats  all_predI all_predT *) 
+  (** using  all_nthP *)
+  Lemma allset_nth X x st: (x::st) [\in] X <-> (forall n, (nth x (x::st) n) \in X).
+  Proof. 
+    split => [/(all_nthP x) Hnth n | ?];last by apply/(all_nthP x) => n _.
+    case H1: (n < size (x :: st));first by move: H1 => /Hnth.
+    have ->: nth x (x :: st) n =x by apply: nth_default;rewrite leqNgt H1.
+    by move: Hnth => /(_ 0)/= Hnth;apply: Hnth.
+  Qed.
+  
   Lemma allset_I X Y st: st [\in] (X `&` Y) <-> st [\in] X && st [\in] Y. 
   Proof. 
     split => [H3 | ];first by apply/andP;split;apply: (allset_subset _ H3).
     elim: st => [// | x spa Hr /andP];rewrite !allset_cons => [[[? ?] [? ?]]].
     by split;[rewrite /setI /mkset | apply Hr;apply/andP].
   Qed.
-  
+
 End allset.
 
 Section allset2.

@@ -32,12 +32,12 @@ Definition fin_relation (T: finType) := {set (T * T)}.
 Notation "{ 'relation' T }" := (fin_relation T) (format "{ 'relation'  T }"): type_scope.
 
 Module leSet_choice.
-  (** * an increasing selection lemma *)
 
   Section leSet_choice_sec.
+    (** * an increasing selection lemma *)
 
     Context {T:choiceType} (R: relation T) (f : nat -> set T).
-  Context (A0: (NotEmpty T)) (A1: forall n, (f n) [<= R] (f n.+1)).
+    Context (A0: exists s, s\in (f 0)) (A1: forall n, (f n) [<= R] (f n.+1)).
     
     Definition R'' (p1: nat*T) := 
       [set p | ((p.2 \in (f p.1) /\ (p1.2 \in (f p1.1) /\ (p1.2 = p.2 \/ R (p1.2,p.2)))) 
@@ -62,8 +62,7 @@ Module leSet_choice.
       by move: H0 => /inP /= [[[? [_ ?]] _ // |? ? //] ?].
     Qed.
 
-    #[local] Lemma Au1_G3:
-      exists (k: nat -> (T -> T)),
+    #[local] Lemma Au1_G3: exists (k: nat -> (T -> T)),
       forall n, forall s, s \in (f n) -> ((k n s) \in (f n.+1) /\ (s = (k n s) \/ R (s,(k n s)))).
     Proof.
       move: Au1_G2 => [j H1].
@@ -73,21 +72,21 @@ Module leSet_choice.
       move => /H1 /= [+ H2].
       by rewrite H2.
     Qed.
-    
-    #[local] Fixpoint kiter (k: nat-> (T -> T)) n :=
-      if n is n'.+1 then (k n) \o kiter k n' else (k 0).
+
+    #[local]Fixpoint kiter (k: nat-> (T -> T)) n :=
+      if n is n'.+1 then (k n') \o kiter k n' else id.
 
     #[local]Lemma kiterP1 (k: nat -> (T -> T)) (s:T) (A:set T):
       s\in A -> (forall n s', s' \in A -> (k n s') \in A) -> (forall n, (kiter k n s) \in A).
-    Proof. by move => H0 Hn;elim => [| n Hr/=];apply: Hn. Qed.
+    Proof. by  move => H0 Hn;elim => [// | n Hr/=];apply: Hn. Qed.
 
     #[local] Lemma kiterP2 (k: nat -> (T -> T)) s:
       (forall n, forall s, s \in (f n) -> (k n s) \in (f n.+1) /\ (s = (k n s) \/ R (s,(k n s))))
       -> s \in (f 0)
-      -> forall n, (kiter k n s) \in (f n.+1).
+      -> forall n, (kiter k n s) \in (f n).
     Proof.
       move => Hn H0;elim;first by move: Hn => /(_ 0 s H0) [? _].
-      by move => n' Hr;move: Hn => /(_ n'.+1 _ Hr) => -[? _].
+      by move => n' Hr;move: Hn => /(_ n' _ Hr) => -[? _].
     Qed.
     
     #[local] Lemma kiterP3 (k: nat -> (T -> T)) s:
@@ -101,21 +100,18 @@ Module leSet_choice.
     Qed.
     
     (* this is the main lemma *)
-    Lemma choose_inc_seq:
-      forall s, s\in (f 0) -> exists (h1: nat -> T), 
-          (forall n, (h1 n) \in (f n.+1)) /\ (forall n, (h1 n)=(h1 n.+1) \/ R (h1 n, h1 n.+1)).
+    Lemma choose_inc_seq s: s \in (f 0) -> exists (h: nat -> T), 
+          (h 0) = s /\ (forall n, (h n) \in (f n)) /\ (forall n, (h n)=(h n.+1) \/ R (h n, h n.+1)).
     Proof.
-      move => s H0;move: Au1_G3 => [k H1].
-      exists (fun n => (kiter k n s)).
-      by split;[apply:  kiterP2| apply: kiterP3].
+      move: Au1_G3 => [k H1];exists (fun n => (kiter k n s)).
+      by split;[ | split;[apply:  kiterP2| apply: kiterP3]].
     Qed.
-    
+
   End leSet_choice_sec.
   
 End leSet_choice.
 
-Export leSet_choice.
-
+Export leSet_choice(choose_inc_seq).
 
 Definition Diff {T: Type} (SS: T*T) := ~ ( SS.1 = SS.2).
 Definition Inc {T: Type} (SS: (set T)*(set T)) := SS.1 `<=` SS.2.
@@ -129,11 +125,11 @@ Module seq_leSet_choice.
     Context (A0: (NotEmpty T)).
     Context (A1: @allL (set T) (leSet R) Sq S S).
     Context (A2: @allL (set T) Diff Sq S S).
-    (** en theorie c'est un [\in] *) 
-    (** mais en pratique il faut montrer que c'est equivalent a *)
-    Context (A3: forall n, preKernel U R (nth S (S::Sq) n)).
-    
+    Context (A3: (S::Sq) [\in] (preKernel U R)).
     Implicit Types (sq: seq T) (s: T).
+    
+    Lemma A3toA4: forall n, (nth S (S::Sq) n) \in preKernel U R.
+    Proof. by rewrite -allset_nth. Qed.
 
     Definition f (n : nat) := nth S (S::Sq) (n %% size (S::Sq)).
 
@@ -189,9 +185,8 @@ Module seq_leSet_choice.
         by rewrite addn1 H7 in H11.
     Qed.
     
-    Lemma f_prekernel n: preKernel U R (f n).
-    Proof. by move: (A3) => /(_ (n %% size (S :: Sq))) H1.
-    Qed.
+    Lemma f_prekernel n: (f n) \in preKernel U R.
+    Proof. by move: A3toA4 => /(_ (n %% size (S :: Sq))) H1. Qed.
     
     (** * existence of j and aj such that aj \in (f j) and ~ (aj \in (f j.+1)) *)
     
@@ -266,37 +261,38 @@ Module seq_leSet_choice.
         by rewrite HH.
     Qed.
 
-
     (** * using a j offset on f *)
-
-    Lemma exists_g: exists g: nat -> set T, exists a,
-        a \in (g 0) /\ ~ (a \in (g 1)) /\ forall n, ((g n) [<= R] (g n.+1) /\ preKernel U R (g n)).
+    Lemma exists_g: exists g: nat -> set T, 
+        (exists a, a \in (g 0) /\ ~ (a \in (g 1)))
+        /\ (forall n, (g n) [<= R] (g n.+1))
+        /\ (forall n, preKernel U R (g n)).
     Proof.
       move: DiffE' => [j [_ [a [H1 H2]]]].
       move: f_prekernel => H4.
-      exists (fun n => (f (j + n))); exists a.
+      exists (fun n => (f (j + n))). 
       rewrite addn0 addn1.
-      split;[exact | split;[exact |]].
-      move => n;move: f_inc => /(_ (j + n));rewrite -addn1 => H3.
-      by rewrite -addn1 addnA.
+      split;first by (exists a). 
+      split;move => n;last by rewrite -inE.
+      by rewrite -addn1 addnA;move: f_inc => /(_ (j + n));rewrite -addn1.
     Qed.
     
-    Lemma exists_h : exists g: nat -> set T, exists h : nat -> T,
-        (forall n, (g n) [<= R] (g n.+1) /\ preKernel U R (g n))
-        /\ (forall n, (h n) \in (g n)) /\  ~ ((h 0) \in (g 1)).
+    (** * we use choose_inc_seq to obtain h *)
+    Lemma exists_h : 
+      exists g: nat -> set T,
+        (forall n, (g n) [<= R] (g n.+1)) 
+        /\ (forall n, preKernel U R (g n))
+        /\ exists h : nat -> T,
+          ~ ((h 0) \in (g 1))
+          /\  (forall n, (h n) \in (g n))
+          /\ (forall n, (h n)=(h n.+1) \/ R (h n, h n.+1)).
     Proof.
-      move: exists_g => [g [a [H1 [H2 H3]]]].
-      exists g. 
-      have H4: forall n, exists z : T, z \in g n
-          by move => n;move: H3 => /(_ n) [_ [_ [_ /notempty_exists ?]]].
-      exists (fun t => if (t== 0) then a else xchoose (H4 t)).
-      split;first exact.
-      split;last by rewrite eq_refl.
-      move => n.
-      case H5: (n == 0);first by move: H5 => /eqP ->.
-      apply: xchooseP.
+      move: exists_g => [g [[a [Hg0 Hg1]] [H2 H3]]];(exists g).
+      have H4: exists s, s \in (g 0) by (exists a).
+      have H5: forall n : nat, (g n) [<=R] (g n.+1) by move: H3 => + n => /(_ n) [? _].
+      move: (@choose_inc_seq T R g H4 H5 a Hg0) => [h [H6 [H7 H8]]].
+      by split;[exact | split;[exact |exists h;rewrite H6]].
     Qed.
-
+    
     Lemma seq_not (h: nat -> T) (A : set T): 
       ~ (h 0) \in A -> (exists k, (h k) \in A) -> exists j, ~ (h j) \in A /\ (h j.+1) \in A.
     Proof.
@@ -306,28 +302,39 @@ Module seq_leSet_choice.
 
     Definition Ig (g: nat -> set T) := [set x | forall n, x \in (g n)]%classic.
 
-    Lemma exists_hP (g: nat -> set T) ( h : nat -> T):
-        (forall n, (g n) [<= R] (g n.+1) /\ preKernel U R (g n))
-        /\ (forall n, (h n) \in (g n)) /\  ~ ((h 0) \in (g 1))
-        -> ~(exists n, (h n) \in (Ig g)).
+    Lemma h_inter_not (g: nat -> set T) ( h : nat -> T):
+      (forall n, (g n) [<= R] (g n.+1)) 
+      /\ (forall n, preKernel U R (g n))
+      /\ ~ ((h 0) \in (g 1))
+      /\  (forall n, (h n) \in (g n)) /\ (forall n, (h n)=(h n.+1) \/ R (h n, h n.+1))
+      -> ~(exists n, (h n) \in (Ig g)).
     Proof.
-      move => [H1 [H2 H3]] /[dup] H4' [n' H4].
+      move => [Hginc [Hker [Hg1 [Hin Hhinc]]]] /[dup] Hinter [n' Hn'].
       have H5:  ~ ( h 0 \in (Ig g)) by move => /inP /(_ 1) HH.
-      move: (seq_not H5 H4') => [j [H6 H7]].
-      
+      move: (seq_not H5 Hinter) => [j [H6 H7]].
+      (* we build a contradiction as (g j) is a prekernel *)
       have H8:  h j.+1 \in (g j) by move: H7 => /inP/(_ j).
-      have H9:  h j \in (g j) by apply: H2.
-      have H10: ~ ( h j = h j.+1)
-        by move => He;rewrite He in H6.
-      move: H1 => /(_ j) [HRj [Hindep _]].
+      have H9:  h j \in (g j) by apply: Hin.
+      have H10: ~ ( h j = h j.+1) by move => He;rewrite He in H6.
+      move: Hker => /(_ j) [Hindep _].
       move: Hindep => /(_ (h j) (h j.+1) H9 H8 H10) HnotR.
-      move: HRj => /(_ (h j)) /= HRj.
-      move: H9 => /HRj H9.
-      
-      rewrite /leSet /= in HRj.
-      
-      rewrite /RelIndep. 
-    Admitted.
+      by move: Hhinc => /(_ j) [H11 | H11].
+    Qed.
+
+    Lemma exists_h': exists g: nat -> set T, 
+        (forall n, (g n) [<= R] (g n.+1)) 
+        /\ (forall n, preKernel U R (g n))
+        /\ exists h : nat -> T,
+          (forall n, (h n) \in (g n)) 
+          /\ (forall n, (h n)=(h n.+1) \/ R (h n, h n.+1))
+          /\ ~(exists n, (h n) \in (Ig g)).
+    Proof.
+      move: exists_h => [g [Pg1 [Pg2 [h [Ph1 [Ph2 Ph3]]]]]].
+      exists g;split;[exact |split;[ exact | exists h ]].
+      have Hn: ~ (exists n : nat, h n \in Ig g)
+        by apply: h_inter_not;split.
+      by split.
+    Qed.
     
   End seq_leSet.
 
