@@ -31,6 +31,11 @@ Local Open Scope set_scope. (* we can use %SET *)
 Definition fin_relation (T: finType) := {set (T * T)}.
 Notation "{ 'relation' T }" := (fin_relation T) (format "{ 'relation'  T }"): type_scope.
 
+Definition Diff {T: Type} (SS: T*T) := ~ ( SS.1 = SS.2).
+Definition Inc {T: Type} (SS: (set T)*(set T)) := SS.1 `<=` SS.2.
+Definition strictInc {T: Type} (SS: (set T)*(set T)) :=
+  SS.1 `<=` SS.2 /\ ~ ( SS.1 = SS.2).
+
 Module leSet_choice.
 
   Section leSet_choice_sec.
@@ -247,16 +252,14 @@ End f_periodic.
 
 Export f_periodic.
 
-Definition Diff {T: Type} (SS: T*T) := ~ ( SS.1 = SS.2).
-Definition Inc {T: Type} (SS: (set T)*(set T)) := SS.1 `<=` SS.2.
-Definition strictInc {T: Type} (SS: (set T)*(set T)) :=
-  SS.1 `<=` SS.2 /\ ~ ( SS.1 = SS.2).
 
 Module seq_leSet_choice.
+  (** * properties of increasing  sequences of sets *)
+  (** * for the (leSet R) relation *)
 
   Section seq_leSet.
     Context {T:choiceType} (U R: relation T) (S: set T) (Sq: seq (set T)).
-    Context (A0: (NotEmpty T)).
+    (* Context (A0: (NotEmpty T)). *)
     Context (A1: @allL (set T) (leSet R) Sq S S).
     Context (A2: @allL (set T) Diff Sq S S).
     Context (A3: (S::Sq) [\in] (preKernel U R)).
@@ -271,7 +274,7 @@ Module seq_leSet_choice.
     Proof. by apply: f_setS. Qed.
     
     (** * existence of j and aj such that aj \in (f j) and ~ (aj \in (f j.+1)) *)
-    
+      
     Lemma Inc_Tr : transitive (@Inc T).
     Proof. by move => A B C;apply: subset_trans. Qed.
     
@@ -284,7 +287,7 @@ Module seq_leSet_choice.
       move: (@allL_to_Tclos_right _ Rset Sq S S S' H4 H2). 
       by rewrite -H3.
     Qed.
-
+    
     Lemma size_Sq_sp : 0 < size Sq.
     Proof.
       move: A2;contra;rewrite leqn0 => /eqP/size0nil H1.
@@ -317,7 +320,7 @@ Module seq_leSet_choice.
     
     (** * using a j offset on f *)
     Lemma exists_g: exists g: nat -> set T, 
-        (forall n, g (n + (size (S::Sq))) = g n)
+        (forall n k, g (n + k*(size (S::Sq))) = g n)
         /\ (exists a, a \in (g 0) /\ ~ (a \in (g 1)))
         /\ (forall n, (g n) [<= R] (g n.+1))
         /\ (forall n, preKernel U R (g n)).
@@ -327,12 +330,13 @@ Module seq_leSet_choice.
       rewrite addn0 addn1.
       move: (@f_setS _ S Sq (preKernel U R)) A3 => Hpk /Hpk Hpk'.
       move: (@f_setR _ S Sq (leSet R)) A1 => Hinc /Hinc Hinc'.
-      split;first by move => n;rewrite addnA /g f_periodic.
+      split;first by move => n k;rewrite addnA /g f_kperiodic.
       split;first by (exists a).
       split;move => n;last by rewrite -inE.
       by rewrite -addn1 addnA;move: Hinc' => /(_ (j + n));rewrite -addn1.
     Qed.
     
+    (** * ZZZZZZZ *)
     Lemma seq_not (h: nat -> T) (A : set T): 
       ~ (h 0) \in A -> (exists k, (h k) \in A) -> exists j, ~ (h j) \in A /\ (h j.+1) \in A.
     Proof.
@@ -354,7 +358,7 @@ Module seq_leSet_choice.
     
     Lemma exists_h: 
       exists g: nat -> set T,
-        (forall n, g (n + (size (S::Sq))) = g n)
+        (forall n k, g (n + k*(size (S::Sq))) = g n)
         /\ (forall n, (g n) [<= R] (g n.+1)) 
         /\ (forall n, preKernel U R (g n))
         /\ exists h : nat -> T,
