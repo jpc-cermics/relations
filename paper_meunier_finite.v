@@ -48,75 +48,86 @@ Module leSet_choice.
       [set p | ((p.2 \in (f p.1) /\ (p1.2 \in (f p1.1) /\ (p1.2 = p.2 \/ R (p1.2,p.2)))) 
                \/ ~(p1.2 \in (f p1.1))) /\ p.1 = p1.1.+1 ]%classic.
 
-    #[local] Lemma Au1_P2 (p1: nat*T): exists p, p \in R'' p1.
+    #[local] Lemma P1 (p1: nat*T): exists p, p \in R'' p1.
     Proof. 
-      move: A1 =>/(_ p1.1) Hp1.
-      case H1: (p1.2 \in (f p1.1)).
+      move: A1 =>/(_ p1.1) Hp1;case H1: (p1.2 \in (f p1.1)).
       by move: (H1) => /Hp1 [s2 /= [? ?]];(exists (p1.1.+1,s2));
                       rewrite inE;split;[left|].
       by move: A0 H1 => [v0 ?] /negP ?;exists (p1.1.+1,v0);rewrite inE;split;[right|].
     Qed.
 
-    #[local] Lemma Au1_G2: exists (j: nat*T -> nat*T),
+    #[local] Lemma P2: exists (j: nat*T -> nat*T),
       forall p, p.2 \in (f p.1) -> ((j p).2 \in (f (j p).1) /\ (p.2 = (j p).2 \/ R (p.2,(j p).2)))
                              /\ (j p).1 = p.1.+1.
     Proof.
-      exists (fun t => xchoose (Au1_P2 t)).
-      move => p1.
-      have H0: xchoose (Au1_P2 p1) \in R'' p1 by apply: xchooseP.
+      exists (fun t => xchoose (P1 t));move => p1.
+      have H0: xchoose (P1 p1) \in R'' p1 by apply: xchooseP.
       by move: H0 => /inP /= [[[? [_ ?]] _ // |? ? //] ?].
     Qed.
 
-    #[local] Lemma Au1_G3: exists (k: nat -> (T -> T)),
+    #[local] Lemma P3: exists (k: nat -> (T -> T)),
       forall n, forall s, s \in (f n) -> ((k n s) \in (f n.+1) /\ (s = (k n s) \/ R (s,(k n s)))).
     Proof.
-      move: Au1_G2 => [j H1].
-      exists (fun k => (fun s => (j (k,s)).2)).
-      move => n s.
-      move: H1 => /(_ (n,s))/= H1. 
-      move => /H1 /= [+ H2].
+      move: P2 => [j H1];exists (fun k => (fun s => (j (k,s)).2)).
+      move:H1 => + n s => /(_ (n,s))/= H1 => /H1 /= [+ H2].
       by rewrite H2.
     Qed.
-
+    
     #[local]Fixpoint kiter (k: nat-> (T -> T)) n :=
       if n is n'.+1 then (k n') \o kiter k n' else id.
 
-    #[local]Lemma kiterP1 (k: nat -> (T -> T)) (s:T) (A:set T):
-      s\in A -> (forall n s', s' \in A -> (k n s') \in A) -> (forall n, (kiter k n s) \in A).
-    Proof. by  move => H0 Hn;elim => [// | n Hr/=];apply: Hn. Qed.
-
-    #[local]Lemma kiterP2 (k: nat -> (T -> T)) s:
-      (forall n, forall s, s \in (f n) -> (k n s) \in (f n.+1) /\ (s = (k n s) \/ R (s,(k n s))))
-      -> s \in (f 0)
-      -> forall n, (kiter k n s) \in (f n).
-    Proof.
-      move => Hn H0;elim;first by move: Hn => /(_ 0 s H0) [? _].
-      by move => n' Hr;move: Hn => /(_ n' _ Hr) => -[? _].
-    Qed.
-    
-    #[local]Lemma kiterP3 (k: nat -> (T -> T)) s:
-      (forall n, forall s, s \in (f n) -> (k n s) \in (f n.+1) /\ (s = (k n s) \/ R (s,(k n s))))
-      -> s \in (f 0)
-      -> forall n, (kiter k n s) = (kiter k n.+1 s) \/ R ((kiter k n s),(kiter k n.+1 s)).
-    Proof.
-      move => Hn H0;elim.
-      by move: (@kiterP2 k s Hn H0 0) => /Hn [_ ?].
-      by move => n Hr;move: (@kiterP2 k s Hn H0 n.+1) => /Hn [_ ?].
-    Qed.
-    
     (* this is the main lemma *)
     Lemma choose_inc_seq s: s \in (f 0) -> exists (h: nat -> T), 
-          (h 0) = s /\ (forall n, (h n) \in (f n)) /\ (forall n, (h n)=(h n.+1) \/ R (h n, h n.+1)).
+          (h 0) = s
+          /\ (forall n, (h n) \in (f n)) 
+          /\ (forall n, (h n)=(h n.+1) \/ R (h n, h n.+1)).
     Proof.
-      move: Au1_G3 => [k H1];exists (fun n => (kiter k n s)).
-      by split;[ | split;[apply:  kiterP2| apply: kiterP3]].
+      move: P3 => [k H1];exists (fun n => (kiter k n s)).
+      have IterP2: forall n, (kiter k n s) \in (f n).
+      { elim;first by move: H1 => /(_ 0 s H) [? _].
+        by move => n' Hr;move: H1 => /(_ n' _ Hr) => -[? _].
+      }
+      have IterP3: forall n, (kiter k n s) = (kiter k n.+1 s)
+                        \/ R ((kiter k n s),(kiter k n.+1 s)).
+      { elim. 
+        by move: (IterP2 0) => /H1 [_ ?].
+        by move => n Hr;move: (IterP2 n.+1) => /H1 [_ ?].
+      }      
+      by split;[ | split;[apply: IterP2| apply: IterP3]].
     Qed.
-
+    
   End leSet_choice_sec.
   
 End leSet_choice.
 
 Export leSet_choice(choose_inc_seq).
+
+Module utilities.
+  Section utilities.
+    Context {T:choiceType} (f: nat -> T) (S: set T) (R: relation T).
+    
+    Lemma f2allL: 
+      (forall n, R (f(n), f(n.+1)))
+      -> forall n m, allL R (mkseq (fun i => f (n + i+1)) m) (f n) (f (n+m+1)).
+    Proof.
+      move => H0 n m.
+      elim: m n H0 => [n /=| n' Hr n H0].
+      by rewrite addn0 addn1 /mkseq/= allL0 inE. 
+      rewrite mkseqS allL_rc.
+      have ->: (n + (n'.+1) + 1) = (n + n' + 1).+1 by lia. 
+      by apply/andP;split;[rewrite inE|apply: Hr].
+    Qed.
+
+    Lemma f2allL': 
+      (forall n m, allL R (mkseq (fun i => f (n + i+1)) m) (f n) (f (n+m+1)))
+      -> (forall n, R (f(n), f(n.+1))).
+    Proof.
+      by move => + n => /(_ n 0);rewrite addn0 allL0 inE addn1.
+    Qed.
+
+  End utilities.
+End utilities.
+Export utilities.
 
 Module f_periodic. 
   (** * some properties of the periodic function f: nth S (S::Sq) (n %% size (S::Sq)) *)
@@ -340,7 +351,7 @@ Module f_periodic_for_leSet.
   End seq_leSet.
 End f_periodic_for_leSet.
 
-Export f_periodic_for_leSet.
+Export f_periodic_for_leSet(exists_g).
 
 Module build_h.
   (** for any g satisfying G1-G4 assumptions choose a selection h *)
@@ -399,38 +410,29 @@ Module build_h.
   End build_h.
 End build_h.
 
-Export build_h.
+Export build_h(exists_h,Ig,IgP).
 
 Module h_extra_props.
-  (** properties for any h satisfying next assumptions *)
+  
   Section h_extra_props.
+    (** properties for any h satisfying G1 H1-H3 *)  
     Context {T:choiceType} (U R: relation T) (g: nat -> set T) (h: nat-> T).
-
     Context (S: set T) (Sq: seq (set T)).
 
     Context (G1: forall n k, g (n + k*(size (S::Sq))) = g n).
-    Context (G2: exists a, a \in (g 0) /\ ~ (a \in (g 1))).
-    Context (G3: forall n, (g n) [<= R] (g n.+1)).
-    Context (G4: forall n, preKernel U R (g n)).
-    
     Context (H1: forall n, (h n) \in (g n)).
+    (** XXXX reformulate with ('Δ `|` R) *)
     Context (H2: forall n, (h n)=(h n.+1) \/ R (h n, h n.+1)).
     Context (H3: ~(exists n, (h n) \in (Ig g))).
 
-    (** * XXX should come from a general lemma ? as it links allL to forall n *)
     Lemma h_Tclos:
       forall m n, allL ('Δ `|` R) (mkseq (fun i => h (n + i+1)) m) (h n) (h (n+m+1)).
     Proof.
-      elim => [n /=| n' Hr n].
-      + rewrite addn0 /mkseq/= allL0 inE.
-        move: (H2)  => /(_ n) [He | HR]. 
-        by left;rewrite DeltaP addn1.
-        by right;rewrite addn1.
-      + rewrite mkseqS allL_rc Hr andbT -[n'.+1]addn1 inE.
-        have ->: (n + (n' + 1) + 1) = (n + n' + 1).+1 by lia. 
-        by move: H2 => /(_ (n + n' + 1)) [He | HR];[left | right].
+      have: forall n,  ('Δ `|` R) (h n, h n.+1)
+          by move: H2 => + n => /(_ n) [H1' | H1'];[left;rewrite DeltaP|right].
+      by move => /@f2allL.
     Qed.
-
+    
     (** * true but too strong *)
     Lemma h_Tclos1: forall m n, (('Δ `|` R).+ ((h n), (h (n+m+1)))).
     Proof.
@@ -467,7 +469,7 @@ Module h_extra_props.
     Qed.
 
     (** * This is the main theorem *)
-    Lemma hP2: R.+ (h 0, h (size (S::Sq))).
+    Lemma hmap: R.+ (h 0, h (size (S::Sq))).
     Proof.
       move: hP1 => /(_ 0 (size Sq)) [H5|];last first. 
       by rewrite add0n /= addn1.
@@ -478,9 +480,12 @@ Module h_extra_props.
       by move: H5 => /(_ n H6) /[!add0n] <-. 
       exact.
     Qed.
-    
+
   End h_extra_props.
 End h_extra_props.
+
+
+
 
 Section FinsetToClassical.
   (** * from {set T} to (set T) classicals_sets and finTYpe *) 
