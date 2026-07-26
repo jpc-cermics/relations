@@ -39,7 +39,7 @@ Definition strictInc {T: Type} (SS: (set T)*(set T)) :=
 Module leSet_choice.
 
   Section leSet_choice_sec.
-    (** * an increasing selection lemma *)
+    (** * an increasing selection lemma choose_inc_seq *)
 
     Context {T:choiceType} (R: relation T) (f : nat -> set T).
     Context (A0: exists s, s\in (f 0)) (A1: forall n, (f n) [<= R] (f n.+1)).
@@ -119,7 +119,7 @@ End leSet_choice.
 Export leSet_choice(choose_inc_seq).
 
 Module f_periodic. 
-  (** * some properties of nth S (S::Sq) (n %% size (S::Sq)) *)
+  (** * some properties of the periodic function f: nth S (S::Sq) (n %% size (S::Sq)) *)
   Section f_periodic.
     Context {T:choiceType} (S: set T) (Sq: seq (set T)).
     Context (U R: relation T).
@@ -168,14 +168,15 @@ Module f_periodic.
     Proof. by move => H; rewrite /fb nth_default. Qed.
     
     (** * links with [\in] and allL *)
-    
+    (**  from property of setS on S::Sq to forall n property of f*)
     Lemma f_setS setS: (S::Sq) [\in] setS -> forall n, (f n) \in setS.
     Proof. 
       move => ?. 
       have: forall n, (fb n) \in setS by rewrite -allset_nth. 
       by move => + n => /(_ (n %% size (S :: Sq))) ?.
     Qed.
-
+    
+    (**  The converse. too strong could be changed aas in f_setR' *)
     Lemma f_setS' setS: (forall n, (f n) \in setS) -> (S::Sq) [\in] setS.
     Proof. 
       move => Hf;rewrite (@allset_nth (set T) setS S Sq) => n.
@@ -186,6 +187,7 @@ Module f_periodic.
       by rewrite /fb => ->.
     Qed.
 
+    (**  from property of setR on S::(rcons Sq S) to forall n property of f*)
     Lemma f_setR setR: allL setR Sq S S -> forall n, setR ((f n), (f n.+1)).
     Proof.
       move: (allL_nth' setR Sq S S S) => H1. 
@@ -210,7 +212,7 @@ Module f_periodic.
         have H11: setR ((f n), (f (n %% size (S :: Sq) + 1))) by [].
         by rewrite addn1 f_addn1 in H11.
     Qed.
-
+    (** a strong converse *)
     Lemma f_setR' setR: (forall n, n <= size (S::Sq) -> setR ((f n), (f n.+1)))
                         -> allL setR Sq S S.
     Proof.
@@ -228,6 +230,7 @@ Module f_periodic.
         by rewrite -(fb_f_s Hs).
     Qed.
     
+    (** could be proved from f_setR' by contra, but maybe not shorter *)
     Lemma f_exists setR: 
       (exists j, j <= (size Sq) /\ setR ((nth S (S::(rcons Sq S)) j), (nth S (S::(rcons Sq S)) j.+1)))
       -> exists j, j <= (size Sq) /\ setR ((f j),(f j.+1)).
@@ -252,16 +255,16 @@ End f_periodic.
 
 Export f_periodic.
 
-
-Module seq_leSet_choice.
+Module f_periodic_for_leSet.
   (** * properties of increasing  sequences of sets *)
   (** * for the (leSet R) relation *)
-
+  
   Section seq_leSet.
     Context {T:choiceType} (U R: relation T) (S: set T) (Sq: seq (set T)).
-    (* Context (A0: (NotEmpty T)). *)
+    (** strict increasing sequence of sets for (leSet R) *)
     Context (A1: @allL (set T) (leSet R) Sq S S).
     Context (A2: @allL (set T) Diff Sq S S).
+    (** which are also (U,R)-prekernels *)
     Context (A3: (S::Sq) [\in] (preKernel U R)).
     Implicit Types (sq: seq T) (s: T).
 
@@ -274,11 +277,8 @@ Module seq_leSet_choice.
     Proof. by apply: f_setS. Qed.
     
     (** * existence of j and aj such that aj \in (f j) and ~ (aj \in (f j.+1)) *)
-      
-    Lemma Inc_Tr : transitive (@Inc T).
-    Proof. by move => A B C;apply: subset_trans. Qed.
     
-    Lemma allL_Tr (Rset: relation (set T)): 
+    Local Lemma allL_Tr (Rset: relation (set T)): 
       0 < size Sq -> @allL (set T) Rset Sq S S -> transitive Rset 
       -> forall S', (S' \in Sq) -> (Rset (S, S')) /\ (Rset (S',S)).
     Proof.
@@ -287,19 +287,22 @@ Module seq_leSet_choice.
       move: (@allL_to_Tclos_right _ Rset Sq S S S' H4 H2). 
       by rewrite -H3.
     Qed.
-    
-    Lemma size_Sq_sp : 0 < size Sq.
-    Proof.
-      move: A2;contra;rewrite leqn0 => /eqP/size0nil H1.
-      by move: A2;rewrite H1 allL0 inE notin_setE.  
-    Qed.
 
-    Lemma DiffE: 
+    Definition setRa : relation (set T):= (fun p =>  exists aj, aj \in p.1 /\ ~( aj \in p.2)). 
+    
+    Local Lemma DiffE: 
       exists j, j <= (size Sq) 
-           /\ exists aj, aj \in (nth S (S::(rcons Sq S)) j)
-                   /\ ~( aj \in (nth S (S::(rcons Sq S)) j.+1)).
+           /\ setRa ((nth S (S::(rcons Sq S)) j), (nth S (S::(rcons Sq S)) j.+1)).
     Proof.
-      move: size_Sq_sp => H1;move: A2;rewrite (@allL_nth' (set T) Diff Sq S S S).
+      (* implied by A2 *)
+      have H1: 0 < size Sq.
+      { move: A2;contra;rewrite leqn0 => /eqP/size0nil H1.
+        by move: A2;rewrite H1 allL0 inE notin_setE. }
+      (* for lemma allL_Tr *)
+      have Inc_Tr : transitive (@Inc T)
+        by move => A B C;apply: subset_trans.
+      (* main proof *)
+      move: A2;rewrite (@allL_nth' (set T) Diff Sq S S S).
       contra => H2.
       have H4: allL Inc Sq S S
         by rewrite (@allL_nth' (set T));move => j Hs b /inP/(H2 j Hs b)/inP.
@@ -309,8 +312,6 @@ Module seq_leSet_choice.
       by exists 0;[lia | rewrite /= // nth_rcons H1;apply: H6;apply: mem_nth].
     Qed.
 
-    Definition setRa : relation (set T):= (fun p =>  exists aj, aj \in p.1 /\ ~( aj \in p.2)). 
-    
     Lemma DiffE': 
       exists j, j <= (size Sq) /\ setRa ((g j), (g j.+1)).
     Proof.
@@ -335,8 +336,25 @@ Module seq_leSet_choice.
       split;move => n;last by rewrite -inE.
       by rewrite -addn1 addnA;move: Hinc' => /(_ (j + n));rewrite -addn1.
     Qed.
+
+  End seq_leSet.
+End f_periodic_for_leSet.
+
+Export f_periodic_for_leSet.
+
+Module build_h.
+  (** for any g satisfying G1-G4 assumptions choose a selection h *)
+  Section build_h.
+    Context {T:choiceType} (U R: relation T) (g: nat -> set T).
+    Context (S: set T) (Sq: seq (set T)).
+
+    Context (G1: forall n k, g (n + k*(size (S::Sq))) = g n).
+    Context (G2: exists a, a \in (g 0) /\ ~ (a \in (g 1))).
+    Context (G3: forall n, (g n) [<= R] (g n.+1)).
+    Context (G4: forall n, preKernel U R (g n)).
     
-    (** * ZZZZZZZ *)
+    Implicit Types (sq: seq T) (s: T).
+
     Lemma seq_not (h: nat -> T) (A : set T): 
       ~ (h 0) \in A -> (exists k, (h k) \in A) -> exists j, ~ (h j) \in A /\ (h j.+1) \in A.
     Proof.
@@ -346,31 +364,25 @@ Module seq_leSet_choice.
 
     Definition Ig (g: nat -> set T) := [set x | forall n, x \in (g n)]%classic.
 
-    Lemma IgP (g: nat -> set T): 
-      (forall n k, g (n + k*(size (S::Sq))) = g n)
-      -> (Ig g) =  [set x | forall n, n < size (S::Sq) -> x \in (g n)]%classic.
+    Lemma IgP: (Ig g) =  [set x | forall n, n < size (S::Sq) -> x \in (g n)]%classic.
     Proof.
-      move => Hg;rewrite predeqE => x;split => [H1 n _ //| H1 n].
+      rewrite predeqE => x;split => [H1 n _ //| H1 n].
       have ->: forall n, (g n) = g (n %% (size (S::Sq)))
-          by move => n';rewrite [in LHS](divn_eq n' (size (S::Sq))) addnC Hg.
+          by move => n';rewrite [in LHS](divn_eq n' (size (S::Sq))) addnC G1.
       apply: H1;apply: ltn_mod.
     Qed.
     
-    Lemma exists_h: 
-      exists g: nat -> set T,
-        (forall n k, g (n + k*(size (S::Sq))) = g n)
-        /\ (forall n, (g n) [<= R] (g n.+1)) 
-        /\ (forall n, preKernel U R (g n))
-        /\ exists h : nat -> T,
-          (forall n, (h n) \in (g n))
-          /\ (forall n, (h n)=(h n.+1) \/ R (h n, h n.+1))
-          /\ ~(exists n, (h n) \in (Ig g)).
+    (** we use choose_inc_seq to choose h and prove the last extra property *)
+    (** as (g n) are RelIndep sets *)
+    Lemma exists_h: exists h : nat -> T,
+        (forall n, (h n) \in (g n))
+        /\ (forall n, (h n)=(h n.+1) \/ R (h n, h n.+1))
+        /\ ~(exists n, (h n) \in (Ig g)).
     Proof.
-      move: exists_g => [g [Hp [[a [Hg0 Hg1]]]] [H2 H3]];(exists g).
+      move: (G2) => [a [Hg0 H2]].
       have H4: exists s, s \in (g 0) by (exists a).
-      have H5: forall n : nat, (g n) [<=R] (g n.+1) by move: H3 => + n => /(_ n) [? _].
-      move: (@choose_inc_seq T R g H4 H5 a Hg0) => [h [H6 [H7 H8]]].
-      split;[exact|split;[exact|split;[exact|exists h;split;[exact|split;[exact |]]]]].
+      move: (@choose_inc_seq T R g H4 G3 a Hg0) => [h [H6 [H7 H8]]].
+      exists h;split;[exact|split;[exact |]].
       move => Hinter. 
       (* lastt step : ~(exists n, (h n) \in (Ig g)) *)
       have P5: ~ ( h 0 \in (Ig g)) by move => /inP /(_ 1);rewrite H6 => ?.
@@ -379,130 +391,96 @@ Module seq_leSet_choice.
       have P8:  h j.+1 \in (g j) by move: P7 => /inP/(_ j).
       have P9:  h j \in (g j) by apply: H7.
       have P10: ~ ( h j = h j.+1) by move => He;rewrite He in P6.
-      move: H3 => /(_ j) [Hindep _].
+      move: G4 => /(_ j) [Hindep _].
       move: Hindep => /(_ (h j) (h j.+1) P9 P8 P10) HnotR.
       by move: H8 => /(_ j) [? | ?].
     Qed.
+
+  End build_h.
+End build_h.
+
+Export build_h.
+
+Module h_extra_props.
+  (** properties for any h satisfying next assumptions *)
+  Section h_extra_props.
+    Context {T:choiceType} (U R: relation T) (g: nat -> set T) (h: nat-> T).
+
+    Context (S: set T) (Sq: seq (set T)).
+
+    Context (G1: forall n k, g (n + k*(size (S::Sq))) = g n).
+    Context (G2: exists a, a \in (g 0) /\ ~ (a \in (g 1))).
+    Context (G3: forall n, (g n) [<= R] (g n.+1)).
+    Context (G4: forall n, preKernel U R (g n)).
     
-    Lemma h_Tclos (g: nat -> set T) (h : nat -> T):
-      (forall n k, g (n + k*(size (S::Sq))) = g n)
-      /\ (forall n, (g n) [<= R] (g n.+1)) 
-      /\ (forall n, preKernel U R (g n))
-      /\ (forall n, (h n) \in (g n))
-      /\ (forall n, (h n)=(h n.+1) \/ R (h n, h n.+1))
-      /\ ~(exists n, (h n) \in (Ig g))
-      -> (forall n m, allL ('Δ `|` R) (mkseq (fun i => h (n + i+1)) m) (h n) (h (n+m+1))).
+    Context (H1: forall n, (h n) \in (g n)).
+    Context (H2: forall n, (h n)=(h n.+1) \/ R (h n, h n.+1)).
+    Context (H3: ~(exists n, (h n) \in (Ig g))).
+
+    (** * XXX should come from a general lemma ? as it links allL to forall n *)
+    Lemma h_Tclos:
+      forall m n, allL ('Δ `|` R) (mkseq (fun i => h (n + i+1)) m) (h n) (h (n+m+1)).
     Proof.
-      move => [Hp [Hinc [Hpk [Hhg [Hhinc _]]]]] n m.
-      elim: m n => [n /=| n' Hr n].
+      elim => [n /=| n' Hr n].
       + rewrite addn0 /mkseq/= allL0 inE.
-        move: (Hhinc)  => /(_ n) [He | HR]. 
+        move: (H2)  => /(_ n) [He | HR]. 
         by left;rewrite DeltaP addn1.
         by right;rewrite addn1.
       + rewrite mkseqS allL_rc Hr andbT -[n'.+1]addn1 inE.
         have ->: (n + (n' + 1) + 1) = (n + n' + 1).+1 by lia. 
-        by move: Hhinc => /(_ (n + n' + 1)) [He | HR];[left | right].
+        by move: H2 => /(_ (n + n' + 1)) [He | HR];[left | right].
     Qed.
 
-    Lemma h_Tclos1 (g: nat -> set T) (h : nat -> T):
-      (forall n k, g (n + k*(size (S::Sq))) = g n)
-      /\ (forall n, (g n) [<= R] (g n.+1)) 
-      /\ (forall n, preKernel U R (g n))
-      /\ (forall n, (h n) \in (g n))
-      /\ (forall n, (h n)=(h n.+1) \/ R (h n, h n.+1))
-      /\ ~(exists n, (h n) \in (Ig g))
-      -> (forall n m, ('Δ `|` R).+ ((h n), (h (n+m+1)))).
+    (** * true but too strong *)
+    Lemma h_Tclos1: forall m n, (('Δ `|` R).+ ((h n), (h (n+m+1)))).
     Proof.
-      move => [Hp [Hinc [Hpk [Hhg [Hhinc HnIg]]]]] n m.
-      have Hall: (forall n m, allL ('Δ `|` R) (mkseq (fun i => h (n + i+1)) m) (h n) (h (n+m+1))).
-      by apply: (@h_Tclos g h);split.
+      move => m n.
+      have Hall: (forall m n, allL ('Δ `|` R) (mkseq (fun i => h (n + i+1)) m) (h n) (h (n+m+1))).
+      by apply: h_Tclos;split.
       by apply: allL_to_Tclos.
     Qed.
     
-    Lemma hP1 (h : nat -> T) :
-       (forall n, (h n)=(h n.+1) \/ R (h n, h n.+1))
-       -> (forall n m, (forall j, j <= m.+1 -> (h (n+j)= (h n))) 
-                 \/ R.+ (h n, h (n+m+1))).
+    (** * a direct stronger result *)
+    Lemma hP1: forall n m, (forall j, j <= m.+1 -> (h (n+j)= (h n))) \/ R.+ (h n, h (n+m+1)).
     Proof.
-      move => H1 n m;elim: m n => [n|n' Hr n]. 
-      + move: H1 => /(_ n) [H1 | H1];last first.
-        by right;rewrite addn0 addn1;move: H1 => /TclosSu.
-        left;move => j Hj;case H2: (j == 0). 
-        by move: H2 => /eqP ->;rewrite addn0.
-        by (have ->: (j = 1) by lia); rewrite addn1 H1.
+      move => n m;elim: m n => [n|n' Hr n]. 
+      + move: H2 => /(_ n) [H2' | H2'];last first.
+        by right;rewrite addn0 addn1;apply/TclosSu.
+        left;move => j Hj;case Hc2: (j == 0). 
+        by move: Hc2 => /eqP ->;rewrite addn0.
+        by (have ->: (j = 1) by lia); rewrite addn1 H2'.
       + move: Hr => /(_ n) [Hr | Hr].
         ++ have H4: h (n + n'.+1) = h n by apply: Hr;lia. 
-           move: H1 => /(_ (n+ n'.+1)) [H1 | /TclosSu H1];last first.
+           move: H2 => /(_ (n+ n'.+1)) [H1' | /TclosSu H1'];last first.
            by right;rewrite -H4;rewrite addn1.
-           left;move => j;case H2: (j <= n'.+1).
+           left;move => j;case Hc2: (j <= n'.+1).
            by move => _;apply: Hr.
-           move => H3.
+           move => H3'.
            have ->: j = n'.+2 by lia.
-           rewrite H4 in H1.
-           by rewrite H1 addnS.
+           rewrite H4 in H1'.
+           by rewrite H1' addnS.
         ++ rewrite -addnA addn1 in Hr.
-           move: H1 => /(_ (n+ n'.+1)) [H1 | H1];right;rewrite addn1.
-           by rewrite H1 in Hr.
+           move: H2 => /(_ (n+ n'.+1)) [H1' | H1'];right;rewrite addn1.
+           by rewrite H1' in Hr.
            by have /Tclos_composel:  (R.+ `;` R) (h n, h (n + n'.+1).+1)
                  by (exists (h (n + n'.+1))).
     Qed.
 
-    Lemma hP2 (g: nat-> set T) (h : nat -> T) :
-       (forall n, (h n)=(h n.+1) \/ R (h n, h n.+1))
-       -> (forall n k, g (n + k*(size (S::Sq))) = g n)
-       -> (forall n, (h n) \in (g n))
-       -> ~(exists n, (h n) \in (Ig g))
-       -> R.+ (h 0, h (size (S::Sq))).
+    (** * This is the main theorem *)
+    Lemma hP2: R.+ (h 0, h (size (S::Sq))).
     Proof.
-      move => H1 H2 H3 H4. 
-      move: (hP1 H1)=> /(_ 0 (size Sq)) [H5|];last first. 
+      move: hP1 => /(_ 0 (size Sq)) [H5|];last first. 
       by rewrite add0n /= addn1.
       have H6: (exists n : nat, h n \in Ig g). 
       exists 0.
-      move: (IgP H2) => ->.
-      rewrite inE => n /= Hs.
+      rewrite (IgP G1) inE => n /= Hs.
       have H6: n <= (size Sq).+1 by lia.
       by move: H5 => /(_ n H6) /[!add0n] <-. 
       exact.
     Qed.
     
-    Lemma h_Tclos2 (g: nat -> set T) (h : nat -> T):
-      (forall n k, g (n + k*(size (S::Sq))) = g n)
-      /\ (forall n, (g n) [<= R] (g n.+1)) 
-      /\ (forall n, preKernel U R (g n))
-      /\ (forall n, (h n) \in (g n))
-      /\ (forall n, (h n)=(h n.+1) \/ R (h n, h n.+1))
-      /\ ~(exists n, (h n) \in (Ig g))
-      -> (forall n m, R.+ ((h n), (h (n+m+1)))).
-    Proof.
-      move => [Hp [Hinc [Hpk [Hhg [Hhinc HnIg]]]]] n m.
-      have Hall:  (forall n m, ('Δ `|` R).+ ((h n), (h (n+m+1))))
-        by apply: (@h_Tclos1 g h);split.
-      move: Hall => /(_ n m).
-      rewrite -Rclos_Tclos => -[Hall| Hall];last exact.
-    Admitted.
-
-    
-  End seq_leSet.
-
-End seq_leSet_choice.
-
-Export seq_leSet_choice.
-(*
-Section test.
-  
-  Context (T: choiceType) (S S1 S2: set T).
-  Let Sq : seq (set T) := [:: S1;S2].
-  
-  Compute (nth S (S::Sq) (size Sq).+1).
-  Compute (f S Sq 0).
-  Compute (f S Sq 1).
-  Compute (f S Sq 2).
-  Compute (f S Sq 3).
-  Compute (f S Sq (size (S::Sq))).
-
-End test. 
-*)
+  End h_extra_props.
+End h_extra_props.
 
 Section FinsetToClassical.
   (** * from {set T} to (set T) classicals_sets and finTYpe *) 
