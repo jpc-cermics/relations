@@ -468,22 +468,59 @@ Module h_extra_props.
                  by (exists (h (n + n'.+1))).
     Qed.
 
-    (** * This is the main theorem *)
-    Lemma hmap: R.+ (h 0, h (size (S::Sq))).
+    Lemma inIg' k: 
+      (forall j : nat, j <= (size (S::Sq)) -> h (k*(size (S::Sq))+j) = h (k*(size (S::Sq))))
+      -> (h (k*(size (S::Sq)))) \in (Ig g).
     Proof.
-      move: hP1 => /(_ 0 (size Sq)) [H5|];last first. 
-      by rewrite add0n /= addn1.
-      have H6: (exists n : nat, h n \in Ig g). 
-      exists 0.
-      rewrite (IgP G1) inE => n /= Hs.
-      have H6: n <= (size Sq).+1 by lia.
-      by move: H5 => /(_ n H6) /[!add0n] <-. 
-      exact.
+      move => H4.
+      rewrite (IgP G1) inE => j Hs.
+      have <-: g (j + k * size (S :: Sq)) = g j by apply:G1.
+      have H5: j <= (size (S::Sq)) by lia.
+      by move: H4 => /(_ j H5) <-;rewrite 1!addnC.
     Qed.
 
+    Lemma hmapk k: R.+ (h (k*(size (S::Sq))), h (k.+1*(size (S::Sq)))).
+    Proof.
+      move: hP1 => /(_ (k*(size (S::Sq))) (size Sq)) [/inIg' H5|];last first. 
+      by have ->: k * size (S :: Sq) + size Sq + 1 = k.+1 * size (S :: Sq)
+        by rewrite /=;lia.
+      by have H6: (exists n : nat, h n \in Ig g) by (exists (k * size (S :: Sq))).
+    Qed.
+
+    (** * The main lemma of this module *)    
+    Lemma hmap k: R.+ (h 0, h (k.+1*(size (S::Sq)))).
+    Proof.
+      elim: k => [|k Hr] ;first by apply: (hmapk 0).
+      have H4: R.+ (h (k.+1 * size (S :: Sq)), h (k.+2 * size (S :: Sq)))
+        by apply: (hmapk k.+1) =>H1.
+      by move: (TclosT Hr H4).
+    Qed.
+    
   End h_extra_props.
 End h_extra_props.
+Export h_extra_props.
 
+Module BH.
+  (** * Final result *)
+  Section BH.
+
+    Context {T:choiceType} (U R: relation T) (S: set T) (Sq: seq (set T)).
+    (** strict increasing sequence of sets for (leSet R) *)
+    Context (A1: @allL (set T) (leSet R) Sq S S).
+    Context (A2: @allL (set T) Diff Sq S S).
+    (** which are also (U,R)-prekernels *)
+    Context (A3: (S::Sq) [\in] (preKernel U R)).
+    
+    Lemma final k: exists h, R.+ (h 0, h (k.+1*(size (S::Sq)))).
+    Proof.
+      move: (exists_g A1 A2 A3) => [g [G1 [G2 [G3 G4]]]].
+      move: (exists_h G2 G3 G4) => [h [H1 [H2 H3]]].
+      move: (hmap G1 H1 H2 H3) => Hhmap.
+      by exists h.
+    Qed.
+
+  End BH.
+End BH.
 
 
 
