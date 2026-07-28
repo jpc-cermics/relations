@@ -36,6 +36,60 @@ Definition Inc {T: Type} (SS: (set T)*(set T)) := SS.1 `<=` SS.2.
 Definition strictInc {T: Type} (SS: (set T)*(set T)) :=
   SS.1 `<=` SS.2 /\ ~ ( SS.1 = SS.2).
 
+Module test.
+  Section test.
+    
+    Context {T:Type} (R: relation T) (setB setA: set (set T)).
+    Context (A0: forall A, A \in (setA `&` setB) -> exists B, B \in setA /\ A [<= R] B).
+    Context (A1: exists S, S \in setA).
+    
+    Definition setR (S: set T) := 
+      [set S' | (S \in setA /\ ((S \in setB) /\ S' \in setA /\ (S [<=R] S'))
+                 \/ (~(S \in setB) /\ S' = S))
+                \/ (~ (S \in setA) /\ S' = S)]%classic.
+    
+    #[local] Lemma total_setR S: exists S', S' \in (setR S).
+    Proof. 
+      move: A0 => /(_ S) H0.
+      case H1: (S \in setA);last first.
+      by (exists S);rewrite inE /setR /= H1;right. 
+      case H2: (S \in setB);last first.
+      by (exists S);rewrite inE /setR /= H1 H2;left;right.
+      have /H0 [S' HB]:  S \in setA `&` setB
+        by rewrite inE;split;[rewrite -inE H1| rewrite -inE H2].
+      by (exists S');rewrite inE /setR /= H1 H2;left;left.
+    Qed.
+    
+    #[local] Lemma choose_l1: exists (j: nat -> set T), forall n, (j n.+1) \in (setR (j n)). 
+    Proof.
+      move: A1 => [S _].
+      have [j Hj]: exists (j: set T -> set T), forall S, (j S) \in (setR S)
+          by exists (fun t => xchoose (total_setR t));move => p1;apply: xchooseP. 
+      exists (fun n => ssrnat.iter n j S).
+      elim; first by  rewrite /=; apply: Hj.
+      by move => n _;rewrite /=;apply: Hj.
+    Qed.
+    
+    #[local] Lemma choose_l2: exists (j: nat -> set T),
+        (forall n, (j n) \in (setA `&` setB)) -> (forall n, (j n) [<=R] (j n.+1)).
+    Proof.
+      move: choose_l1 => [j Hj].
+      exists j; move => H2 n.
+      move: (H2 n) (Hj n) => /set_mem [/mem_set H3 /mem_set H3'].
+      rewrite inE /setR /= H3 H3' => -[[[_ [_ [_ H5]]] // | [? _]// ] | [? _] //].
+    Qed.
+    
+    Lemma choose: exists (j: nat -> set T), (forall n, (j n) [<=R] (j n.+1)) \/ (exists S, ~ (S \in (setA `&` setB))).
+    Proof.
+      move: choose_l2 => -[j H1];(exists j).
+      move: (lem (forall n : nat, j n \in  (setA `&` setB))) => [H2 | H2].
+      by left;apply:H1.
+      by move: H2 => /existsNP [p H2];right;exists (j p).
+    Qed.
+    
+  End test.
+End test.
+
 Module leSet_choice.
   (** * an increasing selection lemma choose_inc_seq *)
   Section leSet_choice_sec.
@@ -510,6 +564,7 @@ Module h_extra_props.
   End h_extra_props.
 End h_extra_props.
 Export h_extra_props.
+
 
 Module BH.
   Section BH.
@@ -1206,6 +1261,35 @@ Section ChampetierExt_Theorem.
   Qed.
 
 End ChampetierExt_Theorem.
+
+Section Blidia_Engel_Ext_Theorem.
+  (** * Similar to Champetier but  (Asp: sporder O) *)
+  (** * is replaced by Acyclicity *)
+
+  Context (T : finType) (O R B: relation T).
+  Implicit Types (O R B: relation T) (X: {set T}).
+  
+  Context (A2 : Assumption2 R) (A6 : Assumption6 B (M R B) O) 
+    (A7 : Assumption7 R B (M R B)) (A8 : Assumption8 R B (M R B)).
+  Context (A1: NotEmpty T) (Au: R `<=` O^-1).
+  Context (Apk : forall X , RelIndep O [:set: X] <->  RelIndep (M R B) [:set: X]).
+  
+  Lemma prekernelP' S: 
+    (prekernel_fin O R (M R B) S) <-> preKernel R (M R B) [:set: S].
+  Proof. by rewrite (@prekernelE T O R (M R B) S) Apk. Qed.
+  
+  Lemma is_total :
+    forall S, (prekernel_fin O R (M R B) S) 
+           -> Mabsorbant R B [:set: S] 
+             \/ exists S', (prekernel_fin O R (M R B) S') 
+                   /\ ~ (S = S') /\ [:set: S] [<= O] [:set: S'].
+  Proof.
+    move => S Hs.
+  Proof.
+  Admitted. 
+
+  
+End Blidia_Engel_Ext_Theorem.
 
 Section simpleGraph. 
 
