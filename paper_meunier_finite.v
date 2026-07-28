@@ -37,9 +37,8 @@ Definition strictInc {T: Type} (SS: (set T)*(set T)) :=
   SS.1 `<=` SS.2 /\ ~ ( SS.1 = SS.2).
 
 Module leSet_choice.
-
+  (** * an increasing selection lemma choose_inc_seq *)
   Section leSet_choice_sec.
-    (** * an increasing selection lemma choose_inc_seq *)
 
     Context {T:choiceType} (R: relation T) (f : nat -> set T).
     Context (A0: exists s, s\in (f 0)) (A1: forall n, (f n) [<= R] (f n.+1)).
@@ -223,6 +222,7 @@ Module f_periodic.
         have H11: setR ((f n), (f (n %% size (S :: Sq) + 1))) by [].
         by rewrite addn1 f_addn1 in H11.
     Qed.
+
     (** a strong converse *)
     Lemma f_setR' setR: (forall n, n <= size (S::Sq) -> setR ((f n), (f n.+1)))
                         -> allL setR Sq S S.
@@ -415,7 +415,7 @@ Export build_h(exists_h,Ig,IgP).
 Module h_extra_props.
   
   Section h_extra_props.
-    (** properties for any h satisfying G1 H1-H3 *)  
+    (** properties for any h satisfying G1 and H1-H3 *)  
     Context {T:choiceType} (U R: relation T) (g: nat -> set T) (h: nat-> T).
     Context (S: set T) (Sq: seq (set T)).
 
@@ -442,7 +442,7 @@ Module h_extra_props.
       by apply: allL_to_Tclos.
     Qed.
     
-    (** * a direct stronger result *)
+    (** * the property we need *)
     Lemma hP1: forall n m, (forall j, j <= m.+1 -> (h (n+j)= (h n))) \/ R.+ (h n, h (n+m+1)).
     Proof.
       move => n m;elim: m n => [n|n' Hr n]. 
@@ -488,41 +488,76 @@ Module h_extra_props.
     Qed.
 
     (** * The main lemma of this module *)    
-    Lemma hmap k: R.+ (h 0, h (k.+1*(size (S::Sq)))).
+    Lemma hmap' k p: R.+ (h (k*(size (S::Sq))), h ((k+ p.+1)*(size (S::Sq)))).
     Proof.
-      elim: k => [|k Hr] ;first by apply: (hmapk 0).
-      have H4: R.+ (h (k.+1 * size (S :: Sq)), h (k.+2 * size (S :: Sq)))
-        by apply: (hmapk k.+1) =>H1.
-      by move: (TclosT Hr H4).
+      elim: p k => [k |p Hr k];first by rewrite [k + 1]addn1;apply: (hmapk k).
+      have: R.+ (h ((k + p.+1) * size (S :: Sq)), h ((k + p.+1).+1 * size (S :: Sq)))
+        by apply: (hmapk (k+p.+1)) =>H1.
+      have ->: (k + p.+1).+1 = k +p.+2 by lia.
+      move => H4.
+      by move: (TclosT (Hr k) H4).
     Qed.
-    
+
+    Lemma hmap'' k k': k < k' -> exists p, k'= k+ p.+1.
+    Proof.
+      elim: k' => [//| k' Hr H5].
+      case H6: (k == k').
+      by move: H6 => /eqP ->; exists 0;rewrite addn1.
+      have /Hr [p ->]:  k < k' by lia.
+      by exists p.+1;lia. 
+    Qed.
+
   End h_extra_props.
 End h_extra_props.
 Export h_extra_props.
 
 Module BH.
-  (** * Final result *)
   Section BH.
-
-    Context {T:choiceType} (U R: relation T) (S: set T) (Sq: seq (set T)).
-    (** strict increasing sequence of sets for (leSet R) *)
-    Context (A1: @allL (set T) (leSet R) Sq S S).
-    Context (A2: @allL (set T) Diff Sq S S).
-    (** which are also (U,R)-prekernels *)
-    Context (A3: (S::Sq) [\in] (preKernel U R)).
+    (* we conclude that cyclicity for the relation 
+       Diff `| ` [<= R] resticted to prekernels 
+       implies cyclicity for R 
+     *)
+    Context {T:finType} (U R: relation T).
     
-    Lemma final k: exists h, R.+ (h 0, h (k.+1*(size (S::Sq)))).
+    (* as T is a finType *)
+    Lemma not_hinj (h: nat -> T):exists n n', n <> n' /\ h n = h n'.
     Proof.
+      have: ~ (injective h).
+      {
+        move => hinj.
+        have inj_restrict : injective (fun i : 'I_(#|T|).+1 => h i)
+          by move=> x y /hinj Exy;apply/val_inj. 
+        move: (leq_card _  inj_restrict) => H1.
+        by rewrite card_ord ltnn in H1. 
+      }
+      move=> H.
+      apply: contrapT => Hc.
+      apply: H => k k' Ehkk'.
+      apply: contrapT => Nkk'.
+      by apply: Hc;exists k, k'.
+    Qed.
+    
+    Definition CyclicPrekernels {T: Type} (U R: relation T):=
+      exists Sq, exists S, allL (leSet R) Sq S S
+                 /\ allL Diff Sq S S
+                 /\ (S::Sq) [\in] (preKernel U R).
+
+    Lemma final: CyclicPrekernels U R  -> exists s, R.+ (s,s).
+    Proof.
+      move => [Sq [S [A1 [A2 A3]]]];
       move: (exists_g A1 A2 A3) => [g [G1 [G2 [G3 G4]]]].
       move: (exists_h G2 G3 G4) => [h [H1 [H2 H3]]].
-      move: (hmap G1 H1 H2 H3) => Hhmap.
-      by exists h.
+      move: (hmap' G1 H1 H2 H3) => Hhmap.
+      move: (not_hinj (fun k => h(k*(size(S::Sq))))) => [n [n' [H4 H5]]].
+      exists (h (n * size (S :: Sq))).
+      case H6: (n < n').
+      by move: H6 => /hmap'' [p H6];rewrite {2}H5 H6. 
+      have H7: (n' < n) by lia.
+      by move: H7 => /hmap'' [p H7];rewrite {1}H5 H7.
     Qed.
 
   End BH.
 End BH.
-
-
 
 Section FinsetToClassical.
   (** * from {set T} to (set T) classicals_sets and finTYpe *) 
@@ -646,7 +681,7 @@ Section Finite.
     move: (leq_card _  inj_restrict) => H1.
     by rewrite card_ord ltnn in H1. 
   Qed.
-
+  
   Lemma fin_not_iic R: (sporder R) -> ~ (iic R).
   Proof.
     move => /[dup] Hsp /sporder_antisym Ha.
