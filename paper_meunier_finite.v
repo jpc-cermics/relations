@@ -1002,7 +1002,6 @@ Section SubSetPType_order.
   Qed.
 
 End SubSetPType_order.
-
   
 Definition Cyclic {T: Type} (R: relation T):= exists sq, exists s, allL R sq s s.
 
@@ -1019,7 +1018,6 @@ Section Acyclicity.
   
   Context (T : eqType).
   Implicit Types (O R M: relation T) (S: set T).
-
   
   Lemma step T' (sq: seq T') s (S : set T'): 
     ~(nth s sq 0) \in S -> (exists k, (nth s sq k) \in S )
@@ -1162,29 +1160,6 @@ Section Acyclicity.
          have ->:n < (size sq).+1 by lia.
          by rewrite -headI nth_rcons H5.
   Qed.
-    
-  
-  (** * without loss of generality
-  Lemma DiffE' (Sq: seq (set T)) S: 
-    0 < size Sq 
-    -> @allL (set T) Diff Sq S S 
-    -> exists a0, a0 \in (nth S (S::Sq) 0) /\ ~( a0 \in (nth S (S::Sq) 1)).
-  Proof.
-
-  *) 
-
-  Lemma choice (T': Type) (R: relation T') (S1 S2: set T'):
-    forall (x: S1), exists (y: S2), R (val x,val y).
-  Admitted.
-  
-  Lemma Sq_choice (T': Type) (R: relation T') (Sq: seq (set T')) (S: set T'): 
-    @allL (set T') (leSet R) Sq S S
-    -> forall j, j <= (size Sq) -> 
-           (exists (f : T' -> T' ),
-               (forall x, x \in (nth S (S::(rcons Sq S)) j) -> R (x, f x))).
-  Proof.
-  Admitted.
-  
 
 End Acyclicity.
 
@@ -1342,18 +1317,4 @@ Section Champ.
   Qed.
   
 End Champ.
-
-Section test.
-
-Variable T : Type.
-Variable s : seq T.   (* s = [:: x1; x2; ...; xk] *)
-Variable x1: T.
-Hypothesis Hs : ~ (s = [::]).
-
-Definition f (n : nat) : T := nth x1 s (n %% size s).
-
-Lemma f_periodic n : f (n + (size s)) = f n.
-Proof. by rewrite /f (modnDr n (size s)). Qed.
-  
-End test.
 

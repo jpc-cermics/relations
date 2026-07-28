@@ -378,7 +378,7 @@ Section Relation_Facts.
   
   Lemma DeltaP (x y: T): 'Δ (x,y) <-> x = y.
   Proof. by split => [[_ ? //]| ->]. Qed.
-
+  
   Lemma DeltaS X: Δ_(X) `<=` 'Δ.
   Proof. by apply: DsetS. Qed.
   
@@ -392,6 +392,13 @@ Section Relation_Facts.
   (* R `;` 'Δ = R.   *)
   Lemma DeltaCr: right_id 'Δ (@compose T). 
   Proof. by move => R;rewrite predeqE => -[x y];split => [[z [? /DeltaP /= <-]]// | ?];exists y;split.  Qed.
+
+  Lemma DeltaCP (x y: T): 'Δ.^c (x,y) <-> ~ (x = y).
+  Proof.
+    split => [+ H1 | H1].
+    by rewrite H1 -inE in_setC notin_setE DeltaP. 
+    by rewrite -inE in_setC  notin_setE => /DeltaP ?.
+  Qed.
   
   Lemma DeltaC_union_ideml R: 'Δc `|` R = R.
   Proof.
