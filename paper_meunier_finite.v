@@ -36,6 +36,120 @@ Definition Inc {T: Type} (SS: (set T)*(set T)) := SS.1 `<=` SS.2.
 Definition strictInc {T: Type} (SS: (set T)*(set T)) :=
   SS.1 `<=` SS.2 /\ ~ ( SS.1 = SS.2).
 
+Module test1.
+  Section test.
+    (** a partial iic lemma *)
+    Context {T:choiceType} (R: relation T) (B: set T).
+    Context (A0: forall b, b \in B -> exists a, R (b,a)).
+    Context (A1: exists a, a \in (@setT T)).
+    
+    Definition Re := 
+      [set p | (p.1 \in B) /\ R p \/ (~(p.1 \in B) /\ p.2 = p.1)]%classic.
+        
+    Lemma choose_l1: iic Re.
+    Proof.
+      apply: DC;first exact: A1.
+      (* now we prove that total_rel Re *)
+      move: A0 => + s => /(_ s) H0.
+      case H2: (s \in B);last first.
+      by (exists s);rewrite /Re /= H2;right.
+      by move: (A0 H2) => [a H3];exists a;rewrite /Re /=;left.
+    Qed.
+    
+    Lemma choose: (iic R) \/ (exists s, ~ (s \in B)).
+    Proof.
+      have [j Hj]: exists (j: nat -> T),
+          (forall n, (j n) \in B) -> (forall n, (R ((j n), (j n.+1)))).
+      {
+        move: choose_l1 => [j Hj];exists j;move => H2 n.
+        by move: (Hj n);rewrite /Re /= H2 => -[[_ H3]| [? _]].
+      }
+      move: (lem (forall n : nat, j n \in B)) => [/Hj H2 | H2].
+      by left;(exists j).
+      by move: H2 => /existsNP [p H2];right;exists (j p).
+    Qed.
+    
+  End test.
+End test1.
+Export test1(choose).
+
+Module test2.
+  Section test.
+    
+    Context {T:choiceType} (R: relation T) (A B: set T).
+    Context (A0: forall a, a \in (A `&` B) -> exists b, b \in A /\ (R (a,b))).
+    Context (A1: exists a, a \in A).
+
+    Let T': choiceType := A.
+    Let B': set T' := [set b': T'| (val b') \in B]%classic.
+    Let R':= [set p : T'*T' | R (val p.1,val p.2)]%classic.
+    Lemma choose_A: (iic R') \/ (exists s, ~ (s \in B')).
+    Proof.
+      apply: choose. 
+      move => a;rewrite inE /B' /= => HainB.
+      have /A0 [b [Hb H1]]: (sval a) \in  A `&` B
+        by rewrite inE;split;[rewrite -inE;apply/valP| rewrite /B' -inE].
+      by (exists (exist _ b Hb)).
+      move: (A1) => [a Ha].
+      by (exists (exist _ a Ha));rewrite inE /=.
+    Qed.
+  End test.
+End test2.
+
+Module test'.
+
+  Section test.
+    
+    Context {T:choiceType} (R: relation T) (A B: set T).
+    Context (A0: forall a, a \in (A `&` B) -> exists b, b \in A /\ (R (a,b))).
+    Context (A1: exists a, a \in A).
+    
+    #[local] Definition R' (s: T) := 
+      [set s' | (s \in A /\ ((s \in B) /\ s' \in A /\ (R (s,s'))) \/ (~(s \in B) /\ s' = s))
+                \/ (~ (s \in A) /\ s' = s)]%classic.
+    
+    #[local] Lemma total_setR s: exists s', s' \in (R' s).
+    Proof. 
+      move: A0 => /(_ s) H0.
+      case H1: (s \in A);last first.
+      by (exists s);rewrite inE /R' /= H1;right. 
+      case H2: (s \in B);last first.
+      by (exists s);rewrite inE /R' /= H1 H2;left;right.
+      have /H0 [s' HB]:  s \in A `&` B
+        by rewrite inE;split;[rewrite -inE H1| rewrite -inE H2].
+      by (exists s');rewrite inE /R' /= H1 H2;left;left.
+    Qed.
+    
+    #[local] Lemma choose_l1: exists (j: nat -> T), forall n, (j n.+1) \in (R' (j n)). 
+    Proof.
+      move: A1 => [s _].
+      have [j Hj]: exists (j: T -> T), forall s, (j s) \in (R' s)
+          by exists (fun t => xchoose (total_setR t));move => p1;apply: xchooseP. 
+      exists (fun n => ssrnat.iter n j s).
+      elim; first by  rewrite /=; apply: Hj.
+      by move => n _;rewrite /=;apply: Hj.
+    Qed.
+    
+    #[local] Lemma choose_l2: exists (j: nat -> T),
+        (forall n, (j n) \in (A `&` B)) -> (forall n, (R ((j n), (j n.+1)))).
+    Proof.
+      move: choose_l1 => [j Hj].
+      exists j; move => H2 n.
+      move: (H2 n) (Hj n) => /set_mem [/mem_set H3 /mem_set H3'].
+      rewrite inE /R' /= H3 H3' => -[[[_ [_ [_ H5]]] // | [? _]// ] | [? _] //].
+    Qed.
+    
+    Lemma choose: exists (j: nat -> T), (forall n, R ((j n), (j n.+1))) \/ (exists s, ~ (s \in (A `&` B))).
+    Proof.
+      move: choose_l2 => -[j H1];(exists j).
+      move: (lem (forall n : nat, j n \in  (A `&` B))) => [H2 | H2].
+      by left;apply:H1.
+      by move: H2 => /existsNP [p H2];right;exists (j p).
+    Qed.
+    
+  End test.
+End test'.
+
 Module test.
   Section test.
     
@@ -43,7 +157,7 @@ Module test.
     Context (A0: forall A, A \in (setA `&` setB) -> exists B, B \in setA /\ A [<= R] B).
     Context (A1: exists S, S \in setA).
     
-    Definition setR (S: set T) := 
+    #[local] Definition setR (S: set T) := 
       [set S' | (S \in setA /\ ((S \in setB) /\ S' \in setA /\ (S [<=R] S'))
                  \/ (~(S \in setB) /\ S' = S))
                 \/ (~ (S \in setA) /\ S' = S)]%classic.

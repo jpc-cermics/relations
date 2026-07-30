@@ -1570,7 +1570,6 @@ Section Infinite_paths.
   Proof.
     by move => Hsub [f H];exists f;move: H => + n =>/(_ n)/Hsub ?.
   Qed.
-    
   
 End Infinite_paths.
 
