@@ -14,7 +14,7 @@ From HB Require Import structures.
 Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_boot order contra.
 From mathcomp Require Import mathcomp_extra boolp.
-From mathcomp Require Import classical_sets order topology.
+From mathcomp Require Import classical_sets preorder topology.
 Set Warnings "parsing coercions".
 
 From RL Require Import  rel.
@@ -29,28 +29,32 @@ Section Preorder.
 
   Variables (T: Type) (R: relation T).
 
-  Definition le := R2rel R.
-  Hypothesis le_trans : Corelib.ssr.ssrbool.transitive R. (* using coercion *)
-  Hypothesis le_refl : Corelib.ssr.ssrbool.reflexive R. (* using coercion *)
-  
-  Fact rel_display : Order.disp_t. Proof. exact. Qed.
-  
-  Definition lt (x y:T) := ((x,y) \in R) && ~~ ((y, x) \in R).
-  
-  Lemma lt_prop: forall (x y:T),lt x y = le x y  && ~~ le y x.
-  Proof. exact. Qed. 
+  Definition le: rel T := R2rel R.
+  Hypothesis le_trans : @Corelib.ssr.ssrbool.transitive T R. (* using coercion *)
+  Hypothesis le_refl : @Corelib.ssr.ssrbool.reflexive T R. (* using coercion *)
 
-  Lemma gt_prop: forall (x y:T), lt y x = (le y x) && ~~ (le x y).
-  Proof. exact. Qed. 
+  (* Note that this where the dvd_display is associated with the type NatDvd.t. *)
+  
+  Fact rel_display : @Order.disp_t. Proof. exact. Qed.
 
-  (** * to be done 
+  HB.instance Definition _ := gen_eqMixin T.   
+  HB.instance Definition _ := gen_choiceMixin T.   
+  Set Warnings "-redundant-canonical-projection".
+  HB.instance Definition _  :=
+    @Order.Le_isPreorder.Build rel_display T R le_refl le_trans.
+  (* 
+  Check <=%O.
+  Variables (x y: T).
+  Check (x <= y)%O.
+  Check (x < y)%O.
+  *)
   
-  Lemma ge_trans: Coq.ssr.ssrbool.transitive  (fun x y => le y x).
+  Lemma testR: forall (x y: T), (le x y) <-> R (x,y).
+  Proof.
+    move => x y;rewrite /le /R2rel; split. by move => /asboolP.
+    by move => ?;apply/asboolP.
+  Qed.
   
-  HB.instance Definition _  := (@isDuallyPreorder.Build rel_display T
-                     le lt lt_prop gt_prop le_refl le_refl le_trans ge_trans).
-  *) 
-          
 End Preorder.
 
 Section Topology_adds. 
@@ -93,8 +97,7 @@ Section Topology_porder.
   Proof. 
     by move => tau tau' ? ?;rewrite /eqTopological eqEsubset.
   Qed.
-
-  (* 
+  (*
   Definition Topologies := Topological T.
   HB.instance Definition _ Topologies := Equality.on (set_system Topologies).
   Fact topo_display : Order.disp_t. Proof. exact. Qed.
@@ -103,7 +106,8 @@ Section Topology_porder.
 
   HB.instance Definition _ := @Order.isPOrder.Build topo_display Topologies
                                 finer _ (fun _ _ => erefl) finer_reflexive finer_anti finer_transitive.
-  *)
+   *)
+
   
 End Topology_porder.
 
