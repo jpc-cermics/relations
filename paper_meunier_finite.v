@@ -80,129 +80,43 @@ Module test2.
     Context (A0: forall a, a \in (A `&` B) -> exists b, b \in A /\ (R (a,b))).
     Context (A1: exists a, a \in A).
 
-    Let T': choiceType := A.
-    Let B': set T' := [set b': T'| (val b') \in B]%classic.
-    Let R':= [set p : T'*T' | R (val p.1,val p.2)]%classic.
-    Lemma choose_A: (iic R') \/ (exists s, ~ (s \in B')).
+    Lemma choose: (iic R) \/ (exists s, ~ (s \in (A `&` B))).
     Proof.
-      apply: choose. 
-      move => a;rewrite inE /B' /= => HainB.
-      have /A0 [b [Hb H1]]: (sval a) \in  A `&` B
-        by rewrite inE;split;[rewrite -inE;apply/valP| rewrite /B' -inE].
-      by (exists (exist _ b Hb)).
-      move: (A1) => [a Ha].
-      by (exists (exist _ a Ha));rewrite inE /=.
-    Qed.
-  End test.
-End test2.
-
-Module test'.
-
-  Section test.
-    
-    Context {T:choiceType} (R: relation T) (A B: set T).
-    Context (A0: forall a, a \in (A `&` B) -> exists b, b \in A /\ (R (a,b))).
-    Context (A1: exists a, a \in A).
-    
-    #[local] Definition R' (s: T) := 
-      [set s' | (s \in A /\ ((s \in B) /\ s' \in A /\ (R (s,s'))) \/ (~(s \in B) /\ s' = s))
-                \/ (~ (s \in A) /\ s' = s)]%classic.
-    
-    #[local] Lemma total_setR s: exists s', s' \in (R' s).
-    Proof. 
-      move: A0 => /(_ s) H0.
-      case H1: (s \in A);last first.
-      by (exists s);rewrite inE /R' /= H1;right. 
-      case H2: (s \in B);last first.
-      by (exists s);rewrite inE /R' /= H1 H2;left;right.
-      have /H0 [s' HB]:  s \in A `&` B
-        by rewrite inE;split;[rewrite -inE H1| rewrite -inE H2].
-      by (exists s');rewrite inE /R' /= H1 H2;left;left.
-    Qed.
-    
-    #[local] Lemma choose_l1: exists (j: nat -> T), forall n, (j n.+1) \in (R' (j n)). 
-    Proof.
-      move: A1 => [s _].
-      have [j Hj]: exists (j: T -> T), forall s, (j s) \in (R' s)
-          by exists (fun t => xchoose (total_setR t));move => p1;apply: xchooseP. 
-      exists (fun n => ssrnat.iter n j s).
-      elim; first by  rewrite /=; apply: Hj.
-      by move => n _;rewrite /=;apply: Hj.
-    Qed.
-    
-    #[local] Lemma choose_l2: exists (j: nat -> T),
-        (forall n, (j n) \in (A `&` B)) -> (forall n, (R ((j n), (j n.+1)))).
-    Proof.
-      move: choose_l1 => [j Hj].
-      exists j; move => H2 n.
-      move: (H2 n) (Hj n) => /set_mem [/mem_set H3 /mem_set H3'].
-      rewrite inE /R' /= H3 H3' => -[[[_ [_ [_ H5]]] // | [? _]// ] | [? _] //].
-    Qed.
-    
-    Lemma choose: exists (j: nat -> T), (forall n, R ((j n), (j n.+1))) \/ (exists s, ~ (s \in (A `&` B))).
-    Proof.
-      move: choose_l2 => -[j H1];(exists j).
-      move: (lem (forall n : nat, j n \in  (A `&` B))) => [H2 | H2].
-      by left;apply:H1.
-      by move: H2 => /existsNP [p H2];right;exists (j p).
+      (* we use subtyping to enable the use of the choose theorem of Module test1 *)
+      (* T': choiceType := A *)
+      pose B': set A := [set b': A | (val b') \in B]%classic.
+      pose R':= [set p : A*A | R (val p.1,val p.2)]%classic.
+      
+      have H1: (iic R') \/ (exists s, ~ (s \in B')).
+      {
+        apply: choose. 
+        move => a;rewrite inE /B' /= => HainB.
+        have /A0 [b [Hb H1]]: (sval a) \in  A `&` B
+          by rewrite inE;split;[rewrite -inE;apply/valP| rewrite /B' -inE].
+        by (exists (exist _ b Hb)).
+        move: (A1) => [a Ha].
+        by (exists (exist _ a Ha));rewrite inE /=.
+      }
+      have H2: (exists s, ~ (s \in B')) ->  (exists s, ~ (s \in (A `&` B))).
+      {
+        move => [s Hs].
+        rewrite inE /B' /= in Hs.
+        have Ha: (sval s) \in A by rewrite inE;apply: set_valP.
+        exists (sval s).
+        by move => /set_mem [_ /mem_set H2].
+      }
+      have H3: (iic R') -> (iic R).
+      {
+        move => [j Hj];exists (fun n => (sval (j n))).
+        by move => n;rewrite /R'/= in Hj;apply: Hj.
+      }
+      move: H1 => [H1 | H1].
+      by left;apply: H3.
+      by right;apply: H2.
     Qed.
     
   End test.
-End test'.
-
-Module test.
-  Section test.
-    
-    Context {T:Type} (R: relation T) (setB setA: set (set T)).
-    Context (A0: forall A, A \in (setA `&` setB) -> exists B, B \in setA /\ A [<= R] B).
-    Context (A1: exists S, S \in setA).
-    
-    #[local] Definition setR (S: set T) := 
-      [set S' | (S \in setA /\ ((S \in setB) /\ S' \in setA /\ (S [<=R] S'))
-                 \/ (~(S \in setB) /\ S' = S))
-                \/ (~ (S \in setA) /\ S' = S)]%classic.
-    
-    #[local] Lemma total_setR S: exists S', S' \in (setR S).
-    Proof. 
-      move: A0 => /(_ S) H0.
-      case H1: (S \in setA);last first.
-      by (exists S);rewrite inE /setR /= H1;right. 
-      case H2: (S \in setB);last first.
-      by (exists S);rewrite inE /setR /= H1 H2;left;right.
-      have /H0 [S' HB]:  S \in setA `&` setB
-        by rewrite inE;split;[rewrite -inE H1| rewrite -inE H2].
-      by (exists S');rewrite inE /setR /= H1 H2;left;left.
-    Qed.
-    
-    #[local] Lemma choose_l1: exists (j: nat -> set T), forall n, (j n.+1) \in (setR (j n)). 
-    Proof.
-      move: A1 => [S _].
-      have [j Hj]: exists (j: set T -> set T), forall S, (j S) \in (setR S)
-          by exists (fun t => xchoose (total_setR t));move => p1;apply: xchooseP. 
-      exists (fun n => ssrnat.iter n j S).
-      elim; first by  rewrite /=; apply: Hj.
-      by move => n _;rewrite /=;apply: Hj.
-    Qed.
-    
-    #[local] Lemma choose_l2: exists (j: nat -> set T),
-        (forall n, (j n) \in (setA `&` setB)) -> (forall n, (j n) [<=R] (j n.+1)).
-    Proof.
-      move: choose_l1 => [j Hj].
-      exists j; move => H2 n.
-      move: (H2 n) (Hj n) => /set_mem [/mem_set H3 /mem_set H3'].
-      rewrite inE /setR /= H3 H3' => -[[[_ [_ [_ H5]]] // | [? _]// ] | [? _] //].
-    Qed.
-    
-    Lemma choose: exists (j: nat -> set T), (forall n, (j n) [<=R] (j n.+1)) \/ (exists S, ~ (S \in (setA `&` setB))).
-    Proof.
-      move: choose_l2 => -[j H1];(exists j).
-      move: (lem (forall n : nat, j n \in  (setA `&` setB))) => [H2 | H2].
-      by left;apply:H1.
-      by move: H2 => /existsNP [p H2];right;exists (j p).
-    Qed.
-    
-  End test.
-End test.
+End test2.
 
 Module leSet_choice.
   (** * an increasing selection lemma choose_inc_seq *)

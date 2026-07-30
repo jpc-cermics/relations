@@ -63,7 +63,7 @@ Module Infinite_paths.
     Implicit Types (T : Type) (U: relation T) (A B: set T).
     
     #[local] Lemma iic_asym_L1 (f : nat -> T) U:
-      (forall n, (Asym U.+) ((f n),(f (S n)))) -> 
+      (forall n, (Asym U.+) ((f n),(f n.+1))) -> 
       forall p n, 0 < p -> (Asym U.+) (f n, f (n + p)). 
     Proof.
       move => Hi. 
@@ -78,19 +78,19 @@ Module Infinite_paths.
     Qed.
     
     #[local] Lemma iic_asym_L2 (f : nat -> T) U:
-      (forall n, (Asym U.+) ((f n),(f (S n)))) -> 
+      (forall n, (Asym U.+) ((f n),(f n.+1))) -> 
       forall p n, 0 < p -> ~ (f n) = f (n + p). 
     Proof.
       by move => + p n H1 => /iic_asym_L1 /(_ p n H1) + H2;rewrite -H2; apply: Asym_irreflexive.
     Qed.
     
     #[local] Lemma iic_asym_L3 (f : nat -> T) U:
-      (forall n, (Asym U.+) ((f n),(f (S n)))) -> injective f.
+      (forall n, (Asym U.+) ((f n),(f n.+1))) -> injective f.
     Proof.
       have H0 n m: m < n -> exists p, p> 0 /\ n = m + p by move => H1;exists (n-m); lia.
       move => /iic_asym_L2 Hi p q;apply contraPP => H1.
       have [H2|H2]: (p < q \/ q < p) by lia.
-      by pose proof (H0 q p H2) as [p' [H3 ->]]; apply: Hi.
+      by move: (H0 q p H2) => [p' [H3 ->]];apply: Hi.
       by move: (H0 p q H2) => [p' [H3 ->]];move: (Hi p' q H3);symmetry.
     Qed.
     
