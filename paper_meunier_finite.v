@@ -36,6 +36,42 @@ Definition Inc {T: Type} (SS: (set T)*(set T)) := SS.1 `<=` SS.2.
 Definition strictInc {T: Type} (SS: (set T)*(set T)) :=
   SS.1 `<=` SS.2 /\ ~ ( SS.1 = SS.2).
 
+Module utilities.
+  Section utilities.
+    Context {T:choiceType} (f: nat -> T) (S: set T) (R: relation T).
+    
+    Lemma f2allL: 
+      (forall n, R (f(n), f(n.+1)))
+      -> forall n m, allL R (mkseq (fun i => f (n + i+1)) m) (f n) (f (n+m+1)).
+    Proof.
+      move => H0 n m.
+      elim: m n H0 => [n /=| n' Hr n H0].
+      by rewrite addn0 addn1 /mkseq/= allL0 inE. 
+      rewrite mkseqS allL_rc.
+      have ->: (n + (n'.+1) + 1) = (n + n' + 1).+1 by lia. 
+      by apply/andP;split;[rewrite inE|apply: Hr].
+    Qed.
+    
+    Lemma f2in: (forall n, f(n) \in S)
+                -> forall n m,  ((f n)::(mkseq (fun i => f (n + i+1)) m)) [\in] S.
+    Proof.
+      move => H0 n m.
+      elim: m n H0 => [n /= ?| n' Hr n H0];first by rewrite andbT.
+      rewrite mkseqS -rcons_cons allset_rcons.  
+      split. by apply: Hr. by rewrite -inE.
+    Qed.
+    
+    Lemma f2allL': 
+      (forall n m, allL R (mkseq (fun i => f (n + i+1)) m) (f n) (f (n+m+1)))
+      -> (forall n, R (f(n), f(n.+1))).
+    Proof.
+      by move => + n => /(_ n 0);rewrite addn0 allL0 inE addn1.
+    Qed.
+
+  End utilities.
+End utilities.
+Export utilities.
+
 Module test1.
   Section test.
     (** a partial iic lemma *)
@@ -80,8 +116,7 @@ Module test2.
     Context (A0: forall a, a \in (A `&` B) -> exists b, b \in A /\ (R (a,b))).
     Context (A1: exists a, a \in A).
     
-    (** * XXXX on peut-etre plus précis ici le j de iic est a valeur dans A *)
-    Lemma choose_sub: (iic R) \/ (exists s, (s \in A) /\ ~ (s \in B)).
+    Lemma choose_sub: (exists h, (iic_fun  R h) /\ (forall n, (h n) \in A)) \/ (exists s, (s \in A) /\ ~ (s \in B)).
     Proof.
       (* we use subtyping to enable the use of the choose theorem of Module test1 *)
       (* T': choiceType := A *)
@@ -105,10 +140,12 @@ Module test2.
         have Ha: (sval s) \in A by rewrite inE;apply: set_valP.
         by exists (sval s).
       }
-      have H3: (iic R') -> (iic R).
+      have H3: (iic R') -> (exists h, (iic_fun  R h) /\ (forall n, (h n) \in A)).
       {
         move => [j Hj];exists (fun n => (sval (j n))).
+        split. 
         by move => n;rewrite /R'/= in Hj;apply: Hj.
+        by move => n;rewrite inE;apply: set_valP.
       }
       move: H1 => [H1 | H1].
       by left;apply: H3.
@@ -146,18 +183,34 @@ Section test3.
   Lemma A1: exists S,  S \in (preKernel R M).
   Admitted.
   
-  (** XXXX regarder ces noms pour plus bas *)
-  Definition set_to_set (A : set T) : {set T} := [set x : T | `[<A x>] ].
-  Definition set_of_set (B : {set T}) : set T := [set x | x \in B].
 
-  (** * C'est ma fonction invol *)
-  Lemma set_to_setK : cancel set_to_set set_of_set.
+  Definition encode1 (S : set T) : {ffun T -> bool} :=
+    [ffun x => `[< S x >] ].
+  
+  Lemma encode1_inj : injective encode1.
   Proof.
-    move=> A;rewrite predeqE /set_of_set /set_to_set /= => x.
-    split => [| ?];first by rewrite inE => /asboolP.
-    by rewrite inE;apply/asboolP.
+    move=> S S' eqSS'.
+    move: (@ffunP T (fun _ => bool) (encode1 S) (encode1 S')) => HffunP.
+    have {}HffunP := HffunP.2 eqSS'.
+    rewrite predeqE => x.
+    have := HffunP x.
+    rewrite /encode1 !ffunE /= => He. 
+    split => [Ha| Ha].
+    by move: Ha => /asboolP;rewrite He => /asboolP.
+    by move: Ha => /asboolP;rewrite -He => /asboolP.
   Qed.
 
+  Lemma not_injective1_h (h : nat -> set T) : ~ injective h.
+  Proof.
+    move=> h_inj.
+    pose N := #|{ffun T -> bool}|.
+    pose g : 'I_N.+1 -> {ffun T -> bool} := fun i => encode1 (h i).
+    have g_inj : injective g.
+    by move=> i j /encode1_inj /h_inj eqij; exact/val_inj.
+    have := leq_card g g_inj.
+    by rewrite card_ord ltnn.
+  Qed.
+  
   Definition encode (A : set (set T)) : {ffun {ffun T -> bool} -> bool} :=
     [ffun f : {ffun T -> bool} => `[< A [set x | f x]%classic >] ].
   
@@ -181,6 +234,7 @@ Section test3.
     by move: Ha => /asboolP;rewrite -eqbool => /asboolP.
   Qed.
   
+  (** * Unsued by to be kept for future *)
   Lemma not_injective_h (h : nat -> set (set T)) : ~ injective h.
   Proof.
     move=> h_inj.
@@ -193,19 +247,81 @@ Section test3.
     by rewrite card_ord ltnn.
   Qed.
   
-  Lemma choose: (iic Rst) \/ (exists S, (S \in (preKernel R M)) /\ ~ ( S \in ((Non_Mabsorbant R B): set (set T)))).
+  (** * Unsued by to be kept for future *)
+  Lemma not_injective1_consequence (h : nat -> (set T)):
+    exists n n', n <> n' /\ h n = h n'.
+  Proof.
+    move: (@not_injective1_h h)  => Hninj.
+    apply: contrapT => Hc.
+    apply: Hninj => k k' Ehkk'.
+    apply: contrapT => Nkk'.
+    by apply: Hc;exists k, k'.
+  Qed.
+  
+  Lemma iic_to_cyclic (h : nat -> (set T)):  
+    (iic_fun Rst h) -> exists n n', n <> n' /\ h n = h n'. 
+  Proof.
+    move => Hp;apply: not_injective1_consequence.
+  Qed.
+
+  Lemma hmap'' k k': k < k' -> exists p, k'= k+ p.+1.
+  Proof.
+    elim: k' => [//| k' Hr H5].
+    case H6: (k == k').
+    by move: H6 => /eqP ->;(exists 0);rewrite addn1.
+    have /Hr [p ->]:  k < k' by lia.
+    by exists p.+1;lia. 
+  Qed.
+  
+  Lemma iic_to_cyclic1 (h : nat -> (set T)):  
+    (iic_fun Rst h) -> exists n m, h n = h (n+m+1). 
+  Proof.
+    move => /iic_to_cyclic [n [n' [Hne Heq]]].
+    case H6: (n < n').
+    + move: H6 => /hmap'' [p H6];rewrite -addn1 addnA in H6. 
+      by exists n, p;rewrite {1}Heq {1}H6. 
+    + have H7: (n' < n) by lia.
+      move: H7 => /hmap'' [p H7];rewrite -addn1 addnA in H7.  
+      by exists n', p;rewrite -{1}Heq {1}H7.
+  Qed.
+  
+  Lemma iic_to_allL(h : nat -> (set T)):  
+    (iic_fun Rst h) -> exists n p,
+        h n = h (n+p+1)
+        /\ allL Rst (mkseq (fun i => h (n + i+1)) p) (h n) (h n).
+  Proof. 
+    move => /[dup] /iic_to_cyclic1 [n [m Heq]] /f2allL /(_ n m) HallL.
+    rewrite -Heq in HallL. 
+    by exists n, m.
+  Qed.
+
+  (** * On a alors une contradiction en utilisant BH *)
+  Lemma iic_and_prekernels (h : nat -> (set T)):
+    (iic_fun Rst h) -> (forall n, (h n) \in  (preKernel R M))
+    -> exists n p,
+        allL Rst (mkseq (fun i => h (n + i+1)) p) (h n) (h n)
+        /\ ((h n)::(mkseq (fun i => h (n + i+1)) p)) [\in] (preKernel R M).
+  Proof.
+    move => /iic_to_allL [n [p [_ Hiic]]] Hpk.
+    exists n, p. split; first exact.
+    by apply: f2in.
+  Qed.
+  
+  Lemma choose: (exists h, (iic_fun Rst h) /\ (forall n, (h n) \in  (preKernel R M)))
+                \/ (exists S, (S \in (preKernel R M)) /\ ~ ( S \in ((Non_Mabsorbant R B): set (set T)))).
   Proof.
     move: (@choose_sub _ Rst (preKernel R M) (Non_Mabsorbant R B) A0 A1) => [Hiic | [S Hker]].
     by left.
     by right;exists S.
   Qed.
-
-  (** Il faut montrer que iic => Cyclique *)
-  Lemma not_iic: (iic Rst) -> False.
-  Admitted.
+  
   
 End test3.
 End test3.
+
+(** XXXX should be elsewhere *)
+Export test3(hmap'').
+
 
 Module leSet_choice.
   (** * an increasing selection lemma choose_inc_seq *)
@@ -272,37 +388,11 @@ End leSet_choice.
 
 Export leSet_choice(choose_inc_seq).
 
-Module utilities.
-  Section utilities.
-    Context {T:choiceType} (f: nat -> T) (S: set T) (R: relation T).
-    
-    Lemma f2allL: 
-      (forall n, R (f(n), f(n.+1)))
-      -> forall n m, allL R (mkseq (fun i => f (n + i+1)) m) (f n) (f (n+m+1)).
-    Proof.
-      move => H0 n m.
-      elim: m n H0 => [n /=| n' Hr n H0].
-      by rewrite addn0 addn1 /mkseq/= allL0 inE. 
-      rewrite mkseqS allL_rc.
-      have ->: (n + (n'.+1) + 1) = (n + n' + 1).+1 by lia. 
-      by apply/andP;split;[rewrite inE|apply: Hr].
-    Qed.
-
-    Lemma f2allL': 
-      (forall n m, allL R (mkseq (fun i => f (n + i+1)) m) (f n) (f (n+m+1)))
-      -> (forall n, R (f(n), f(n.+1))).
-    Proof.
-      by move => + n => /(_ n 0);rewrite addn0 allL0 inE addn1.
-    Qed.
-
-  End utilities.
-End utilities.
-Export utilities.
-
 Module f_periodic. 
+  (** * XXXX here using (S: set T) (Sq: seq (set T)) is not necessary  T and set T is enough *)
   (** * some properties of the periodic function f: nth S (S::Sq) (n %% size (S::Sq)) *)
   Section f_periodic.
-    Context {T:choiceType} (S: set T) (Sq: seq (set T)).
+    Context {T: Type} (S: set T) (Sq: seq (set T)).
     Context (U R: relation T).
     Implicit Types (setS: set (set T)) (setR: relation (set T)).
     
@@ -669,14 +759,6 @@ Module h_extra_props.
       by move: (TclosT (Hr k) H4).
     Qed.
 
-    Lemma hmap'' k k': k < k' -> exists p, k'= k+ p.+1.
-    Proof.
-      elim: k' => [//| k' Hr H5].
-      case H6: (k == k').
-      by move: H6 => /eqP ->; exists 0;rewrite addn1.
-      have /Hr [p ->]:  k < k' by lia.
-      by exists p.+1;lia. 
-    Qed.
 
   End h_extra_props.
 End h_extra_props.
@@ -751,19 +833,19 @@ Section FinsetToClassical.
   Lemma in_finP A x: reflect (x \in [:set: A]) (x \in A).
   Proof.  by apply: (iffP idP);move/in_set_of_fin. Qed.
   
-  Lemma fin_setInvol (A: {set T}): [:fin: [:set: A]] = A.
-  Proof. 
-    apply/setP => x; case H1: (x \in A).
+  (* XXXX Les fonctions suivantes devraient utiliser cancel *)
+  Lemma set_to_finK : cancel fin_of_set set_of_fin.
+  Proof.
+    move=> A;rewrite predeqE /fin_of_set /set_of_fin /= => x.
+    by split => [|?];rewrite inE;[move => /asboolP|apply/asboolP].
+  Qed.
+
+  Lemma fin_to_setK : cancel set_of_fin fin_of_set.
+  Proof.
+    move=> A;apply/setP => x; case H1: (x \in A).
     + by move: H1 => /in_set_of_fin/in_fin_of_set ->.
     + move: H1 => /negP/in_set_of_fin/in_fin_of_set H1.
       by case H2: (x \in [:fin:[:set:A]]).
-  Qed.
-  
-  Lemma set_finInvol (A: set T): [:set: [:fin: A]] = A.
-  Proof. 
-    rewrite predeqE => x. 
-    split => [/inP/in_set_of_fin/in_fin_of_set/inP // | /inP H1].
-    by rewrite -inE in_set_of_fin in_fin_of_set.
   Qed.
   
   Lemma set_of_fin0 : [:set: finset.set0] = set0.
@@ -1358,10 +1440,10 @@ Section ChampetierExt_Theorem.
     move: (@extend T R B O [:set: S] A2 A6 A7 A8 Hpk H3) 
         => [S' [Hpre [H7 [x' [H8 H9]]]]].
     exists [:fin: S'].
-    by rewrite prekernelP set_finInvol.
-    split;first by  rewrite set_finInvol.
+    by rewrite prekernelP set_to_finK.
+    split;first by  rewrite set_to_finK.
     apply/negP => /eqP Heq.
-    by rewrite Heq set_finInvol in H9.
+    by rewrite Heq set_to_finK in H9.
   Qed.
   
   Lemma Kernel_ChampetierExt: 

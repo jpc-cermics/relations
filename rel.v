@@ -1507,9 +1507,10 @@ Section Infinite_paths.
   
   Lemma total_rel'_to_total_rel'' R:  total_rel' R -> total_rel'' R.
   Proof. by move => [f H1] x;exists (iterf f x). Qed.
-  
+
+  Definition iic_fun R f:= forall n, R ((f n),(f (S n))).
   (* begin snippet iic:: no-out *)  
-  Definition iic R := exists f, forall n, R ((f n),(f (S n))).  
+  Definition iic R := exists f, iic_fun R f.
   (* end snippet iic *)
   
   (* begin snippet iicinj:: no-out *)  
