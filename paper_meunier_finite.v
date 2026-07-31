@@ -79,8 +79,9 @@ Module test2.
     Context {T:choiceType} (R: relation T) (A B: set T).
     Context (A0: forall a, a \in (A `&` B) -> exists b, b \in A /\ (R (a,b))).
     Context (A1: exists a, a \in A).
-
-    Lemma choose: (iic R) \/ (exists s, ~ (s \in (A `&` B))).
+    
+    (** * XXXX on peut-etre plus précis ici le j de iic est a valeur dans A *)
+    Lemma choose_sub: (iic R) \/ (exists s, (s \in A) /\ ~ (s \in B)).
     Proof.
       (* we use subtyping to enable the use of the choose theorem of Module test1 *)
       (* T': choiceType := A *)
@@ -97,13 +98,12 @@ Module test2.
         move: (A1) => [a Ha].
         by (exists (exist _ a Ha));rewrite inE /=.
       }
-      have H2: (exists s, ~ (s \in B')) ->  (exists s, ~ (s \in (A `&` B))).
+      have H2: (exists s, ~ (s \in B')) ->  (exists s, s \in A /\ ~ s \in B).
       {
         move => [s Hs].
         rewrite inE /B' /= in Hs.
         have Ha: (sval s) \in A by rewrite inE;apply: set_valP.
-        exists (sval s).
-        by move => /set_mem [_ /mem_set H2].
+        by exists (sval s).
       }
       have H3: (iic R') -> (iic R).
       {
@@ -117,6 +117,95 @@ Module test2.
     
   End test.
 End test2.
+Export test2(choose_sub).
+
+Module test3.
+
+Section test3.
+  
+  Context {T: finType} (R B O: relation T).
+  
+  Definition M := B `|` R.
+
+  Context (A2: Assumption2 R) (A6: Assumption6 B M O)
+    (A7: Assumption7 R B M) (A8: Assumption8 R B M). 
+    
+  Lemma extend_pk X: preKernel  R M X -> (Non_Mabsorbant R B X) ->
+        exists X', preKernel R M X' /\  X [<= O] X' /\ (exists x', x' \in X' /\ ~ (x' \in X)).
+  Proof. by apply: extend. Qed.
+  
+  Definition Rst :=[set Sp | Sp.1 [<= O] Sp.2 /\ (exists x', x' \in Sp.2 /\ ~ (x' \in Sp.1))]%classic.
+  
+  Lemma A0 S: S \in (preKernel R M) `&` (Non_Mabsorbant R B) 
+              -> exists S', S' \in (preKernel R M) /\ Rst (S, S').
+  Proof.
+    rewrite inE => -[Hpk Hna];move: (extend_pk Hpk Hna) => [S' [/mem_set Hpk' [Hle Hd]]].
+    by exists S';split;[ | rewrite /Rst /=].
+  Qed.
+
+  Lemma A1: exists S,  S \in (preKernel R M).
+  Admitted.
+  
+  (** XXXX regarder ces noms pour plus bas *)
+  Definition set_to_set (A : set T) : {set T} := [set x : T | `[<A x>] ].
+  Definition set_of_set (B : {set T}) : set T := [set x | x \in B].
+
+  (** * C'est ma fonction invol *)
+  Lemma set_to_setK : cancel set_to_set set_of_set.
+  Proof.
+    move=> A;rewrite predeqE /set_of_set /set_to_set /= => x.
+    split => [| ?];first by rewrite inE => /asboolP.
+    by rewrite inE;apply/asboolP.
+  Qed.
+
+  Definition encode (A : set (set T)) : {ffun {ffun T -> bool} -> bool} :=
+    [ffun f : {ffun T -> bool} => `[< A [set x | f x]%classic >] ].
+  
+  Lemma encode_inj : injective encode.
+  Proof.
+    move=> A A' eqAA'.
+    move: (@ffunP {ffun T -> bool} (fun _ => bool) (encode A) (encode A')) => HffunP.
+    have {}HffunP := HffunP.2 eqAA'.
+    rewrite predeqE => S.
+    pose f_S: {ffun T -> bool}  := [ffun x => `[< S x >] ].
+    have := HffunP f_S.
+    rewrite /encode !ffunE.
+    have eqB : [set x | f_S x]%classic = S.
+    {
+      rewrite predeqE /= => x. rewrite /f_S ffunE.
+      split. by move => /asboolP. by move => ?;apply/asboolP.
+    }
+    rewrite eqB => eqbool.
+    split => [Ha| Ha].
+    by move: Ha => /asboolP;rewrite eqbool => /asboolP.
+    by move: Ha => /asboolP;rewrite -eqbool => /asboolP.
+  Qed.
+  
+  Lemma not_injective_h (h : nat -> set (set T)) : ~ injective h.
+  Proof.
+    move=> h_inj.
+    pose N := #|{ffun {ffun T -> bool} -> bool}|.
+    pose g : 'I_N.+1 -> {ffun {ffun T -> bool} -> bool} := fun i => encode (h i).
+    have g_inj : injective g.
+    by move=> i j /encode_inj /h_inj eqij; exact/val_inj.
+    pose proof leq_card.
+    have := leq_card g g_inj.
+    by rewrite card_ord ltnn.
+  Qed.
+  
+  Lemma choose: (iic Rst) \/ (exists S, (S \in (preKernel R M)) /\ ~ ( S \in ((Non_Mabsorbant R B): set (set T)))).
+  Proof.
+    move: (@choose_sub _ Rst (preKernel R M) (Non_Mabsorbant R B) A0 A1) => [Hiic | [S Hker]].
+    by left.
+    by right;exists S.
+  Qed.
+
+  (** Il faut montrer que iic => Cyclique *)
+  Lemma not_iic: (iic Rst) -> False.
+  Admitted.
+  
+End test3.
+End test3.
 
 Module leSet_choice.
   (** * an increasing selection lemma choose_inc_seq *)
@@ -593,14 +682,16 @@ Module h_extra_props.
 End h_extra_props.
 Export h_extra_props.
 
-
 Module BH.
+  (** * Now we assume finType *)
   Section BH.
-    (* we conclude that cyclicity for the relation 
-       Diff `| ` [<= R] resticted to prekernels 
-       implies cyclicity for R 
-     *)
-    Context {T:finType} (U R: relation T).
+    Context {T:finType} (U R: relation T) (S: set T) (Sq: seq (set T)).
+    (** strict increasing sequence of sets for (leSet R) *)
+    Context (A1: @allL (set T) (leSet R) Sq S S).
+    Context (A2: @allL (set T) Diff Sq S S).
+    (** which are also (U,R)-prekernels *)
+    Context (A3: (S::Sq) [\in] (preKernel U R)).
+    Implicit Types (sq: seq T) (s: T).
     
     (* as T is a finType *)
     Lemma not_hinj (h: nat -> T):exists n n', n <> n' /\ h n = h n'.
@@ -620,14 +711,8 @@ Module BH.
       by apply: Hc;exists k, k'.
     Qed.
     
-    Definition CyclicPrekernels {T: Type} (U R: relation T):=
-      exists Sq, exists S, allL (leSet R) Sq S S
-                 /\ allL Diff Sq S S
-                 /\ (S::Sq) [\in] (preKernel U R).
-
-    Lemma final: CyclicPrekernels U R  -> exists s, R.+ (s,s).
+    Lemma Rcyclic: exists s, R.+ (s,s).
     Proof.
-      move => [Sq [S [A1 [A2 A3]]]];
       move: (exists_g A1 A2 A3) => [g [G1 [G2 [G3 G4]]]].
       move: (exists_h G2 G3 G4) => [h [H1 [H2 H3]]].
       move: (hmap' G1 H1 H2 H3) => Hhmap.
