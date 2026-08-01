@@ -47,7 +47,7 @@
 Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_boot order.
 From mathcomp Require Import mathcomp_extra boolp.
-From mathcomp Require Import classical_sets.
+From mathcomp Require Import classical_sets path.
 (* From mathcomp Require Import zify. *)
 Set Warnings "parsing coercions".
 
@@ -433,7 +433,7 @@ Section Lift_in_facts.
 
   Context {T: Type}.
   Implicit Types (R S: relation T) (X Y: set T) (st: seq T) (x y z:T).
-
+  
   Lemma Lift_in_c R st x: (x::st) [L\in] R -> st [L\in] R.
   Proof. by elim: st x => [// | y st Hr x];rewrite Lift_cc allset_cons => -[_ ?] //. Qed.
   
@@ -782,6 +782,17 @@ Section allset_Lifted.
          rewrite -1!H3 /= nth_rcons H4.
          have ->: nth z st (size st).-1 = nth x st (size st).-1 by apply: nth_dv.
          exact.
+  Qed.
+  
+  (** * a link with path.v using coercion from relation to rel *)
+  Lemma Lift2path R st x y: (x::(rcons st y)) [L\in] R <-> path R x (rcons st y).
+  Proof.
+    rewrite (allL_nth' R st x y x).
+    split => [Hl |/(@pathP _ _ _ _ x) Hr n Hs] .
+    + apply/(@pathP _ _ _ _ x);rewrite size_rcons /= => n Hs.
+      by apply/asboolP/Hl;rewrite ltnS in Hs.
+    + rewrite -{2}rcons_cons /=.
+      by apply/asboolP/Hr;rewrite size_rcons ltnS.
   Qed.
   
 End allset_Lifted.
