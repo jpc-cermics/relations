@@ -450,20 +450,23 @@ Module Extend_nonMabsorbant_prekernel.
       by move => y _ /inP [H1 _]; exists y;split;[rewrite inE;right|].
     Qed.
     
+    Lemma set_not_equal (X': set T): (exists x' : T, x' \in X' /\ ~ (x' \in X)) -> ~ (X = X').
+    Proof. by move => [x' [HinX' HnotinX]] He;rewrite He in HnotinX. Qed.
+    
     Lemma case1: forall y,
         preKernel R M  X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) )
         -> preKernel  R M (X `|` [set y]) /\  X [<= O] (X `|` [set y]) 
-          /\ (exists x' : T, x' \in X `|` [set y] /\ ~ x' \in X).
+          /\ ~ ( X = (X `|` [set y])).
     Proof.
       move => y H1 H2 H3 H4. 
       pose proof (case1_nonempty H1 H2 H3 H4).
       pose proof (case1_indep H1 H2 H3 H4).
       pose proof (case1_RMprop1 H1 H2 H3 H4).
       pose proof (case1_Cprop H1 H2 H3 H4).
-      pose proof (case1_notequal H1 H2 H3 H4).
+      move: (case1_notequal H1 H2 H3 H4) => /set_not_equal H7.
       exact.
     Qed.
-
+    
     (** the case one:  ( y \in X:#(B) ) and candidate  ((X `\` (Xy y)) `|` [set y]) *)
 
     Lemma case2_nonempty: forall y,
@@ -634,21 +637,21 @@ Module Extend_nonMabsorbant_prekernel.
     Lemma case2 (A6: Assumption6 B M O)(A7: Assumption7 R B M)(A8: Assumption8 R B M) : forall y,
         preKernel  R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
         -> preKernel  R M ((X`\` (Xy y)) `|` [set y]) /\  X [<= O] ((X`\` (Xy y)) `|` [set y])
-          /\ (exists x' : T, x' \in ((X`\` (Xy y)) `|` [set y]) /\ ~ x' \in X).
+          /\ ~( X = ((X`\` (Xy y)) `|` [set y])).
     Proof.
       move => y H1 H2 H3 H4. 
       pose proof (case2_nonempty H1 H2 H3 H4).
       pose proof (case2_indep H1 H2 H3 H4).
       pose proof (case2_RMprop1 A7 A8 H1 H2 H3 H4).
       pose proof (case2_Cprop A6 H1 H2 H3 H4).
-      pose proof (case2_notequal H1 H2 H3 H4).
+      move: (case2_notequal H1 H2 H3 H4) => /set_not_equal H7.
       exact.
     Qed.
 
     (** * main result *)
     Lemma extend (A2: Assumption2 R) (A6: Assumption6 B M O) (A7: Assumption7 R B M) (A8: Assumption8 R B M):
         preKernel  R M X -> Non_Mabsorbant ->
-        exists X', preKernel R M X' /\  X [<= O] X' /\ (exists x', x' \in X' /\ ~ (x' \in X)).
+        exists X', preKernel R M X' /\  X [<= O] X' /\ ~ ( X = X').
     Proof.
       move => H1 /(NonMabsorbant A2) [y [H2 H3]]. 
       have H4: y \in (X:#(B) `|` (X:#(B)).^c) by rewrite (setUv X:#(B)) inE.
