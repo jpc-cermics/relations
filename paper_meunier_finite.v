@@ -31,19 +31,11 @@ Local Open Scope set_scope. (* we can use %SET *)
 Definition fin_relation (T: finType) := {set (T * T)}.
 Notation "{ 'relation' T }" := (fin_relation T) (format "{ 'relation'  T }"): type_scope.
 
-Definition Diff {T: Type} (SS: T*T) := ~ ( SS.1 = SS.2).
-Definition Diff' {T: Type} := ('Δ : relation T).^c.
 Definition Inc {T: Type} (SS: (set T)*(set T)) := SS.1 `<=` SS.2.
 Definition strictInc {T: Type} (SS: (set T)*(set T)) :=
   SS.1 `<=` SS.2 /\ ~ ( SS.1 = SS.2).
 
-Check Diff.
-
-Lemma test (T:  Type): @Diff T = @Diff' T.
-Proof.
-  rewrite predeqE /Diff/Diff' => -[S S'] /=.
-  by rewrite DeltaP.
-Qed.
+Notation Inc' := <=%O.
 
 Module utilities.
   Section utilities.
@@ -80,6 +72,131 @@ Module utilities.
   End utilities.
 End utilities.
 Export utilities.
+
+Module injectivity.
+  Section injectivity.
+  
+  Lemma not_injective_prop (T: Type) (h: nat -> T):
+    ~ (injective h) ->exists n p, h n = h (n + p.+1).
+  Proof. 
+    move => Hinj.
+    have [n [n' [Hd Hh]]]: exists n n', n <> n' /\ h n = h n'.
+    {
+      apply: contrapT => Hc.
+      apply: Hinj => k k' Ehkk'.
+      apply: contrapT => Nkk'.
+      by apply: Hc;exists k, k'.
+    }
+    have Hkk' k k': k < k' -> exists p, k'= k + p.+1.
+    {
+      elim: k' => [//| k' Hr H5].
+      case H6: (k == k').
+      by move: H6 => /eqP ->;(exists 0);rewrite addn1.
+      by (have /Hr [p ->]: k < k' by lia);exists p.+1;lia. 
+    }
+    case H6: (n < n').
+    by move: H6 => /Hkk' [p H6];exists n, p;rewrite H6 in Hh.
+    have H7: (n' < n) by lia.
+    by move: H7 => /Hkk' [p H7];exists n',p;rewrite -H7 Hh. 
+  Qed.
+
+  Context {T:finType}.
+
+  Lemma fin_codomain_prop (h: nat -> T): exists n p, h n = h (n + p.+1).
+  Proof.
+    apply: not_injective_prop.
+    (** * proving now that h is not injective *)
+    move => hinj.
+    have inj_restrict : injective (fun i : 'I_(#|T|).+1 => h i)
+      by move=> x y /hinj Exy;apply/val_inj. 
+    move: (leq_card _  inj_restrict) => H1.
+    by rewrite card_ord ltnn in H1. 
+  Qed.
+  
+  End injectivity.
+End injectivity.
+Export injectivity(fin_codomain_prop,not_injective_prop).
+
+Module setT_injectivity.
+  Section setT_injectivity.
+    (** * (h : nat -> set T) not injective when T is finType *)
+    Context {T:finType}.
+    Local Definition encode1 (S : set T) : {ffun T -> bool} :=
+      [ffun x => `[< S x >] ].
+  
+    Local Lemma encode1_inj : injective encode1.
+    Proof.
+      move=> S S' eqSS'.
+      move: (@ffunP T (fun _ => bool) (encode1 S) (encode1 S')) => HffunP.
+      have {}HffunP := HffunP.2 eqSS'.
+      rewrite predeqE => x.
+      have := HffunP x.
+      rewrite /encode1 !ffunE /= => He. 
+      split => [Ha| Ha].
+      by move: Ha => /asboolP;rewrite He => /asboolP.
+      by move: Ha => /asboolP;rewrite -He => /asboolP.
+    Qed.
+    
+    Local Lemma not_injective1_h (h : nat -> set T) : ~ injective h.
+    Proof.
+      move=> h_inj.
+      pose N := #|{ffun T -> bool}|.
+      pose g : 'I_N.+1 -> {ffun T -> bool} := fun i => encode1 (h i).
+      have g_inj : injective g.
+      by move=> i j /encode1_inj /h_inj eqij; exact/val_inj.
+      have := leq_card g g_inj.
+      by rewrite card_ord ltnn.
+    Qed.
+    
+    Lemma set_fin_codomain_prop (h: nat -> set T): exists n p, h n = h (n + p.+1).
+    Proof.
+      apply: not_injective_prop.
+      apply: not_injective1_h.
+    Qed.
+    
+    (* The same proof for (h : nat -> set (set T))
+
+    Definition encode (A : set (set T)) : {ffun {ffun T -> bool} -> bool} :=
+      [ffun f : {ffun T -> bool} => `[< A [set x | f x]%classic >] ].
+  
+    Lemma encode_inj : injective encode.
+    Proof.
+      move=> A A' eqAA'.
+      move: (@ffunP {ffun T -> bool} (fun _ => bool) (encode A) (encode A')) => HffunP.
+      have {}HffunP := HffunP.2 eqAA'.
+      rewrite predeqE => S.
+      pose f_S: {ffun T -> bool}  := [ffun x => `[< S x >] ].
+      have := HffunP f_S.
+      rewrite /encode !ffunE.
+      have eqB : [set x | f_S x]%classic = S.
+      {
+        rewrite predeqE /= => x. rewrite /f_S ffunE.
+        split. by move => /asboolP. by move => ?;apply/asboolP.
+      }
+      rewrite eqB => eqbool.
+      split => [Ha| Ha].
+      by move: Ha => /asboolP;rewrite eqbool => /asboolP.
+      by move: Ha => /asboolP;rewrite -eqbool => /asboolP.
+    Qed.
+  
+    Lemma not_injective_h (h : nat -> set (set T)) : ~ injective h.
+    Proof.
+      move=> h_inj.
+      pose N := #|{ffun {ffun T -> bool} -> bool}|.
+      pose g : 'I_N.+1 -> {ffun {ffun T -> bool} -> bool} := fun i => encode (h i).
+      have g_inj : injective g.
+      by move=> i j /encode_inj /h_inj eqij; exact/val_inj.
+      pose proof leq_card.
+      have := leq_card g g_inj.
+      by rewrite card_ord ltnn.
+    Qed.
+  
+    *)
+
+End setT_injectivity.
+End setT_injectivity.
+
+Export setT_injectivity(set_fin_codomain_prop).
 
 Module partial_iic_lemma.
   Section partial_iic_lemma.
@@ -126,7 +243,8 @@ Module partial_iic_lemma_sub.
     Context (A0: forall a, a \in (A `&` B) -> exists b, b \in A /\ (R (a,b))).
     Context (A1: exists a, a \in A).
     
-    Lemma choose_sub: (exists h, (iic_fun  R h) /\ (forall n, (h n) \in A)) \/ (exists s, (s \in A) /\ ~ (s \in B)).
+    Lemma choose_sub: (exists h, (iic_fun  R h) /\ (forall n, (h n) \in A))
+                      \/ (exists s, (s \in A) /\ ~ (s \in B)).
     Proof.
       (* we use subtyping to enable the use of tpartial_iic_lemma *)
       (* T': choiceType := A *)
@@ -372,20 +490,25 @@ Export f_periodic.
 
 Module f_periodic_for_leSet.
   (** * properties of increasing  sequences of sets *)
-  (** * for the (leSet R) relation *)
+  (** * for the ('Δ.^c `&` (leSet R)) relation *)
   
   Section seq_leSet.
     Context {T:choiceType} (U R: relation T) (S: set T) (Sq: seq (set T)).
     (** strict increasing sequence of sets for (leSet R) *)
-    Context (A1: @allL (set T) (leSet R) Sq S S).
-    Context (A2: @allL (set T) Diff Sq S S).
+    Context (A0: @allL (set T) ('Δ.^c `&` (leSet R)) Sq S S).
     (** which are also (U,R)-prekernels *)
     Context (A3: (S::Sq) [\in] (preKernel U R)).
     Implicit Types (sq: seq T) (s: T).
-
+    
     Definition g := f S Sq.
 
-    Lemma g_inc n: (g n) [<= R] (g n.+1).
+    Lemma A1: @allL (set T) (leSet R) Sq S S.
+    Proof. by move: A0 => /allL_I [_ ?]. Qed.
+
+    Lemma A2: @allL (set T) 'Δ.^c Sq S S.
+    Proof. by move: A0 => /allL_I [? _]. Qed.
+    
+    Lemma g_inc n: ('Δ.^c `&` (leSet R)) ((g n),(g n.+1)).
     Proof. by apply: f_setR. Qed.
     
     Lemma g_prekernel n: (g n) \in (preKernel U R).
@@ -412,19 +535,20 @@ Module f_periodic_for_leSet.
       (* implied by A2 *)
       have H1: 0 < size Sq.
       { move: A2;contra;rewrite leqn0 => /eqP/size0nil H1.
-        by move: A2;rewrite H1 allL0 inE notin_setE. }
+        by move: A2;rewrite H1 allL0 inE DeltaCP notin_setE DeltaCP.
+      }
       (* for lemma allL_Tr *)
       have Inc_Tr : transitive (@Inc T)
         by move => A B C;apply: subset_trans.
       (* main proof *)
-      move: A2;rewrite (@allL_nth' (set T) Diff Sq S S S).
+      move: A2;rewrite (@allL_nth' (set T) 'Δ.^c Sq S S S).
       contra => H2.
       have H4: allL Inc Sq S S
         by rewrite (@allL_nth' (set T));move => j Hs b /inP/(H2 j Hs b)/inP.
       have H6: forall S', S' \in Sq -> S = S'.
       move => S' Hs;move: (@allL_Tr Inc H1 H4 Inc_Tr S' Hs).
       by rewrite eqEsubset.
-      by exists 0;[lia | rewrite /= // nth_rcons H1;apply: H6;apply: mem_nth].
+      by exists 0;[lia | rewrite /= // nth_rcons H1 DeltaP;apply: H6;apply: mem_nth ].
     Qed.
 
     Lemma DiffE': 
@@ -602,7 +726,6 @@ Module h_extra_props.
       by move: (TclosT (Hr k) H4).
     Qed.
 
-
   End h_extra_props.
 End h_extra_props.
 Export h_extra_props.
@@ -611,69 +734,40 @@ Module BH.
   (** * Now we assume finType *)
   Section BH.
     
-    Lemma hmap'' k k': k < k' -> exists p, k'= k+ p.+1.
-    Proof.
-      elim: k' => [//| k' Hr H5].
-      case H6: (k == k').
-      by move: H6 => /eqP ->;(exists 0);rewrite addn1.
-      by (have /Hr [p ->]: k < k' by lia);exists p.+1;lia. 
-    Qed.
-    
     Context {T:finType} (U R: relation T) (S: set T) (Sq: seq (set T)).
     (** strict increasing sequence of sets for (leSet R) *)
-    Context (A1: @allL (set T) (leSet R) Sq S S).
-    Context (A2: @allL (set T) Diff Sq S S).
+    Context (A0: @allL (set T) ('Δ.^c `&` (leSet R)) Sq S S).
     (** which are also (U,R)-prekernels *)
     Context (A3: (S::Sq) [\in] (preKernel U R)).
     Implicit Types (sq: seq T) (s: T).
     
-    (* as T is a finType *)
-    Lemma not_hinj (h: nat -> T):exists n n', n <> n' /\ h n = h n'.
-    Proof.
-      have: ~ (injective h).
-      {
-        move => hinj.
-        have inj_restrict : injective (fun i : 'I_(#|T|).+1 => h i)
-          by move=> x y /hinj Exy;apply/val_inj. 
-        move: (leq_card _  inj_restrict) => H1.
-        by rewrite card_ord ltnn in H1. 
-      }
-      move=> H.
-      apply: contrapT => Hc.
-      apply: H => k k' Ehkk'.
-      apply: contrapT => Nkk'.
-      by apply: Hc;exists k, k'.
-    Qed.
-
     Lemma Rcyclic: exists s, R.+ (s,s).
     Proof.
-      move: (exists_g A1 A2 A3) => [g [G1 [G2 [G3 G4]]]].
+      move: (exists_g A0 A3) => [g [G1 [G2 [G3 G4]]]].
       move: (exists_h G2 G3 G4) => [h [H1 [H2 H3]]].
       move: (hmap' G1 H1 H2 H3) => Hhmap.
-      move: (not_hinj (fun k => h(k*(size(S::Sq))))) => [n [n' [H4 H5]]].
-      exists (h (n * size (S :: Sq))).
-      case H6: (n < n').
-      by move: H6 => /hmap'' [p H6];rewrite {2}H5 H6. 
-      have H7: (n' < n) by lia.
-      by move: H7 => /hmap'' [p H7];rewrite {1}H5 H7.
+      move: (fin_codomain_prop (fun k => h(k*(size(S::Sq))))) => [n [p H4]].
+      by exists (h (n * size (S :: Sq)));rewrite {2}H4;apply: Hhmap.
     Qed.
-
+    
   End BH.
 End BH.
 
-Export BH (hmap'', Rcyclic).
+Export BH (Rcyclic).
 
 Module test3.
 Section test3.
   (** main result here *)
-  Context {T: finType} (R B O: relation T).
-  
+  Context {T: finType} (O R B: relation T).
+
   Definition M := B `|` R.
 
   Context (A2: Assumption2 R) (A6: Assumption6 B M O)
     (A7: Assumption7 R B M) (A8: Assumption8 R B M). 
-    
-  Lemma extend_pk X: preKernel  R M X -> (Non_Mabsorbant R B X) ->
+  Context (A1: NotEmpty T) (Au: R `<=` O^-1).
+  Context (Apk : forall X , RelIndep O X <-> RelIndep M X).
+
+  Lemma extend_pk X: preKernel R M X -> (Non_Mabsorbant R B X) ->
         exists X', preKernel R M X' /\  X [<= O] X' /\ (exists x', x' \in X' /\ ~ (x' \in X)).
   Proof. by apply: extend. Qed.
   
@@ -686,110 +780,20 @@ Section test3.
     by exists S';split;[ | rewrite /Rst /=].
   Qed.
 
-  Lemma A1: exists S,  S \in (preKernel R M).
+  Lemma A1': exists S,  S \in (preKernel R M).
   Admitted.
-  
 
-  Definition encode1 (S : set T) : {ffun T -> bool} :=
-    [ffun x => `[< S x >] ].
-  
-  Lemma encode1_inj : injective encode1.
-  Proof.
-    move=> S S' eqSS'.
-    move: (@ffunP T (fun _ => bool) (encode1 S) (encode1 S')) => HffunP.
-    have {}HffunP := HffunP.2 eqSS'.
-    rewrite predeqE => x.
-    have := HffunP x.
-    rewrite /encode1 !ffunE /= => He. 
-    split => [Ha| Ha].
-    by move: Ha => /asboolP;rewrite He => /asboolP.
-    by move: Ha => /asboolP;rewrite -He => /asboolP.
-  Qed.
-
-  Lemma not_injective1_h (h : nat -> set T) : ~ injective h.
-  Proof.
-    move=> h_inj.
-    pose N := #|{ffun T -> bool}|.
-    pose g : 'I_N.+1 -> {ffun T -> bool} := fun i => encode1 (h i).
-    have g_inj : injective g.
-    by move=> i j /encode1_inj /h_inj eqij; exact/val_inj.
-    have := leq_card g g_inj.
-    by rewrite card_ord ltnn.
-  Qed.
-  
-  Definition encode (A : set (set T)) : {ffun {ffun T -> bool} -> bool} :=
-    [ffun f : {ffun T -> bool} => `[< A [set x | f x]%classic >] ].
-  
-  Lemma encode_inj : injective encode.
-  Proof.
-    move=> A A' eqAA'.
-    move: (@ffunP {ffun T -> bool} (fun _ => bool) (encode A) (encode A')) => HffunP.
-    have {}HffunP := HffunP.2 eqAA'.
-    rewrite predeqE => S.
-    pose f_S: {ffun T -> bool}  := [ffun x => `[< S x >] ].
-    have := HffunP f_S.
-    rewrite /encode !ffunE.
-    have eqB : [set x | f_S x]%classic = S.
-    {
-      rewrite predeqE /= => x. rewrite /f_S ffunE.
-      split. by move => /asboolP. by move => ?;apply/asboolP.
-    }
-    rewrite eqB => eqbool.
-    split => [Ha| Ha].
-    by move: Ha => /asboolP;rewrite eqbool => /asboolP.
-    by move: Ha => /asboolP;rewrite -eqbool => /asboolP.
-  Qed.
-  
-  (** * Unsued by to be kept for future *)
-  Lemma not_injective_h (h : nat -> set (set T)) : ~ injective h.
-  Proof.
-    move=> h_inj.
-    pose N := #|{ffun {ffun T -> bool} -> bool}|.
-    pose g : 'I_N.+1 -> {ffun {ffun T -> bool} -> bool} := fun i => encode (h i).
-    have g_inj : injective g.
-    by move=> i j /encode_inj /h_inj eqij; exact/val_inj.
-    pose proof leq_card.
-    have := leq_card g g_inj.
-    by rewrite card_ord ltnn.
-  Qed.
-  
-  (** * Unsued by to be kept for future *)
-  Lemma not_injective1_consequence (h : nat -> (set T)):
-    exists n n', n <> n' /\ h n = h n'.
-  Proof.
-    move: (@not_injective1_h h)  => Hninj.
-    apply: contrapT => Hc.
-    apply: Hninj => k k' Ehkk'.
-    apply: contrapT => Nkk'.
-    by apply: Hc;exists k, k'.
-  Qed.
-  
   Lemma iic_to_cyclic (h : nat -> (set T)):  
-    (iic_fun Rst h) -> exists n n', n <> n' /\ h n = h n'. 
-  Proof.
-    move => Hp;apply: not_injective1_consequence.
-  Qed.
+    (iic_fun Rst h) ->  exists n p : nat, h n = h (n + p.+1).
+  Proof. by move => Hiic;apply: set_fin_codomain_prop. Qed.
   
-  Lemma iic_to_cyclic1 (h : nat -> (set T)):  
-    (iic_fun Rst h) -> exists n m, h n = h (n+m+1). 
-  Proof.
-    move => /iic_to_cyclic [n [n' [Hne Heq]]].
-    case H6: (n < n').
-    pose proof @hmap'' as poo.
-    + move: H6 => /hmap'' [p H6];rewrite -addn1 addnA in H6. 
-      by exists n, p;rewrite {1}Heq {1}H6. 
-    + have H7: (n' < n) by lia.
-      move: H7 => /hmap'' [p H7];rewrite -addn1 addnA in H7.  
-      by exists n', p;rewrite -{1}Heq {1}H7.
-  Qed.
-  
-  Lemma iic_to_allL(h : nat -> (set T)):  
-    (iic_fun Rst h) -> exists n p,
-        h n = h (n+p+1)
-        /\ allL Rst (mkseq (fun i => h (n + i+1)) p) (h n) (h n).
+  Lemma iic_to_allL  (h : nat -> (set T)):  
+    (iic_fun Rst h) -> 
+    exists n p, h n = h (n+p+1)
+           /\ allL Rst (mkseq (fun i => h (n + i+1)) p) (h n) (h n).
   Proof. 
-    move => /[dup] /iic_to_cyclic1 [n [m Heq]] /f2allL /(_ n m) HallL.
-    rewrite -Heq in HallL. 
+    move => /[dup] /iic_to_cyclic [n [m Heq]] /f2allL /(_ n m) HallL.
+    rewrite -addn1 addnA in Heq;rewrite -Heq in HallL. 
     by exists n, m.
   Qed.
 
@@ -806,16 +810,16 @@ Section test3.
   
   Lemma iic_and_prekernels_to_cyclic (h : nat -> (set T)):
     (iic_fun Rst h) -> (forall n, (h n) \in  (preKernel R M))
-    -> exists s, R.+ (s,s).
+    -> exists s, O.+ (s,s).
   Proof.
     move => Hiic Hpk;move: (iic_and_prekernels Hiic Hpk) => [n [p [Ha Hpk']]].
-    pose proof (@Rcyclic T R M (h n) (mkseq (fun i : nat => h (n + i + 1)) p)).
+    apply: (@Rcyclic T M O (h n) (mkseq (fun i : nat => h (n + i + 1)) p));last first.
   Admitted.
   
   Lemma choose: (exists h, (iic_fun Rst h) /\ (forall n, (h n) \in  (preKernel R M)))
                 \/ (exists S, (S \in (preKernel R M)) /\ ~ ( S \in ((Non_Mabsorbant R B): set (set T)))).
   Proof.
-    move: (@choose_sub _ Rst (preKernel R M) (Non_Mabsorbant R B) A0 A1) => [Hiic | [S Hker]].
+    move: (@choose_sub _ Rst (preKernel R M) (Non_Mabsorbant R B) A0 A1') => [Hiic | [S Hker]].
     by left.
     by right;exists S.
   Qed.
@@ -1483,21 +1487,11 @@ Section Blidia_Engel_Ext_Theorem.
     (A7 : Assumption7 R B (M R B)) (A8 : Assumption8 R B (M R B)).
   Context (A1: NotEmpty T) (Au: R `<=` O^-1).
   Context (Apk : forall X , RelIndep O [:set: X] <->  RelIndep (M R B) [:set: X]).
-  
+  Context (Anc : ~ ( exists s, R.+ (s,s))).
+
   Lemma prekernelP' S: 
     (prekernel_fin O R (M R B) S) <-> preKernel R (M R B) [:set: S].
   Proof. by rewrite (@prekernelE T O R (M R B) S) Apk. Qed.
-  
-  Lemma is_total :
-    forall S, (prekernel_fin O R (M R B) S) 
-           -> Mabsorbant R B [:set: S] 
-             \/ exists S', (prekernel_fin O R (M R B) S') 
-                   /\ ~ (S = S') /\ [:set: S] [<= O] [:set: S'].
-  Proof.
-    move => S Hs.
-  Proof.
-  Admitted. 
-
   
 End Blidia_Engel_Ext_Theorem.
 

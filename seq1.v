@@ -783,6 +783,14 @@ Section allset_Lifted.
          have ->: nth z st (size st).-1 = nth x st (size st).-1 by apply: nth_dv.
          exact.
   Qed.
+
+  Lemma allL_I U V st x y:
+    allL (U `&` V) st x y <-> allL U st x y /\  allL V st x y.
+  Proof. 
+    rewrite 3!(allL_nth' _ st x y x) /=.
+    split => [Huv | [Hu Hv] n Hs];first by split => n /Huv [? ?].
+    by move: Hs => /[dup] /Hu ? /Hv ?.
+  Qed.
   
   (** * a link with path.v using coercion from relation to rel *)
   Lemma Lift2path R st x y: (x::(rcons st y)) [L\in] R <-> path R x (rcons st y).
