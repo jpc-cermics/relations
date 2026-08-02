@@ -771,13 +771,15 @@ Section test3.
         exists X', preKernel R M X' /\  X [<= O] X' /\ ~ (X = X').
   Proof. by apply: extend. Qed.
   
-  Definition Rst :=[set Sp | Sp.1 [<= O] Sp.2 /\ ~ (Sp.1 = Sp.2)]%classic.
+  Definition Rst := ('Δ).^c `&` (leSet O). 
   
   Lemma A0 S: S \in (preKernel R M) `&` (Non_Mabsorbant R B) 
               -> exists S', S' \in (preKernel R M) /\ Rst (S, S').
   Proof.
-    rewrite inE => -[Hpk Hna];move: (extend_pk Hpk Hna) => [S' [/mem_set Hpk' Hle]].
-    by exists S';split;[ | rewrite /Rst /=].
+    rewrite inE => -[Hpk Hna];move: (extend_pk Hpk Hna) 
+            => [S' [/mem_set Hpk' [Hle Hd]]].
+    exists S';split;[ | ].
+    by []. by rewrite /Rst /= DeltaP.
   Qed.
 
   Lemma A1': exists S,  S \in (preKernel R M).
@@ -813,9 +815,8 @@ Section test3.
     -> exists s, O.+ (s,s).
   Proof.
     move => Hiic Hpk;move: (iic_and_prekernels Hiic Hpk) => [n [p [Ha Hpk']]].
-    apply: (@Rcyclic T M O (h n) (mkseq (fun i : nat => h (n + i + 1)) p));last first.
-    by [].
-  Admitted.
+    by apply: (@Rcyclic T M O (h n) (mkseq (fun i : nat => h (n + i + 1)) p));last first.
+  Qed.
   
   Lemma choose: (exists h, (iic_fun Rst h) /\ (forall n, (h n) \in  (preKernel R M)))
                 \/ (exists S, (S \in (preKernel R M)) /\ ~ ( S \in ((Non_Mabsorbant R B): set (set T)))).
@@ -824,8 +825,12 @@ Section test3.
     by left.
     by right;exists S.
   Qed.
-  
-  
+
+  Lemma last: (exists S, (S \in (preKernel R M)) /\ ~ ( S \in ((Non_Mabsorbant R B): set (set T)))).
+    move: choose => [[h [Hiic Hk]] | H1];last by [].
+    (* move: (iic_and_prekernels_to_cyclic Hiic Hk). *)
+  Admitted.
+
 End test3.
 End test3.
 
@@ -852,14 +857,13 @@ Section FinsetToClassical.
   
   Lemma in_finP A x: reflect (x \in [:set: A]) (x \in A).
   Proof.  by apply: (iffP idP);move/in_set_of_fin. Qed.
-  
-  (* XXXX Les fonctions suivantes devraient utiliser cancel *)
+
   Lemma set_to_finK : cancel fin_of_set set_of_fin.
   Proof.
     move=> A;rewrite predeqE /fin_of_set /set_of_fin /= => x.
     by split => [|?];rewrite inE;[move => /asboolP|apply/asboolP].
   Qed.
-
+  
   Lemma fin_to_setK : cancel set_of_fin fin_of_set.
   Proof.
     move=> A;apply/setP => x; case H1: (x \in A).
@@ -1456,9 +1460,9 @@ Section ChampetierExt_Theorem.
     have H3: Non_Mabsorbant R B [:set: S]
       by move: H1 => [y H1] H3;exists y;rewrite inE;
                     split;[ |rewrite notin_setE in H3;rewrite inE].
-    
-    move: (@extend T R B O [:set: S] A2 A6 A7 A8 Hpk H3) 
+    move: (@extend T R B O [:set: S] A2 A6 A7 A8 Hpk H3)
         => [S' [Hpre [H7 Hne]]].
+    rewrite /prekernel_fin.
     exists [:fin: S'].
     by rewrite prekernelP set_to_finK.
     split;first by  rewrite set_to_finK.
