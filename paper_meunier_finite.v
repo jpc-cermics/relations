@@ -497,7 +497,7 @@ Module f_periodic_for_leSet.
     (** strict increasing sequence of sets for (leSet R) *)
     Context (A0: @allL (set T) ('Δ.^c `&` (leSet R)) Sq S S).
     (** which are also (U,R)-prekernels *)
-    Context (A3: (S::Sq) [\in] (preKernel U R)).
+    Context (A3: (S::Sq) [\in] (preKernel R U R)).
     Implicit Types (sq: seq T) (s: T).
     
     Definition g := f S Sq.
@@ -511,7 +511,7 @@ Module f_periodic_for_leSet.
     Lemma g_inc n: ('Δ.^c `&` (leSet R)) ((g n),(g n.+1)).
     Proof. by apply: f_setR. Qed.
     
-    Lemma g_prekernel n: (g n) \in (preKernel U R).
+    Lemma g_prekernel n: (g n) \in (preKernel R U R).
     Proof. by apply: f_setS. Qed.
     
     (** * existence of j and aj such that aj \in (f j) and ~ (aj \in (f j.+1)) *)
@@ -563,12 +563,12 @@ Module f_periodic_for_leSet.
         (forall n k, g (n + k*(size (S::Sq))) = g n)
         /\ (exists a, a \in (g 0) /\ ~ (a \in (g 1)))
         /\ (forall n, (g n) [<= R] (g n.+1))
-        /\ (forall n, preKernel U R (g n)).
+        /\ (forall n, preKernel R U R (g n)).
     Proof.
       move: DiffE' => [j [_ [a [H1 H2]]]].
       exists (fun n => (g (j + n))). 
       rewrite addn0 addn1.
-      move: (@f_setS _ S Sq (preKernel U R)) A3 => Hpk /Hpk Hpk'.
+      move: (@f_setS _ S Sq (preKernel R U R)) A3 => Hpk /Hpk Hpk'.
       move: (@f_setR _ S Sq (leSet R)) A1 => Hinc /Hinc Hinc'.
       split;first by move => n k;rewrite addnA /g f_kperiodic.
       split;first by (exists a).
@@ -590,7 +590,7 @@ Module build_h.
     Context (G1: forall n k, g (n + k*(size (S::Sq))) = g n).
     Context (G2: exists a, a \in (g 0) /\ ~ (a \in (g 1))).
     Context (G3: forall n, (g n) [<= R] (g n.+1)).
-    Context (G4: forall n, preKernel U R (g n)).
+    Context (G4: forall n, preKernel R U R (g n)).
     
     Implicit Types (sq: seq T) (s: T).
 
@@ -738,7 +738,7 @@ Module BH.
     (** strict increasing sequence of sets for (leSet R) *)
     Context (A0: @allL (set T) ('Δ.^c `&` (leSet R)) Sq S S).
     (** which are also (U,R)-prekernels *)
-    Context (A3: (S::Sq) [\in] (preKernel U R)).
+    Context (A3: (S::Sq) [\in] (preKernel R U R)).
     Implicit Types (sq: seq T) (s: T).
     
     Lemma Rcyclic: exists s, R.+ (s,s).
@@ -767,14 +767,14 @@ Section test3.
   Context (A1: NotEmpty T) (Au: R `<=` O^-1).
   Context (Apk : forall X , RelIndep O X <-> RelIndep M X).
 
-  Lemma extend_pk X: preKernel R M X -> (Non_Mabsorbant R B X) ->
-        exists X', preKernel R M X' /\  X [<= O] X' /\ ~ (X = X').
+  Lemma extend_pk X: preKernel M R M X -> (Non_Mabsorbant R B X) ->
+        exists X', preKernel M R M X' /\  X [<= O] X' /\ ~ (X = X').
   Proof. by apply: extend. Qed.
   
   Definition Rst := ('Δ).^c `&` (leSet O). 
   
-  Lemma A0 S: S \in (preKernel R M) `&` (Non_Mabsorbant R B) 
-              -> exists S', S' \in (preKernel R M) /\ Rst (S, S').
+  Lemma A0 S: S \in (preKernel M R M) `&` (Non_Mabsorbant R B) 
+              -> exists S', S' \in (preKernel M R M) /\ Rst (S, S').
   Proof.
     rewrite inE => -[Hpk Hna];move: (extend_pk Hpk Hna) 
             => [S' [/mem_set Hpk' [Hle Hd]]].
@@ -782,7 +782,7 @@ Section test3.
     by []. by rewrite /Rst /= DeltaP.
   Qed.
 
-  Lemma A1': exists S,  S \in (preKernel R M).
+  Lemma A1': exists S,  S \in (preKernel M R M).
   Admitted.
 
   Lemma iic_to_cyclic (h : nat -> (set T)):  
@@ -800,10 +800,10 @@ Section test3.
   Qed.
 
   Lemma iic_and_prekernels (h : nat -> (set T)):
-    (iic_fun Rst h) -> (forall n, (h n) \in  (preKernel M O))
+    (iic_fun Rst h) -> (forall n, (h n) \in  (preKernel O M O))
     -> exists n p,
         allL Rst (mkseq (fun i => h (n + i+1)) p) (h n) (h n)
-        /\ ((h n)::(mkseq (fun i => h (n + i+1)) p)) [\in] (preKernel M O).
+        /\ ((h n)::(mkseq (fun i => h (n + i+1)) p)) [\in] (preKernel O M O).
   Proof.
     move => /iic_to_allL [n [p [_ Hiic]]] Hpk.
     exists n, p. split; first exact.
@@ -811,22 +811,22 @@ Section test3.
   Qed.
   
   Lemma iic_and_prekernels_to_cyclic (h : nat -> (set T)):
-    (iic_fun Rst h) -> (forall n, (h n) \in  (preKernel M O))
+    (iic_fun Rst h) -> (forall n, (h n) \in  (preKernel O M O))
     -> exists s, O.+ (s,s).
   Proof.
     move => Hiic Hpk;move: (iic_and_prekernels Hiic Hpk) => [n [p [Ha Hpk']]].
     by apply: (@Rcyclic T M O (h n) (mkseq (fun i : nat => h (n + i + 1)) p));last first.
   Qed.
   
-  Lemma choose: (exists h, (iic_fun Rst h) /\ (forall n, (h n) \in  (preKernel R M)))
-                \/ (exists S, (S \in (preKernel R M)) /\ ~ ( S \in ((Non_Mabsorbant R B): set (set T)))).
+  Lemma choose: (exists h, (iic_fun Rst h) /\ (forall n, (h n) \in  (preKernel M R M)))
+                \/ (exists S, (S \in (preKernel M R M)) /\ ~ ( S \in ((Non_Mabsorbant R B): set (set T)))).
   Proof.
-    move: (@choose_sub _ Rst (preKernel R M) (Non_Mabsorbant R B) A0 A1') => [Hiic | [S Hker]].
+    move: (@choose_sub _ Rst (preKernel M R M) (Non_Mabsorbant R B) A0 A1') => [Hiic | [S Hker]].
     by left.
     by right;exists S.
   Qed.
 
-  Lemma last: (exists S, (S \in (preKernel R M)) /\ ~ ( S \in ((Non_Mabsorbant R B): set (set T)))).
+  Lemma last: (exists S, (S \in (preKernel M R M)) /\ ~ ( S \in ((Non_Mabsorbant R B): set (set T)))).
     move: choose => [[h [Hiic Hk]] | H1];last by [].
     (* move: (iic_and_prekernels_to_cyclic Hiic Hk). *)
   Admitted.
@@ -1448,7 +1448,7 @@ Section ChampetierExt_Theorem.
   Context (Apk : forall X , RelIndep O [:set: X] <->  RelIndep (M R B) [:set: X]).
   
   Lemma prekernelP S: 
-    (prekernel_fin O R (M R B) S) <-> preKernel R (M R B) [:set: S].
+    (prekernel_fin O R (M R B) S) <-> preKernel (M R B) R (M R B) [:set: S].
   Proof. by rewrite (@prekernelE T O R (M R B) S) Apk. Qed.
   
   Lemma maximal_mabsorbant S:
@@ -1495,7 +1495,7 @@ Section Blidia_Engel_Ext_Theorem.
   Context (Anc : ~ ( exists s, R.+ (s,s))).
 
   Lemma prekernelP' S: 
-    (prekernel_fin O R (M R B) S) <-> preKernel R (M R B) [:set: S].
+    (prekernel_fin O R (M R B) S) <-> preKernel (M R B) R (M R B) [:set: S].
   Proof. by rewrite (@prekernelE T O R (M R B) S) Apk. Qed.
   
 End Blidia_Engel_Ext_Theorem.

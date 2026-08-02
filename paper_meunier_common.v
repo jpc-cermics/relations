@@ -34,8 +34,8 @@ Notation "A [<= U ] B" := (leSet U (A,B)).
 
 Definition setRM (T: Type) (U M: relation T) (S:set T) := S:#U `<=` M#S.
 
-Definition preKernel (T: Type) (U M: relation T) :=
-  [set S| RelIndep M S /\ (setRM U M S) /\ S != set0 ].
+Definition preKernel (T: Type) (O U M: relation T) :=
+  [set S| RelIndep O S /\ (setRM U M S) /\ S != set0 ].
 
 Section CheckAsym. 
   (** * Import main result from paper_monochromatic_f *)
@@ -392,13 +392,13 @@ Module Extend_nonMabsorbant_prekernel.
     (** the case one:  ~ ( y \in X:#(B) ) and candidate  (X `|` [set y]) *)
 
     Lemma case1_nonempty: forall y,
-        preKernel R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> (X `|` [set y]) != set0.
+        preKernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> (X `|` [set y]) != set0.
     Proof.
       by move => y [_ [_ /notempty_iff H0]] _ _ _;rewrite -notempty_iff setU_eq0 => -[? _].
     Qed.
 
     Lemma case1_indep: forall y, 
-        preKernel R M  X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> RelIndep M (X `|` [set y]).
+        preKernel M R M  X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> RelIndep M (X `|` [set y]).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4.
       have H5: ~ y \in X:#(R) by move => /inP/H0'/inP ?. 
@@ -407,7 +407,7 @@ Module Extend_nonMabsorbant_prekernel.
     Qed.
     
     Lemma case1_RMprop: forall y, 
-        preKernel R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) ->
+        preKernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) ->
         forall y', ~ (y' \in (X `|` [set y])) -> y' \in (X `|` [set y]):#(R) -> y' \in M#(X `|` [set y]).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4 y' H5.
@@ -427,7 +427,7 @@ Module Extend_nonMabsorbant_prekernel.
     Qed.
 
     Lemma case1_RMprop1: forall y, 
-        preKernel  R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> (X `|` [set y]):#(R) `<=` M#(X `|` [set y]).
+        preKernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> (X `|` [set y]):#(R) `<=` M#(X `|` [set y]).
     Proof.
       move => y H1 H2 H3 H4.
       pose proof (case1_RMprop H1 H2 H3 H4) as H5.
@@ -437,14 +437,14 @@ Module Extend_nonMabsorbant_prekernel.
     Qed.
     
     Lemma case1_Cprop: forall y,
-      preKernel R M  X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> X [<= O] (X `|` [set y]).
+      preKernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> X [<= O] (X `|` [set y]).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4 y' /= H5.
       by exists y';split;[rewrite inE;left; rewrite -inE |left].
     Qed.
     
     Lemma case1_notequal: forall y,
-      preKernel R M  X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) ->
+      preKernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) ->
       (exists x' : T, x' \in X `|` [set y] /\ ~ x' \in X).
     Proof.
       by move => y _ /inP [H1 _]; exists y;split;[rewrite inE;right|].
@@ -454,8 +454,8 @@ Module Extend_nonMabsorbant_prekernel.
     Proof. by move => [x' [HinX' HnotinX]] He;rewrite He in HnotinX. Qed.
     
     Lemma case1: forall y,
-        preKernel R M  X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) )
-        -> preKernel  R M (X `|` [set y]) /\  X [<= O] (X `|` [set y]) 
+        preKernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) )
+        -> preKernel M R M (X `|` [set y]) /\  X [<= O] (X `|` [set y]) 
           /\ ~ ( X = (X `|` [set y])).
     Proof.
       move => y H1 H2 H3 H4. 
@@ -470,7 +470,7 @@ Module Extend_nonMabsorbant_prekernel.
     (** the case one:  ( y \in X:#(B) ) and candidate  ((X `\` (Xy y)) `|` [set y]) *)
 
     Lemma case2_nonempty: forall y,
-        preKernel R M  X -> y \in Y -> (SeP y) -> y \in X:#(B) -> ((X `\` (Xy y)) `|` [set y]) != set0.
+        preKernel M R M X -> y \in Y -> (SeP y) -> y \in X:#(B) -> ((X `\` (Xy y)) `|` [set y]) != set0.
     Proof.
       move => y [_ [_ /notempty_iff H0]] _ _ _;rewrite -notempty_iff setU_eq0 => -[_ H1].
       have: y \in [set y] by rewrite inE. 
@@ -478,7 +478,7 @@ Module Extend_nonMabsorbant_prekernel.
     Qed.
     
     Lemma case2_indep: forall y, 
-        preKernel R M  X -> y \in Y -> (SeP y) -> y \in X:#(B) -> RelIndep M ((X `\` (Xy y)) `|` [set y]).
+        preKernel M R M X -> y \in Y -> (SeP y) -> y \in X:#(B) -> RelIndep M ((X `\` (Xy y)) `|` [set y]).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4.
       have H5: X `\` Xy y `<=` X by apply: subDsetl.
@@ -514,7 +514,7 @@ Module Extend_nonMabsorbant_prekernel.
     Qed.
       
     Lemma case2_RMprop (A7:Assumption7 R B M) (A8:Assumption8 R B M): forall y, 
-        preKernel  R M X -> y \in Y -> (SeP y) -> y \in X:#(B) 
+        preKernel M R M X -> y \in Y -> (SeP y) -> y \in X:#(B) 
         -> ( forall y', ~ (y' \in ((X `\` (Xy y)) `|` [set y]))
                   -> y' \in ((X `\` (Xy y)) `|` [set y]):#(R) -> y' \in M#((X `\` (Xy y)) `|` [set y])).
     Proof.
@@ -601,7 +601,7 @@ Module Extend_nonMabsorbant_prekernel.
     Qed.
     
     Lemma case2_RMprop1 (A7:Assumption7 R B M) (A8:Assumption8 R B M):
-      forall y, preKernel  R M X -> y \in Y -> (SeP y) -> y \in X:#(B) 
+      forall y, preKernel M R M X -> y \in Y -> (SeP y) -> y \in X:#(B) 
            -> ((X `\` (Xy y)) `|` [set y]):#(R) `<=` M#((X `\` (Xy y)) `|` [set y]).
     Proof.
       move => y H1 H2 H3 H4.
@@ -612,7 +612,7 @@ Module Extend_nonMabsorbant_prekernel.
     Qed.
     
     Lemma case2_Cprop (A6: Assumption6 B M O): forall y,
-      preKernel R M  X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
+      preKernel M R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
       -> X [<= O] ((X`\` (Xy y)) `|` [set y]).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /inP [H1 H2] H3 H4 x /=.
@@ -628,15 +628,15 @@ Module Extend_nonMabsorbant_prekernel.
     Qed.
     
     Lemma case2_notequal: forall y,
-      preKernel  R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) ) ->
+      preKernel M R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) ) ->
       (exists x' : T, x' \in ((X`\` (Xy y)) `|` [set y]) /\ ~ x' \in X).
     Proof.
       by move => y _ /inP [H1 _]; exists y;split;[rewrite inE;right|].
     Qed.
 
     Lemma case2 (A6: Assumption6 B M O)(A7: Assumption7 R B M)(A8: Assumption8 R B M) : forall y,
-        preKernel  R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
-        -> preKernel  R M ((X`\` (Xy y)) `|` [set y]) /\  X [<= O] ((X`\` (Xy y)) `|` [set y])
+        preKernel M R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
+        -> preKernel M R M ((X`\` (Xy y)) `|` [set y]) /\  X [<= O] ((X`\` (Xy y)) `|` [set y])
           /\ ~( X = ((X`\` (Xy y)) `|` [set y])).
     Proof.
       move => y H1 H2 H3 H4. 
@@ -650,8 +650,8 @@ Module Extend_nonMabsorbant_prekernel.
 
     (** * main result *)
     Lemma extend (A2: Assumption2 R) (A6: Assumption6 B M O) (A7: Assumption7 R B M) (A8: Assumption8 R B M):
-        preKernel  R M X -> Non_Mabsorbant ->
-        exists X', preKernel R M X' /\  X [<= O] X' /\ ~ ( X = X').
+        preKernel M R M X -> Non_Mabsorbant ->
+        exists X', preKernel M R M X' /\  X [<= O] X' /\ ~ ( X = X').
     Proof.
       move => H1 /(NonMabsorbant A2) [y [H2 H3]]. 
       have H4: y \in (X:#(B) `|` (X:#(B)).^c) by rewrite (setUv X:#(B)) inE.
