@@ -341,11 +341,18 @@ Module Extend_nonMabsorbant_prekernel.
 
   Definition Non_Mabsorbant := exists y, y \in Y.
 
-  (** * C'est l'ensemble X_y de la nouvelle preuve *)
+  Lemma Non_MabsorbantP: Non_Mabsorbant <-> ~ (Mabsorbant).
+  Proof.
+    split. 
+    by move => [y +] Hma;rewrite inE => [[/Hma HnotX HnotMX]]. 
+    contra => + y Hy => /(_ y). 
+    by rewrite (@notin_setE T Y y) /Y /=  not_andE => -[? // |/contrapT ?].
+  Qed.
 
-    (* begin snippet Tm:: no-out *)    
-    Definition Xy y:= [set x | x \in X /\ (B (x,y))].
-    (* end snippet Tm *)       
+  (** * C'est l'ensemble X_y de la nouvelle preuve *)
+  (* begin snippet Tm:: no-out *)    
+  Definition Xy y:= [set x | x \in X /\ (B (x,y))].
+  (* end snippet Tm *)       
     
     (* begin snippet TmI:: no-out *)    
     Lemma XyI: forall y, Xy y `<=` X.
@@ -672,5 +679,5 @@ Module Extend_nonMabsorbant_prekernel.
         
 End Extend_nonMabsorbant_prekernel.
 
-Export Extend_nonMabsorbant_prekernel (extend, M, Mabsorbant, Non_Mabsorbant).
+Export Extend_nonMabsorbant_prekernel (extend, M, Mabsorbant, Non_Mabsorbant, Non_MabsorbantP).
 

@@ -782,12 +782,19 @@ Section BHExt.
   Qed.
 
   Lemma last: (exists S, (S \in (preKernel M R M)) /\ ~ ( S \in ((Non_Mabsorbant R B): set (set T)))).
+  Proof.
     move: choose => [[h [Hiic Hk]] | H1];last by [].
     have HpkO: (forall n, (h n) \in  (preKernel O R M))
       by move => n; rewrite inE preKernelP -inE.
     by move: (iic_and_prekernels_to_cyclic Hiic HpkO) => HOcyclic.
   Qed.
   
+  Lemma last': (exists S, (S \in (preKernel M R M)) /\ (S \in ((Mabsorbant R B): set (set T)))).
+  Proof.
+    move: last => [S [Hpk Hnma]].
+    by exists S;move: Hnma;rewrite inE Non_MabsorbantP not_notE -inE => Hma.
+  Qed.
+
 End BHExt.
 End BHExt.
 
