@@ -493,11 +493,11 @@ Module f_periodic_for_leSet.
   (** * for the ('Δ.^c `&` (leSet R)) relation *)
   
   Section seq_leSet.
-    Context {T:choiceType} (U R: relation T) (S: set T) (Sq: seq (set T)).
+    Context {T:choiceType} (M U R: relation T) (S: set T) (Sq: seq (set T)).
     (** strict increasing sequence of sets for (leSet R) *)
     Context (A0: @allL (set T) ('Δ.^c `&` (leSet R)) Sq S S).
     (** which are also (U,R)-prekernels *)
-    Context (A3: (S::Sq) [\in] (preKernel R U R)).
+    Context (A3: (S::Sq) [\in] (preKernel R U M)).
     Implicit Types (sq: seq T) (s: T).
     
     Definition g := f S Sq.
@@ -511,7 +511,7 @@ Module f_periodic_for_leSet.
     Lemma g_inc n: ('Δ.^c `&` (leSet R)) ((g n),(g n.+1)).
     Proof. by apply: f_setR. Qed.
     
-    Lemma g_prekernel n: (g n) \in (preKernel R U R).
+    Lemma g_prekernel n: (g n) \in (preKernel R U M).
     Proof. by apply: f_setS. Qed.
     
     (** * existence of j and aj such that aj \in (f j) and ~ (aj \in (f j.+1)) *)
@@ -563,12 +563,12 @@ Module f_periodic_for_leSet.
         (forall n k, g (n + k*(size (S::Sq))) = g n)
         /\ (exists a, a \in (g 0) /\ ~ (a \in (g 1)))
         /\ (forall n, (g n) [<= R] (g n.+1))
-        /\ (forall n, preKernel R U R (g n)).
+        /\ (forall n, preKernel R U M (g n)).
     Proof.
       move: DiffE' => [j [_ [a [H1 H2]]]].
       exists (fun n => (g (j + n))). 
       rewrite addn0 addn1.
-      move: (@f_setS _ S Sq (preKernel R U R)) A3 => Hpk /Hpk Hpk'.
+      move: (@f_setS _ S Sq (preKernel R U M)) A3 => Hpk /Hpk Hpk'.
       move: (@f_setR _ S Sq (leSet R)) A1 => Hinc /Hinc Hinc'.
       split;first by move => n k;rewrite addnA /g f_kperiodic.
       split;first by (exists a).
@@ -584,13 +584,13 @@ Export f_periodic_for_leSet(exists_g).
 Module build_h.
   (** for any g satisfying G1-G4 assumptions choose a selection h *)
   Section build_h.
-    Context {T:choiceType} (U R: relation T) (g: nat -> set T).
+    Context {T:choiceType} (M U R: relation T) (g: nat -> set T).
     Context (S: set T) (Sq: seq (set T)).
 
     Context (G1: forall n k, g (n + k*(size (S::Sq))) = g n).
     Context (G2: exists a, a \in (g 0) /\ ~ (a \in (g 1))).
     Context (G3: forall n, (g n) [<= R] (g n.+1)).
-    Context (G4: forall n, preKernel R U R (g n)).
+    Context (G4: forall n, preKernel R U M (g n)).
     
     Implicit Types (sq: seq T) (s: T).
 
@@ -734,11 +734,11 @@ Module BH.
   (** * Now we assume finType *)
   Section BH.
     
-    Context {T:finType} (U R: relation T) (S: set T) (Sq: seq (set T)).
+    Context {T:finType} (M U R: relation T) (S: set T) (Sq: seq (set T)).
     (** strict increasing sequence of sets for (leSet R) *)
     Context (A0: @allL (set T) ('Δ.^c `&` (leSet R)) Sq S S).
     (** which are also (U,R)-prekernels *)
-    Context (A3: (S::Sq) [\in] (preKernel R U R)).
+    Context (A3: (S::Sq) [\in] (preKernel R U M)).
     Implicit Types (sq: seq T) (s: T).
     
     Lemma Rcyclic: exists s, R.+ (s,s).
@@ -766,10 +766,16 @@ Section test3.
     (A7: Assumption7 R B M) (A8: Assumption8 R B M). 
   Context (A1: NotEmpty T) (Au: R `<=` O^-1).
   Context (Apk : forall X , RelIndep O X <-> RelIndep M X).
-
+  Context (A_Onotcyclic: ~ (exists s, O.+ (s,s))).
+  
+  Lemma preKernelP S: 
+    preKernel O R M S <-> preKernel M R M S.
+  Proof. by rewrite /preKernel /= Apk. Qed.
+  
   Lemma extend_pk X: preKernel M R M X -> (Non_Mabsorbant R B X) ->
         exists X', preKernel M R M X' /\  X [<= O] X' /\ ~ (X = X').
-  Proof. by apply: extend. Qed.
+  Proof.
+    by apply: extend. Qed.
   
   Definition Rst := ('Δ).^c `&` (leSet O). 
   
@@ -783,6 +789,8 @@ Section test3.
   Qed.
 
   Lemma A1': exists S,  S \in (preKernel M R M).
+  Proof.
+    (** XXXXX  montrer qu'il existe un puit *)
   Admitted.
 
   Lemma iic_to_cyclic (h : nat -> (set T)):  
@@ -800,10 +808,10 @@ Section test3.
   Qed.
 
   Lemma iic_and_prekernels (h : nat -> (set T)):
-    (iic_fun Rst h) -> (forall n, (h n) \in  (preKernel O M O))
+    (iic_fun Rst h) -> (forall n, (h n) \in  (preKernel O R M))
     -> exists n p,
         allL Rst (mkseq (fun i => h (n + i+1)) p) (h n) (h n)
-        /\ ((h n)::(mkseq (fun i => h (n + i+1)) p)) [\in] (preKernel O M O).
+        /\ ((h n)::(mkseq (fun i => h (n + i+1)) p)) [\in] (preKernel O R M).
   Proof.
     move => /iic_to_allL [n [p [_ Hiic]]] Hpk.
     exists n, p. split; first exact.
@@ -811,11 +819,11 @@ Section test3.
   Qed.
   
   Lemma iic_and_prekernels_to_cyclic (h : nat -> (set T)):
-    (iic_fun Rst h) -> (forall n, (h n) \in  (preKernel O M O))
+    (iic_fun Rst h) -> (forall n, (h n) \in  (preKernel O R M))
     -> exists s, O.+ (s,s).
   Proof.
     move => Hiic Hpk;move: (iic_and_prekernels Hiic Hpk) => [n [p [Ha Hpk']]].
-    by apply: (@Rcyclic T M O (h n) (mkseq (fun i : nat => h (n + i + 1)) p));last first.
+    by apply: (@Rcyclic T M R O (h n) (mkseq (fun i : nat => h (n + i + 1)) p));last first.
   Qed.
   
   Lemma choose: (exists h, (iic_fun Rst h) /\ (forall n, (h n) \in  (preKernel M R M)))
@@ -828,8 +836,10 @@ Section test3.
 
   Lemma last: (exists S, (S \in (preKernel M R M)) /\ ~ ( S \in ((Non_Mabsorbant R B): set (set T)))).
     move: choose => [[h [Hiic Hk]] | H1];last by [].
-    (* move: (iic_and_prekernels_to_cyclic Hiic Hk). *)
-  Admitted.
+    have HpkO: (forall n, (h n) \in  (preKernel O R M))
+      by move => n; rewrite inE preKernelP -inE.
+    by move: (iic_and_prekernels_to_cyclic Hiic HpkO) => HOcyclic.
+  Qed.
 
 End test3.
 End test3.
