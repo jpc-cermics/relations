@@ -337,7 +337,7 @@ Module Extend_nonMabsorbant_prekernel.
   Definition Y:= [set y | ~ (y \in X) /\ ~ (y \in M#X)].
   (* end snippet Sx *)       
 
-  Definition Mabsorbant := forall y, ~ (y \in X) -> (y \in M#X).
+  Definition Mabsorbant: Prop := forall y, ~ (y \in X) -> (y \in M#X).
 
   Definition Non_Mabsorbant := exists y, y \in Y.
 

@@ -692,6 +692,7 @@ Export h_extra_props.
 Module BHExt.
 Section BHExt.
   (** * Extended Blida en H. Theorem *)
+  
   Context {T: finType} (O R B: relation T).
 
   Definition M := B `|` R.
@@ -705,24 +706,21 @@ Section BHExt.
   Lemma preKernelP S: 
     preKernel O R M S <-> preKernel M R M S.
   Proof. by rewrite /preKernel /= Apk. Qed.
-
-  Definition Rst := ('Δ).^c  `&` (leSet O).
   
   Lemma extend_pk X: preKernel M R M X -> (Non_Mabsorbant R B X) ->
-        exists X', preKernel M R M X' /\  Rst (X, X').
+        exists X', preKernel M R M X' /\ X [<< O] X'.
   Proof.
     move => Hpk Hnma.
     move: (@extend T R B O X A2 A6 A7 A8 Hpk Hnma) => [X' [Hpk' Hrst]].
-    by exists X';by rewrite /Rst /=.
+    by exists X'. 
   Qed.
   
   Lemma A0 S: S \in (preKernel M R M) `&` (Non_Mabsorbant R B) 
-              -> exists S', S' \in (preKernel M R M) /\ Rst (S, S').
+              -> exists S', S' \in (preKernel M R M) /\ (S [<< O] S').
   Proof.
     rewrite inE => -[Hpk Hna];move: (extend_pk Hpk Hna) 
             => [S' [/mem_set Hpk' [Hle Hd]]].
-    exists S';split;[ | ].
-    by []. by rewrite /Rst /=.
+    by exists S'. 
   Qed.
 
   Lemma A1': exists S,  S \in (preKernel M R M).
@@ -731,13 +729,13 @@ Section BHExt.
   Admitted.
 
   Lemma iic_to_cyclic (h : nat -> (set T)):  
-    (iic_fun Rst h) ->  exists n p : nat, h n = h (n + p.+1).
+    (iic_fun ([<< O]%O) h) ->  exists n p : nat, h n = h (n + p.+1).
   Proof. by move => Hiic;apply: set_fin_codomain_prop. Qed.
   
   Lemma iic_to_allL  (h : nat -> (set T)):  
-    (iic_fun Rst h) -> 
+    (iic_fun ([<< O]%O) h) -> 
     exists n p, h n = h (n+p+1)
-           /\ allL Rst (mkseq (fun i => h (n + i+1)) p) (h n) (h n).
+           /\ allL ([<< O]%O) (mkseq (fun i => h (n + i+1)) p) (h n) (h n).
   Proof. 
     move => /[dup] /iic_to_cyclic [n [m Heq]] /f2allL /(_ n m) HallL.
     rewrite -addn1 addnA in Heq;rewrite -Heq in HallL. 
@@ -745,18 +743,17 @@ Section BHExt.
   Qed.
 
   Lemma iic_and_prekernels (h : nat -> (set T)):
-    (iic_fun Rst h) -> (forall n, (h n) \in  (preKernel O R M))
+    (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (preKernel O R M))
     -> exists n p,
-        allL Rst (mkseq (fun i => h (n + i+1)) p) (h n) (h n)
+        allL ([<< O]%O) (mkseq (fun i => h (n + i+1)) p) (h n) (h n)
         /\ ((h n)::(mkseq (fun i => h (n + i+1)) p)) [\in] (preKernel O R M).
   Proof.
     move => /iic_to_allL [n [p [_ Hiic]]] Hpk.
-    exists n, p. split; first exact.
-    by apply: f2in.
+    by exists n, p;split;[| apply: f2in].
   Qed.
 
   Lemma Rcyclic S Sq: 
-    @allL (set T) ('Δ.^c `&` (leSet O)) Sq S S
+    @allL (set T) ([<< O]%O) Sq S S
     -> (S::Sq) [\in] (preKernel O R M)
     ->  exists s, O.+ (s,s).
   Proof.
@@ -769,17 +766,17 @@ Section BHExt.
     Qed.
   
   Lemma iic_and_prekernels_to_cyclic (h : nat -> (set T)):
-    (iic_fun Rst h) -> (forall n, (h n) \in  (preKernel O R M))
+    (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (preKernel O R M))
     -> exists s, O.+ (s,s).
   Proof.
     move => Hiic Hpk;move: (iic_and_prekernels Hiic Hpk) => [n [p [Ha Hpk']]].
     by apply: (Rcyclic Ha Hpk').
   Qed.
   
-  Lemma choose: (exists h, (iic_fun Rst h) /\ (forall n, (h n) \in  (preKernel M R M)))
+  Lemma choose: (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (preKernel M R M)))
                 \/ (exists S, (S \in (preKernel M R M)) /\ ~ ( S \in ((Non_Mabsorbant R B): set (set T)))).
   Proof.
-    move: (@choose_sub _ Rst (preKernel M R M) (Non_Mabsorbant R B) A0 A1') => [Hiic | [S Hker]].
+    move: (@choose_sub _ ([<< O]%O) (preKernel M R M) (Non_Mabsorbant R B) A0 A1') => [Hiic | [S Hker]].
     by left.
     by right;exists S.
   Qed.
