@@ -689,7 +689,7 @@ Section allset_Lifted.
     by have <- : last x s = last z s by apply: last_dv;apply:H1. 
   Qed.
   
-  Lemma nth_L0' st x y z: nth z (x::(rcons st y)) 1 = nth y st 0.
+    Lemma nth_L0' st x y z: nth z (x::(rcons st y)) 1 = nth y st 0.
   Proof. 
     case H1: (size st == 0);first by move: H1 => /eqP/size0nil -> /=.
     by move: H1 => /neq0_lt0n H1;rewrite /= nth_rcons H1;apply: nth_dv.
@@ -702,11 +702,7 @@ Section allset_Lifted.
   Lemma nth_L1 st x y z: 
     nth z (x :: rcons st y) (size st) = nth x st (size st).-1.
   Proof.
-    case H1: ((size st) == 0);first by move: H1 => /eqP/size0nil -> /=.
-    move: H1 => /neq0_lt0n /[dup] H1 /ltn_predK H2.
-    have H3: (size st).-1 < size st by rewrite H2. 
-    rewrite -H2 /= nth_rcons H3.
-    by have ->: (nth z st (size st).-1) = (nth x st (size st).-1) by apply: nth_dv.
+    by rewrite -rcons_cons nth_rcons /= ltnSn nth_last -last_nth.
   Qed.
   
   Lemma nth_L1' st x y z: nth z (x :: rcons st y) (size st).+1 = y.
@@ -720,22 +716,17 @@ Section allset_Lifted.
   Lemma nth_L2 st x y z (n: nat): 
     0 < n < size st -> nth z (x :: rcons st y) n = nth z st n.-1.
   Proof.
-    move => /andP [H1 H1'].
-    have H2: n.-1.+1 = n by apply: (@ltn_predK 0 n H1). 
-    rewrite -1!H2 /= nth_rcons. 
-    by have ->: n.-1 < size st by apply: ltn_trans _ H1';rewrite ltn_predL.
+    move => /andP [/ltn_predK H1 H1'];rewrite -1!H1 /= nth_rcons. 
+    by rewrite (leq_ltn_trans (leq_pred n) H1').  
   Qed.
   
   Lemma nth_L2' st x y z (n: nat): 
     0 < n < size st -> nth z (x :: rcons st y) n.+1 = nth z st n.
-  Proof.
-    move => /andP [H1 H1'].
-    have H2: n.-1.+1 = n by apply: (@ltn_predK 0 n H1).
-    by rewrite -1!H2 /= nth_rcons H2 H1'. 
+  Proof. by move => /andP [/ltn_predK H1 H1'];rewrite /= nth_rcons H1'. 
   Qed.
   
   Lemma nth_L3 st y z : nth y st 0 = (nth z (rcons st y) 0).
-  Proof. by rewrite -(@nth_L0' st y y z) /=. Qed.
+  Proof.   by rewrite -(@nth_L0' st y y z) /=. Qed.
   
   Lemma nth_L6 n st y z:
     n < (size st) -> nth z (rcons st y) n = nth y st n.

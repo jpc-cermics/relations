@@ -34,7 +34,6 @@ Notation "{ 'relation' T }" := (fin_relation T) (format "{ 'relation'  T }"): ty
 Definition Inc {T: Type} (SS: (set T)*(set T)) := SS.1 `<=` SS.2.
 Definition strictInc {T: Type} (SS: (set T)*(set T)) :=
   SS.1 `<=` SS.2 /\ ~ ( SS.1 = SS.2).
-
 Notation Inc' := <=%O.
 
 Module utilities.
