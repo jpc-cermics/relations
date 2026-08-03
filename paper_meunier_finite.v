@@ -705,13 +705,16 @@ Section BHExt.
   Lemma preKernelP S: 
     preKernel O R M S <-> preKernel M R M S.
   Proof. by rewrite /preKernel /= Apk. Qed.
+
+  Definition Rst := ('Δ).^c  `&` (leSet O).
   
   Lemma extend_pk X: preKernel M R M X -> (Non_Mabsorbant R B X) ->
-        exists X', preKernel M R M X' /\  X [<= O] X' /\ ~ (X = X').
+        exists X', preKernel M R M X' /\  Rst (X, X').
   Proof.
-    by apply: extend. Qed.
-  
-  Definition Rst := ('Δ).^c `&` (leSet O). 
+    move => Hpk Hnma.
+    move: (@extend T R B O X A2 A6 A7 A8 Hpk Hnma) => [X' [Hpk' Hrst]].
+    by exists X';by rewrite /Rst /=.
+  Qed.
   
   Lemma A0 S: S \in (preKernel M R M) `&` (Non_Mabsorbant R B) 
               -> exists S', S' \in (preKernel M R M) /\ Rst (S, S').
@@ -719,7 +722,7 @@ Section BHExt.
     rewrite inE => -[Hpk Hna];move: (extend_pk Hpk Hna) 
             => [S' [/mem_set Hpk' [Hle Hd]]].
     exists S';split;[ | ].
-    by []. by rewrite /Rst /= DeltaP.
+    by []. by rewrite /Rst /=.
   Qed.
 
   Lemma A1': exists S,  S \in (preKernel M R M).
@@ -1266,13 +1269,13 @@ Section ChampetierExt_Theorem.
       by move: H1 => [y H1] H3;exists y;rewrite inE;
                     split;[ |rewrite notin_setE in H3;rewrite inE].
     move: (@extend T R B O [:set: S] A2 A6 A7 A8 Hpk H3)
-        => [S' [Hpre [H7 Hne]]].
+        => [S' [Hpre [/DeltaCP H7 Hne]]].
     rewrite /prekernel_fin.
     exists [:fin: S'].
     by rewrite prekernelP set_to_finK.
     split;first by  rewrite set_to_finK.
     apply/negP => /eqP Heq.
-    by rewrite Heq set_to_finK in Hne.
+    by rewrite Heq set_to_finK in H7.
   Qed.
   
   Lemma Kernel_ChampetierExt: 

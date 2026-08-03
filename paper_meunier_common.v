@@ -35,7 +35,7 @@ Definition leSet T U: relation (set T) :=
 
 Notation "A [<= U ] B" := (leSet U (A,B)).
 Notation "[<= U ]%O" := (leSet U).
-Notation "A [<< U ] B" := (('Δ).^c `&` (leSet U) (A,B)). 
+Notation "A [<< U ] B" := ((('Δ).^c `&` (leSet U)) (A,B)). 
 Notation "[<< U ]%O" := (('Δ).^c `&` (leSet U)).
 
 Definition setRM (T: Type) (U M: relation T) (S:set T) := S:#U `<=` M#S.
@@ -469,8 +469,7 @@ Module Extend_nonMabsorbant_prekernel.
     
     Lemma case1: forall y,
         preKernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) )
-        -> preKernel M R M (X `|` [set y]) /\  X [<= O] (X `|` [set y]) 
-          /\ ~ ( X = (X `|` [set y])).
+        -> preKernel M R M (X `|` [set y]) /\  X [<< O] (X `|` [set y]).
     Proof.
       move => y H1 H2 H3 H4. 
       pose proof (case1_nonempty H1 H2 H3 H4).
@@ -478,7 +477,7 @@ Module Extend_nonMabsorbant_prekernel.
       pose proof (case1_RMprop1 H1 H2 H3 H4).
       pose proof (case1_Cprop H1 H2 H3 H4).
       move: (case1_notequal H1 H2 H3 H4) => /set_not_equal H7.
-      exact.
+      by split;[| split;[rewrite DeltaCP|]].
     Qed.
     
     (** the case one:  ( y \in X:#(B) ) and candidate  ((X `\` (Xy y)) `|` [set y]) *)
@@ -650,8 +649,7 @@ Module Extend_nonMabsorbant_prekernel.
 
     Lemma case2 (A6: Assumption6 B M O)(A7: Assumption7 R B M)(A8: Assumption8 R B M) : forall y,
         preKernel M R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
-        -> preKernel M R M ((X`\` (Xy y)) `|` [set y]) /\  X [<= O] ((X`\` (Xy y)) `|` [set y])
-          /\ ~( X = ((X`\` (Xy y)) `|` [set y])).
+        -> preKernel M R M ((X`\` (Xy y)) `|` [set y]) /\ X [<< O] ((X`\` (Xy y)) `|` [set y]).
     Proof.
       move => y H1 H2 H3 H4. 
       pose proof (case2_nonempty H1 H2 H3 H4).
@@ -659,13 +657,13 @@ Module Extend_nonMabsorbant_prekernel.
       pose proof (case2_RMprop1 A7 A8 H1 H2 H3 H4).
       pose proof (case2_Cprop A6 H1 H2 H3 H4).
       move: (case2_notequal H1 H2 H3 H4) => /set_not_equal H7.
-      exact.
+      by split;[|split;[rewrite DeltaCP|]].
     Qed.
 
     (** * main result *)
     Lemma extend (A2: Assumption2 R) (A6: Assumption6 B M O) (A7: Assumption7 R B M) (A8: Assumption8 R B M):
         preKernel M R M X -> Non_Mabsorbant ->
-        exists X', preKernel M R M X' /\  X [<= O] X' /\ ~ ( X = X').
+        exists X', preKernel M R M X' /\ (X [<< O] X'). 
     Proof.
       move => H1 /(NonMabsorbant A2) [y [H2 H3]]. 
       have H4: y \in (X:#(B) `|` (X:#(B)).^c) by rewrite (setUv X:#(B)) inE.

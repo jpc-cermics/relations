@@ -480,7 +480,7 @@ Section Paper.
     contra; move => H1 /inP H2. 
     have H3: Non_Mabsorbant R B X. move: H1 => [y H1] H3. exists y. rewrite inE.
     split. by []. rewrite notin_setE in H3. by rewrite inE.
-    move: (extend A2 A6 A7 A8 H2 H3)  => [X' [/inP H4 [H5 H6]]]. 
+    move: (extend A2 A6 A7 A8 H2 H3)  => [X' [/inP H4 [/DeltaCP H5 H6]]]. 
     by exists X';[ | split;[ | apply/eqP;symmetry]].
   Qed.
   
