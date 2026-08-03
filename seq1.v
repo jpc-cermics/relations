@@ -1030,3 +1030,49 @@ Section PathRel.
   Qed.
   
 End PathRel.
+
+
+Section link_with_path.
+
+  Lemma path_equal (T: Type) (x y t:T) (st: seq T) (R: relation T): 
+    path R x (rcons st y)= (behead (pairmap pair t (x::(rcons st y)))) [\in] R.
+  Proof.
+    elim/last_ind: st y.
+    by move=>y; rewrite /= andbT.
+    move => st a Hr y.
+    rewrite rcons_path (Hr a) /=.
+    pose proof (cat_rcons y (rcons st a) [::]). 
+    rewrite cats0 in H.
+    rewrite {}H pairmap_cat /=.
+    clear Hr.
+    elim: st x.
+    + rewrite /= => x.
+      rewrite andbC 2!andbT andbC. 
+      by have ->:  (R: rel T) a y = ((a, y) \in R)
+        by rewrite [RHS]inE. 
+    + move => b st.
+      rewrite /= !last_rcons => /(_ b) Hr x.
+      rewrite /=  !last_rcons in Hr.
+      rewrite -Hr /=.
+      by rewrite andbA. 
+  Qed.
+
+  Lemma path_equal' (T: Type) (x y t:T) (st: seq T) (R: relation T): 
+    path R x (rcons st y)= (Lift' t (x::(rcons st y))) [\in] R.
+  Proof.
+    rewrite /Lift'; apply:  path_equal.
+  Qed.
+
+  Lemma path_equal'' (T: Type) (x y t:T) (st: seq T) (R: relation T): 
+    path R x (rcons st y)= allL R st x y.
+  Proof.
+    rewrite /allL. 
+    rewrite (Lift_eq x (x :: rcons st y)).
+    apply: path_equal'.
+  Qed.
+  
+End link_with_path.
+
+
+
+
