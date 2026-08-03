@@ -25,12 +25,18 @@ Local Open Scope classical_set_scope.
 Definition NotEmpty (T: Type) := (exists (v0:T), (v0 \in setT)).
 
 Reserved Notation "A [<=] B" (at level 4, no associativity). 
+(* set order derived from strict porder on elements *)
 Reserved Notation "A [<= U ] B" (at level 4, no associativity). 
+(* strict set order derived from set order *)
+Reserved Notation "A [<< U ] B" (at level 4, no associativity).
 
 Definition leSet T U: relation (set T) := 
   [set AB |forall (a:T), (a \in AB.1) -> exists b, b \in AB.2 /\ ( a = b \/ U (a,b)) ].
 
 Notation "A [<= U ] B" := (leSet U (A,B)).
+Notation "[<= U ]%O" := (leSet U).
+Notation "A [<< U ] B" := (('Δ).^c `&` (leSet U) (A,B)). 
+Notation "[<< U ]%O" := (('Δ).^c `&` (leSet U)).
 
 Definition setRM (T: Type) (U M: relation T) (S:set T) := S:#U `<=` M#S.
 
@@ -173,7 +179,7 @@ Section Set_relation.
   (* end snippet lesetI *)
   Proof. by move => H1 /= a /inP/H1 ?;exists a;split;[rewrite inE|left]. Qed.
 
-  Lemma leI U S: S `<=` U -> (leSet S)  `<=` (leSet U).
+  Lemma leI U S: S `<=` U -> ([<= S]%O)  `<=` ([<= U]%O).
   Proof.
     move => H1;rewrite 2!lesetE => [[A B]] H2.
     by apply: subset_trans H2 _;apply: Fset_inc; apply: setUS.
@@ -185,14 +191,14 @@ End Set_relation.
 Section Set_order. 
   (** * the previous relation [<= U] is an order relation on U-independent sets *)
 
-  Context (T : eqType).
+  Context (T: eqType).
   Implicit Types (U S: relation T) (A B: set T).
   
   Axiom proof_irrelevance: forall (P : Prop) (p q : P), p = q.
   
   Section Util.
     (** ingredients *)
-    Lemma le_trans_if_tr U: transitive U -> transitive (leSet U).
+    Lemma le_trans_if_tr U: transitive U -> transitive ([<= U]%O).
     Proof.
       rewrite lesetE => /Tclos_iff H0 A B C /= H1 H2.
       have : ('Δ  `|` U)#B `<=` ('Δ  `|` U)#(('Δ  `|` U)#C) by apply: Fset_inc1.
@@ -250,6 +256,7 @@ Section Set_order.
   Qed.
   
 End Set_order. 
+
 
 Section Assumptions. 
 
