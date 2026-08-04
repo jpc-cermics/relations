@@ -40,6 +40,9 @@ Notation "[<< U ]%O" := (('Δ).^c `&` (leSet U)).
 
 Definition setRM (T: Type) (U M: relation T) (S:set T) := S:#U `<=` M#S.
 
+Definition Absorbant {T: Type} (M: relation T) := 
+  [set S: set T| forall y, ~ (y \in S) -> (y \in M#S)].
+
 Definition preKernel (T: Type) (O U M: relation T) :=
   [set S| RelIndep O S /\ (setRM U M S) /\ S != set0 ].
 
@@ -336,19 +339,17 @@ Module Extend_nonMabsorbant_prekernel.
   (* begin snippet Sx:: no-out *)    
   Definition Y:= [set y | ~ (y \in X) /\ ~ (y \in M#X)].
   (* end snippet Sx *)       
-
-  Definition Mabsorbant: Prop := forall y, ~ (y \in X) -> (y \in M#X).
-
+  
   Definition Non_Mabsorbant := exists y, y \in Y.
 
-  Lemma Non_MabsorbantP: Non_Mabsorbant <-> ~ (Mabsorbant).
+  Lemma Non_MabsorbantP: Non_Mabsorbant <-> ~ (Absorbant M X).
   Proof.
     split. 
     by move => [y +] Hma;rewrite inE => [[/Hma HnotX HnotMX]]. 
     contra => + y Hy => /(_ y). 
     by rewrite (@notin_setE T Y y) /Y /=  not_andE => -[? // |/contrapT ?].
   Qed.
-
+  
   (** * C'est l'ensemble X_y de la nouvelle preuve *)
   (* begin snippet Tm:: no-out *)    
   Definition Xy y:= [set x | x \in X /\ (B (x,y))].
@@ -662,10 +663,10 @@ Module Extend_nonMabsorbant_prekernel.
 
     (** * main result *)
     Lemma extend (A2: Assumption2 R) (A6: Assumption6 B M O) (A7: Assumption7 R B M) (A8: Assumption8 R B M):
-        preKernel M R M X -> Non_Mabsorbant ->
-        exists X', preKernel M R M X' /\ (X [<< O] X'). 
+      preKernel M R M X -> ~ (Absorbant M X) 
+      -> exists X', preKernel M R M X' /\ (X [<< O] X'). 
     Proof.
-      move => H1 /(NonMabsorbant A2) [y [H2 H3]]. 
+      move => H1 /Non_MabsorbantP/(NonMabsorbant A2) [y [H2 H3]]. 
       have H4: y \in (X:#(B) `|` (X:#(B)).^c) by rewrite (setUv X:#(B)) inE.
       move: H4 => /inP [ H4 | H4];rewrite -inE in H4.
       by move: (case2 A6 A7 A8 H1 H2 H3 H4) => H5;exists (X `\` Xy y `|` [set y]).
@@ -677,5 +678,7 @@ Module Extend_nonMabsorbant_prekernel.
         
 End Extend_nonMabsorbant_prekernel.
 
-Export Extend_nonMabsorbant_prekernel (extend, M, Mabsorbant, Non_Mabsorbant, Non_MabsorbantP).
+Export Extend_nonMabsorbant_prekernel (extend, M).
+
+
 

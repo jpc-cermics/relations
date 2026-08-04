@@ -475,11 +475,16 @@ Section Paper.
   Lemma main_lemma X 
     (A2: Assumption2 R) (A6: Assumption6 B M' O) (A7: Assumption7 R B M') 
     (A8: Assumption8 R B M') :
-    IsMaximal X -> Mabsorbant R B X.
+    IsMaximal X -> Absorbant M' X.
   Proof.
     contra; move => H1 /inP H2. 
-    have H3: Non_Mabsorbant R B X. move: H1 => [y H1] H3. exists y. rewrite inE.
-    split. by []. rewrite notin_setE in H3. by rewrite inE.
+    have H3: ~ (Absorbant M' X).
+    {
+      move: H1 => [y H1] H3.
+      rewrite notin_setE in H3.
+      rewrite /Absorbant /mkset => /(_ y) H4. 
+      by move: H1 => /H4;rewrite inE => H1.
+    }
     move: (extend A2 A6 A7 A8 H2 H3)  => [X' [/inP H4 [/DeltaCP H5 H6]]]. 
     by exists X';[ | split;[ | apply/eqP;symmetry]].
   Qed.

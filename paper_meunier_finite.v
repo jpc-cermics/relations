@@ -707,7 +707,7 @@ Section BHExt.
     preKernel O R M S <-> preKernel M R M S.
   Proof. by rewrite /preKernel /= Apk. Qed.
   
-  Lemma extend_pk X: preKernel M R M X -> (Non_Mabsorbant R B X) ->
+  Lemma extend_pk X: preKernel M R M X -> ~ (Absorbant M X) ->
         exists X', preKernel M R M X' /\ X [<< O] X'.
   Proof.
     move => Hpk Hnma.
@@ -715,7 +715,7 @@ Section BHExt.
     by exists X'. 
   Qed.
   
-  Lemma A0 S: S \in (preKernel M R M) `&` (Non_Mabsorbant R B) 
+  Lemma A0 S: S \in ((preKernel M R M) `&` (Absorbant M).^c)
               -> exists S', S' \in (preKernel M R M) /\ (S [<< O] S').
   Proof.
     rewrite inE => -[Hpk Hna];move: (extend_pk Hpk Hna) 
@@ -774,14 +774,17 @@ Section BHExt.
   Qed.
   
   Lemma choose: (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (preKernel M R M)))
-                \/ (exists S, (S \in (preKernel M R M)) /\ ~ ( S \in ((Non_Mabsorbant R B): set (set T)))).
+                \/ (exists S, (S \in (preKernel M R M)) /\ S \in (Absorbant M)).
   Proof.
-    move: (@choose_sub _ ([<< O]%O) (preKernel M R M) (Non_Mabsorbant R B) A0 A1') => [Hiic | [S Hker]].
+    move: (@choose_sub _ ([<< O]%O) (preKernel M R M) (Absorbant M).^c A0 A1') => [Hiic | [S [Hpk Hna]]].
     by left.
-    by right;exists S.
+    right. exists S.
+    split. by [].
+    by move: Hna;rewrite 2!inE /= => /contrapT.
   Qed.
-
-  Lemma last: (exists S, (S \in (preKernel M R M)) /\ ~ ( S \in ((Non_Mabsorbant R B): set (set T)))).
+  
+  (** * Define Kernel as the intersection XXXXXXX *)
+  Lemma last: exists S, S \in (preKernel M R M) /\ S \in (Absorbant M).
   Proof.
     move: choose => [[h [Hiic Hk]] | H1];last by [].
     have HpkO: (forall n, (h n) \in  (preKernel O R M))
@@ -789,12 +792,6 @@ Section BHExt.
     by move: (iic_and_prekernels_to_cyclic Hiic HpkO) => HOcyclic.
   Qed.
   
-  Lemma last': (exists S, (S \in (preKernel M R M)) /\ (S \in ((Mabsorbant R B): set (set T)))).
-  Proof.
-    move: last => [S [Hpk Hnma]].
-    by exists S;move: Hnma;rewrite inE Non_MabsorbantP not_notE -inE => Hma.
-  Qed.
-
 End BHExt.
 End BHExt.
 
@@ -1259,12 +1256,16 @@ Section ChampetierExt_Theorem.
   Lemma maximal_mabsorbant S:
     (prekernel_fin O R (M R B) S) /\ (forall U, prekernel_fin O R (M R B) U ->
                                   [:set: S] [<= O] [:set: U] -> S = U)
-    -> Mabsorbant R B [:set: S].
+    -> Absorbant (M R B) [:set: S].
   Proof.
     contra; move => H1 /prekernelP Hpk.
-    have H3: Non_Mabsorbant R B [:set: S]
-      by move: H1 => [y H1] H3;exists y;rewrite inE;
-                    split;[ |rewrite notin_setE in H3;rewrite inE].
+    have H3: ~ Absorbant (M R B) [:set: S].
+    {
+      move: H1 => [y H1] H3.
+      rewrite notin_setE in H3.
+      rewrite /Absorbant /mkset => /(_ y) H4. 
+      by move: H1 => /H4;rewrite inE => H1.
+    }
     move: (@extend T R B O [:set: S] A2 A6 A7 A8 Hpk H3)
         => [S' [Hpre [/DeltaCP H7 Hne]]].
     rewrite /prekernel_fin.
@@ -1276,7 +1277,7 @@ Section ChampetierExt_Theorem.
   Qed.
   
   Lemma Kernel_ChampetierExt: 
-    exists (S : {set T}), RelIndep (M R B) [:set: S] /\ Mabsorbant R B [:set: S].
+    exists (S : {set T}), RelIndep (M R B) [:set: S] /\ Absorbant (M R B) [:set: S].
   Proof.
     (* There exist a maximal set *)
     move: (@Maximal T O R (M R B) A1 Asp Au) => [S Hm].
@@ -1408,7 +1409,7 @@ Section Champ.
   Proof. by move => x y [[_ H1] _]. Qed.
 
   Lemma Kernel_Champetier: 
-    exists (S : {set T}), RelIndep (M R B) [:set: S] /\ Mabsorbant R B [:set: S].
+    exists (S : {set T}), RelIndep (M R B) [:set: S] /\ Absorbant (M R B) [:set: S].
   Proof.
     by pose proof (@Kernel_ChampetierExt T O R B (haveA2) (haveA6)
                      A7 A8 A1 Asp (Au) (Apk)).
