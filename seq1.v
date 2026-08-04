@@ -600,14 +600,14 @@ Section allset_Lifted.
   Lemma allL_splitl R st x y:  allL R st x y <-> (x::st) [L\in] R /\ R ((last x st), y).
   Proof. 
     split;first by rewrite /allL -rcons_cons => H1;apply: (@Lift_in_splitr _ R (x::st) x y). 
-    elim/last_ind: st x y => [x y [_ ?] // | st x' Hr x y [H1 +]];first  by rewrite allL0'.
+    elim/last_ind: st x y => [x y [_ ?] // | st x' Hr x y [H1 +]];first  by rewrite allL0 inE.
     by rewrite /allL -rcons_cons Lift_rcc last_rcons allset_rcons.
   Qed.
   
   Lemma allL_splitr R st x y:  allL R st x y <-> R (x, head y st) /\ (rcons st y) [L\in] R. 
   Proof. 
     split;first by move: (@Lift_in_splitl _ R (rcons st y) x y);rewrite head_rcons size_rcons => H2;apply: H2.
-    elim: st x y => [x y [? _] // | x' st Hr x y [ H1 H2]];first by rewrite allL0'.
+    elim: st x y => [x y [? _] // | x' st Hr x y [ H1 H2]];first by rewrite allL0 inE.
     by rewrite /allL  Lift_crc allset_cons.
   Qed.
   
@@ -957,8 +957,8 @@ Section PathRel.
     elim => [ | n' H].
     - rewrite /iter /PathRel_n DeltaCl /mkset predeqE => [[x y]].
       split => [ H | ].
-      by (exists [::]); rewrite allL0' /=.
-      by move => [p [/size0nil -> /allL0' H2]].
+      by (exists [::]); rewrite allL0 inE /=.
+      by move => [p [/size0nil -> ]];rewrite allL0 inE.
     - rewrite -add1n iter_compose H /iter DeltaCl /mkset predeqE => [[x y]].
       split => [[z [/= H1 [p [H2 /= H3]]]] |[p [H1 H2]]];
                 first by (exists (z::p));rewrite -H2 allL_c H3 andbT /= inE. 

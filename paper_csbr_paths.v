@@ -114,7 +114,7 @@ Section Active_paths.
       <-> Active_path X R [:: eo2 & p] eo2.1.1 (last eo2 p).1.2 /\ ActiveOe' X R (eo1, eo2).
   Proof.
     elim => [ | eo3 p _] eo1 eo2.
-    - split;first by move => [_ [/= _ /allL0' /[dup] ?] [H1 [H2 _]]]. 
+    - split;first by move => [_ [/= _ +]];rewrite allL0 inE => /[dup] ? [H1 [H2 _]].
       by move => [[_ [<- H3]] /inP H4] /=; rewrite allL0.
     - split;first by move => [? [/= ? /= /allL_c/andP [/inP ? ?]]].
       by move => [[_ [H3 H4]] /inP H5] /=;rewrite allL_c;split;[|split;[|apply /andP]].
@@ -182,8 +182,8 @@ Section Active_paths.
       <-> Active_path X R (rcons p eo1) (head eo1 p).1.1 eo1.1.2 /\ ActiveOe' X R (eo1, eo2).
   Proof.
     elim => [ | eo p H1] eo1 eo2.
-    - split; last by  move => [_ H2] /=;rewrite allL0'.
-      by move => [_ [_ /= /allL0' H3]];move: (H3) => [H1 _].  
+    - split; last by  move => [_ H2] /=;rewrite allL0 inE.
+      by move => [_ [/= _ +]];rewrite allL0 inE => /[dup] ? [H1 [H2 _]].
     - rewrite !rcons_cons Active_path_crc'.
       split; first by move => /allL_rc/andP [/inP H2 H3];rewrite Active_path_crc.
       by rewrite Active_path_crc'  => -[H2 /inP H3]; rewrite allL_rc;apply/andP.
@@ -1476,7 +1476,7 @@ Section Active_path_unique.
              move: H2;move => [H2 [_ [_ [_ H8 ]]]].
              exists [::z];rewrite last_cons /last.
              split. 
-             by rewrite /= allL0'.
+             by rewrite /= allL0 inE.
              by [].
     Qed.
 
