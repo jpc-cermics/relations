@@ -79,10 +79,6 @@ Fixpoint Lift (T: Type) (st: seq T): seq (T*T) :=
 Notation "s [L\in] R" := (Lift s) [\in] R.
 (* end snippet Liftnota *)
 
-(* another equivalent definition *)
-Definition Lift' (T: Type) (t:T) (st: seq T) := 
-  (behead (pairmap pair t st)).
-
 (** * s [Suc\in] R: consecutive elements of s satisfy relation R *)
 (** * we later prove that: s [L\in] R <-> s [Suc\in] R *)
   
@@ -284,13 +280,6 @@ Section Lift_facts.
 
   Context {T : Type}.
   Implicit Types (T : Type) (st: seq T) (x y z: T) (spt: seq (T*T)).
-  
-  Lemma Lift_eq: forall (t:T) (st:seq T), Lift st = Lift' t st.
-  Proof.
-    move => t;elim => [// | t1 s _];elim: s t1 => [// | t2 s H1 t1 //]. 
-    have -> : Lift [:: t1, t2 & s] = (t1,t2)::(Lift [::t2 & s]) by split.
-    by rewrite H1.
-  Qed.
   
   Lemma Lift_cc st x y:  Lift [::x,y & st] = [::(x,y) & Lift [::y & st]].
   Proof.  by split. Qed.
@@ -1033,45 +1022,56 @@ End PathRel.
 
 
 Section link_with_path.
+  (** * whe have three equivalent formulations *)
+  (** * path R x (rcons st y) *)
+  (** * = (behead (pairmap pair t (x::(rcons st y))) [\in] R *)
+  (** * = allL R st x y. *)
 
-  Lemma path_equal (T: Type) (x y t:T) (st: seq T) (R: relation T): 
-    path R x (rcons st y)= (behead (pairmap pair t (x::(rcons st y)))) [\in] R.
+  Local Lemma Lift_eq {T: Type}: forall (t:T) (st:seq T),
+      Lift st = (behead (pairmap pair t st)).
   Proof.
-    elim/last_ind: st y.
-    by move=>y; rewrite /= andbT.
-    move => st a Hr y.
-    rewrite rcons_path (Hr a) /=.
-    pose proof (cat_rcons y (rcons st a) [::]). 
-    rewrite cats0 in H.
-    rewrite {}H pairmap_cat /=.
-    clear Hr.
-    elim: st x.
-    + rewrite /= => x.
-      rewrite andbC 2!andbT andbC. 
-      by have ->:  (R: rel T) a y = ((a, y) \in R)
-        by rewrite [RHS]inE. 
-    + move => b st.
-      rewrite /= !last_rcons => /(_ b) Hr x.
-      rewrite /=  !last_rcons in Hr.
-      rewrite -Hr /=.
-      by rewrite andbA. 
-  Qed.
-
-  Lemma path_equal' (T: Type) (x y t:T) (st: seq T) (R: relation T): 
-    path R x (rcons st y)= (Lift' t (x::(rcons st y))) [\in] R.
-  Proof.
-    rewrite /Lift'; apply:  path_equal.
-  Qed.
-
-  Lemma path_equal'' (T: Type) (x y t:T) (st: seq T) (R: relation T): 
-    path R x (rcons st y)= allL R st x y.
-  Proof.
-    rewrite /allL. 
-    rewrite (Lift_eq x (x :: rcons st y)).
-    apply: path_equal'.
+    move => t;elim => [// | t1 s _];elim: s t1 => [// | t2 s H1 t1 //]. 
+    have -> : Lift [:: t1, t2 & s] = (t1,t2)::(Lift [::t2 & s]) by split.
+    by rewrite H1.
   Qed.
   
+  Lemma path_bppE {T: Type} (x t:T) (st: seq T) (R: relation T): 
+    path R x st = (behead (pairmap pair t (x::st))) [\in] R.
+  Proof.
+    elim/last_ind: st => [//| st a Hr]. 
+    rewrite rcons_path {}Hr /=.
+    elim/last_ind: st x => [x| st b _ x];first by rewrite /= andbT [RHS]inE.
+    move: (cat_rcons a (rcons st b) [::]); rewrite cats0 => ->.
+    rewrite pairmap_cat /= last_rcons all_cat /= andbT.
+    by have -> :  (R: rel T) b a = ((b, a) \in R) by rewrite [RHS]inE. 
+  Qed.
+  
+  Lemma path_allLE (T: Type) (x y:T) (st: seq T) (R: relation T): 
+    path R x (rcons st y) = allL R st x y.
+  Proof. rewrite /allL (Lift_eq x (x :: rcons st y));apply: path_bppE. Qed.
+  
 End link_with_path.
+
+Section test.
+  (** * Using the above equivalences we can obtain shorter proofs *)
+  Context {T: Type}.
+  
+  Implicit Types (R: relation T) (X Y: set T) (spt: seq (T*T)) (x y z:T).  
+  
+  Lemma allL_nth_new R st x y z:
+    allL R st x y 
+    <-> (forall n, n <= size st -> R ((nth z (x::(rcons st y)) n), (nth z (x::(rcons st y)) n.+1))).
+  Proof. 
+    rewrite -path_allLE;split => [+ n | ]. 
+    + move => /(@pathP _ _ _ _ z) /(_ n) Hp Hn. 
+      rewrite -(@rcons_cons T x st y).
+      by apply/asboolP/Hp;rewrite size_rcons ltnS.
+    + move => Hnth.
+      apply/(@pathP _ _ _ _ z) => n;rewrite size_rcons ltnS => Hs.
+      by apply/asboolP/Hnth.
+  Qed.
+  
+End test.
 
 
 
