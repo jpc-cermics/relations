@@ -212,44 +212,44 @@ Export f_periodic.
 
 Module injectivity.
   Section injectivity.
-  
-  Lemma not_injective_prop (T: Type) (h: nat -> T):
-    ~ (injective h) ->exists n p, h n = h (n + p.+1).
-  Proof. 
-    move => Hinj.
-    have [n [n' [Hd Hh]]]: exists n n', n <> n' /\ h n = h n'.
-    {
-      apply: contrapT => Hc.
-      apply: Hinj => k k' Ehkk'.
-      apply: contrapT => Nkk'.
-      by apply: Hc;exists k, k'.
-    }
-    have Hkk' k k': k < k' -> exists p, k'= k + p.+1.
-    {
-      elim: k' => [//| k' Hr H5].
-      case H6: (k == k').
-      by move: H6 => /eqP ->;(exists 0);rewrite addn1.
-      by (have /Hr [p ->]: k < k' by lia);exists p.+1;lia. 
-    }
-    case H6: (n < n').
-    by move: H6 => /Hkk' [p H6];exists n, p;rewrite H6 in Hh.
-    have H7: (n' < n) by lia.
-    by move: H7 => /Hkk' [p H7];exists n',p;rewrite -H7 Hh. 
-  Qed.
+    
+    Lemma not_injective_prop (T: Type) (h: nat -> T):
+      ~ (injective h) ->exists n p, h n = h (n + p.+1).
+    Proof. 
+      move => Hinj.
+      have [n [n' [Hd Hh]]]: exists n n', n <> n' /\ h n = h n'.
+      {
+        apply: contrapT => Hc.
+        apply: Hinj => k k' Ehkk'.
+        apply: contrapT => Nkk'.
+        by apply: Hc;exists k, k'.
+      }
+      have Hkk' k k': k < k' -> exists p, k'= k + p.+1.
+      {
+        elim: k' => [//| k' Hr H5].
+        case H6: (k == k').
+        by move: H6 => /eqP ->;(exists 0);rewrite addn1.
+        by (have /Hr [p ->]: k < k' by lia);exists p.+1;lia. 
+      }
+      case H6: (n < n').
+      by move: H6 => /Hkk' [p H6];exists n, p;rewrite H6 in Hh.
+      have H7: (n' < n) by lia.
+      by move: H7 => /Hkk' [p H7];exists n',p;rewrite -H7 Hh. 
+    Qed.
 
-  Context {T:finType}.
+    Context {T:finType}.
 
-  Lemma fin_codomain_prop (h: nat -> T): exists n p, h n = h (n + p.+1).
-  Proof.
-    apply: not_injective_prop.
-    (** * proving now that h is not injective *)
-    move => hinj.
-    have inj_restrict : injective (fun i : 'I_(#|T|).+1 => h i)
-      by move=> x y /hinj Exy;apply/val_inj. 
-    move: (leq_card _  inj_restrict) => H1.
-    by rewrite card_ord ltnn in H1. 
-  Qed.
-  
+    Lemma fin_codomain_prop (h: nat -> T): exists n p, h n = h (n + p.+1).
+    Proof.
+      apply: not_injective_prop.
+      (** * proving now that h is not injective *)
+      move => hinj.
+      have inj_restrict : injective (fun i : 'I_(#|T|).+1 => h i)
+        by move=> x y /hinj Exy;apply/val_inj. 
+      move: (leq_card _  inj_restrict) => H1.
+      by rewrite card_ord ltnn in H1. 
+    Qed.
+    
   End injectivity.
 End injectivity.
 Export injectivity(fin_codomain_prop,not_injective_prop).
@@ -389,7 +389,7 @@ Module leSet_choice.
     Context {T:choiceType} (U: relation T) (f : nat -> set T).
     Context (A0: exists s, s\in (f 0)) (A1: forall n, (f n) [<= U] (f n.+1)).
     
-    Definition V (p1: nat*T) := 
+    #[local] Definition V (p1: nat*T) := 
       [set p | ((p.2 \in (f p.1) /\ (p1.2 \in (f p1.1) /\ (p1.2 = p.2 \/ U (p1.2,p.2)))) 
                \/ ~(p1.2 \in (f p1.1))) /\ p.1 = p1.1.+1 ]%classic.
 
@@ -449,7 +449,7 @@ Export leSet_choice(choose_inc_seq).
 
 Module f_periodic_for_leSet.
   (** * properties of increasing  sequences of sets *)
-  (** * for the ('Δ.^c `&` (leSet R)) relation *)
+  (** * for the relation [<< R ]= ('Δ.^c `&` (leSet R)) *)
   
   Section seq_leSet.
     Context {T:choiceType} (M U R: relation T) (S: set T) (Sq: seq (set T)).
@@ -467,14 +467,8 @@ Module f_periodic_for_leSet.
     Lemma A2: @allL (set T) 'Δ.^c Sq S S.
     Proof. by move: A0 => /allL_I [? _]. Qed.
     
-    Lemma g_inc n: ([<< R ]%O) ((g n),(g n.+1)).
-    Proof. by apply: f_setR. Qed.
-    
-    Lemma g_prekernel n: (g n) \in (preKernel R U M).
-    Proof. by apply: f_setS. Qed.
-    
     (** * existence of j and aj such that aj \in (f j) and ~ (aj \in (f j.+1)) *)
-    
+    (** XXX this lemma could go in rel.v *)
     Local Lemma allL_Tr (Rset: relation (set T)): 
       0 < size Sq -> @allL (set T) Rset Sq S S -> transitive Rset 
       -> forall S', (S' \in Sq) -> (Rset (S, S')) /\ (Rset (S',S)).
@@ -485,7 +479,7 @@ Module f_periodic_for_leSet.
       by rewrite -H3.
     Qed.
 
-    Definition setRa : relation (set T):= (fun p =>  exists aj, aj \in p.1 /\ ~( aj \in p.2)). 
+    Local Definition setRa : relation (set T):= (fun p =>  exists aj, aj \in p.1 /\ ~( aj \in p.2)). 
     
     Local Lemma DiffE: 
       exists j, j <= (size Sq) 
@@ -690,109 +684,105 @@ End h_extra_props.
 Export h_extra_props.
 
 Module BHExt.
-Section BHExt.
-  (** * Extended Blida en H. Theorem *)
+  Section BHExt.
+    (** * Extended Blida en H. Theorem *)
   
-  Context {T: finType} (O R B: relation T).
+    Context {T: finType} (O R B: relation T).
 
-  Definition M := B `|` R.
+    Definition M := B `|` R.
 
-  Context (A2: Assumption2 R) (A6: Assumption6 B M O)
-    (A7: Assumption7 R B M) (A8: Assumption8 R B M). 
-  Context (A1: NotEmpty T) (Au: R `<=` O^-1).
-  Context (Apk : forall X , RelIndep O X <-> RelIndep M X).
-  Context (A_Onotcyclic: ~ (exists s, O.+ (s,s))).
-  
-  Lemma preKernelP S: 
-    preKernel O R M S <-> preKernel M R M S.
-  Proof. by rewrite /preKernel /= Apk. Qed.
-  
-  Lemma extend_pk X: preKernel M R M X -> ~ (Absorbant M X) ->
-        exists X', preKernel M R M X' /\ X [<< O] X'.
-  Proof.
-    move => Hpk Hnma.
-    move: (@extend T R B O X A2 A6 A7 A8 Hpk Hnma) => [X' [Hpk' Hrst]].
-    by exists X'. 
-  Qed.
-  
-  Lemma A0 S: S \in ((preKernel M R M) `&` (Absorbant M).^c)
-              -> exists S', S' \in (preKernel M R M) /\ (S [<< O] S').
-  Proof.
-    rewrite inE => -[Hpk Hna];move: (extend_pk Hpk Hna) 
-            => [S' [/mem_set Hpk' [Hle Hd]]].
-    by exists S'. 
-  Qed.
+    Context (A2: Assumption2 R) (A6: Assumption6 B M O)
+      (A7: Assumption7 R B M) (A8: Assumption8 R B M). 
+    Context (A1: NotEmpty T) (Au: R `<=` O^-1).
+    Context (Apk : forall X , RelIndep O X <-> RelIndep M X).
+    Context (A_Onotcyclic: ~ (exists s, O.+ (s,s))).
+    
+    Lemma preKernelP S: 
+      preKernel O R M S <-> preKernel M R M S.
+    Proof. by rewrite /preKernel /= Apk. Qed.
+    
+    Lemma extend_pk X: preKernel M R M X -> ~ (Absorbant M X) ->
+                       exists X', preKernel M R M X' /\ X [<< O] X'.
+    Proof.
+      move => Hpk Hnma.
+      move: (@extend T R B O X A2 A6 A7 A8 Hpk Hnma) => [X' [Hpk' Hrst]].
+      by exists X'. 
+    Qed.
 
-  Lemma A1': exists S,  S \in (preKernel M R M).
-  Proof.
-    (** XXXXX  montrer qu'il existe un puit *)
-  Admitted.
+    Lemma A0 S: S \in ((preKernel M R M) `&` (Absorbant M).^c)
+                -> exists S', S' \in (preKernel M R M) /\ (S [<< O] S').
+    Proof.
+      rewrite inE => -[Hpk Hna];move: (extend_pk Hpk Hna) 
+              => [S' [/mem_set Hpk' [Hle Hd]]].
+      by exists S'. 
+    Qed.
 
-  Lemma iic_to_cyclic (h : nat -> (set T)):  
-    (iic_fun ([<< O]%O) h) ->  exists n p : nat, h n = h (n + p.+1).
-  Proof. by move => Hiic;apply: set_fin_codomain_prop. Qed.
-  
-  Lemma iic_to_allL  (h : nat -> (set T)):  
-    (iic_fun ([<< O]%O) h) -> 
-    exists n p, h n = h (n+p+1)
-           /\ allL ([<< O]%O) (mkseq (fun i => h (n + i+1)) p) (h n) (h n).
-  Proof. 
-    move => /[dup] /iic_to_cyclic [n [m Heq]] /f2allL /(_ n m) HallL.
-    rewrite -addn1 addnA in Heq;rewrite -Heq in HallL. 
-    by exists n, m.
-  Qed.
-
-  Lemma iic_and_prekernels (h : nat -> (set T)):
-    (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (preKernel O R M))
-    -> exists n p,
-        allL ([<< O]%O) (mkseq (fun i => h (n + i+1)) p) (h n) (h n)
-        /\ ((h n)::(mkseq (fun i => h (n + i+1)) p)) [\in] (preKernel O R M).
-  Proof.
-    move => /iic_to_allL [n [p [_ Hiic]]] Hpk.
-    by exists n, p;split;[| apply: f2in].
-  Qed.
-
-  Lemma Rcyclic S Sq: 
-    @allL (set T) ([<< O]%O) Sq S S
-    -> (S::Sq) [\in] (preKernel O R M)
-    ->  exists s, O.+ (s,s).
-  Proof.
-    move => A0 A3.
-    move: (exists_g A0 A3) => [g [G1 [G2 [G3 G4]]]].
+    Lemma A1': exists S,  S \in (preKernel M R M).
+    Proof.
+      (** XXXXX  montrer qu'il existe un puit *)
+    Admitted.
+    
+    Lemma choose: (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (preKernel M R M)))
+                  \/ (exists S, (S \in (preKernel M R M)) /\ S \in (Absorbant M)).
+    Proof.
+      move: (@choose_sub _ ([<< O]%O) (preKernel M R M) (Absorbant M).^c A0 A1')
+          => [Hiic | [S [Hpk Hna]]].
+      by left.
+      right. exists S.
+      split. by [].
+      by move: Hna;rewrite 2!inE /= => /contrapT.
+    Qed.
+    
+    (* we prove that the first condition 
+       (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (preKernel M R M)))
+       would lead to cyclicity for relation O *)
+    
+    Lemma iic_to_allL  (h : nat -> (set T)):  
+      (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (preKernel O R M)) ->
+      exists n p, h n = h (n+p+1)
+             /\ allL ([<< O]%O) (mkseq (fun i => h (n + i+1)) p) (h n) (h n)
+             /\ ((h n)::(mkseq (fun i => h (n + i+1)) p)) [\in] (preKernel O R M).
+    Proof. 
+      move => Hiic_fun Hpk.
+      (* non injectivity prop as T is finType *)
+      have [n [m Heq]]:  exists n p : nat, h n = h (n + p.+1)
+          by apply: set_fin_codomain_prop.
+      move: Hiic_fun => /f2allL /(_ n m) HallL.
+      rewrite -addn1 addnA in Heq;rewrite -Heq in HallL. 
+      by exists n, m;split;[|split;[|apply: f2in]].
+    Qed.
+    
+    Lemma Ocyclic S Sq: 
+      @allL (set T) ([<< O]%O) Sq S S
+      -> (S::Sq) [\in] (preKernel O R M)
+      ->  exists s, O.+ (s,s).
+    Proof.
+      move => A0 A3.
+      move: (exists_g A0 A3) => [g [G1 [G2 [G3 G4]]]].
       move: (exists_h G2 G3 G4) => [h [H1 [H2 H3]]].
       move: (hmap' G1 H1 H2 H3) => Hhmap.
       move: (fin_codomain_prop (fun k => h(k*(size(S::Sq))))) => [n [p H4]].
       by exists (h (n * size (S :: Sq)));rewrite {2}H4;apply: Hhmap.
     Qed.
-  
-  Lemma iic_and_prekernels_to_cyclic (h : nat -> (set T)):
-    (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (preKernel O R M))
-    -> exists s, O.+ (s,s).
-  Proof.
-    move => Hiic Hpk;move: (iic_and_prekernels Hiic Hpk) => [n [p [Ha Hpk']]].
-    by apply: (Rcyclic Ha Hpk').
-  Qed.
-  
-  Lemma choose: (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (preKernel M R M)))
-                \/ (exists S, (S \in (preKernel M R M)) /\ S \in (Absorbant M)).
-  Proof.
-    move: (@choose_sub _ ([<< O]%O) (preKernel M R M) (Absorbant M).^c A0 A1') => [Hiic | [S [Hpk Hna]]].
-    by left.
-    right. exists S.
-    split. by [].
-    by move: Hna;rewrite 2!inE /= => /contrapT.
-  Qed.
-  
-  (** * Define Kernel as the intersection XXXXXXX *)
-  Lemma last: exists S, S \in (preKernel M R M) /\ S \in (Absorbant M).
-  Proof.
-    move: choose => [[h [Hiic Hk]] | H1];last by [].
-    have HpkO: (forall n, (h n) \in  (preKernel O R M))
-      by move => n; rewrite inE preKernelP -inE.
-    by move: (iic_and_prekernels_to_cyclic Hiic HpkO) => HOcyclic.
-  Qed.
-  
-End BHExt.
+    
+    Lemma iic_and_prekernels_to_cyclic (h : nat -> (set T)):
+      (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (preKernel O R M))
+      -> exists s, O.+ (s,s).
+    Proof.
+      move => Hiic Hpk';move: (iic_to_allL Hiic Hpk') => [n [p [Ha [HallL Hpk]]]].
+      by apply: (Ocyclic HallL Hpk).
+    Qed.
+    
+    (** * Define Kernel as the intersection XXXXXXX *)
+    Lemma exists_kernel: exists S, S \in (preKernel M R M) /\ S \in (Absorbant M).
+    Proof.
+      move: choose => [[h [Hiic Hk]] | H1];last by [].
+      have HpkO: (forall n, (h n) \in  (preKernel O R M))
+        by move => n; rewrite inE preKernelP -inE.
+      by move: (iic_and_prekernels_to_cyclic Hiic HpkO) => HOcyclic.
+    Qed.
+    
+  End BHExt.
 End BHExt.
 
 Section FinsetToClassical.
