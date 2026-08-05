@@ -1478,19 +1478,18 @@ Section Infinite_paths.
   
   (* total (or left total)  *) 
   (* begin snippet lefttotal:: no-out *)  
-  Definition total_rel (R: relation T) := forall x, exists y, R (x,y).
+  Definition total_rel R := forall x, exists y, R (x,y).
   (* end snippet lefttotal *)
   
-  Definition total_rel' (R: relation T) := exists f : T -> T, forall x, R (x, f x). 
+  Definition total_rel' R := exists f : T -> T, forall x, R (x, f x). 
   
-  (* choice from boolp version for relation T *)
+  (* using coercion to rel T and choice lemma on rel T *)
   Lemma choice' R: total_rel R -> total_rel' R.
   Proof.
-    move => H1.
-    have H2: forall x : T, exists y : T, (curry R) x y
-        by move => x;move: H1 => /(_ x) [y H1];exists y.
-    move: H2 => /choice [f H2].
-    by exists f => x; move: H2 => /(_ x).
+    move => Htr.
+    have /choice [f Rxfx] x: exists y, (R: rel T) x y
+        by move: Htr => /(_ x) [y Rxy]; exists y;apply/asboolP.
+    by exists f => x; move: Rxfx => /(_ x)/asboolP. 
   Qed.
   
   Lemma total_rel_iff R: total_rel R <-> total_rel' R.
@@ -1499,14 +1498,10 @@ Section Infinite_paths.
   Definition total_rel'' (R: relation T) := 
     (forall x, exists f : nat -> T, f 0 = x /\ forall n, R ((f n),(f (S n)))).
   
-  Definition iterf (f: T -> T) (x: T) n :=
-  let fix loop m := if m is i.+1 then f (loop i) else x in loop n.
-  
-  Lemma iterP: forall k f x, iterf f x k.+1 = f (iterf f x k).
-  Proof. by elim. Qed.
-  
   Lemma total_rel'_to_total_rel'' R:  total_rel' R -> total_rel'' R.
-  Proof. by move => [f H1] x;exists (iterf f x). Qed.
+  Proof. 
+    by move => [f H1] x; exists (fun n => ssrnat.iter n f x);rewrite /=.
+  Qed.
 
   Definition iic_fun R f:= forall n, R ((f n),(f (S n))).
   (* begin snippet iic:: no-out *)  
