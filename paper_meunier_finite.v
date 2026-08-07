@@ -250,9 +250,17 @@ Module injectivity.
       by rewrite card_ord ltnn in H1. 
     Qed.
     
+    Lemma cyclic R (h: nat -> T): (iic_fun R h) -> (exists s, R.+ (s,s)).
+    Proof. 
+      move: (fin_codomain_prop h) => [n [p Hheq]]. 
+      move => /f2allL/(_ n p);rewrite -addnA addn1 -Hheq. 
+      move => /(@allL_All _ R)/= /andP [Ha _].
+      by rewrite inE Fset_s in Ha;exists (h n).
+    Qed.
+    
   End injectivity.
 End injectivity.
-Export injectivity(fin_codomain_prop,not_injective_prop).
+Export injectivity(fin_codomain_prop,not_injective_prop,cyclic).
 
 Module setT_injectivity.
   Section setT_injectivity.
@@ -290,11 +298,116 @@ Module setT_injectivity.
       apply: not_injective_prop.
       apply: not_injective1_h.
     Qed.
-
+    
+    Lemma set_fin_cyclic R (h: nat -> set T): (iic_fun R h) -> (exists s, R.+ (s,s)).
+    Proof. 
+      move: (set_fin_codomain_prop h) => [n [p Hheq]]. 
+      move => /f2allL/(_ n p);rewrite -addnA addn1 -Hheq. 
+      move => /(@allL_All _ R)/= /andP [Ha _].
+      by rewrite inE Fset_s in Ha;exists (h n).
+    Qed.
+    
   End setT_injectivity.
 End setT_injectivity.
 
 Export setT_injectivity(set_fin_codomain_prop).
+
+
+Section Finite. 
+  (** * for a finType we have ~ (iic_inj R) *)
+  Variable (T : finType).
+  Implicit Types (R U O D: relation T).
+
+  Definition Sink R v := forall w, ~ R (v,w).
+  Definition vRloop R v := forall w, R (v, w) -> R (w,v).
+  
+  Lemma Sink_to_Rloop R v: Sink R v -> vRloop R v.
+  Proof. by move => + w H1 => /(_ w) H2. Qed.
+  
+  Lemma notF_to_notS R: 
+    (exists (v0:T), (v0 \in setT)) -> (forall v, ~(vRloop R v)) -> (forall v, ~(Sink R v)). 
+  Proof.
+    by move => Hne;contra => -[x Hx];exists x;apply: Sink_to_Rloop.
+  Qed.
+  
+  Lemma notS_to_total R: (forall v, ~(Sink R v)) <-> total_rel R.
+  Proof. 
+    split;contra => -[x Hx];exists x;first exact.
+    by move:Hx => + y => /(_ y) Hx.
+  Qed.
+    
+  Lemma sink2iic R: (exists (v0:T), (v0 \in setT)) -> (forall v, ~(Sink R v)) -> (iic R).
+  Proof. 
+    move => Hne  Hnsink. apply: DC;first by [].
+    by move: Hnsink;contra;move => [x Hx];exists x. 
+  Qed.
+  
+  Lemma cyclic R: (iic R) -> ( exists s, R.+ (s,s)). 
+  Proof. move => [h Hhiic];by apply: cyclic. Qed.
+  
+  Lemma fin_not_iic_inj R: ~ (iic_inj R). 
+  Proof. 
+    move => [f [_ finj]].
+    have inj_restrict : injective (fun i : 'I_(#|T|).+1 => f i)
+      by move=> x y /finj Exy;apply/val_inj. 
+    move: (leq_card _  inj_restrict) => H1.
+    by rewrite card_ord ltnn in H1. 
+  Qed.
+  
+  Lemma fin_not_iic R: (sporder R) -> ~ (iic R).
+  Proof.
+    move => /[dup] Hsp /sporder_antisym Ha.
+    by move: (@fin_not_iic_inj R) => H1 /(sporder_iic_injective R Hsp)H2. 
+  Qed.
+  
+  Lemma fin_rloop R: (NotEmpty T) -> (sporder R) -> exists v, (vRloop R v).
+  Proof.
+    move => Hne /[dup] /fin_not_iic Hniic /sporder_asym/AsymEq Has.
+    by rewrite -Has in Hniic;move: (@notiic_rloop _ R Hne Hniic). 
+  Qed.
+  
+  Lemma fin_sink R: (NotEmpty T) -> (sporder R) -> exists v, (Sink R v).
+  Proof.
+    move => Hne /[dup] /sporder_asym Has Hsp.
+    move: (fin_rloop Hne Hsp) => [v H1].
+    by exists v;move => w /[dup] Rvw /[dup] /Has nRwv /H1 Rwv. 
+  Qed.
+  
+  Lemma fin_rloop1 O D: 
+    (NotEmpty T) -> (sporder O) -> exists v, (v)_:#(O) `<=` D#_(v).
+  Proof.
+    move => Hne Hsp;move: (@fin_sink _ Hne Hsp) => [v Rl].
+    exists v;move: Rl => /[swap] w /(_ w) Rl.
+    by rewrite /Aset 2!Fset_s => ?.
+  Qed.
+  
+  Lemma fin_rloop2 O R D:
+    (NotEmpty T) -> (sporder O) -> R `<=` O -> exists v, (v)_:#(R) `<=` D#_(v).
+  Proof.
+    move => Hne Hsp Hinc.
+    move: (@fin_rloop1 O D Hne Hsp) => [v H1];( exists v).
+    have H2: (v)_:#R `<=`  (v)_:#O 
+      by rewrite /Aset;apply: Fset_inc;apply: inverseS.
+    by apply: (@subset_trans T _ _ _ H2 H1). 
+  Qed.
+  
+  Lemma NotCyclic_exists_sink R: 
+    (NotEmpty T) ->  ~ (exists s, R.+ (s,s)) -> exists v, (Sink R v).
+  Proof.
+    move => Hne;contra => Hnsink.
+    apply/cyclic/(sink2iic Hne) => v Hsink.
+    by move: Hnsink Hsink => /(_ v) [x Rvx] /(_ x) nRvx.
+  Qed.
+  
+  Lemma NotCyclic_exists_preabsorbant R D: 
+    (NotEmpty T) ->  ~ (exists s, R.+ (s,s)) -> exists v, (v)_:#(R) `<=` D#_(v).
+  Proof.
+    move => Hne Hncl;move: (NotCyclic_exists_sink Hne Hncl)=> [v Hsink].
+    exists v;move => y;rewrite /Aset Fset_s => Rvy.
+    by move: Hsink => /(_ y) nRvy.
+  Qed.
+  
+End Finite. 
 
 Module partial_iic_lemma.
   Section partial_iic_lemma.
@@ -717,10 +830,28 @@ Module BHExt.
       by exists S'. 
     Qed.
 
+    Lemma Oinv_notcyclic: ~ (exists s, O^-1.+ (s,s)).
+    Proof.
+    Admitted.
+    
     Lemma A1': exists S,  S \in (preKernel M R M).
     Proof.
-      (** XXXXX  montrer qu'il existe un puit *)
-    Admitted.
+      (* exists a sink and thus a preabsorbant node *)
+      move: (@NotCyclic_exists_preabsorbant T O^-1 M A1 Oinv_notcyclic) => [v Hpa].
+      exists [set v]%classic.
+      rewrite inE. 
+      split. 
+      by apply: RelIndep_set1.
+      split. rewrite /setRM.
+      have Hinc:  (v)_:#R  `<=` (v)_:#O^-1. rewrite /Aset. apply: Fset_inc.
+      by apply: inverseS.
+      apply: subset_trans. by apply: Hinc.
+      by [].
+      apply/negP => /eqP H.
+      have Hv: [set v]%classic v by [].
+      by rewrite H /= in Hv.
+    Qed.
+    
     
     Lemma choose: (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (preKernel M R M)))
                   \/ (exists S, (S \in (preKernel M R M)) /\ S \in (Absorbant M)).
@@ -887,64 +1018,6 @@ End FinsetToClassical.
 Notation "[ ':set:' A ]" := (set_of_fin A) (format "[ ':set:'  A ]").
 Notation "[ ':fin:' A ]" := (fin_of_set A) (format "[ ':fin:'  A ]").
 
-Section Finite. 
-  (** * for a finType we have ~ (iic_inj R) *)
-  Variable (T : finType).
-  Implicit Types (R U O D: relation T).
-
-  Definition Sink R v := forall w, ~ R (v,w).
-  Definition vRloop R v := forall w, R (v, w) -> R(w,v).
-  
-  Lemma Sink_to_Rloop R v: Sink R v -> vRloop R v.
-  Proof. by move => + w H1 => /(_ w) H2. Qed.
-  
-  Lemma fin_not_iic_inj R: ~ (iic_inj R). 
-  Proof. 
-    move => [f [_ finj]].
-    have inj_restrict : injective (fun i : 'I_(#|T|).+1 => f i)
-      by move=> x y /finj Exy;apply/val_inj. 
-    move: (leq_card _  inj_restrict) => H1.
-    by rewrite card_ord ltnn in H1. 
-  Qed.
-  
-  Lemma fin_not_iic R: (sporder R) -> ~ (iic R).
-  Proof.
-    move => /[dup] Hsp /sporder_antisym Ha.
-    by move: (@fin_not_iic_inj R) => H1 /(sporder_iic_injective R Hsp)H2. 
-  Qed.
-  
-  Lemma fin_rloop R: (NotEmpty T) -> (sporder R) -> exists v, (vRloop R v).
-  Proof.
-    move => Hne /[dup] /fin_not_iic Hniic /sporder_asym/AsymEq Has.
-    by rewrite -Has in Hniic;move: (@notiic_rloop _ R Hne Hniic). 
-  Qed.
-  
-  Lemma fin_sink R: (NotEmpty T) -> (sporder R) -> exists v, (Sink R v).
-  Proof.
-    move => Hne /[dup] /sporder_asym Has Hsp.
-    move: (fin_rloop Hne Hsp) => [v H1].
-    by exists v;move => w /[dup] Rvw /[dup] /Has nRwv /H1 Rwv. 
-  Qed.
-  
-  Lemma fin_rloop1 R U: (NotEmpty T) -> (sporder R)
-                      -> exists v, (v)_:#(R) `<=` U#_(v).
-  Proof.
-    move => Hne Hsp;move: (@fin_sink _ Hne Hsp) => [v Rl].
-    exists v;move: Rl => /[swap] w /(_ w) Rl.
-    by rewrite /Aset 2!Fset_s => ?.
-  Qed.
-  
-  Lemma fin_rloop2 O R D:
-    (NotEmpty T) -> (sporder O) -> R `<=` O -> exists v, (v)_:#(R) `<=` D#_(v).
-  Proof.
-    move => Hne Hsp Hinc;move: (@fin_rloop1 O D Hne Hsp) => [v H1].
-    exists v.
-    have H2: (v)_:#R `<=`  (v)_:#O 
-      by rewrite /Aset;apply: Fset_inc;apply: inverseS.
-    by apply: (@subset_trans T _ _ _ H2 H1). 
-  Qed.
-  
-End Finite. 
 
 Reserved Notation "A [:<=:] B" (at level 4, no associativity). 
 Reserved Notation "A [:<= R :] S" (at level 4, no associativity). 

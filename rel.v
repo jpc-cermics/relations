@@ -40,7 +40,7 @@
 
 Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_boot order. 
-From mathcomp Require Import mathcomp_extra boolp.
+From mathcomp Require Import mathcomp_extra boolp contra.
 From mathcomp Require Import classical_sets.
 Set Warnings "parsing coercions".
 
@@ -1567,6 +1567,10 @@ Section Infinite_paths.
     by move => Hsub [f H];exists f;move: H => + n =>/(_ n)/Hsub ?.
   Qed.
   
+  
+    
+
+
 End Infinite_paths.
 
 Section ZornRelation.
