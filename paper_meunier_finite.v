@@ -831,8 +831,7 @@ Module BHExt.
     Qed.
 
     Lemma Oinv_notcyclic: ~ (exists s, O^-1.+ (s,s)).
-    Proof.
-    Admitted.
+    Proof. by rewrite -TclosIv. Qed.
     
     Lemma A1': exists S,  S \in (preKernel M R M).
     Proof.
