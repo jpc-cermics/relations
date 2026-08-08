@@ -38,6 +38,7 @@ Notation Inc' := <=%O.
 
 Module utilities.
   Section utilities.
+    (** * XXXX to be moved in seq1.v *)
     Context {T: Type} (f: nat -> T) (S: set T) (U: relation T).
     
     Lemma f2allL: 
@@ -51,6 +52,13 @@ Module utilities.
       have ->: (n + (n'.+1) + 1) = (n + n' + 1).+1 by lia. 
       by apply/andP;split;[rewrite inE|apply: Hr].
     Qed.
+
+    Lemma f2allL': 
+      (forall n m, allL U (mkseq (fun i => f (n + i+1)) m) (f n) (f (n+m+1)))
+      -> (forall n, U (f(n), f(n.+1))).
+    Proof.
+      by move => + n => /(_ n 0);rewrite addn0 allL0 inE addn1.
+    Qed.
     
     Lemma f2in: (forall n, f(n) \in S)
                 -> forall n m,  ((f n)::(mkseq (fun i => f (n + i+1)) m)) [\in] S.
@@ -61,19 +69,13 @@ Module utilities.
       split. by apply: Hr. by rewrite -inE.
     Qed.
     
-    Lemma f2allL': 
-      (forall n m, allL U (mkseq (fun i => f (n + i+1)) m) (f n) (f (n+m+1)))
-      -> (forall n, U (f(n), f(n.+1))).
-    Proof.
-      by move => + n => /(_ n 0);rewrite addn0 allL0 inE addn1.
-    Qed.
-
   End utilities.
 End utilities.
 Export utilities.
 
 Module f_periodic. 
-  (** * some properties of the periodic function f: nth t (t::s) n %% size (t::s)) *)
+  (** * some properties of the function fb: n => nth t (t::s) n. *)
+  (** * and of the periodic function f: n => nth t (t::s) n %% size (t::s) *)
   Section f_periodic.
     Context {T: Type} (t: T) (s: seq T).
     
@@ -250,11 +252,11 @@ Module injectivity.
       by rewrite card_ord ltnn in H1. 
     Qed.
     
-    Lemma cyclic R (h: nat -> T): (iic_fun R h) -> (exists s, R.+ (s,s)).
+    Lemma cyclic U (h: nat -> T): (iic_fun U h) -> (exists s, U.+ (s,s)).
     Proof. 
       move: (fin_codomain_prop h) => [n [p Hheq]]. 
       move => /f2allL/(_ n p);rewrite -addnA addn1 -Hheq. 
-      move => /(@allL_All _ R)/= /andP [Ha _].
+      move => /(@allL_All _ U)/= /andP [Ha _].
       by rewrite inE Fset_s in Ha;exists (h n).
     Qed.
     
@@ -299,11 +301,11 @@ Module setT_injectivity.
       apply: not_injective1_h.
     Qed.
     
-    Lemma set_fin_cyclic R (h: nat -> set T): (iic_fun R h) -> (exists s, R.+ (s,s)).
+    Lemma set_fin_cyclic U (h: nat -> set T): (iic_fun U h) -> (exists s, U.+ (s,s)).
     Proof. 
       move: (set_fin_codomain_prop h) => [n [p Hheq]]. 
       move => /f2allL/(_ n p);rewrite -addnA addn1 -Hheq. 
-      move => /(@allL_All _ R)/= /andP [Ha _].
+      move => /(@allL_All _ U)/= /andP [Ha _].
       by rewrite inE Fset_s in Ha;exists (h n).
     Qed.
     
@@ -312,40 +314,39 @@ End setT_injectivity.
 
 Export setT_injectivity(set_fin_codomain_prop).
 
-
 Section Finite. 
   (** * for a finType we have ~ (iic_inj R) *)
   Variable (T : finType).
-  Implicit Types (R U O D: relation T).
+  Implicit Types (U V W: relation T).
 
-  Definition Sink R v := forall w, ~ R (v,w).
-  Definition vRloop R v := forall w, R (v, w) -> R (w,v).
+  Definition Sink U v := forall w, ~ U (v,w).
+  Definition vRloop U v := forall w, U (v, w) -> U (w,v).
   
-  Lemma Sink_to_Rloop R v: Sink R v -> vRloop R v.
+  Lemma Sink_to_Rloop U v: Sink U v -> vRloop U v.
   Proof. by move => + w H1 => /(_ w) H2. Qed.
   
-  Lemma notF_to_notS R: 
-    (exists (v0:T), (v0 \in setT)) -> (forall v, ~(vRloop R v)) -> (forall v, ~(Sink R v)). 
+  Lemma notF_to_notS U: 
+    (exists (v0:T), (v0 \in setT)) -> (forall v, ~(vRloop U v)) -> (forall v, ~(Sink U v)). 
   Proof.
     by move => Hne;contra => -[x Hx];exists x;apply: Sink_to_Rloop.
   Qed.
   
-  Lemma notS_to_total R: (forall v, ~(Sink R v)) <-> total_rel R.
+  Lemma notS_to_total U: (forall v, ~(Sink U v)) <-> total_rel U.
   Proof. 
     split;contra => -[x Hx];exists x;first exact.
     by move:Hx => + y => /(_ y) Hx.
   Qed.
     
-  Lemma sink2iic R: (exists (v0:T), (v0 \in setT)) -> (forall v, ~(Sink R v)) -> (iic R).
+  Lemma sink2iic U: (exists (v0:T), (v0 \in setT)) -> (forall v, ~(Sink U v)) -> (iic U).
   Proof. 
     move => Hne  Hnsink. apply: DC;first by [].
     by move: Hnsink;contra;move => [x Hx];exists x. 
   Qed.
   
-  Lemma cyclic R: (iic R) -> ( exists s, R.+ (s,s)). 
+  Lemma cyclic U: (iic U) -> ( exists s, U.+ (s,s)). 
   Proof. move => [h Hhiic];by apply: cyclic. Qed.
   
-  Lemma fin_not_iic_inj R: ~ (iic_inj R). 
+  Lemma fin_not_iic_inj U: ~ (iic_inj U). 
   Proof. 
     move => [f [_ finj]].
     have inj_restrict : injective (fun i : 'I_(#|T|).+1 => f i)
@@ -354,55 +355,57 @@ Section Finite.
     by rewrite card_ord ltnn in H1. 
   Qed.
   
-  Lemma fin_not_iic R: (sporder R) -> ~ (iic R).
+  Lemma fin_not_iic U: (sporder U) -> ~ (iic U).
   Proof.
     move => /[dup] Hsp /sporder_antisym Ha.
-    by move: (@fin_not_iic_inj R) => H1 /(sporder_iic_injective R Hsp)H2. 
+    by move: (@fin_not_iic_inj U) => H1 /(sporder_iic_injective U Hsp)H2. 
   Qed.
   
-  Lemma fin_rloop R: (NotEmpty T) -> (sporder R) -> exists v, (vRloop R v).
+  Lemma fin_rloop U: (NotEmpty T) -> (sporder U) -> exists v, (vRloop U v).
   Proof.
     move => Hne /[dup] /fin_not_iic Hniic /sporder_asym/AsymEq Has.
-    by rewrite -Has in Hniic;move: (@notiic_rloop _ R Hne Hniic). 
+    by rewrite -Has in Hniic;move: (@notiic_rloop _ U Hne Hniic). 
   Qed.
   
-  Lemma fin_sink R: (NotEmpty T) -> (sporder R) -> exists v, (Sink R v).
+  Lemma fin_sink U: (NotEmpty T) -> (sporder U) -> exists v, (Sink U v).
   Proof.
     move => Hne /[dup] /sporder_asym Has Hsp.
     move: (fin_rloop Hne Hsp) => [v H1].
     by exists v;move => w /[dup] Rvw /[dup] /Has nRwv /H1 Rwv. 
   Qed.
   
-  Lemma fin_rloop1 O D: 
-    (NotEmpty T) -> (sporder O) -> exists v, (v)_:#(O) `<=` D#_(v).
+  Lemma fin_rloop1 U V: 
+    (NotEmpty T) -> (sporder U) -> exists v, (v)_:#(U) `<=` V#_(v).
   Proof.
     move => Hne Hsp;move: (@fin_sink _ Hne Hsp) => [v Rl].
     exists v;move: Rl => /[swap] w /(_ w) Rl.
     by rewrite /Aset 2!Fset_s => ?.
   Qed.
   
-  Lemma fin_rloop2 O R D:
-    (NotEmpty T) -> (sporder O) -> R `<=` O -> exists v, (v)_:#(R) `<=` D#_(v).
+  Lemma fin_rloop2 U V W:
+    (NotEmpty T) -> (sporder U) -> V `<=` U -> exists v, (v)_:#(V) `<=` W#_(v).
   Proof.
     move => Hne Hsp Hinc.
-    move: (@fin_rloop1 O D Hne Hsp) => [v H1];( exists v).
-    have H2: (v)_:#R `<=`  (v)_:#O 
+    move: (@fin_rloop1 U W Hne Hsp) => [v H1];( exists v).
+    have H2: (v)_:#V `<=`  (v)_:#U 
       by rewrite /Aset;apply: Fset_inc;apply: inverseS.
     by apply: (@subset_trans T _ _ _ H2 H1). 
   Qed.
   
-  Lemma NotCyclic_exists_sink R: 
-    (NotEmpty T) ->  ~ (exists s, R.+ (s,s)) -> exists v, (Sink R v).
+  Lemma NotCyclic_exists_sink U: 
+    (NotEmpty T) ->  ~ (exists s, U.+ (s,s)) -> exists v, (Sink U v).
   Proof.
     move => Hne;contra => Hnsink.
     apply/cyclic/(sink2iic Hne) => v Hsink.
     by move: Hnsink Hsink => /(_ v) [x Rvx] /(_ x) nRvx.
   Qed.
   
-  Lemma NotCyclic_exists_preabsorbant R D: 
-    (NotEmpty T) ->  ~ (exists s, R.+ (s,s)) -> exists v, (v)_:#(R) `<=` D#_(v).
+  Lemma NotCyclic_exists_preabsorbant U V: 
+    (NotEmpty T) ->  ~ (exists s, U.+ (s,s)) -> exists v, (v)_:#(U) `<=` V#_(v).
   Proof.
+    (* use NotCyclic_exists_sink *)
     move => Hne Hncl;move: (NotCyclic_exists_sink Hne Hncl)=> [v Hsink].
+    (* now prove that exists v, (Sink U v) ->  exists v, (v)_:#(U) `<=` V#_(v). *)
     exists v;move => y;rewrite /Aset Fset_s => Rvy.
     by move: Hsink => /(_ y) nRvy.
   Qed.
@@ -422,7 +425,7 @@ Module partial_iic_lemma.
     Lemma choose_l1: iic V.
     Proof.
       apply: DC;first exact: A1.
-      (* now we prove that total_rel V *)
+      (* now we prove that V is a left_total relation *)
       move: A0 => + s => /(_ s) H0.
       case H2: (s \in B);last first.
       by (exists s);rewrite /V /= H2;right.
@@ -562,19 +565,19 @@ Export leSet_choice(choose_inc_seq).
 
 Module f_periodic_for_leSet.
   (** * properties of increasing  sequences of sets *)
-  (** * for the relation [<< R ]= ('Δ.^c `&` (leSet R)) *)
+  (** * for the relation [<< U ]= ('Δ.^c `&` (leSet U)) *)
   
   Section seq_leSet.
-    Context {T:choiceType} (M U R: relation T) (S: set T) (Sq: seq (set T)).
-    (** strict increasing sequence of sets for (leSet R) *)
-    Context (A0: @allL (set T) ([<< R ]%O) Sq S S).
-    (** which are also (U,R)-prekernels *)
-    Context (A3: (S::Sq) [\in] (preKernel R U M)).
+    Context {T:choiceType} (U V W: relation T) (S: set T) (Sq: seq (set T)).
+    (** strict increasing sequence of sets for (leSet U) *)
+    Context (A0: @allL (set T) ([<< U ]%O) Sq S S).
+    (** which are also (V,U)-prekernels *)
+    Context (A3: (S::Sq) [\in] (preKernel U V W)).
     Implicit Types (sq: seq T) (s: T).
     
     Definition g := f S Sq.
 
-    Lemma A1: @allL (set T) ([<= R]%O) Sq S S.
+    Lemma A1: @allL (set T) ([<= U]%O) Sq S S.
     Proof. by move: A0 => /allL_I [_ ?]. Qed.
 
     Lemma A2: @allL (set T) 'Δ.^c Sq S S.
@@ -628,14 +631,14 @@ Module f_periodic_for_leSet.
     Lemma exists_g: exists g: nat -> set T, 
         (forall n k, g (n + k*(size (S::Sq))) = g n)
         /\ (exists a, a \in (g 0) /\ ~ (a \in (g 1)))
-        /\ (forall n, (g n) [<= R] (g n.+1))
-        /\ (forall n, preKernel R U M (g n)).
+        /\ (forall n, (g n) [<= U] (g n.+1))
+        /\ (forall n, preKernel U V W (g n)).
     Proof.
       move: DiffE' => [j [_ [a [H1 H2]]]].
       exists (fun n => (g (j + n))). 
       rewrite addn0 addn1.
-      move: (@f_setS _ S Sq (preKernel R U M)) A3 => Hpk /Hpk Hpk'.
-      move: (@f_setR _ S Sq (leSet R)) A1 => Hinc /Hinc Hinc'.
+      move: (@f_setS _ S Sq (preKernel U V W)) A3 => Hpk /Hpk Hpk'.
+      move: (@f_setR _ S Sq (leSet U)) A1 => Hinc /Hinc Hinc'.
       split;first by move => n k;rewrite addnA /g f_kperiodic.
       split;first by (exists a).
       split;move => n;last by rewrite -inE.
@@ -650,13 +653,13 @@ Export f_periodic_for_leSet(exists_g).
 Module build_h.
   (** for any g satisfying G1-G4 assumptions choose a selection h *)
   Section build_h.
-    Context {T:choiceType} (M U R: relation T) (g: nat -> set T).
+    Context {T:choiceType} (U V W: relation T) (g: nat -> set T).
     Context (S: set T) (Sq: seq (set T)).
 
     Context (G1: forall n k, g (n + k*(size (S::Sq))) = g n).
     Context (G2: exists a, a \in (g 0) /\ ~ (a \in (g 1))).
-    Context (G3: forall n, (g n) [<= R] (g n.+1)).
-    Context (G4: forall n, preKernel R U M (g n)).
+    Context (G3: forall n, (g n) [<= U] (g n.+1)).
+    Context (G4: forall n, preKernel U V W (g n)).
     
     Implicit Types (sq: seq T) (s: T).
 
@@ -681,12 +684,12 @@ Module build_h.
     (** as (g n) are RelIndep sets *)
     Lemma exists_h: exists h : nat -> T,
         (forall n, (h n) \in (g n))
-        /\ (forall n, (h n)=(h n.+1) \/ R (h n, h n.+1))
+        /\ (forall n, (h n)=(h n.+1) \/ U (h n, h n.+1))
         /\ ~(exists n, (h n) \in (Ig g)).
     Proof.
       move: (G2) => [a [Hg0 H2]].
       have H4: exists s, s \in (g 0) by (exists a).
-      move: (@choose_inc_seq T R g H4 G3 a Hg0) => [h [H6 [H7 H8]]].
+      move: (@choose_inc_seq T U g H4 G3 a Hg0) => [h [H6 [H7 H8]]].
       exists h;split;[exact|split;[exact |]].
       move => Hinter. 
       (* lastt step : ~(exists n, (h n) \in (Ig g)) *)
@@ -697,7 +700,7 @@ Module build_h.
       have P9:  h j \in (g j) by apply: H7.
       have P10: ~ ( h j = h j.+1) by move => He;rewrite He in P6.
       move: G4 => /(_ j) [Hindep _].
-      move: Hindep => /(_ (h j) (h j.+1) P9 P8 P10) HnotR.
+      move: Hindep => /(_ (h j) (h j.+1) P9 P8 P10) HnotU.
       by move: H8 => /(_ j) [? | ?].
     Qed.
 
@@ -707,37 +710,37 @@ End build_h.
 Export build_h(exists_h,Ig,IgP).
 
 Module h_extra_props.
-  
+  (** * describe what is done here *)
   Section h_extra_props.
     (** properties for any h satisfying G1 and H1-H3 *)  
-    Context {T:choiceType} (U R: relation T) (g: nat -> set T) (h: nat-> T).
+    Context {T:choiceType} (U: relation T) (g: nat -> set T) (h: nat-> T).
     Context (S: set T) (Sq: seq (set T)).
 
     Context (G1: forall n k, g (n + k*(size (S::Sq))) = g n).
     Context (H1: forall n, (h n) \in (g n)).
-    (** XXXX reformulate with ('Δ `|` R) *)
-    Context (H2: forall n, (h n)=(h n.+1) \/ R (h n, h n.+1)).
+    (** XXXX reformulate with ('Δ `|` U) *)
+    Context (H2: forall n, (h n)=(h n.+1) \/ U (h n, h n.+1)).
     Context (H3: ~(exists n, (h n) \in (Ig g))).
     
     Lemma h_Tclos:
-      forall m n, allL ('Δ `|` R) (mkseq (fun i => h (n + i+1)) m) (h n) (h (n+m+1)).
+      forall m n, allL ('Δ `|` U) (mkseq (fun i => h (n + i+1)) m) (h n) (h (n+m+1)).
     Proof.
-      have: forall n,  ('Δ `|` R) (h n, h n.+1)
+      have: forall n,  ('Δ `|` U) (h n, h n.+1)
           by move: H2 => + n => /(_ n) [H1' | H1'];[left;rewrite DeltaP|right].
       by move => /@f2allL.
     Qed.
     
     (** * true but too strong *)
-    Lemma h_Tclos1: forall m n, (('Δ `|` R).+ ((h n), (h (n+m+1)))).
+    Lemma h_Tclos1: forall m n, (('Δ `|` U).+ ((h n), (h (n+m+1)))).
     Proof.
       move => m n.
-      have Hall: (forall m n, allL ('Δ `|` R) (mkseq (fun i => h (n + i+1)) m) (h n) (h (n+m+1))).
+      have Hall: (forall m n, allL ('Δ `|` U) (mkseq (fun i => h (n + i+1)) m) (h n) (h (n+m+1))).
       by apply: h_Tclos;split.
       by apply: allL_to_Tclos.
     Qed.
     
     (** * the property we need *)
-    Lemma hP1: forall n m, (forall j, j <= m.+1 -> (h (n+j)= (h n))) \/ R.+ (h n, h (n+m+1)).
+    Lemma hP1: forall n m, (forall j, j <= m.+1 -> (h (n+j)= (h n))) \/ U.+ (h n, h (n+m+1)).
     Proof.
       move => n m;elim: m n => [n|n' Hr n]. 
       + move: H2 => /(_ n) [H2' | H2'];last first.
@@ -758,7 +761,7 @@ Module h_extra_props.
         ++ rewrite -addnA addn1 in Hr.
            move: H2 => /(_ (n+ n'.+1)) [H1' | H1'];right;rewrite addn1.
            by rewrite H1' in Hr.
-           by have /Tclos_composel:  (R.+ `;` R) (h n, h (n + n'.+1).+1)
+           by have /Tclos_composel:  (U.+ `;` U) (h n, h (n + n'.+1).+1)
                  by (exists (h (n + n'.+1))).
     Qed.
 
@@ -773,7 +776,7 @@ Module h_extra_props.
       by move: H4 => /(_ j H5) <-;rewrite 1!addnC.
     Qed.
 
-    Lemma hmapk k: R.+ (h (k*(size (S::Sq))), h (k.+1*(size (S::Sq)))).
+    Lemma hmapk k: U.+ (h (k*(size (S::Sq))), h (k.+1*(size (S::Sq)))).
     Proof.
       move: hP1 => /(_ (k*(size (S::Sq))) (size Sq)) [/inIg' H5|];last first. 
       by have ->: k * size (S :: Sq) + size Sq + 1 = k.+1 * size (S :: Sq)
@@ -782,10 +785,10 @@ Module h_extra_props.
     Qed.
 
     (** * The main lemma of this module *)    
-    Lemma hmap' k p: R.+ (h (k*(size (S::Sq))), h ((k+ p.+1)*(size (S::Sq)))).
+    Lemma hmap' k p: U.+ (h (k*(size (S::Sq))), h ((k+ p.+1)*(size (S::Sq)))).
     Proof.
       elim: p k => [k |p Hr k];first by rewrite [k + 1]addn1;apply: (hmapk k).
-      have: R.+ (h ((k + p.+1) * size (S :: Sq)), h ((k + p.+1).+1 * size (S :: Sq)))
+      have: U.+ (h ((k + p.+1) * size (S :: Sq)), h ((k + p.+1).+1 * size (S :: Sq)))
         by apply: (hmapk (k+p.+1)) =>H1.
       have ->: (k + p.+1).+1 = k +p.+2 by lia.
       move => H4.
@@ -837,20 +840,16 @@ Module BHExt.
     Proof.
       (* exists a sink and thus a preabsorbant node *)
       move: (@NotCyclic_exists_preabsorbant T O^-1 M A1 Oinv_notcyclic) => [v Hpa].
-      exists [set v]%classic.
-      rewrite inE. 
-      split. 
-      by apply: RelIndep_set1.
-      split. rewrite /setRM.
-      have Hinc:  (v)_:#R  `<=` (v)_:#O^-1. rewrite /Aset. apply: Fset_inc.
-      by apply: inverseS.
-      apply: subset_trans. by apply: Hinc.
-      by [].
-      apply/negP => /eqP H.
-      have Hv: [set v]%classic v by [].
-      by rewrite H /= in Hv.
+      (* [set v] is in (preKernel M R M). *)
+      exists [set v]%classic;rewrite inE. 
+      have Hinc:  (v)_:#R  `<=` (v)_:#O^-1 
+          by rewrite /Aset;apply: Fset_inc;apply: inverseS.
+      split;first by apply: RelIndep_set1.
+      split;first by apply: (subset_trans Hinc _).
+      + apply/negP => /eqP H.
+        have Hv: [set v]%classic v by [].
+        by rewrite H /= in Hv.
     Qed.
-    
     
     Lemma choose: (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (preKernel M R M)))
                   \/ (exists S, (S \in (preKernel M R M)) /\ S \in (Absorbant M)).
@@ -915,6 +914,8 @@ Module BHExt.
   End BHExt.
 End BHExt.
 
+Export BHExt(exists_kernel).
+
 Section FinsetToClassical.
   (** * from {set T} to (set T) classicals_sets and finTYpe *) 
   (** * from fin_relation {set T} to relation {set T} *)
@@ -971,16 +972,6 @@ Section FinsetToClassical.
     by move/inP => [/inP/in_finP -> |/inP/in_finP ->];[rewrite orTb| rewrite orbT].
   Qed.
 
-  (** * aller voir 
-  Definition in_set T (A : set T) : pred T := (fun x => `[<A x>]).
-Canonical set_predType T := @PredType T (set T) (@in_set T).
-
-Lemma in_setE T (A : set T) x : x \in A = A x :> Prop.
-Proof. by rewrite propeqE; split => [] /asboolP. Qed.
-
-Definition inE := (inE, in_setE).
-  *) 
-
   Lemma set_of_finI A B : 
     set_of_fin (A :&: B) = (set_of_fin A) `&` (set_of_fin B).
   Proof.
@@ -1016,7 +1007,6 @@ End FinsetToClassical.
 
 Notation "[ ':set:' A ]" := (set_of_fin A) (format "[ ':set:'  A ]").
 Notation "[ ':fin:' A ]" := (fin_of_set A) (format "[ ':fin:'  A ]").
-
 
 Reserved Notation "A [:<=:] B" (at level 4, no associativity). 
 Reserved Notation "A [:<= R :] S" (at level 4, no associativity). 
@@ -1302,7 +1292,7 @@ End SubSetPType_order.
   
 
 Section ChampetierExt_Theorem.
-
+    
   Context (T : finType) (O R B: relation T).
   Implicit Types (O R B: relation T) (X: {set T}).
   
