@@ -1296,22 +1296,24 @@ Section ChampetierExt_Theorem.
   Context (T : finType) (O R B: relation T).
   Implicit Types (O R B: relation T) (X: {set T}).
   
-  Context (A2 : Assumption2 R) (A6 : Assumption6 B (M R B) O) 
-    (A7 : Assumption7 R B (M R B)) (A8 : Assumption8 R B (M R B)).
+  Notation M := (B `|` R).
+
+  Context (A2 : Assumption2 R) (A6 : Assumption6 B M O) 
+    (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
   Context (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O^-1).
-  Context (Apk : forall X , RelIndep O [:set: X] <->  RelIndep (M R B) [:set: X]).
+  Context (Apk : forall X , RelIndep O [:set: X] <->  RelIndep M [:set: X]).
   
   Lemma prekernelP S: 
-    (prekernel_fin O R (M R B) S) <-> preKernel (M R B) R (M R B) [:set: S].
-  Proof. by rewrite (@prekernelE T O R (M R B) S) Apk. Qed.
+    (prekernel_fin O R M S) <-> preKernel M R M [:set: S].
+  Proof. by rewrite (@prekernelE T O R M S) Apk. Qed.
   
   Lemma maximal_mabsorbant S:
-    (prekernel_fin O R (M R B) S) /\ (forall U, prekernel_fin O R (M R B) U ->
+    (prekernel_fin O R M S) /\ (forall U, prekernel_fin O R M U ->
                                   [:set: S] [<= O] [:set: U] -> S = U)
-    -> Absorbant (M R B) [:set: S].
+    -> Absorbant M [:set: S].
   Proof.
     contra; move => H1 /prekernelP Hpk.
-    have H3: ~ Absorbant (M R B) [:set: S].
+    have H3: ~ Absorbant M [:set: S].
     {
       move: H1 => [y H1] H3.
       rewrite notin_setE in H3.
@@ -1329,10 +1331,10 @@ Section ChampetierExt_Theorem.
   Qed.
   
   Lemma Kernel_ChampetierExt: 
-    exists (S : {set T}), RelIndep (M R B) [:set: S] /\ Absorbant (M R B) [:set: S].
+    exists (S : {set T}), RelIndep M [:set: S] /\ Absorbant M [:set: S].
   Proof.
     (* There exist a maximal set *)
-    move: (@Maximal T O R (M R B) A1 Asp Au) => [S Hm].
+    move: (@Maximal T O R M A1 Asp Au) => [S Hm].
     move: Hm => /[dup] /maximal_mabsorbant Ma [/prekernelP [Hpk _] _].
     by (exists S).
   Qed.
@@ -1345,16 +1347,18 @@ Section Blidia_Engel_Ext_Theorem.
 
   Context (T : finType) (O R B: relation T).
   Implicit Types (O R B: relation T) (X: {set T}).
-  
-  Context (A2 : Assumption2 R) (A6 : Assumption6 B (M R B) O) 
-    (A7 : Assumption7 R B (M R B)) (A8 : Assumption8 R B (M R B)).
+
+  Notation M := (B `|` R).  
+
+  Context (A2 : Assumption2 R) (A6 : Assumption6 B M O) 
+    (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
   Context (A1: NotEmpty T) (Au: R `<=` O^-1).
-  Context (Apk : forall X , RelIndep O [:set: X] <->  RelIndep (M R B) [:set: X]).
+  Context (Apk : forall X , RelIndep O [:set: X] <->  RelIndep M [:set: X]).
   Context (Anc : ~ ( exists s, R.+ (s,s))).
 
   Lemma prekernelP' S: 
-    (prekernel_fin O R (M R B) S) <-> preKernel (M R B) R (M R B) [:set: S].
-  Proof. by rewrite (@prekernelE T O R (M R B) S) Apk. Qed.
+    (prekernel_fin O R M S) <-> preKernel M R M [:set: S].
+  Proof. by rewrite (@prekernelE T O R M S) Apk. Qed.
   
 End Blidia_Engel_Ext_Theorem.
 
@@ -1396,14 +1400,16 @@ Section Champ.
   Definition R := D `&` O^-1.
   Definition B := D `&` O.
 
+  Notation M := (B `|` R).
+
   Context 
     (A1: NotEmpty T) 
     (Asp: sporder O)
-    (A6 : Assumption6 B (M R B) O) 
-    (A7 : Assumption7 R B (M R B))
-    (A8 : Assumption8 R B (M R B)).
+    (A6 : Assumption6 B M O) 
+    (A7 : Assumption7 R B M)
+    (A8 : Assumption8 R B M).
   
-  Lemma RB: (M R B) = D.
+  Lemma RB: M = D.
   Proof.
     have H1:  R `<=` D. by rewrite /R;apply: subIsetl.
     have H2:  B `<=` D. by rewrite /R;apply: subIsetl.
@@ -1441,7 +1447,7 @@ Section Champ.
   Lemma Rnotiic: ~ (iic R).
   Proof. by move: Onoticc => ? /(@iic_sub T R O^-1 (Au)) ?. Qed.
 
-  Lemma Apk:  forall X , RelIndep O [:set: X] <->  RelIndep (M R B) [:set: X].
+  Lemma Apk:  forall X , RelIndep O [:set: X] <->  RelIndep M [:set: X].
   Proof. move => X. rewrite RB. 
          rewrite (@direction_relIndep T G D [:set: X] Ad).
          by rewrite (@orientation_relIndep T G O [:set: X] Ao).
@@ -1457,11 +1463,11 @@ Section Champ.
     move: Rsym => /AsymEq ->;apply: Rnotiic.
   Qed.
 
-  Lemma haveA6 : forall x y : T, B (x, y) /\ ~ (M R B) (y, x) -> O (x, y).
+  Lemma haveA6 : forall x y : T, B (x, y) /\ ~ M (y, x) -> O (x, y).
   Proof. by move => x y [[_ H1] _]. Qed.
 
   Lemma Kernel_Champetier: 
-    exists (S : {set T}), RelIndep (M R B) [:set: S] /\ Absorbant (M R B) [:set: S].
+    exists (S : {set T}), RelIndep M [:set: S] /\ Absorbant M [:set: S].
   Proof.
     by pose proof (@Kernel_ChampetierExt T O R B (haveA2) (haveA6)
                      A7 A8 A1 Asp (Au) (Apk)).

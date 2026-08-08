@@ -310,7 +310,7 @@ Module Extend_nonMabsorbant_prekernel.
     
   Variables (T:choiceType) (R B O: relation T).
   
-  Definition M := B `|` R.
+  Notation M := (B `|` R).
 
   Lemma preKernelProp: forall S S1,
       RelIndep M S -> S1 `<=` S -> (S1:#(R) `<=` M#S <-> forall y, ~ (y \in S) -> y \in S1:#(R) -> y \in M#S).
@@ -678,7 +678,8 @@ Module Extend_nonMabsorbant_prekernel.
         
 End Extend_nonMabsorbant_prekernel.
 
-Export Extend_nonMabsorbant_prekernel (extend, M).
+Export Extend_nonMabsorbant_prekernel (extend).
+
 
 
 
