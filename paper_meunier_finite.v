@@ -817,7 +817,7 @@ Module BHExt.
       preKernel O R M S <-> preKernel M R M S.
     Proof. by rewrite /preKernel /= Apk. Qed.
     
-    Lemma extend_pk X: preKernel M R M X -> ~ (Absorbant M X) ->
+    Lemma extend_pk X: preKernel M R M X -> ~ (absorbant M X) ->
                        exists X', preKernel M R M X' /\ X [<< O] X'.
     Proof.
       move => Hpk Hnma.
@@ -825,7 +825,7 @@ Module BHExt.
       by exists X'. 
     Qed.
 
-    Lemma A0 S: S \in ((preKernel M R M) `&` (Absorbant M).^c)
+    Lemma A0 S: S \in ((preKernel M R M) `&` (absorbant M).^c)
                 -> exists S', S' \in (preKernel M R M) /\ (S [<< O] S').
     Proof.
       rewrite inE => -[Hpk Hna];move: (extend_pk Hpk Hna) 
@@ -852,9 +852,9 @@ Module BHExt.
     Qed.
     
     Lemma choose: (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (preKernel M R M)))
-                  \/ (exists S, (S \in (preKernel M R M)) /\ S \in (Absorbant M)).
+                  \/ (exists S, (S \in (preKernel M R M)) /\ S \in (absorbant M)).
     Proof.
-      move: (@choose_sub _ ([<< O]%O) (preKernel M R M) (Absorbant M).^c A0 A1')
+      move: (@choose_sub _ ([<< O]%O) (preKernel M R M) (absorbant M).^c A0 A1')
           => [Hiic | [S [Hpk Hna]]].
       by left.
       right. exists S.
@@ -903,7 +903,7 @@ Module BHExt.
     Qed.
     
     (** * Define Kernel as the intersection XXXXXXX *)
-    Lemma exists_kernel: exists S, S \in (preKernel M R M) /\ S \in (Absorbant M).
+    Lemma exists_kernel: exists S, S \in (preKernel M R M) /\ S \in (absorbant M).
     Proof.
       move: choose => [[h [Hiic Hk]] | H1];last by [].
       have HpkO: (forall n, (h n) \in  (preKernel O R M))
@@ -1192,10 +1192,10 @@ Section SubSetPType_order.
   Context (T : finType).
   Implicit Types (O R M: relation T) (S: {set T}).
   
-  Definition setRM_fin R M S := (asbool ([:set: S]:#R `<=` M#([:set: S]))).
+  Definition pre_absorbant_fin R M S := (asbool (pre_absorbant R M [:set: S])).
   
   Definition prekernel_fin O R M: pred {set T} := 
-    fun S => (RelIndep_fin O S) && ((setRM_fin R M S) && (([:set: S]) != set0)).
+    fun S => (RelIndep_fin O S) && ((pre_absorbant_fin R M S) && (([:set: S]) != set0)).
   
   (** * setIndep doit s'appeller  prekernelfinType ? *)
   Definition setIndep O R M := setP_type (prekernel_fin O R M). 
@@ -1208,7 +1208,7 @@ Section SubSetPType_order.
   
   Lemma prekernelE O R M S: 
     prekernel_fin O R M S <->
-    RelIndep O [:set: S] /\ setRM R M [:set: S] /\ [:set: S] != set0.
+    RelIndep O [:set: S] /\ pre_absorbant R M [:set: S] /\ [:set: S] != set0.
   Proof.
     split.
     by move => /andP [/RelIndepE H1 /andP [/asboolP H2 H3]].
@@ -1230,7 +1230,7 @@ Section SubSetPType_order.
     apply/andP.
     split;first by apply: RelIndep_fin1.
     apply/andP.
-    split;first by apply/asboolP;rewrite /setRM_fin set_of_sfin.
+    split;first by apply/asboolP;rewrite /pre_absorbant_fin set_of_sfin.
     rewrite set_of_sfin.
     apply/asboolP => H.
     have H7: [set v]%classic v by exact.
@@ -1310,14 +1310,14 @@ Section ChampetierExt_Theorem.
   Lemma maximal_mabsorbant S:
     (prekernel_fin O R M S) /\ (forall U, prekernel_fin O R M U ->
                                   [:set: S] [<= O] [:set: U] -> S = U)
-    -> Absorbant M [:set: S].
+    -> absorbant M [:set: S].
   Proof.
     contra; move => H1 /prekernelP Hpk.
-    have H3: ~ Absorbant M [:set: S].
+    have H3: ~ absorbant M [:set: S].
     {
       move: H1 => [y H1] H3.
       rewrite notin_setE in H3.
-      rewrite /Absorbant /mkset => /(_ y) H4. 
+      rewrite /absorbant /mkset => /(_ y) H4. 
       by move: H1 => /H4;rewrite inE => H1.
     }
     move: (@extend T R B O [:set: S] A2 A6 A7 A8 Hpk H3)
@@ -1331,7 +1331,7 @@ Section ChampetierExt_Theorem.
   Qed.
   
   Lemma Kernel_ChampetierExt: 
-    exists (S : {set T}), RelIndep M [:set: S] /\ Absorbant M [:set: S].
+    exists (S : {set T}), RelIndep M [:set: S] /\ absorbant M [:set: S].
   Proof.
     (* There exist a maximal set *)
     move: (@Maximal T O R M A1 Asp Au) => [S Hm].
@@ -1467,7 +1467,7 @@ Section Champ.
   Proof. by move => x y [[_ H1] _]. Qed.
 
   Lemma Kernel_Champetier: 
-    exists (S : {set T}), RelIndep M [:set: S] /\ Absorbant M [:set: S].
+    exists (S : {set T}), RelIndep M [:set: S] /\ absorbant M [:set: S].
   Proof.
     by pose proof (@Kernel_ChampetierExt T O R B (haveA2) (haveA6)
                      A7 A8 A1 Asp (Au) (Apk)).

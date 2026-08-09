@@ -474,14 +474,14 @@ Section Paper.
   Lemma main_lemma X 
     (A2: Assumption2 R) (A6: Assumption6 B M O) (A7: Assumption7 R B M) 
     (A8: Assumption8 R B M) :
-    IsMaximal X -> Absorbant M X.
+    IsMaximal X -> absorbant M X.
   Proof.
     contra; move => H1 /set_mem H2. 
-    have H3: ~ (Absorbant M X).
+    have H3: ~ (absorbant M X).
     {
       move: H1 => [y H1] H3.
       rewrite notin_setE in H3.
-      rewrite /Absorbant /mkset => /(_ y) H4. 
+      rewrite /absorbant /mkset => /(_ y) H4. 
       by move: H1 => /H4;rewrite inE => H1.
     }
     move: (extend A2 A6 A7 A8 H2 H3)  => [X' [/mem_set H4 [/DeltaCP H5 H6]]]. 

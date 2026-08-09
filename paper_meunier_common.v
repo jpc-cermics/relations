@@ -38,17 +38,34 @@ Notation "[<= U ]%O" := (leSet U).
 Notation "A [<< U ] B" := ((('Δ).^c `&` (leSet U)) (A,B)). 
 Notation "[<< U ]%O" := (('Δ).^c `&` (leSet U)).
 
-Definition setRM (T: Type) (U M: relation T) (S:set T) := S:#U `<=` M#S.
+Definition pre_absorbant {T: Type} (U M: relation T) (S:set T) := S:#U `<=` M#S.
 
-Definition Absorbant {T: Type} (M: relation T) := 
+Definition absorbant {T: Type} (M: relation T) := 
   [set S: set T| forall y, ~ (y \in S) -> (y \in M#S)].
 
-Definition preKernel (T: Type) (O U M: relation T) :=
-  [set S| RelIndep O S /\ (setRM U M S) /\ S != set0 ].
+Definition preKernel {T: Type} (O U M: relation T) :=
+  [set S| RelIndep O S /\ (pre_absorbant U M S) /\ S != set0 ].
+
+Section preKernel.
+
+  Context {T : choiceType} (U: relation T).
+  
+  Lemma absorbant_not_empty (S: set T): 
+    (NotEmpty T) -> absorbant U S -> ~ (S = set0).
+  Proof.
+    move => [t _] + Hne; rewrite {}Hne /absorbant => /(_ t) /=.
+    have ->: t \in set0 = false by rewrite [t \in set0]inE;apply/asboolP.
+    move => H1.
+    have: t \in U#set0 by apply: H1.
+    by rewrite inE => -[y [_ ?]].
+  Qed.
+
+End preKernel.
+
 
 Section CheckAsym. 
   (** * Import main result from paper_monochromatic_f *)
-  Context (T : choiceType) (U: relation T).
+  Context {T : choiceType} (U: relation T).
   Hypothesis A1: (NotEmpty T).
 
   Import Asyminf2Inf(Asym2P5', allL_rc_asym).
@@ -340,12 +357,10 @@ Module Extend_nonMabsorbant_prekernel.
   Definition Y:= [set y | ~ (y \in X) /\ ~ (y \in M#X)].
   (* end snippet Sx *)       
   
-  Definition Non_Mabsorbant := exists y, y \in Y.
-
-  Lemma Non_MabsorbantP: Non_Mabsorbant <-> ~ (Absorbant M X).
+  Lemma not_absorbant_iff: 
+    ~ (absorbant M X) <-> exists y, y \in Y. 
   Proof.
-    split. 
-    by move => [y +] Hma;rewrite inE => [[/Hma HnotX HnotMX]]. 
+    split;last by move => [y +] Hma;rewrite inE => [[/Hma ? ?]].
     contra => + y Hy => /(_ y). 
     by rewrite (@notin_setE T Y y) /Y /=  not_andE => -[? // |/contrapT ?].
   Qed.
@@ -354,7 +369,7 @@ Module Extend_nonMabsorbant_prekernel.
   (* begin snippet Tm:: no-out *)    
   Definition Xy y:= [set x | x \in X /\ (B (x,y))].
   (* end snippet Tm *)       
-    
+  
     (* begin snippet TmI:: no-out *)    
     Lemma XyI: forall y, Xy y `<=` X.
     (* end snippet TmI *)       
@@ -374,9 +389,6 @@ Module Extend_nonMabsorbant_prekernel.
     (* end snippet Sxone*)       
     Proof.  by move => H1; move: (notiic_rloop_sub A2 H1) => H2.  Qed.
 
-    Lemma NonMabsorbant (A2: Assumption2 R):
-      Non_Mabsorbant -> exists y, y \in Y /\ (SeP y).
-    Proof. by move => H0;pose proof (Sx_1 A2 H0). Qed.
     
     (* begin snippet Sbunp:: no-out *)    
     Lemma fact0: forall x y, x \in X `\` (Xy y) -> ~ B (x,y).
@@ -663,17 +675,19 @@ Module Extend_nonMabsorbant_prekernel.
 
     (** * main result *)
     Lemma extend (A2: Assumption2 R) (A6: Assumption6 B M O) (A7: Assumption7 R B M) (A8: Assumption8 R B M):
-      preKernel M R M X -> ~ (Absorbant M X) 
+      preKernel M R M X -> ~ (absorbant M X) 
       -> exists X', preKernel M R M X' /\ (X [<< O] X'). 
     Proof.
-      move => H1 /Non_MabsorbantP/(NonMabsorbant A2) [y [H2 H3]]. 
+      have Hna: (exists y, y \in Y) -> exists y, y \in Y /\ (SeP y)
+            by move => H0;pose proof (Sx_1 A2 H0). 
+      move => H1 /not_absorbant_iff/Hna [y [H2 H3]]. 
       have H4: y \in (X:#(B) `|` (X:#(B)).^c) by rewrite (setUv X:#(B)) inE.
       move: H4 => /set_mem [ H4 | H4];rewrite -inE in H4.
       by move: (case2 A6 A7 A8 H1 H2 H3 H4) => H5;exists (X `\` Xy y `|` [set y]).
       move: H4;rewrite in_setC notin_setE -[X in ~ X]inE => H4.
       by move: (case1 H1 H2 H3 H4) => H5;exists (X `|` [set y]).
     Qed.
-
+    
     End Extend_nonMabsorbant_prekernel.
         
 End Extend_nonMabsorbant_prekernel.
