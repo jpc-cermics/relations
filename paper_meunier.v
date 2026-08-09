@@ -13,8 +13,7 @@ From mathcomp Require Import all_boot seq order boolp classical_sets contra.
 From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
 From RL Require Import  seq1 seq2 rel.
-
-From RL Require Import  paper_monochromatic_f paper_meunier_common.
+From RL Require Import paper_meunier_common.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -38,22 +37,22 @@ Section Paper.
   Proof. by move => [S [H1 [H2 H3]]];rewrite inE. Qed.
 
   Lemma Scal2S: forall S, S \in Scal -> exists (S': SType), (sval S') = S.
-  Proof. by move => S /inP H1; exists (exist _ S H1). Qed.
+  Proof. by move => S /set_mem H1; exists (exist _ S H1). Qed.
 
   Lemma ScalProp: forall S S1,
       RelIndep M S -> S1 `<=` S -> (S1:#(R) `<=` M#S <-> forall y, ~ (y \in S) -> y \in S1:#(R) -> y \in  M#S).
   Proof.
-    move => S S1 H1 H1';split => [H2 y _ /inP/H2/inP H4 //| H2 y H3].
+    move => S S1 H1 H1';split => [H2 y _ /set_mem/H2/mem_set H4 //| H2 y H3].
     case H5: (y \in S);last first.
-    + apply/inP/H2. by rewrite H5. by apply/inP.
+    + apply/set_mem/H2. by rewrite H5. by apply/mem_set.
     + move: H3. rewrite /Aset => -[y' [H6 H7]].      
       rewrite /RelIndep in H1.
       case H8: (y == y').
       ++ move: H8 => /eqP H8; have H9: M(y,y) by rewrite -H8 in H6;rewrite /M;right.
          by move: H7 => /H1' H7;(exists y);rewrite -H8 in H7.
-      ++ move: H8 H7 => /eqP H8 /inP H7.
+      ++ move: H8 H7 => /eqP H8 /mem_set H7.
          have H9:  y' <> y by move => H10;rewrite H10 in H8.
-         move: H7 => /inP/H1'/inP H7.
+         move: H7 => /set_mem/H1'/mem_set H7.
          move: (H1 y' y H7 H5 H9) => H10.
          by have H11: M (y', y) by rewrite /M;right.
   Qed.
@@ -193,7 +192,7 @@ Section Paper.
       Lemma iic_RC: (iic RC).
       Proof.
         apply DC; last by apply: total_RC.
-        move: Elt_not_empty => [x _];exists x;by apply/inP.
+        move: Elt_not_empty => [x _];exists x;by apply/mem_set. 
       Qed.
       
     End total_RC. 
@@ -295,12 +294,12 @@ Section Paper.
     (* end snippet Chains *)    
     
     Lemma Chains_is_total C: C \in ChainsB <-> total_on C (curry leSet1).
-    Proof. split => [/inP H2 c1 c2 ? ?| H1];first by apply: H2. 
-           by apply/inP => c1 c2 ? ?;apply: H1.
+    Proof. split => [/set_mem H2 c1 c2 ? ?| H1];first by apply: H2. 
+           by apply/mem_set => c1 c2 ? ?;apply: H1.
     Qed.
     
     Lemma Chains_Scal C S: C \in ChainsB -> S \in C -> Scal (sval S).
-    Proof. by move: S => [S [H1 [H2 H3]]] /inP H4 /inP H5. Qed.
+    Proof. by move: S => [S [H1 [H2 H3]]] /set_mem H4 /set_mem H5. Qed.
     
   End SType_chains.
   
@@ -314,15 +313,15 @@ Section Paper.
     (* Sinf is a Mono-independent set when C is a chain *)
     Lemma Sinf_indep: RelIndep M (Sinf C).
     Proof.
-      move: Hc => /inP H1 x y /inP H2 /inP H3 H4 /= H5.
-      move: H2 H3 =>[S [/[dup] H6 /inP P6 [/= H7 H8]]]
-                     [U [/[dup] H6' /inP P6' [/= H7' H8']]].
+      move: Hc => /set_mem H1 x y /set_mem H2 /set_mem H3 H4 /= H5.
+      move: H2 H3 =>[S [/[dup] H6 /set_mem P6 [/= H7 H8]]]
+                     [U [/[dup] H6' /set_mem P6' [/= H7' H8']]].
       move: H8 H8' => /((_ U) H6') H8 /((_ S) H6) H8'.
       have [H9|H9]: S [<=] U \/ U [<=] S by apply: H1.
-      - move: H9 H1 => /H8 H9 /inP H1.
+      - move: H9 H1 => /H8 H9 /mem_set H1.
         move: (Chains_Scal H1 H6') => [/(_ x y) H10 _].
         by apply: (H10 H9 H7' H4 H5).
-      - move: H9 H1 => /H8' H9 /inP H1.
+      - move: H9 H1 => /H8' H9 /mem_set H1.
         move: (Chains_Scal H1 H6) => [/(_ x y) H10 _].
         by apply: (H10 H7 H9 H4 H5).
     Qed.
@@ -335,7 +334,7 @@ Section Paper.
       have: Rloop R by apply: notiic_rloop.
       move => [v H1]; exists v.
       have H2':  R `<=` M by rewrite /M;apply: subsetUr.
-      split;first by rewrite /RelIndep;move => x y /inP /= -> /inP /= ->.
+      split;first by rewrite /RelIndep;move => x y /set_mem /= -> /set_mem /= ->.
       split;first by move => t [y [/= H3 H4]];move: H3; rewrite H4 /= => /H1/H2' H3;exists v.
       by rewrite -notempty_exists;(exists v);rewrite inE.
     Qed.
@@ -365,20 +364,20 @@ Section Paper.
       move: (Chains_Scal H1 H4) => [H7 [H8 H9]].
       move: (EM (y \in (Sinf C))) => [ H9' | H9'].
       + (* we eliminate the case y \in Sinf C *)
-        move: H3 => /inP H3. 
+        move: H3 => /mem_set H3. 
         move: (Sinf_indep H3 H9') => H10.
-        move: (EM (x = y)) H3 => [H11 | H11] /inP H3.
+        move: (EM (x = y)) H3 => [H11 | H11] /set_mem H3.
         by (exists x);(have H12: M(y,x) by right;move: B1;rewrite H11).
         by move: H11 => /H10 H11;(have H12: M(x,y) by right).
       + (* now  ~ y \in Sinf C *)
         have B2: ~ (x = y) by move => I1;rewrite -I1 inE in H9'.
         move: (EM (M (y,x))) => [? | B3];first by (exists x).
         have H10: (sval X):#R y by (exists x);split;[ |rewrite -inE].
-        move: H10 => /H8 [x' [B4 /inP H11]].
+        move: H10 => /H8 [x' [B4 /mem_set H11]].
         
-        move: (EM (x' \in (Sinf C))) => [/inP ? | B5];first by (exists x').
+        move: (EM (x' \in (Sinf C))) => [/set_mem ? | B5];first by (exists x').
         (* now x' not in Sinf C *)
-        have B6: ~ (x = x') by move => I1; move: H3;rewrite I1 => /inP H3. 
+        have B6: ~ (x = x') by move => I1; move: H3;rewrite I1 => /mem_set H3. 
         have B3': ~ (y = x')
           by move => I1;rewrite I1 in B1;
                     (have I3: M (x,x') by right);move: (H7 x x' H5 H11 B6).
@@ -407,7 +406,7 @@ Section Paper.
         have P10: ~ M (y, x) by apply: B3.
         have P11: ~ ((M `|` M^-1) (x',x)) by apply: P11'.
         have P12: ~ ((M `|` M^-1) (y',x))
-          by move: H3 => /inP H3;
+          by move: H3 => /mem_set H3;
                         pose proof (@RelIndep_E _ x y' M _ H3 B7 P3 (Sinf_indep)).
         
         exists y'. split. by apply: (A9 x y x' y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12). by rewrite -inE.
@@ -425,7 +424,7 @@ Section Paper.
     Lemma Sinf_final (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O)   (A5:Assumption5 O M) (A9: Assumption9 R B O M):
       exists Si, forall (S: SType), C S -> S [<=] Si.
     Proof.
-      move: (Sinf_Scal A2 A3 A4 A5 A9) => /inP H2;exists (exist _ (Sinf C) H2);move => S /inP H3. 
+      move: (Sinf_Scal A2 A3 A4 A5 A9) => /set_mem H2;exists (exist _ (Sinf C) H2);move => S /mem_set H3. 
       by apply: ChooseRC6.
     Qed.
 
@@ -440,7 +439,7 @@ Section Paper.
   (* end snippet SmaxSType *)
   Proof.
     apply: (@Zorn_relation SType leSet1 (leSet1_porder A4 A5)) => C.
-    move: (@Sinf_final C) => H2 /inP H3.
+    move: (@Sinf_final C) => H2 /mem_set H3.
     move: H3 => {}/H2 H3.
     case H4: ( C != set0 ); first by apply: (H3 H4 A2 A3 A4 A5 A9).
     move: H4 => /negP/contrapT/eqP H4. 
@@ -477,7 +476,7 @@ Section Paper.
     (A8: Assumption8 R B M) :
     IsMaximal X -> Absorbant M X.
   Proof.
-    contra; move => H1 /inP H2. 
+    contra; move => H1 /set_mem H2. 
     have H3: ~ (Absorbant M X).
     {
       move: H1 => [y H1] H3.
@@ -485,7 +484,7 @@ Section Paper.
       rewrite /Absorbant /mkset => /(_ y) H4. 
       by move: H1 => /H4;rewrite inE => H1.
     }
-    move: (extend A2 A6 A7 A8 H2 H3)  => [X' [/inP H4 [/DeltaCP H5 H6]]]. 
+    move: (extend A2 A6 A7 A8 H2 H3)  => [X' [/mem_set H4 [/DeltaCP H5 H6]]]. 
     by exists X';[ | split;[ | apply/eqP;symmetry]].
   Qed.
   
@@ -502,7 +501,7 @@ Section Paper.
   Proof.
     move: (Smax A1 A2 A3 A4 A5 A9) => [Sm H1].
     move: (main_lemma A2 A6 A7 A8 H1) => H2.
-    move: H1 => [/inP [H1 [H4 H5]] H3].
+    move: H1 => [/set_mem [H1 [H4 H5]] H3].
     by exists Sm. 
   Qed.
   
@@ -738,7 +737,7 @@ Module MeunierLanglois.
 End MeunierLanglois. 
 
 Module BlidiaEngel.
-    
+  (** * This is a version of Blidia and Engel for infinite graph *)
   (* O is an orientation:  Asym, irreflexive relation *)
   (* D irreflexive D est inclue dans O `|` O^-1 *)
   (* O is acycliq *)
@@ -783,37 +782,9 @@ Module BlidiaEngel.
     exists X, RelIndep (M) X /\  X != set0 /\  forall x, ~ (x\in X) -> (x \in (M)#X). 
   (* end snippet MainTh:: no-out *)    
   Proof.
-    move: (Smax A1 A2 A3 A4 haveA5 A9) => [Sm H1].
-    move: (main_lemma A2 haveA6 A7 A8 H1) => H2.
-    move: H1 => [/inP [H1 [H4 H5]] H3].
-    by exists Sm. 
+    by pose proof (@G_SSW _ R B O A1 A2 A3 A4 haveA5 haveA6 A7 A8 A9).
   Qed.
-
+  
   End test.
   
 End BlidiaEngel.
-
-Module Champetier.
-  
-  (* O is an orientation:  Asym, irreflexive relation *)
-  (* D irreflexive D est inclue dans O `|` O^-1 *)
-  
-  (* ZZZ O is Transitive *)
-  
-  Parameter (T:choiceType) (O D: relation T).
-  
-  Definition C := O.
-  Definition R := D `&` O^-1. 
-  Definition B := D `&` O. 
-
-  Definition AB_1:= (NotEmpty T).
-  Definition AB_2:= ~ (iic R).
-  Definition AB_3:= ~ (iic B).
-  
-  Definition AB_5:=  forall x y z, 
-      ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
-      -> O (x,y) -> O (y,z) -> O (z,x)
-      -> (O (y,x) /\ O (z,y)).
-  
-End Champetier.
-

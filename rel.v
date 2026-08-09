@@ -206,15 +206,6 @@ Section Relation_Facts.
 
   (** * Sets_facts *)
   
-  (* should be replaced by in_setE or inE ? *)
-  (* Lemma inP (T': Type) (x:T') (X: set T'): x \in X <-> X x. 
-  Proof. by rewrite in_setE. Qed.  *)
-
-  Definition inP := asboolP.
-
-  Lemma ZZinP' (T': Type) (x:T') (X: set T'): reflect (X x) (x\in X).
-  Proof. by apply: (iffP idP);rewrite in_setE. Qed.
-
   Lemma notempty_exists (T': Type) (X:set T'): (exists z, z \in X) <-> (X != set0).
   Proof.
     by rewrite set0P;split;[move => [z /set_mem ?]|move => [z /mem_set ?]];exists z.
@@ -224,8 +215,8 @@ Section Relation_Facts.
   (** * XXXX regarder  nonemptyPn *)
   Lemma empty_notexists (T': Type) (X:set T'): X = set0 <-> ~ (exists z, z \in X).
   Proof.
-    split =>[-> [z]| H1];first by rewrite in_set0. 
-    by rewrite predeqE => x;split => [/inP ?|];[have H2: exists z, z \in X by (exists x)|].
+    split =>[-> [z]| ?];first by rewrite in_set0. 
+    by rewrite predeqE => x;split => [/mem_set ?|];[have H2: exists z, z \in X by (exists x)|].
   Qed.
   (* end snippet Sone *) 
   
@@ -243,7 +234,7 @@ Section Relation_Facts.
   (** * relID0  plutot :  (Y `<=` X) ->  Y `&` (X `\` Y) = set0.  *)
       
   Lemma W_part X Y Z: (Y `<=` X) /\ (Z= X `\` Y) -> Y `&` Z = set0.
-  Proof. by move => [? H2];rewrite empty_notexists H2;move => [z /inP [? [_ ?]]]. Qed.
+  Proof. by move => [? H2];rewrite empty_notexists H2;move => [z /set_mem [? [_ ?]]]. Qed.
   
   (** * XXX regarder subUset *)
   (** * subUset : forall {T : Type} (A B C : set T), (B `|` C `<=` A) = (B `<=` A /\ C `<=` A) *)
@@ -896,7 +887,7 @@ Section Relation_Facts.
 
   Lemma Fset_t5 R: forall (y z:T), y \in R.+#_(z) -> (R.+#_(y) `<=` R.+#_(z) ).
   Proof.
-    move => y z /inP H1 t;move:H1;rewrite -3!Fset_t0 => H1 H2.
+    move => y z /set_mem H1 t;move:H1;rewrite -3!Fset_t0 => H1 H2.
     by apply: (TclosT H2 H1). 
   Qed.
 
@@ -1010,7 +1001,7 @@ Section Relation_Facts.
   Lemma Clos_s_inc E W : forall (X Y: set T) (x:T),
       X x -> Clos_(x| E,W) `<=` Clos(X `|` Y| E,W).
   Proof.
-    move => X Y x' /inP/set_inc2 H1.
+    move => X Y x' /asboolP/set_inc2 H1.
     have H2:  Clos_(x'|E,W) `<=` Clos(X | E,W) 
       by apply Fset_inc1.
     have H3:  Clos(X|E,W) `<=` Clos(X `|` Y|E,W)
@@ -1074,12 +1065,12 @@ Section Relation_Facts.
     x \in X /\ y \in X -> (R (x,y) <-> (Δ_(X) `;` R `;` Δ_(X)) (x,y)).
   Proof.
     rewrite /compose /Delta /mkset /=.
-    move => [/inP H1 /inP H2];split=> [ H3 | [z [[t [[H3 ->] H4] [H5 <-]]]] //].
+    move => [/set_mem H1 /set_mem H2];split=> [ H3 | [z [[t [[H3 ->] H4] [H5 <-]]]] //].
     by (exists y; split;[ exists x; split | ]).
   Qed.
 
   Lemma R_restrict_l R X (x y: T): x \in X -> (R (x,y) <-> (Δ_(X) `;` R) (x,y)).
-  Proof. by move => /inP ?;split => [? | [z [[? /= ->] ?] ] //];(exists x; split). Qed.
+  Proof. by move => /set_mem ?;split => [? | [z [[? /= ->] ?] ] //];(exists x; split). Qed.
 
   Definition Restrict R X :=  [set x | X x.1 /\ X x.2 /\ R x].
   
@@ -1284,27 +1275,29 @@ Section Relation_Facts.
   Qed.
   
   Lemma RelIndep_Ir R X Y: X `<=` Y -> RelIndep R Y -> RelIndep R X.
-  Proof. by move => H1 H2 x y /inP/H1/inP H3 /inP/H1/inP H4 H5;move: (H2 x y H3 H4 H5).
+  Proof. 
+    move => H1 H2 x y /set_mem/H1/mem_set H3 /set_mem/H1/mem_set H4 H5.
+    by move: (H2 x y H3 H4 H5).
   Qed.
   
   Lemma RelIndep_set0 R: RelIndep R set0.
-  Proof. by move => x y /inP H3 _ _ _. Qed.
+  Proof. by move => x y /set_mem H3 _ _ _. Qed.
   
   Lemma RelIndep_set1 R: forall (x: T), RelIndep R [set x].
-  Proof. by move => x x1 x2 /inP -> /inP -> H4. Qed.
+  Proof. by move => x x1 x2 /set_mem -> /set_mem -> ?. Qed.
   
   Lemma RelIndep_U R: forall X x,
       RelIndep R X -> ~(x \in R#X) -> ~(x \in (X:#R)) -> RelIndep R (X `|` [set x]).
   Proof.
-    move => X x H2 H3 H4 x1 x2 /inP 
-             [/inP H5 | /inP H5] /inP [/inP H6 |/inP H6] H7 H8.
+    move => X x H2 H3 H4 x1 x2 /set_mem 
+             [/mem_set H5 | /mem_set H5] /set_mem [/mem_set H6 |/mem_set H6] H7 H8.
     rewrite /RelIndep in H2.
     + by apply: ((H2 x1 x2) H5 H6 H7 H8).
-    + move: H6 H4 => /inP <- H4. 
+    + move: H6 H4 => /set_mem <- H4. 
       by have H9: x2 \in X:#R by rewrite inE;exists x1; rewrite inE in H5.
-    + move: H5 H3 => /inP <- H3. 
+    + move: H5 H3 => /set_mem <- H3. 
       by have H9: x1 \in R#X by rewrite inE;exists x2;rewrite inE in H6.
-    + by move: H5 H6 H7 => /inP -> /inP ->. 
+    + by move: H5 H6 H7 => /set_mem -> /set_mem ->. 
   Qed.
   
   (** * Partition induced by an Equivalence Relation *)
@@ -1319,7 +1312,7 @@ Section Relation_Facts.
   
   (* Lemme 1 : Chaque classe est non vide *)
   Lemma classe_non_vide R: equivalence R -> forall C, Classes R C -> (C != set0).
-  Proof. move => [R_ref _ _ ] C -[x0 ->];rewrite -notempty_exists;exists x0; apply/inP. exact. Qed.
+  Proof. move => [R_ref _ _ ] C -[x0 ->];rewrite -notempty_exists;exists x0; apply/mem_set. exact. Qed.
   
   (* Lemme 2 : Deux classes sont égales ou disjointes *)
   Lemma classes_disjointes_ou_egales R:
@@ -1349,7 +1342,7 @@ Section Relation_Facts.
   Lemma ER_empty R (C C': set T): equivalence R ->
                                   C \in Classes R -> C' \in Classes R -> (exists z, C z /\ C' z) -> C = C'.
   Proof.
-    move => He /inP [x ->] /inP [x' ->] [z H1].
+    move => He /set_mem [x ->] /set_mem [x' ->] [z H1].
     by apply: ((classes_disjointes_ou_egales He) x x');exists z.
   Qed.
   
@@ -1357,8 +1350,8 @@ Section Relation_Facts.
     (C `&` C') != set0 <-> exists z, C z /\ C' z.
   Proof.
     split. 
-    by move => /notempty_exists [z /inP [H1 H2]];exists z.
-    by move => [z [H1 H2]];apply/notempty_exists;exists z;apply/inP. 
+    by move => /notempty_exists [z /set_mem [H1 H2]];exists z.
+    by move => [z [H1 H2]];apply/notempty_exists;exists z;apply/mem_set. 
   Qed.
 
 End Relation_Facts.
@@ -1395,7 +1388,7 @@ Section Restrict_to_subset.
   Proof.
     rewrite RestrictP predeqE /Restrict' => -[x y]; split.
     by move => [x' [y' /= [-> [-> H3]]]].
-    move => /[dup] H0 [z [[t [/DsetE /= [/inP H1 H1'] H4]] /DsetE [/inP H2 H2']]].
+    move => /[dup] H0 [z [[t [/DsetE /= [/mem_set H1 H1'] H4]] /DsetE [/mem_set H2 H2']]].
     rewrite H2' in H2.
     move: (H1) (H2) => /setIn [x' H1''] /setIn [y' H2''].
     by exists x';exists y';rewrite /mkset -H1'' -H2''.  
@@ -1592,7 +1585,7 @@ Section ZornRelation.
   Proof.
     move => [Hr Ha Ht] Htotal. 
     pose S:= (R2rel R).
-    have RS_iff s t:  S s t <-> R (s,t) by split;rewrite /S/R2rel => /inP. 
+    have RS_iff s t:  S s t <-> R (s,t) by split;rewrite /S/R2rel => /asboolP.
     have Sr t: S t t by rewrite asboolE;apply Hr.
     have Sa s t: S s t -> S t s -> s = t by rewrite 2!asboolE;apply Ha. 
     have St r s t: S r s -> S s t -> S r t by rewrite 3!asboolE;apply Ht.

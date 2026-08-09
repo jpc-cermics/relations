@@ -115,9 +115,9 @@ Section Active_paths.
   Proof.
     elim => [ | eo3 p _] eo1 eo2.
     - split;first by move => [_ [/= _ +]];rewrite allL0 inE => /[dup] ? [H1 [H2 _]].
-      by move => [[_ [<- H3]] /inP H4] /=; rewrite allL0.
-    - split;first by move => [? [/= ? /= /allL_c/andP [/inP ? ?]]].
-      by move => [[_ [H3 H4]] /inP H5] /=;rewrite allL_c;split;[|split;[|apply /andP]].
+      by move => [[_ [<- H3]] /mem_set H4] /=; rewrite allL0.
+    - split;first by move => [? [/= ? /= /allL_c/andP [/set_mem ? ?]]].
+      by move => [[_ [H3 H4]] /mem_set H5] /=;rewrite allL_c;split;[|split;[|apply /andP]].
   Qed.
   
   Lemma Active_path_cc_ht R X p: forall (eo1 eo2: T*T*O) (x y: T),
@@ -185,8 +185,8 @@ Section Active_paths.
     - split; last by  move => [_ H2] /=;rewrite allL0 inE.
       by move => [_ [/= _ +]];rewrite allL0 inE => /[dup] ? [H1 [H2 _]].
     - rewrite !rcons_cons Active_path_crc'.
-      split; first by move => /allL_rc/andP [/inP H2 H3];rewrite Active_path_crc.
-      by rewrite Active_path_crc'  => -[H2 /inP H3]; rewrite allL_rc;apply/andP.
+      split; first by move => /allL_rc/andP [/set_mem H2 H3];rewrite Active_path_crc.
+      by rewrite Active_path_crc'  => -[H2 /mem_set H3]; rewrite allL_rc;apply/andP.
   Qed.
   
   Lemma Active_path_rcrc_ht R X: forall (p: seq (T*T*O)) (eo1 eo2: T*T*O) (x y: T),
@@ -266,7 +266,7 @@ Section Active_paths.
         rewrite rcons_cons cat_cons -rcons_cons -rcons_cat in H3.
         pose proof Active_path_crc_ht H3 as [H4 H5].
         move: H3; rewrite -H4 -H5.
-        move => /Active_path_crc' /allL_cat/andP [H6 /allL_c/andP [/inP H7 H8]]. 
+        move => /Active_path_crc' /allL_cat/andP [H6 /allL_c/andP [/set_mem H7 H8]]. 
         by rewrite rcons_cons Active_path_crc Active_path_crc. 
   Qed.
 
@@ -719,11 +719,11 @@ Section Active_paths_simple.
   Proof.
     split.
     + elim: p x y => [x y [_ /allL0' /R_o' _] // | x1 p _ x y]. 
-      rewrite allset_consb allL_c => -[ /andP [H2 H'2] /andP [/inP H3 H4]].
+      rewrite allset_consb allL_c => -[ /andP [H2 H'2] /andP [/set_mem H3 H4]].
       rewrite Lifto_crc Lifto_rcc Active_path_crc' /=. 
-      elim: p x x1 H3 H2 H'2 H4 => [x x1 H3 /inP H1 _ /allL0' H4 // | ].  
+      elim: p x x1 H3 H2 H'2 H4 => [x x1 H3 /set_mem H1 _ /allL0' H4 // | ].  
       ++ by rewrite allL0 /=; apply mem_set; split;case: o H3 H4 => /R_o' H3 /R_o' H4.
-      ++ move => z p H1 x1 x H3 /inP H2 /allset_cons [H4 H4'] /allL_c/andP [/inP H5 H6] /=. 
+      ++ move => z p H1 x1 x H3 /set_mem H2 /allset_cons [H4 H4'] /allL_c/andP [/set_mem H5 H6] /=. 
          rewrite Lifto_c allL_c;apply /andP;split; last first. 
          by apply: (H1 x z H5 _ H4' H6); apply mem_set. 
          clear H1 H6;apply mem_set.         
@@ -750,7 +750,7 @@ Section Active_paths_simple.
         by elim: o H2 H4 H5 => _ H4 H5.
         by elim: o H2 H4 H5 => _ /= H4 H5.
         rewrite allL_c H5 andbT.
-        by elim: o H2 H4 H5 => _ [/= /inP H4 _] _ /=.
+        by elim: o H2 H4 H5 => _ [/= /mem_set H4 _] _ /=.
   Qed.
   
 End Active_paths_simple.  
@@ -804,7 +804,7 @@ Section Endpoints_and_Deployment.
   Lemma Epe_Lift: forall (st:seq T), st \in Lift_Dom -> Epe (Lift st) = Pe st.
   (* end snippet EpeLift *)  
   Proof.
-    move => st /inP H1; rewrite /Epe /Pe.
+    move => st /set_mem H1; rewrite /Epe /Pe.
     have ->: (head ptv (Lift st)).1 = head ptv.1 st by apply head_Lift.
     have ->: (last ptv (Lift st)).2 = last ptv.1 st by apply last_Lift.
     by [].
@@ -814,9 +814,9 @@ Section Endpoints_and_Deployment.
       size(spt) > 0 -> spt [L\in] Chrel -> Epe1 spt = Epe spt.
   Proof.
     move => spt H1 H2.
-    have H4: spt \in (@Lift_Im T) by apply/inP.
+    have H4: spt \in (@Lift_Im T) by apply/mem_set.
     pose proof Lift_surj H4 as [st [H5 H6]].
-    move: (H5) => /inP H5'.
+    move: (H5) => /set_mem H5'.
     have H7: Epe1 (Lift st) = Pe st 
       by rewrite /Epe1 /Pe;
       have -> :(UnLift (Lift st) ptv.1) = st by apply: UnLift_left H5'.
@@ -830,7 +830,7 @@ Section Endpoints_and_Deployment.
       spt \in Lift_Im->Pe (UnLift spt ptv.1)=Epe spt.
   (* end snippet PeUnLift *)  
   Proof. 
-    by move => spt /inP [H1 H2]; rewrite -Epe_Epe1 /Epe1.
+    by move => spt /set_mem [H1 H2]; rewrite -Epe_Epe1 /Epe1.
   Qed.
 
   (** * deployment paths 
@@ -862,7 +862,7 @@ Section Endpoints_and_Deployment.
 
   Lemma D_P_D_P1: forall (R E: relation T), D_P R E = D_P1 R E.
     move => R E;rewrite /D_P /D_P1 /mkset predeqE => spt.
-    split => [[/inP [H1 H1'] [H2 H3]] | [/inP [H1 H1'] [H2 H3]]].
+    split => [[/set_mem [H1 H1'] [H2 H3]] | [/set_mem [H1 H1'] [H2 H3]]].
     by pose proof Epe_Epe1 H1 H1' as ->;rewrite inE.
     by pose proof Epe_Epe1 H1 H1' as <-;rewrite inE.
   Qed.
@@ -874,13 +874,13 @@ Section Endpoints_and_Deployment.
     move => R E.
     rewrite D_P_D_P1 /D_V /D_P1 /mkset predeqE => q.
     split. 
-    - move => [p [/inP H1 [H2 H3]] <-].
+    - move => [p [/set_mem H1 [H2 H3]] <-].
       move: (H1) => /Lift_sz2 H1'.
       rewrite /Epe1. 
       have -> : (UnLift (Lift p) ptv.1) = p by apply UnLift_left. 
       rewrite inE.
       by pose proof Lift_Lift p as H5.
-    - move => [/inP [H1 H2] [H3 H4]].
+    - move => [/set_mem [H1 H2] [H3 H4]].
       have H6 : Lift (UnLift q ptv.1) = q  by apply Lift_UnLift;rewrite inE /Lift_Im. 
       have H7: 1 < size (UnLift q ptv.1) by rewrite -H6 Lift_sz2 in H1.
       rewrite -H6 /=.
@@ -892,7 +892,7 @@ Section Endpoints_and_Deployment.
   Proof.
     move => R E spt.
     rewrite D_P_D_P1 inE => [[H1 [H3 H4]]].
-    move: (H1) => /inP [H1' H2].
+    move: (H1) => /set_mem [H1' H2].
     pose proof Pe_UnLift H1 as H5.
     pose proof Epe_Epe1 H1' H2 as H6.
     pose proof UnLift_image H1 ptv.1 as H7.
@@ -1136,7 +1136,7 @@ Section Extended_Oriented_Paths.
     move => R E.
     rewrite /D_U /D_U' /mkset predeqE => stto.
     split. 
-    - move => [[st so] [/inP H1 [H2 [H3 H3']]] <-].
+    - move => [[st so] [/set_mem H1 [H2 [H3 H3']]] <-].
       move: (H1) => /Lift_sz2 H1'.
       have H4: size st > 1 by rewrite -Lift_sz2.
       have H5: size so +1 = size st by rewrite H2 addn1 subn1;apply: (ltn_predK H4).
@@ -1160,7 +1160,7 @@ Section Extended_Oriented_Paths.
   Lemma DU'_DU: forall (R E: relation T) (stto: seq (T*T*O)), 
       stto \in (D_U R E) -> exists st, st \in (D_U' R E) /\ (pair (Lift st.1) st.2) = stto.
   Proof.
-    move => R E spt /inP [H1 [H3 [H4 H5]]].
+    move => R E spt /set_mem [H1 [H3 [H4 H5]]].
     exists (UnLiftO spt ptv.1).
     pose proof LiftO_right ptv.1 H1 H5 as H6.
     pose proof Pe_UnLiftO H1 H5 as H7.
@@ -1300,7 +1300,7 @@ Section Extended_Oriented_Paths.
       (D_U_a1 E W x y) != set0 <-> (exists p, D_U_a1 E W x y p).
   Proof.
     move => W E x y;rewrite -notempty_exists. 
-    by split;move => [p /inP H1]; exists p.
+    by split;move => [p /asboolP H1]; exists p.
   Qed.
 
   Lemma D_separated_L5: forall (W: set T) (E: relation T) (x y: T),

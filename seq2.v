@@ -82,7 +82,7 @@ Section Seq1_plus.
   Proof.
     elim: s x X => [ x X // | y s Hr x X ].
     rewrite in_cons allset_cons.
-    move => /orP [/eqP -> | H1] [/inP H2 H3];[exact | by apply: Hr].
+    move => /orP [/eqP -> | H1] [/mem_set H2 H3];[exact | by apply: Hr].
   Qed.
 
   Lemma in_rev s x: x \in s <-> x \in (rev s).

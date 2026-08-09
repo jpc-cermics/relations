@@ -182,7 +182,7 @@ Section Tcs.
     Proof.
       rewrite predeqE /ClosureI /mkset => [[x1 x2]] /=.
       split;rewrite -notempty_exists.
-      - move => [z /inP [[w1 [H1 <-]] [w2 [H2 <-]]]].
+      - move => [z /set_mem [[w1 [H1 <-]] [w2 [H2 <-]]]].
         by (exists z; split;[rewrite Emw_1 |]).
       - rewrite Emw_1 /inverse /mkset => [[z /= [H1 H2]]].
         by (exists z);rewrite in_setE;split;rewrite Clos_Ew. 
@@ -368,7 +368,7 @@ Section Tcs.
       move => x y Hx Hy.
       split.
       - rewrite -notempty_exists 2!Fset_comp.
-        move=> [z /inP [ H1 H2]]. 
+        move=> [z /set_mem [ H1 H2]]. 
         have H3: ((Ew.* `;` Sw)^-1 `;` (Ew.* `;` Sw)) (x, y)
           by apply Fset_intersect; exists z;split.
         have H4: (Δ_(W.^c) `;` ((Ew.* `;` Sw)^-1 `;` (Ew.* `;` Sw))  `;` Δ_(W.^c)) (x, y)
@@ -567,7 +567,7 @@ Section Tcs.
     Proof.
       move => W' W'' [H1 [H2 H3]].
       rewrite empty_notexists.
-      move => [z /inP [H5 H6]]. 
+      move => [z /set_mem [H5 H6]]. 
       move: H5 => /Clos_to_singleton [w1 [H10 H'10]].
       move: H6 => /Clos_to_singleton [w2 [H11 H'11]].
       have H12: Clos_(w1| E,W) `&` Clos_(w2 |E,W) != set0
@@ -668,7 +668,7 @@ Section Tcs.
       have H7:  (exists (w1' w1'': T), w1' \in W' /\ w1'' \in W'' /\
                                          Clos_( w1' | E,W) `&` Clos_(w1'' | E,W)!= set0)
         by apply L8_b with w' w''.
-      move: H7 => [w1 [w2 [/inP H7 [/inP H8 H9]]]].
+      move: H7 => [w1 [w2 [/set_mem H7 [/set_mem H8 H9]]]].
       
       have [z HH] : exists z, z \in  (Clos_( w1 | E,W) `&` Clos_( w2 | E,W))
             by rewrite notempty_exists.
@@ -889,7 +889,7 @@ Section Tcs.
               /\ ( Clos(Λ `|` W'| E,W) `&` Clos(Γ `|` W''| E,W) = set0) )
         -> (forall (λ γ: T), λ \in Λ /\ γ \in Γ -> t_separated (λ, γ)).
     Proof.
-      move => Γ Λ [H3 [H4 H5]] [W' [W'' [H1 [H2 H6]]]] λ γ [/inP H7 /inP H8].
+      move => Γ Λ [H3 [H4 H5]] [W' [W'' [H1 [H2 H6]]]] λ γ [/set_mem H7 /set_mem H8].
       have H9: λ \in W.^c by apply H4 in H7;rewrite in_setE.
       have H10:  γ \in  W.^c  by apply H3 in H8;rewrite in_setE.
       rewrite (T5 H9 H10).
@@ -1158,7 +1158,7 @@ Section Tcs.
         R#X  `<=` X -> (X.^c :#R ) `&` X = set0.
     Proof.
       move => R X H1.
-      rewrite empty_notexists => -[z /inP [[w [H2 H3]] H4]].
+      rewrite empty_notexists => -[z /set_mem [[w [H2 H3]] H4]].
       by have /H1 H5: R#X w by (exists z).
     Qed.
 

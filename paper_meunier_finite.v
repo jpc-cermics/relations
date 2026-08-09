@@ -523,7 +523,7 @@ Module leSet_choice.
     Proof.
       exists (fun t => xchoose (P1 t));move => p1.
       have H0: xchoose (P1 p1) \in V p1 by apply: xchooseP.
-      by move: H0 => /inP /= [[[? [_ ?]] _ // |? ? //] ?].
+      by move: H0 => /set_mem /= [[[? [_ ?]] _ // |? ? //] ?].
     Qed.
 
     #[local] Lemma P3: exists (k: nat -> (T -> T)),
@@ -613,7 +613,7 @@ Module f_periodic_for_leSet.
       move: A2;rewrite (@allL_nth' (set T) 'Δ.^c Sq S S S).
       contra => H2.
       have H4: allL Inc Sq S S
-        by rewrite (@allL_nth' (set T));move => j Hs b /inP/(H2 j Hs b)/inP.
+        by rewrite (@allL_nth' (set T));move => j Hs b /mem_set/(H2 j Hs b)/set_mem.
       have H6: forall S', S' \in Sq -> S = S'.
       move => S' Hs;move: (@allL_Tr Inc H1 H4 Inc_Tr S' Hs).
       by rewrite eqEsubset.
@@ -693,10 +693,10 @@ Module build_h.
       exists h;split;[exact|split;[exact |]].
       move => Hinter. 
       (* lastt step : ~(exists n, (h n) \in (Ig g)) *)
-      have P5: ~ ( h 0 \in (Ig g)) by move => /inP /(_ 1);rewrite H6 => ?.
+      have P5: ~ ( h 0 \in (Ig g)) by move => /set_mem /(_ 1);rewrite H6 => ?.
       move: (seq_not P5 Hinter) => [j [P6 P7]].
       (* we build a contradiction as (g j) is a prekernel *)
-      have P8:  h j.+1 \in (g j) by move: P7 => /inP/(_ j).
+      have P8:  h j.+1 \in (g j) by move: P7 => /set_mem/(_ j).
       have P9:  h j \in (g j) by apply: H7.
       have P10: ~ ( h j = h j.+1) by move => He;rewrite He in P6.
       move: G4 => /(_ j) [Hindep _].
@@ -968,8 +968,8 @@ Section FinsetToClassical.
     rewrite -[set_of_fin _ x]in_setE -[(_ `|` _) x]in_setE.
     rewrite in_set_of_fin finset.in_setU.
     split.
-    by move => /orP [? | ?];apply/inP;[left| right];apply/inP/in_finP.
-    by move/inP => [/inP/in_finP -> |/inP/in_finP ->];[rewrite orTb| rewrite orbT].
+    by move => /orP [? | ?];apply/asboolP;[left| right];apply/asboolP/in_finP.
+    by move/set_mem => [/mem_set/in_finP -> |/asboolP/in_finP ->];[rewrite orTb| rewrite orbT].
   Qed.
 
   Lemma set_of_finI A B : 
@@ -978,7 +978,7 @@ Section FinsetToClassical.
     rewrite predeqE => x.
     rewrite -[set_of_fin _ x]in_setE -[(_ `&` _) x]in_setE.
     rewrite in_set_of_fin finset.in_setI.
-    split;last by move => /inP [/inP/in_finP -> /inP/in_finP ->].
+    split;last by move => /set_mem [/mem_set/in_finP -> /mem_set/in_finP ->].
     move => /andP [/in_finP ? /in_finP ?].
     by rewrite inE;split;by rewrite -inE.
   Qed.
@@ -986,9 +986,9 @@ Section FinsetToClassical.
   Lemma set_of_fin_inj: injective set_of_fin.
   Proof.
     move => A B;rewrite predeqE -setP => /[swap] x /(_ x) H1.
-    case H2: (x \in A);first by move/in_finP: H2 => /inP/H1/inP/in_finP ->.
+    case H2: (x \in A);first by move/in_finP: H2 => /set_mem/H1/mem_set/in_finP ->.
     case H3: (x \in B);last exact.
-    by move/in_finP: H3 H2 => /inP/H1/inP/in_finP ->.
+    by move/in_finP: H3 H2 => /set_mem/H1/mem_set/in_finP ->.
   Qed.
 
   Lemma set_of_sfin v:  [:set: [set v]] = [set v]%classic.
@@ -1061,7 +1061,7 @@ Section RelIndep_fin.
     split => [H1| /RelIndep_P H1 x y /in_finP xS /in_finP yS Hxy].
     + apply/RelIndep_P => x y /in_finP xS /in_finP yS Hxy.
       move: H1 => /(_ x y xS yS).
-      contra => /inP H1. 
+      contra => /set_mem H1. 
       split; last exact.
       by move: Hxy => /[swap] ->;rewrite eqxx.
     + have H2: x != y by apply/negP => /eqP H3.
@@ -1416,13 +1416,13 @@ Section Champ.
     rewrite predeqE => -[x y].
     split => [[/H2 H0 | /H1 H0] // | H3].
     case H4: ((x,y) \in O).
-    + move: H4 => /inP H4.
+    + move: H4 => /set_mem H4.
       ++ case H5: ((y,x) \in O).
-         move: H5 => /inP H5.
+         move: H5 => /set_mem H5.
          by right;split.
          by left;split.
     + case H5: ((y,x) \in O).
-      move: H5 => /inP H5.
+      move: H5 => /set_mem H5.
       by right;split.
       (** (x, y) \in O) = false /\ (y, x) \in O) = false *)
       (** is not possible *)

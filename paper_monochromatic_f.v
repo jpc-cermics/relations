@@ -51,7 +51,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
     
     Lemma allL_rc_asym st y z: z \in st -> (rcons st y) [L\in] R -> R.+ (z, y).
     Proof.
-      by move => H1 /(@Lift_in_F T R) H2;move: (allset_in H1 H2) => /inP ?;rewrite Fset_t0.
+      by move => H1 /(@Lift_in_F T R) H2;move: (allset_in H1 H2) => /set_mem ?;rewrite Fset_t0.
     Qed.
     
     Lemma allL_c_asym st x y: y \in st -> (x::st) [L\in] R -> R.+ (x, y).
@@ -131,7 +131,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
     Proof.
       elim: st x s z => [// | y st Hr x s z].
       rewrite in_cons => /orP [/eqP -> | H1] H2.
-      + rewrite allL_c => /andP [/inP H3 H4] H5. 
+      + rewrite allL_c => /andP [/set_mem H3 H4] H5. 
         split.
         ++ pose proof (allL_to_Tclos H4) as H6.
            have H7: R.+ (x, y) by apply: iter1_sub_Tclos.
@@ -139,7 +139,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
         ++ move => H6.
            have H7: R.+ (x, y) by apply: iter1_sub_Tclos.
            by pose proof TclosT H6 H7.
-      + rewrite allL_c => /andP [/inP H3 H4] H5. 
+      + rewrite allL_c => /andP [/set_mem H3 H4] H5. 
         split.
         ++ pose proof (allL_to_Tclos H4) as H6.
            have H7: R.+ (x, y) by apply: iter1_sub_Tclos.
@@ -206,7 +206,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
         by rewrite -Fset_t0 -inE H3.
         (* end of H4 *)
         have H5: y = y \/ R.+ (y, y) by left.
-        move: H3 => /inP H3.
+        move: H3 => /set_mem H3.
         have H6: ~ R.+ (y, last x (rcons st z))
           by rewrite last_rcons; move => H7;have H8: R.+ (y,x) by apply: TclosT H7 H3.
         exact. 
@@ -251,7 +251,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
         by apply Lift_in_AA with y1;[|rewrite inE /Aset -Fset_t0 /inverse /= -inE H3].
         (* end of H4 *)
         have H5: y = y \/ R.+ (y, y) by left.
-        move: H3 => /inP H3.
+        move: H3 => /set_mem H3.
         have H6: ~ R.+ (head z (y1 :: st), y)
           by move => /= H7;have H8: R.+ (z,y) by apply: TclosT H3 H7.
         exact.
@@ -532,7 +532,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
     Proof. 
       move => t. 
       case H1: (t \in R).
-      + move: H1 => /inP H1;move: t H1 => t /[dup] H1 /Au1 [z H1'].
+      + move: H1 => /set_mem H1;move: t H1 => t /[dup] H1 /Au1 [z H1'].
         by exists z;rewrite inE;left;split.
                   + move: Au0 => [v0 Au0'].
                     by exists v0; rewrite inE; right;move => H2;rewrite -inE H1 in H2.
@@ -542,7 +542,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
     Proof.
       have H0: xchoose (Au1_P1 t) \in [set u| (R t /\ R' (t,u)) \/ ~ R t]
         by apply: xchooseP.
-      by move: H0 => /inP [[_ ?] //| ? //].
+      by move: H0 => /set_mem [[_ ?] //| ? //].
     Qed.
     
     Lemma Au1_G: exists (g: T -> T'), forall t, R t -> R' (t,g(t)).
