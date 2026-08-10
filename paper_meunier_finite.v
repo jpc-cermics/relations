@@ -316,7 +316,7 @@ Export setT_injectivity(set_fin_codomain_prop).
 
 Section Finite. 
   (** * for a finType we have ~ (iic_inj R) *)
-  Variable (T : finType).
+  Context {T : finType}.
   Implicit Types (U V W: relation T).
 
   Definition Sink U v := forall w, ~ U (v,w).
@@ -358,7 +358,7 @@ Section Finite.
   Lemma fin_not_iic U: (sporder U) -> ~ (iic U).
   Proof.
     move => /[dup] Hsp /sporder_antisym Ha.
-    by move: (@fin_not_iic_inj U) => H1 /(sporder_iic_injective U Hsp)H2. 
+    by move: (@fin_not_iic_inj U) => H1 /(sporder_iic_injective Hsp)H2. 
   Qed.
   
   Lemma fin_rloop U: (NotEmpty T) -> (sporder U) -> exists v, (vRloop U v).

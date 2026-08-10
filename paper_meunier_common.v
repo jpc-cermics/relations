@@ -46,6 +46,11 @@ Definition absorbant {T: Type} (M: relation T) :=
 Definition preKernel {T: Type} (O U M: relation T) :=
   [set S| RelIndep O S /\ (pre_absorbant U M S) /\ S != set0 ].
 
+Definition Kernel {T: Type} (U: relation T) :=
+  [set S| RelIndep U S /\ absorbant U S].
+
+Definition leSet' T U: relation (set T) := [set AB | AB.1 `<=` ('Δ  `|` U)#AB.2]%classic. 
+
 Section preKernel.
 
   Context {T : choiceType} (U: relation T).
@@ -61,7 +66,6 @@ Section preKernel.
   Qed.
 
 End preKernel.
-
 
 Section CheckAsym. 
   (** * Import main result from paper_monochromatic_f *)
@@ -80,12 +84,10 @@ Section CheckAsym.
 
 End  CheckAsym. 
 
-Module Infinite_paths.
-  (** * iic_asym_injective:  iic (Asym R.+) -> iic_inj (Asym R.+) *) 
-
+Module iic_asym.
   Section iic_asym. 
-
-    Variable (T : Type).
+  (** * iic_asym_injective:  iic (Asym R.+) -> iic_inj (Asym R.+) *) 
+    Context {T : Type}.
     Implicit Types (T : Type) (U: relation T) (A B: set T).
     
     #[local] Lemma iic_asym_L1 (f : nat -> T) U:
@@ -127,60 +129,57 @@ Module Infinite_paths.
     Proof. by move => /sporderEq <-;apply: iic_asym_injective. Qed.
     
     End iic_asym.
-  
-End Infinite_paths. 
+End iic_asym.
 
-Export Infinite_paths.
-Arguments iic_asym_injective {T}.
-Arguments sporder_iic_injective {T}.
+Export iic_asym(iic_asym_injective,  sporder_iic_injective).
 
-Section Infinite_paths_X.
-  (** * Assumptions on infinite paths *)
-  (* should be move on rel.v *)
+Module iic_paths.
+  Section iic_paths.
+    (** * Assumptions on infinite paths *)
+    (* should be move on rel.v *)
+    Context {T : Type}.
+    Implicit Types (U: relation T) (X: set T).
 
-  Context (T : Type).
-  Implicit Types (U: relation T) (X: set T).
+    Lemma notiic_rloop_sub_L1 X (S: relation X):
+      (exists (v0:T), (v0 \in X)) -> ~ (iic (Asym S)) -> (Rloop S).
+    Proof. 
+      have setTypeP: (exists x : X, x \in [set: X]) <-> (exists (t:T), (t \in X))
+        by split => [[v ?] |[v H0]];[exists (sval v) | exists (exist _ v H0)];
+                   rewrite inE;[apply: set_valP|].
+      by move => /setTypeP H0; apply: notiic_rloop. 
+    Qed. 
+    
+    Lemma notiic_rloop_sub_L2 X U:
+      ~ (iic (Asym U)) -> (exists (v0:T), (v0 \in X)) -> (Rloop (@Restrict' T X U)).
+    Proof.
+      move => H1 H0.
+      have H2: (iic (@Restrict' T X (Asym U))) -> (iic (Asym U))
+        by move => [f // ?];exists (fun n => (sval (f n))). 
+      have H3:  ~ (iic (Asym U)) -> ~ (iic (@Restrict' T X (Asym U)))
+        by contra => -[f H4];apply: H2; by (exists f).
+      by apply/(notiic_rloop_sub_L1 H0)/H3.
+    Qed.
+    
+    (* notiic_rloop for a subset X *)
+    Lemma notiic_rloop_sub X U:
+      ~ (iic (Asym U)) ->(exists (v0:T), (v0 \in X))
+      -> (exists (v:T), v \in X /\ forall w, w \in X -> U (v,w) -> U (w,v)).
+    Proof.
+      move => Ninf H0.
+      move: (notiic_rloop_sub_L2 Ninf H0) => [v H1];exists (sval v).
+      split=> [| w H2];first by rewrite inE;apply: set_valP.
+      have [w' <-]: exists (w': X), (sval w') = w by (exists (exist _ w H2)).
+      by move => ?;apply: H1.
+    Qed.
+  End iic_paths.
+End iic_paths.
 
-  Lemma notiic_rloop_sub_L1 X (S: relation X):
-    (exists (v0:T), (v0 \in X)) -> ~ (iic (Asym S)) -> (Rloop S).
-  Proof. 
-    have setTypeP: (exists x : X, x \in [set: X]) <-> (exists (t:T), (t \in X))
-      by split => [[v ?] |[v H0]];[exists (sval v) | exists (exist _ v H0)];
-                 rewrite inE;[apply: set_valP|].
-    by move => /setTypeP H0; apply: notiic_rloop. 
-  Qed. 
-  
-  Lemma notiic_rloop_sub_L2 X U:
-    ~ (iic (Asym U)) -> (exists (v0:T), (v0 \in X)) -> (Rloop (@Restrict' T X U)).
-  Proof.
-    move => H1 H0.
-    have H2: (iic (@Restrict' T X (Asym U))) -> (iic (Asym U))
-      by move => [f // ?];exists (fun n => (sval (f n))). 
-    have H3:  ~ (iic (Asym U)) -> ~ (iic (@Restrict' T X (Asym U)))
-      by contra => -[f H4];apply: H2; by (exists f).
-    by apply/(notiic_rloop_sub_L1 H0)/H3.
-  Qed.
-  
-  (* notiic_rloop for a subset X *)
-  Lemma notiic_rloop_sub X U:
-    ~ (iic (Asym U)) ->(exists (v0:T), (v0 \in X))
-    -> (exists (v:T), v \in X /\ forall w, w \in X -> U (v,w) -> U (w,v)).
-  Proof.
-    move => Ninf H0.
-    move: (notiic_rloop_sub_L2 Ninf H0) => [v H1];exists (sval v).
-    split=> [| w H2];first by rewrite inE;apply: set_valP.
-    have [w' <-]: exists (w': X), (sval w') = w by (exists (exist _ w H2)).
-    by move => ?;apply: H1.
-  Qed.
-  
-End Infinite_paths_X.
+Export iic_paths(notiic_rloop_sub).
 
-Definition leSet' T U: relation (set T) := [set AB | AB.1 `<=` ('Δ  `|` U)#AB.2]. 
-
-Section Set_relation. 
+Section set_relation. 
   (** * A relation on sets induced by a relation on elements *)
 
-  Context (T : eqType).
+  Context {T : eqType}.
   Implicit Types (T : eqType) (U S: relation T) (A B: set T).
   
   Lemma lesetE U: leSet U = leSet' U. 
@@ -205,8 +204,7 @@ Section Set_relation.
     by apply: subset_trans H2 _;apply: Fset_inc; apply: setUS.
   Qed.
   
-End Set_relation.
-
+End set_relation.
 
 Section Set_order. 
   (** * the previous relation [<= U] is an order relation on U-independent sets *)
@@ -319,19 +317,18 @@ Section Assumptions.
 
 End Assumptions. 
 
-Module Extend_nonMabsorbant_prekernel.
+Module Extend_non_absorbant_preKernel.
   (** * if X is in preKernel but not a kernel there exists X' such that *)
   (** * X <= X' (X != X') and X' is also in preKernel *)
-
-  Section Extend_nonMabsorbant_prekernel.
+  Section Extend_non_absorbant_preKernel.
     
-  Variables (T:choiceType) (R B O: relation T).
+    Context {T:choiceType} (R B O: relation T).
   
-  Notation M := (B `|` R).
+    Notation M := (B `|` R).
 
-  Lemma preKernelProp: forall S S1,
-      RelIndep M S -> S1 `<=` S -> (S1:#(R) `<=` M#S <-> forall y, ~ (y \in S) -> y \in S1:#(R) -> y \in M#S).
-  Proof.
+    Lemma preKernelProp: forall S S1,
+        RelIndep M S -> S1 `<=` S -> (S1:#(R) `<=` M#S <-> forall y, ~ (y \in S) -> y \in S1:#(R) -> y \in M#S).
+    Proof.
     move => S S1 H1 H1';split => [H2 y _ /set_mem/H2/mem_set H4 //| H2 y H3].
     case H5: (y \in S);last first.
     + apply/set_mem/H2. by rewrite H5. by apply/mem_set.
@@ -674,7 +671,8 @@ Module Extend_nonMabsorbant_prekernel.
     Qed.
 
     (** * main result *)
-    Lemma extend (A2: Assumption2 R) (A6: Assumption6 B M O) (A7: Assumption7 R B M) (A8: Assumption8 R B M):
+    Lemma extend (A2: Assumption2 R) (A6: Assumption6 B M O)
+      (A7: Assumption7 R B M) (A8: Assumption8 R B M):
       preKernel M R M X -> ~ (absorbant M X) 
       -> exists X', preKernel M R M X' /\ (X [<< O] X'). 
     Proof.
@@ -688,11 +686,10 @@ Module Extend_nonMabsorbant_prekernel.
       by move: (case1 H1 H2 H3 H4) => H5;exists (X `|` [set y]).
     Qed.
     
-    End Extend_nonMabsorbant_prekernel.
-        
-End Extend_nonMabsorbant_prekernel.
+    End Extend_non_absorbant_preKernel.
+End Extend_non_absorbant_preKernel.
 
-Export Extend_nonMabsorbant_prekernel (extend).
+Export Extend_non_absorbant_preKernel (extend).
 
 
 
