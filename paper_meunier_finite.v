@@ -239,9 +239,10 @@ Module injectivity.
       by move: H7 => /Hkk' [p H7];exists n',p;rewrite -H7 Hh. 
     Qed.
 
-    Context {T:finType}.
-
-    Lemma fin_codomain_prop (h: nat -> T): exists n p, h n = h (n + p.+1).
+    (* finType case *)
+    Context {T:finType}  (U: relation T) (h: nat -> T).
+    
+    Lemma fin_codomain_prop:  exists n p, h n = h (n + p.+1).
     Proof.
       apply: not_injective_prop.
       (** * proving now that h is not injective *)
@@ -252,9 +253,9 @@ Module injectivity.
       by rewrite card_ord ltnn in H1. 
     Qed.
     
-    Lemma cyclic U (h: nat -> T): (iic_fun U h) -> (exists s, U.+ (s,s)).
+    Lemma cyclic: (iic_fun U h) -> (exists s, U.+ (s,s)).
     Proof. 
-      move: (fin_codomain_prop h) => [n [p Hheq]]. 
+      move: fin_codomain_prop => [n [p Hheq]]. 
       move => /f2allL/(_ n p);rewrite -addnA addn1 -Hheq. 
       move => /(@allL_All _ U)/= /andP [Ha _].
       by rewrite inE Fset_s in Ha;exists (h n).
@@ -301,6 +302,7 @@ Module setT_injectivity.
       apply: not_injective1_h.
     Qed.
     
+    (** XXXXX this is the one we should use ? *)
     Lemma set_fin_cyclic U (h: nat -> set T): (iic_fun U h) -> (exists s, U.+ (s,s)).
     Proof. 
       move: (set_fin_codomain_prop h) => [n [p Hheq]]. 
@@ -991,6 +993,13 @@ Section FinsetToClassical.
     by move/in_finP: H3 H2 => /set_mem/H1/mem_set/in_finP ->.
   Qed.
 
+  Lemma fin_of_set_inj: injective fin_of_set.
+  Proof.
+    move => A B;rewrite predeqE -setP => /[swap] x /(_ x).
+    rewrite 2!inE => H1. 
+    by split;move => /mem_set;[rewrite H1|rewrite -H1];apply/set_mem.
+  Qed.
+  
   Lemma set_of_sfin v:  [:set: [set v]] = [set v]%classic.
   Proof.
     rewrite predeqE => x. 
@@ -1133,45 +1142,45 @@ Module fin_Maximal.
   Section fin_maximal.
     
   Variables (T: finType).
-  Implicit Types (m : T) (s : seq T) (R: relation T).
+  Implicit Types (m : T) (s : seq T) (U: relation T).
 
-  Definition seq_maximal m s R : Prop :=
-    forall x, x \in s -> R (m,x) -> m = x.
+  Definition seq_maximal m s U : Prop :=
+    forall x, x \in s -> U (m,x) -> m = x.
 
-  Definition maximal m R: Prop := forall x,  R (m,x) -> m = x.
+  Definition maximal m U: Prop := forall x,  U (m,x) -> m = x.
   
-  #[local] Lemma seq_has_maximal_step (s : seq T) (h : T) R:
-    porder R -> (exists m, m \in s /\ seq_maximal m s R) \/  s = [::]
-    ->  exists m, m \in h :: s /\ seq_maximal m (h :: s) R.
+  Lemma seq_has_maximal_step s (t : T) U:
+    porder U -> (exists m, m \in s /\ seq_maximal m s U) \/  s = [::]
+    ->  exists m, m \in t :: s /\ seq_maximal m (t :: s) U.
   Proof.
     move => [Hr Ha Ht] [[m [Hm Hmax]] | ->].
     (* s is non-empty with maximal m *)
-    + move: (EM (R (m,h))) => [Rmh | hle_m].
-      ++ (* R (m,h)  *)
-        exists h; split;first by rewrite in_cons eqxx.
+    + move: (EM (U (m,t))) => [Umh | hle_m].
+      ++ (* U (m,h)  *)
+        exists t; split;first by rewrite in_cons eqxx.
         move=> x; rewrite in_cons => /orP [/eqP -> // | Hxs] Hlt.
-        have Rmx: R (m,x) by apply: (Ht m h x Rmh Hlt).
-        have meqx: m = x by apply: (Hmax x Hxs Rmx).
-        move: Rmh;rewrite meqx => Rxh.
+        have Umx: U (m,x) by apply: (Ht m t x Umh Hlt).
+        have meqx: m = x by apply: (Hmax x Hxs Umx).
+        move: Umh;rewrite meqx => Uxh.
         rewrite /antisymmetric in Ha.
-        by move: (Ha h x Hlt Rxh).
-      ++ (* ~ (R (m,h)) *)      
+        by move: (Ha t x Hlt Uxh).
+      ++ (* ~ (U (m,h)) *)      
         exists m; split;first by rewrite in_cons;rewrite Hm orbT. 
         move => x; rewrite in_cons => /orP [/eqP -> ? //| H1 H2].
         by move: (Hmax x H1 H2).
-    + (exists h);split;first by rewrite mem_seq1.
+    + (exists t);split;first by rewrite mem_seq1.
       by move => x; rewrite mem_seq1 => /eqP ->.
   Qed.
   
-  #[local] Lemma seq_has_maximal R: 
-    porder R -> forall s, ~ (s = [::]) -> (exists m, m \in s /\ seq_maximal m s R).
+  Lemma seq_has_maximal U: 
+    porder U -> forall s, ~ (s = [::]) -> (exists m, m \in s /\ seq_maximal m s U).
   Proof.
     move => ?;elim => [// | a s Hr _ ].
     apply: seq_has_maximal_step;first by [].
     by move: (EM (s = [::])) => [-> | /Hr ?];[right | left].
   Qed.    
   
-  Lemma has_maximal R: porder R -> (exists x, x\in T) -> (exists m, maximal m R).
+  Lemma has_maximal U: porder U -> (exists x, x\in T) -> (exists m, maximal m U).
   Proof.
     move => Hp [x -];rewrite -mem_enum => Hx.
     have H2: ~ (enum T = [::]) by move: Hx => /[swap] ->.
@@ -1181,10 +1190,8 @@ Module fin_Maximal.
   Qed.
   
   End fin_maximal.
-
 End fin_Maximal.
-
-Export fin_Maximal.
+Export fin_Maximal(has_maximal,maximal).
 
 Section SubSetPType_order.
   (** * When O is a sporder then [:<=: O] restricted to M-independent sets is a porder *)
@@ -1207,15 +1214,12 @@ Section SubSetPType_order.
   Qed.
   
   Lemma prekernelE O R M S: 
-    prekernel_fin O R M S <->
-    RelIndep O [:set: S] /\ pre_absorbant R M [:set: S] /\ [:set: S] != set0.
+    prekernel_fin O R M S <-> preKernel O R M [:set: S].
   Proof.
-    split.
-    by move => /andP [/RelIndepE H1 /andP [/asboolP H2 H3]].
+    split;first by move => /andP [/RelIndepE H1 /andP [/asboolP H2 H3]].
     move => [H1 [H2 H3]].
     apply/andP;rewrite -RelIndepE H3 andbT.
-    split;first exact.
-    by  apply/asboolP.
+    by split;[| apply/asboolP].
   Qed.
   
   Lemma prekernel_notempty O R M 
@@ -1277,7 +1281,7 @@ Section SubSetPType_order.
          po Hne).
   Qed.
   
-  Lemma Maximal O R M
+  Lemma Maximal_fin' O R M
     (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O^-1):
     exists S, prekernel_fin O R M S /\ (forall U, prekernel_fin O R M U ->
                                     [:set: S] [<= O] [:set: U] -> S = U).
@@ -1288,57 +1292,64 @@ Section SubSetPType_order.
     by move => /H3/eqP ?;apply/eqP. 
   Qed.
 
+  Lemma Maximal O R M
+    (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O^-1):
+    exists (S:set T), preKernel O R M S /\ (forall U, preKernel O R M U -> S [<= O] U -> S = U).
+  Proof.
+    move: (@Maximal_fin' O R M A1 Asp Au)  => [S [HSpk Hm]].
+    exists [:set: S]. 
+    split =>[|U HUpk Hle];first by apply/prekernelE.
+    
+    move: Hm => /(_ [:fin: U]) Hm.
+    rewrite -(@set_to_finK T U).
+    apply/fin_of_set_inj.
+    rewrite 2!fin_to_setK.
+    apply: Hm;last by rewrite set_to_finK.
+    by apply/prekernelE;rewrite set_to_finK.
+  Qed.
+    
 End SubSetPType_order.
   
 
 Section ChampetierExt_Theorem.
     
   Context (T : finType) (O R B: relation T).
-  Implicit Types (O R B: relation T) (X: {set T}).
+  Implicit Types (O R B: relation T). 
   
   Notation M := (B `|` R).
 
   Context (A2 : Assumption2 R) (A6 : Assumption6 B M O) 
     (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
   Context (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O^-1).
-  Context (Apk : forall X , RelIndep O [:set: X] <->  RelIndep M [:set: X]).
-  
-  Lemma prekernelP S: 
-    (prekernel_fin O R M S) <-> preKernel M R M [:set: S].
-  Proof. by rewrite (@prekernelE T O R M S) Apk. Qed.
+  Context (Apk : forall X, RelIndep O X <->  RelIndep M X).
   
   Lemma maximal_mabsorbant S:
-    (prekernel_fin O R M S) /\ (forall U, prekernel_fin O R M U ->
-                                  [:set: S] [<= O] [:set: U] -> S = U)
-    -> absorbant M [:set: S].
+    (preKernel O R M S) /\ (forall U, preKernel O R M U -> S [<= O] U -> S = U)
+    -> absorbant M S.
   Proof.
-    contra; move => H1 /prekernelP Hpk.
-    have H3: ~ absorbant M [:set: S].
+    contra; move => H1;rewrite /preKernel /= Apk => Hpk.
+    have H3: ~ absorbant M S.
     {
       move: H1 => [y H1] H3.
       rewrite notin_setE in H3.
       rewrite /absorbant /mkset => /(_ y) H4. 
       by move: H1 => /H4;rewrite inE => H1.
     }
-    move: (@extend T R B O [:set: S] A2 A6 A7 A8 Hpk H3)
+    move: (@extend T R B O S A2 A6 A7 A8 Hpk H3)
         => [S' [Hpre [/DeltaCP H7 Hne]]].
-    rewrite /prekernel_fin.
-    exists [:fin: S'].
-    by rewrite prekernelP set_to_finK.
-    split;first by  rewrite set_to_finK.
-    apply/negP => /eqP Heq.
-    by rewrite Heq set_to_finK in H7.
+    exists S';first by rewrite (Apk S').
+    by split;[| apply/negP => /eqP Heq].
   Qed.
   
   Lemma Kernel_ChampetierExt: 
-    exists (S : {set T}), RelIndep M [:set: S] /\ absorbant M [:set: S].
+    exists S, RelIndep M S /\ absorbant M S.
   Proof.
     (* There exist a maximal set *)
     move: (@Maximal T O R M A1 Asp Au) => [S Hm].
-    move: Hm => /[dup] /maximal_mabsorbant Ma [/prekernelP [Hpk _] _].
+    move: Hm => /[dup] /maximal_mabsorbant Ma [[/Apk Hpk _] _]. 
     by (exists S).
   Qed.
-
+  
 End ChampetierExt_Theorem.
 
 Section Blidia_Engel_Ext_Theorem.
@@ -1346,19 +1357,15 @@ Section Blidia_Engel_Ext_Theorem.
   (** * is replaced by Acyclicity *)
 
   Context (T : finType) (O R B: relation T).
-  Implicit Types (O R B: relation T) (X: {set T}).
+  Implicit Types (O R B: relation T).
 
   Notation M := (B `|` R).  
 
   Context (A2 : Assumption2 R) (A6 : Assumption6 B M O) 
     (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
   Context (A1: NotEmpty T) (Au: R `<=` O^-1).
-  Context (Apk : forall X , RelIndep O [:set: X] <->  RelIndep M [:set: X]).
+  Context (Apk : forall (X:set T) , RelIndep O X <->  RelIndep M X).
   Context (Anc : ~ ( exists s, R.+ (s,s))).
-
-  Lemma prekernelP' S: 
-    (prekernel_fin O R M S) <-> preKernel M R M [:set: S].
-  Proof. by rewrite (@prekernelE T O R M S) Apk. Qed.
   
 End Blidia_Engel_Ext_Theorem.
 
@@ -1447,10 +1454,11 @@ Section Champ.
   Lemma Rnotiic: ~ (iic R).
   Proof. by move: Onoticc => ? /(@iic_sub T R O^-1 (Au)) ?. Qed.
 
-  Lemma Apk:  forall X , RelIndep O [:set: X] <->  RelIndep M [:set: X].
-  Proof. move => X. rewrite RB. 
-         rewrite (@direction_relIndep T G D [:set: X] Ad).
-         by rewrite (@orientation_relIndep T G O [:set: X] Ao).
+  Lemma Apk:  forall X , RelIndep O X <->  RelIndep M X.
+  Proof.
+    move => X. rewrite RB. 
+    rewrite (@direction_relIndep T G D X Ad).
+    by rewrite (@orientation_relIndep T G O X Ao).
   Qed.
   
   Lemma Rsym : asymmetric R.
@@ -1467,7 +1475,7 @@ Section Champ.
   Proof. by move => x y [[_ H1] _]. Qed.
 
   Lemma Kernel_Champetier: 
-    exists (S : {set T}), RelIndep M [:set: S] /\ absorbant M [:set: S].
+    exists S, RelIndep M S /\ absorbant M S.
   Proof.
     by pose proof (@Kernel_ChampetierExt T O R B (haveA2) (haveA6)
                      A7 A8 A1 Asp (Au) (Apk)).
