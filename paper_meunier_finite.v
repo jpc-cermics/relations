@@ -314,7 +314,7 @@ Module setT_injectivity.
   End setT_injectivity.
 End setT_injectivity.
 
-Export setT_injectivity(set_fin_codomain_prop).
+Export setT_injectivity(set_fin_codomain_prop,set_fin_cyclic).
 
 Section Finite. 
   (** * for a finType we have ~ (iic_inj R) *)
