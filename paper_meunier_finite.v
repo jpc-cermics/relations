@@ -1045,74 +1045,6 @@ Section leSet_fin_props.
   
 End leSet_fin_props.
 
-Section RelIndep_fin. 
-  (** * finite Independent sets  *)
-  
-  Variable (T : finType).
-  Implicit Types (R : relation T) (S: {set T}).
-  
-  Definition RelIndep_fin R S: bool :=
-  [forall x in S, forall y in S, (x == y) || ~~ ((x, y) \in R)].
-  
-  Local Lemma RelIndep_P R S:
-    reflect (forall x y, x \in S -> y \in S -> x != y -> ~~ ((x,y) \in R))
-      (RelIndep_fin R S).
-  Proof.
-    apply: (iffP forall_inP) => [H x y xS yS xy | H x xS].
-    - move/(_ x xS)/forall_inP/(_ y yS): H => /orP [ |//].
-      by rewrite (negbTE xy).
-    - apply/forall_inP => y yS;apply/orP.
-      by case: (eqVneq x y) => [-> | xy];[left | right; apply: H].
-  Qed.
-
-  Lemma RelIndepE R S: (RelIndep R [:set: S]) <-> (RelIndep_fin R S).
-  Proof.
-    split => [H1| /RelIndep_P H1 x y /in_finP xS /in_finP yS Hxy].
-    + apply/RelIndep_P => x y /in_finP xS /in_finP yS Hxy.
-      move: H1 => /(_ x y xS yS).
-      contra => /set_mem H1. 
-      split; last exact.
-      by move: Hxy => /[swap] ->;rewrite eqxx.
-    + have H2: x != y by apply/negP => /eqP H3.
-      move: H1 => /(_ x y xS yS H2) H1 H3.
-      by rewrite -inE in H3;rewrite H3 in H1.
-  Qed.
-  
-  Lemma RelIndepP R S: 
-    reflect (RelIndep R [:set: S]) (RelIndep_fin R S).
-  Proof. by apply: (iffP idP);move/RelIndepE. Qed.
-  
-  Lemma RelIndep_fin_subset R (S S': {set T}) :
-    S' \subset S -> RelIndep_fin R S -> RelIndep_fin R S'.
-  Proof.
-    move=> /fintype.subsetP SS' /RelIndepP H; apply/RelIndepP. 
-    by apply: (RelIndep_Ir SS' H).
-  Qed.
-  
-  Lemma RelIndep_fin0 R: RelIndep_fin R finset.set0.
-  Proof. by apply/RelIndepP;rewrite set_of_set0;apply/RelIndep_set0. Qed.
-         
-  Lemma RelIndep_fin1 R a : RelIndep_fin R [set a].
-  Proof. apply/RelIndepP;rewrite set_of_sfin;apply/RelIndep_set1. Qed.
-
-  Lemma RelIndep_fin_Iv R S: RelIndep_fin R S <-> RelIndep_fin R^-1 S.
-  Proof. 
-    by split;rewrite -RelIndepE;move => /RelIndep_Iv/RelIndepP;
-                                       [| rewrite inverseK].
-  Qed.
-
-  Lemma RelIndep_fin_IE R S: RelIndep_fin R S = RelIndep_fin R^-1 S.
-  Proof. 
-    case H1 : (RelIndep_fin R S).
-    by move: H1 => /RelIndepP/RelIndep_Iv/RelIndepP ->.
-    move: H1 => /RelIndepP. 
-    contra. 
-    rewrite eq_sym eqbF_neg negbK -RelIndepE => /RelIndep_Iv.
-    by rewrite inverseK.
-  Qed.
-  
-End RelIndep_fin. 
-
 #[local] Set Warnings "-projection-no-head-constant,-redundant-canonical-projection".
 
 Section SubSetPType.
@@ -1193,11 +1125,50 @@ Module fin_Maximal.
 End fin_Maximal.
 Export fin_Maximal(has_maximal,maximal).
 
+
 Section SubSetPType_order.
   (** * When O is a sporder then [:<=: O] restricted to M-independent sets is a porder *)
   
   Context (T : finType).
-  Implicit Types (O R M: relation T) (S: {set T}).
+  Implicit Types (O R M U: relation T) (S: {set T}).
+
+  Definition RelIndep_fin U S: bool := (asbool (RelIndep U [:set: S])).
+  
+  Section RelIndep_fin.
+  
+    Lemma RelIndep_iff U S: (RelIndep U [:set: S]) <-> (RelIndep_fin U S).
+    Proof. split => [Hri | /asboolP Hri]. by apply/asboolP. by []. Qed.
+    
+    Lemma RelIndepP U S: 
+      reflect (RelIndep U [:set: S]) (RelIndep_fin U S).
+    Proof. by apply: (iffP idP);move/RelIndep_iff. Qed.
+    
+    Lemma RelIndep_fin_subset U (S S': {set T}) :
+      S' \subset S -> RelIndep_fin U S -> RelIndep_fin U S'.
+    Proof.
+      move=> /fintype.subsetP SS' /RelIndepP H; apply/RelIndepP. 
+      by apply: (RelIndep_Ir SS' H).
+    Qed.
+    
+    Lemma RelIndep_fin0 U: RelIndep_fin U finset.set0.
+    Proof. by apply/RelIndepP;rewrite set_of_set0;apply/RelIndep_set0. Qed.
+    
+    Lemma RelIndep_fin1 U a : RelIndep_fin U [set a].
+    Proof. apply/RelIndepP;rewrite set_of_sfin;apply/RelIndep_set1. Qed.
+
+    Lemma RelIndep_fin_Iv U S: RelIndep_fin U S <-> RelIndep_fin U^-1 S.
+    Proof. 
+      split;first by move/RelIndepP => ?;apply/RelIndepP/RelIndep_Iv.
+      by move/RelIndepP/RelIndep_Iv;rewrite inverseK => ?;apply/RelIndepP.
+    Qed.
+    
+    Lemma RelIndep_fin_IE U S: RelIndep_fin U S = RelIndep_fin U^-1 S.
+    Proof. 
+      apply/RelIndepP/RelIndepP;first by apply: RelIndep_Iv.
+      by move => ?;rewrite -(inverseK U);apply: RelIndep_Iv.
+    Qed.
+    
+  End RelIndep_fin. 
   
   Definition pre_absorbant_fin R M S := (asbool (pre_absorbant R M [:set: S])).
   
@@ -1206,20 +1177,14 @@ Section SubSetPType_order.
   
   (** * setIndep doit s'appeller  prekernelfinType ? *)
   Definition setIndep O R M := setP_type (prekernel_fin O R M). 
-
-  Lemma prekernel_fin_Iv O R M S: 
-    prekernel_fin O R M S = prekernel_fin O^-1 R M S.
-  Proof.
-    by rewrite /prekernel_fin RelIndep_fin_IE.
-  Qed.
   
   Lemma prekernelE O R M S: 
     prekernel_fin O R M S <-> preKernel O R M [:set: S].
   Proof.
-    split;first by move => /andP [/RelIndepE H1 /andP [/asboolP H2 H3]].
+    split;first by move => /andP [/asboolP H1 /andP [/asboolP H2 H3]].
     move => [H1 [H2 H3]].
-    apply/andP;rewrite -RelIndepE H3 andbT.
-    by split;[| apply/asboolP].
+    apply/andP;split;first by apply/asboolP.
+    by apply/andP;split;[apply/asboolP |].
   Qed.
   
   Lemma prekernel_notempty O R M 
@@ -1231,12 +1196,9 @@ Section SubSetPType_order.
       by move => /(@sporder_iic_injective _ _ At ) ?.
     move: (@fin_rloop2 T O^-1 R M A1 At Au) => [v H6].
     exists v.
-    apply/andP.
-    split;first by apply: RelIndep_fin1.
-    apply/andP.
-    split;first by apply/asboolP;rewrite /pre_absorbant_fin set_of_sfin.
-    rewrite set_of_sfin.
-    apply/asboolP => H.
+    apply/andP;split;first by apply: RelIndep_fin1.
+    apply/andP;split;first by apply/asboolP;rewrite /pre_absorbant_fin set_of_sfin.
+    rewrite set_of_sfin;apply/asboolP => H.
     have H7: [set v]%classic v by exact.
     by rewrite H in H7.
   Qed.
@@ -1250,8 +1212,8 @@ Section SubSetPType_order.
     split => [A /= | A B /= Ha Hb | A B C /= Ha Hb].
     + (* reflexive *)  apply: le_refl.
     + (* antisymmetric *) 
-      move: (valP A) => /andP[/RelIndepE Pa _].
-      move: (valP B) => /andP[/RelIndepE Pb _].
+      move: (valP A) => /andP[/asboolP Pa _].
+      move: (valP B) => /andP[/asboolP Pb _].
       move: (le_antisym_if_sp H_sp Pa Pb Ha Hb) => /set_of_fin_inj/eqP H5.
       by apply/eqP;rewrite -val_eqE.
     + (* transitive *)
@@ -1283,8 +1245,8 @@ Section SubSetPType_order.
   
   Lemma Maximal_fin' O R M
     (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O^-1):
-    exists S, prekernel_fin O R M S /\ (forall U, prekernel_fin O R M U ->
-                                    [:set: S] [<= O] [:set: U] -> S = U).
+    exists S, prekernel_fin O R M S /\ (forall S', prekernel_fin O R M S' ->
+                                    [:set: S] [<= O] [:set: S'] -> S = S').
   Proof.
     move: (@Maximal_fin O R M A1 Asp Au)  => [S H3].
     exists S;move: (valP S) => Pr;split; first exact.
@@ -1294,7 +1256,7 @@ Section SubSetPType_order.
 
   Lemma Maximal O R M
     (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O^-1):
-    exists (S:set T), preKernel O R M S /\ (forall U, preKernel O R M U -> S [<= O] U -> S = U).
+    exists (S:set T), preKernel O R M S /\ (forall S':set T, preKernel O R M S' -> S [<= O] S' -> S = S').
   Proof.
     move: (@Maximal_fin' O R M A1 Asp Au)  => [S [HSpk Hm]].
     exists [:set: S]. 
@@ -1307,9 +1269,8 @@ Section SubSetPType_order.
     apply: Hm;last by rewrite set_to_finK.
     by apply/prekernelE;rewrite set_to_finK.
   Qed.
-    
-End SubSetPType_order.
   
+End SubSetPType_order.
 
 Section ChampetierExt_Theorem.
     
