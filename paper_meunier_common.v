@@ -411,9 +411,9 @@ Module Extend_non_absorbant_preKernel.
     Lemma case1_nonempty: forall y,
         preKernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> (X `|` [set y]) != set0.
     Proof.
-      by move => y [_ [_ /notempty_iff H0]] _ _ _;rewrite -notempty_iff setU_eq0 => -[? _].
+      by move => y [_ [_ +]] _ _ _;rewrite 2!set0P => -[x Hx];exists x;left. 
     Qed.
-
+    
     Lemma case1_indep: forall y, 
         preKernel M R M  X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> RelIndep M (X `|` [set y]).
     Proof.
@@ -487,11 +487,7 @@ Module Extend_non_absorbant_preKernel.
 
     Lemma case2_nonempty: forall y,
         preKernel M R M X -> y \in Y -> (SeP y) -> y \in X:#(B) -> ((X `\` (Xy y)) `|` [set y]) != set0.
-    Proof.
-      move => y [_ [_ /notempty_iff H0]] _ _ _;rewrite -notempty_iff setU_eq0 => -[_ H1].
-      have: y \in [set y] by rewrite inE. 
-      by rewrite H1 in_set0. 
-    Qed.
+    Proof. by move => y _ _ _ _;rewrite set0P;exists y;right. Qed.
     
     Lemma case2_indep: forall y, 
         preKernel M R M X -> y \in Y -> (SeP y) -> y \in X:#(B) -> RelIndep M ((X `\` (Xy y)) `|` [set y]).

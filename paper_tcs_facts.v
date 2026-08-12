@@ -408,7 +408,10 @@ Section Tcs.
         (t_separated (x, y) <-> d_separated (x, y)).
     Proof.
       move => x y Hx Hy.
-      by rewrite /t_separated /d_separated /mkset -empty_iff T_not_t_separated /=.
+      rewrite /t_separated /d_separated /mkset.
+      split => [Hc |] /(T_not_t_separated Hx Hy);rewrite set0P.
+      by move => -[z Hzin];rewrite Hc in Hzin. 
+      by rewrite nonemptyPn.
     Qed.
     
     (* Theorem 5, relation version *)
@@ -504,8 +507,9 @@ Section Tcs.
     Proof.
       rewrite /Aw. 
       move => x y Hx Hy H1 [H2 | H2].
-      - have H3: Clos_( x | E,W) `&` Clos_(y | E,W) != set0 by apply L7_4.
-        by rewrite -empty_iff in H1.
+      - have [z H3]: Clos_( x | E,W) `&` Clos_(y | E,W) !=set0 
+          by rewrite -set0P; apply L7_4.
+        by rewrite H1 in H3.
       - by rewrite /Dw -composeA in H2.    
     Qed.
     
@@ -566,12 +570,12 @@ Section Tcs.
         -> Clos(W' | E,W) `&` Clos(W''| E,W) = set0. 
     Proof.
       move => W' W'' [H1 [H2 H3]].
-      rewrite empty_notexists.
-      move => [z /set_mem [H5 H6]]. 
+      rewrite -nonemptyPn. 
+      move => [z [H5 H6]]. 
       move: H5 => /Clos_to_singleton [w1 [H10 H'10]].
       move: H6 => /Clos_to_singleton [w2 [H11 H'11]].
       have H12: Clos_(w1| E,W) `&` Clos_(w2 |E,W) != set0
-        by rewrite -notempty_exists;exists z;rewrite in_setE; by split.
+        by rewrite set0P;exists z;split.
       have H6: w1 \in W by apply H1 in H10; rewrite in_setE.
       have H7: w2 \in W by apply H2 in H11; rewrite in_setE.
       have H8: ~ Cw (w1, w2) by rewrite -in_setE in H10;rewrite -in_setE in H11;apply H3.
@@ -627,12 +631,13 @@ Section Tcs.
            (exists (x' y': T), x'\in W' /\ y' \in W'' /\ Rw (x', y')).
     Proof.
       move => W' W'' w' w'' [H1 [H2 [H3 [H4 H5]]]].
-      have H8:  W' `&` W'' = set0 by rewrite H2; apply: setDIK. 
-      have H6: w' <> w'' 
-        by move => H6; rewrite -H6 in H4;
-             (have H7: W' `&` W'' != set0 by apply notempty_exists;exists w';rewrite in_setE;
-              split;[ rewrite -in_setE | rewrite -in_setE]);
-                  rewrite -notempty_iff in H7.
+      have H8: W' `&` W'' = set0 by rewrite H2; apply: setDIK. 
+      have H6: w' <> w''.
+      {
+        move => H6; rewrite -H6 in H4.
+        have H7: W' `&` W'' !=set0 by (exists w');split;rewrite -in_setE.
+        by rewrite -nonemptyPn in H8.
+      }
       have H7:  (Δ_(W) `;` Kw `;` Δ_(W)).+ (w', w'') by move: H5 => [H5 | [ x H5]].
       by apply Tclos_sep with w' w''.
     Qed.
@@ -654,10 +659,9 @@ Section Tcs.
       split; first by rewrite in_setE;rewrite in_setE in H2;apply H'1 in H2.
       split; first by rewrite H'2 in_setD in H3;move: H3 => /andP [H3 _].
       move => H5.
-      have H6: W' `&` W'' != set0
-        by rewrite -notempty_exists;exists x';rewrite in_setE;split;[|rewrite H5];rewrite -in_setE.
+      have H6: W' `&` W'' !=set0  by (exists x');split;[rewrite -inE | rewrite H5 -inE].
       have H7: W' `&` W'' = set0 by apply W_part with W.
-      by rewrite -empty_iff in H7.
+      by move: H6 => [z H6];rewrite H7 in H6.
     Qed.
     
     Lemma L8_2: forall (W' W'': set T),
@@ -677,7 +681,7 @@ Section Tcs.
       rewrite -notempty_exists;exists z;rewrite in_setE;split;rewrite Clos_to_singleton;[exists w1 |exists w2].
       by split;[ | ].
       by split;[ | ].
-      by rewrite -empty_iff in H3.
+      by move: H12;rewrite set0P => -[z' H12];rewrite H3 in H12.
     Qed.
     
   End Lemma8_part2.
@@ -716,37 +720,31 @@ Section Tcs.
         -> ( Clos(W'| E,W) `&` Clos(Θ `|` (Cw `;` (Bmw `|` Kw))#Θ| E,W)= set0).
     Proof.
       move => Θ W' H0 H0' H0''.
-      - (* first part *) 
-        have H1:  Clos(W'| E,W) `&` Clos(Θ| E,W)= set0.
-        rewrite empty_notexists.
-        move => [t H]. rewrite in_setE in H. move: H=> [H2 H3].
-        rewrite Clos_to_singleton in H2.
-        move: H2 => [y [H2 H4]].
+      have H1:  Clos(W'| E,W) `&` Clos(Θ| E,W) = set0.
+      {
+        rewrite -nonemptyPn => -[t [/Clos_to_singleton [y [H2 H4]] H3]].
         have H5: y \in (Cw `;` (Bmw `|` Kw))#Θ.
-        
-          rewrite L9.
-          - exists y;split. 
-            + apply Cw_reflexive_W. apply H0' in H2. by [].
-            + exists t. split. by rewrite in_setE. by rewrite in_setE.
-          - by []. 
-            
-        have H6: y \in ( W' `&` (Cw `;` (Bmw `|` Kw))#Θ). 
-        rewrite in_setE. split. by []. by rewrite -in_setE.
-        
-        have H7: W' `&` (Cw `;` (Bmw `|` Kw))#Θ != set0 by rewrite -notempty_exists;exists y.
-        by rewrite -empty_iff  in H0.
-      - (* second part *) 
-        have H'1:  Clos(W'| E,W) `&` Clos( (Cw `;` (Bmw `|` Kw))#Θ| E,W)= set0.
-        rewrite empty_notexists.
-        move => [t H].  rewrite in_setE in H. move: H=> [H2 H3].
-        rewrite Clos_to_singleton in H2.
-        rewrite Clos_to_singleton in H3.
+        {
+          rewrite L9;last exact.
+          exists y;split;first by apply Cw_reflexive_W;apply H0' in H2.
+          by exists t;split;rewrite in_setE.
+        }
+        have H6: y \in ( W' `&` (Cw `;` (Bmw `|` Kw))#Θ)
+          by rewrite in_setE;split;[|rewrite -in_setE].
+        have [z H7]: W' `&` (Cw `;` (Bmw `|` Kw))#Θ !=set0
+          by (exists y);rewrite -inE.
+        by rewrite H0 in H7.
+      }
+      have H'1:  Clos(W'| E,W) `&` Clos( (Cw `;` (Bmw `|` Kw))#Θ| E,W)= set0.
+      {
+        rewrite -nonemptyPn => -[t [/Clos_to_singleton H2 /Clos_to_singleton H3]].
         move: H2 H3 => [w [H2 H4]] [θ [H3 H5]].
-        have H6: θ <> w
-          by (move => H6;
-                     (have H7: W' `&` (Cw `;` (Bmw `|` Kw))#Θ != set0
-                       by rewrite -notempty_exists;exists θ;rewrite in_setE;split;[rewrite H6|]);
-                     rewrite -empty_iff  in H0).
+        have H6: θ <> w.
+        {
+          move => H6.
+          have [z H7]: W' `&` (Cw `;` (Bmw `|` Kw))#Θ !=set0 by (exists θ);split;[rewrite H6|].
+          by rewrite H0 in H7.
+        }
         have H8_1: w \in W by apply H0' in H2;rewrite in_setE.
         have H8_2: θ \in W by apply CBK_W in H3;rewrite in_setE.
         have H8_3: w  <> θ by symmetry. 
@@ -756,11 +754,11 @@ Section Tcs.
             by rewrite -Fset_comp in_setE;(exists θ); split.
         have H10: w \in (Cw `;` (Bmw `|` Kw))#Θ
           by rewrite - Cw_transitive composeA.
-        have H11:  W' `&` (Cw `;` (Bmw `|` Kw))#Θ != set0 
-          by rewrite -notempty_exists;exists w;rewrite in_setE;split;[|rewrite -in_setE].
-        by rewrite -empty_iff  in H0.
-      - (* combine *)
-        by rewrite Clos_union setIUr H1 H'1 set0U.
+        have [z H11]:  W' `&` (Cw `;` (Bmw `|` Kw))#Θ !=set0 
+          by (exists w);split;[|rewrite -in_setE].
+        by rewrite  H0 in H11.
+      }
+      by rewrite Clos_union setIUr H1 H'1 set0U.
     Qed.
   End Lemma_11.
   
@@ -785,12 +783,12 @@ Section Tcs.
                       [ left | right;rewrite -H5].
       move: H8 => /Fset_union_set H8; move: H8 => [x [H8 H10]].
       move: H9 => /Fset_union_set H9; move: H9 => [y [H9 H11]].
-      have H12: Clos( Sw#_(x) | E, W) `&` Clos( Sw#_(y) | E, W) != set0.
-      by rewrite -notempty_exists;exists z; rewrite in_setE;
-      split;rewrite Clos_to_singleton;[exists λ | exists γ].
+      have [z' H12]: Clos( Sw#_(x) | E, W) `&` Clos( Sw#_(y) | E, W) !=set0
+        by exists z;split;rewrite Clos_to_singleton;[exists λ | exists γ].
       move => H. 
-      have H13: t_separated (x, y) by apply H; rewrite !in_setE.
-      by rewrite /t_separated /mkset /= -empty_iff  in H13.
+      have: t_separated (x, y) by apply: H; rewrite !in_setE.
+      rewrite /t_separated /mkset /= => H13.
+      by rewrite H13 in H12.
     Qed.
     
     Local Lemma P6_1imp2_a: forall (Γ Λ: set T) (W' W'': set T),
@@ -800,7 +798,8 @@ Section Tcs.
         -> ( Clos(Λ `|` W'| E,W) `&` Clos(Γ `|` W''| E,W) = set0).
     Proof.
       move => Γ Λ W' W'' H1 H2;apply: contraPP => H6. 
-      by apply: (P6_1imp2_a_contra H1 H2);rewrite -notempty_iff. 
+      apply: (P6_1imp2_a_contra H1 H2).
+      by rewrite -nonemptyPn -set0P not_notP in H6.
     Qed.
     
     Local Lemma P6_1imp2_b: forall (Γ: set T) (W': set T),
@@ -934,9 +933,9 @@ Section Tcs.
         have H23: Clos(Γ `|` W'' | E,W) u
           by rewrite Clos_to_singleton; exists γ;split;[left|].
         
-        have H24: Clos(Λ `|` W'|E,W) `&` Clos(Γ `|` W''|E,W) != set0
-          by rewrite -notempty_exists; exists u;rewrite in_setE; split.
-        by  rewrite -empty_iff  in H6.
+        have [z H24]: Clos(Λ `|` W'|E,W) `&` Clos(Γ `|` W''|E,W) !=set0
+          by (exists u);split.
+        by  rewrite H6 in H24.
       - have H21: w_y \in W''
             by rewrite H2 in_setD H13 notin_setE; move => H21; by rewrite -in_setE in H21. 
         have H23: (exists w' w'' : T, w' \in W' /\ w'' \in W'' /\ Cw (w', w''))
@@ -953,12 +952,10 @@ Section Tcs.
             by rewrite H2 in_setD H12 notin_setE; move => H24; by rewrite -in_setE in H24.
         have H24: Clos(Γ `|` W'' | E,W) t
           by  rewrite Clos_to_singleton;exists w_x; split;[right;rewrite -in_setE|].
-        have H25: Clos(Λ `|` W'|E,W) `&` Clos(Γ `|` W''|E,W) != set0
-          by rewrite -notempty_exists; exists t; rewrite in_setE; split.
-        by  rewrite -empty_iff  in H6.
+        have [z H25]: Clos(Λ `|` W'|E,W) `&` Clos(Γ `|` W''|E,W) !=set0 by (exists t);split.
+        by rewrite H6 in H25. 
     Qed.
-
-
+    
     Lemma P6_2imp1: forall (Γ Λ: set T),
         ( Γ `<=` W.^c) /\ ( Λ `<=` W.^c) /\ (Γ `&` Λ = set0) 
         -> ( exists (W': set T), exists (W'': set T), 
@@ -1158,7 +1155,7 @@ Section Tcs.
         R#X  `<=` X -> (X.^c :#R ) `&` X = set0.
     Proof.
       move => R X H1.
-      rewrite empty_notexists => -[z /set_mem [[w [H2 H3]] H4]].
+      rewrite -nonemptyPn => -[z [[w [H2 H3]] H4]].
       by have /H1 H5: R#X w by (exists z).
     Qed.
 

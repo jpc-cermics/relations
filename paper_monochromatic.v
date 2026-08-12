@@ -761,7 +761,8 @@ Section Paper.
       by rewrite inE [X in ~ X]inE.
       
       have H4: exists y, y \in (Tm x `|` [set x]) by (exists x);rewrite inE; right.
-      have H5: Tm x `|` [set x] = set0 by rewrite -empty_iff;move => H6.
+      have H5: Tm x `|` [set x] = set0
+        by rewrite set0P  nonemptyPn in H3 .
       move: H4;rewrite H5 => [[z H4]].
       by rewrite in_set0 in H4.
     Qed.

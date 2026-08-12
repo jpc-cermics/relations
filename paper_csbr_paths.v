@@ -1306,7 +1306,7 @@ Section Extended_Oriented_Paths.
   Lemma D_separated_L5: forall (W: set T) (E: relation T) (x y: T),
       ~ (exists p, D_U_a1 E W x y p) <-> (D_U_a1 E W x y) = set0.
   Proof.
-    by move => W E x y;rewrite -D_separated_L3 empty_iff.
+    by move => W E x y;rewrite -D_separated_L3 -nonemptyPn set0P.
   Qed.
   
   Lemma D_separated_L4: forall (W: set T) (E: relation T) (x y: T),

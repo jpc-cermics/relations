@@ -284,8 +284,10 @@ Section Intermediate_results_closed_open.
   Proof.
     move => R X H1.
     have H2:  (X.^c :#R ) `&` X = set0.
-    rewrite empty_notexists => -[z /set_mem [[w [H2 H3]] H4]].
-    by have /H1 H5: R#X w by (exists z).
+    {
+      rewrite -nonemptyPn => -[z [[w [H2 H3]] H4]].
+      by have /H1 H5: R#X w by (exists z).
+    }
     by rewrite -disjoints_subset;apply: H2.
   Qed.
   

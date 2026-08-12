@@ -205,36 +205,16 @@ Section Relation_Facts.
   Proof. by move => + x y => /(_ x y) Ha /Ha . Qed.
 
   (** * Sets_facts *)
-  
+  (** * XXXX to remove *)
   Lemma notempty_exists (T': Type) (X:set T'): (exists z, z \in X) <-> (X != set0).
   Proof.
     by rewrite set0P;split;[move => [z /set_mem ?]|move => [z /mem_set ?]];exists z.
   Qed.
-    
-  (* begin snippet Sone:: no-out *)  
-  (** * XXXX regarder  nonemptyPn *)
-  Lemma empty_notexists (T': Type) (X:set T'): X = set0 <-> ~ (exists z, z \in X).
-  Proof.
-    split =>[-> [z]| ?];first by rewrite in_set0. 
-    by rewrite predeqE => x;split => [/mem_set ?|];[have H2: exists z, z \in X by (exists x)|].
-  Qed.
-  (* end snippet Sone *) 
   
-  (* begin snippet Stwo:: no-out *)  
-  Lemma empty_iff (T': Type) (X:set T'): ~ (X != set0) <-> X = set0.
-  (* end snippet Stwo *)  
-  Proof. by rewrite -notempty_exists empty_notexists. Qed.
-
-  Lemma notempty_iff X: ~ (X = set0) <-> X != set0.
-  Proof.
-    split;first by move => /empty_notexists /contrapT /notempty_exists H1. 
-    by move => /notempty_exists H1 /empty_notexists H2.
-  Qed.
-  
-  (** * relID0  plutot :  (Y `<=` X) ->  Y `&` (X `\` Y) = set0.  *)
+  (** * name relID0  plutot :  (Y `<=` X) ->  Y `&` (X `\` Y) = set0.  *)
       
   Lemma W_part X Y Z: (Y `<=` X) /\ (Z= X `\` Y) -> Y `&` Z = set0.
-  Proof. by move => [? H2];rewrite empty_notexists H2;move => [z /set_mem [? [_ ?]]]. Qed.
+  Proof. by move => [? H2];rewrite -nonemptyPn H2;move => [z [? [_ ?]]]. Qed.
   
   (** * XXX regarder subUset *)
   (** * subUset : forall {T : Type} (A B C : set T), (B `|` C `<=` A) = (B `<=` A /\ C `<=` A) *)
