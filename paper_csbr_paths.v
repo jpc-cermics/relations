@@ -1298,10 +1298,7 @@ Section Extended_Oriented_Paths.
   
   Lemma D_separated_L3: forall (W: set T) (E: relation T) (x y: T),
       (D_U_a1 E W x y) != set0 <-> (exists p, D_U_a1 E W x y p).
-  Proof.
-    move => W E x y;rewrite -notempty_exists. 
-    by split;move => [p /asboolP H1]; exists p.
-  Qed.
+  Proof. by move => W E x y;rewrite set0P;split;move => [p H1];exists p. Qed.
 
   Lemma D_separated_L5: forall (W: set T) (E: relation T) (x y: T),
       ~ (exists p, D_U_a1 E W x y p) <-> (D_U_a1 E W x y) = set0.
@@ -1315,12 +1312,10 @@ Section Extended_Oriented_Paths.
   Proof.
     move => W E x y; rewrite iff_not2 -D_separated_L3.
     split. 
-    - move => [p /Active_eq [[H1 _] | H1]].
-      by left. 
-      by right;rewrite -notempty_exists;exists p.
-    - move => [-> | /notempty_exists [p H1]]. 
-      + by (exists [::]).
-      + by exists p;apply Active_eq; by right.
+    - move => [p /Active_eq [[H1 _] |/set_mem H1]];first by left. 
+      by right;rewrite set0P;exists p.
+    - move => [-> | ];first by (exists [::]).
+      by rewrite set0P => -[p /mem_set H1];exists p;apply Active_eq;right.
   Qed.
   
   Lemma D_separated_L6: forall (W: set T) (E: relation T) (x y: T),

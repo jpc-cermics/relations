@@ -139,9 +139,12 @@ Section Paper.
     (* end snippet Eltnotempty *)   
     Proof.
       have: exists (S: SType), S \in C /\ (exists x, x \in (sval S)).
-      move: Hne => /notempty_exists [S H2];exists S;split;first by []. 
-      by move: S H2 => [S' [H3 [H4 /notempty_exists H5]] /=] _.
-            
+      { 
+        move: Hne;rewrite set0P => -[S /mem_set H2];exists S;split;first by []. 
+        move: S H2 => [S' [H3 [H4 H5]] /=] _.
+        move: H5;rewrite set0P => -[x /mem_set Hx].
+        by exists x.
+      }
       move => [S [? [x ?]]].
       have H4: exists (S: SType), S \in C /\ x \in (sval S) by (exists S).
       by exists (exist _ x H4).
@@ -336,21 +339,22 @@ Section Paper.
       have H2':  R `<=` M by rewrite /M;apply: subsetUr.
       split;first by rewrite /RelIndep;move => x y /set_mem /= -> /set_mem /= ->.
       split;first by move => t [y [/= H3 H4]];move: H3; rewrite H4 /= => /H1/H2' H3;exists v.
-      by rewrite -notempty_exists;(exists v);rewrite inE.
+      by rewrite set0P;(exists v).
     Qed.
     
     Lemma SType_not_empty (A1: Assumption1 T) (A2: Assumption2 R):
       (@setT SType) != set0.
     Proof.
-      rewrite -notempty_exists;move: (Scal_not_empty A1 A2) => [v H2].
-      by exists (exist _ [set v] H2);rewrite inE.
+      rewrite set0P;move: (Scal_not_empty A1 A2) => [v H2].
+      by exists (exist _ [set v] H2).
     Qed.
     
     Lemma Sinf_not_empty (A3: Assumption3 O) (A4: Assumption4 O):
       (Sinf C) != set0.
     Proof.
-      move: (@Elt_not_empty C Hne) => [s _];rewrite -notempty_exists.
-      by move: (@ChooseRC5 C Hne A4 A3 s) => [H1 | [s' [H1 _]]];[exists (sval s) | exists s'].
+      move: (@Elt_not_empty C Hne) => [s _];rewrite set0P.
+      by move: (@ChooseRC5 C Hne A4 A3 s) => [/set_mem H1 | [s' [/set_mem H1 _]]];
+                                         [exists (sval s) | exists s'].
     Qed.
     
     (* begin snippet SinfScalP:: no-out *)    
@@ -443,7 +447,8 @@ Section Paper.
     move: H3 => {}/H2 H3.
     case H4: ( C != set0 ); first by apply: (H3 H4 A2 A3 A4 A5 A9).
     move: H4 => /negP/contrapT/eqP H4. 
-    move: (SType_not_empty A1 A2) => /notempty_exists [Sm Ht].
+    
+    move: (SType_not_empty A1 A2);rewrite set0P => -[Sm Ht].
     by exists Sm; move => S; rewrite H4 -inE in_set0. 
   Qed.
   
