@@ -268,6 +268,8 @@ Export injectivity(fin_codomain_prop,not_injective_prop,cyclic).
 Module setT_injectivity.
   Section setT_injectivity.
     (** * (h : nat -> set T) not injective when T is finType *)
+    (** * the main difficulty here is that (set T) is not a finType *)
+    
     Context {T:finType}.
     Local Definition encode1 (S : set T) : {ffun T -> bool} :=
       [ffun x => `[< S x >] ].
@@ -302,7 +304,6 @@ Module setT_injectivity.
       apply: not_injective1_h.
     Qed.
     
-    (** XXXXX this is the one we should use ? *)
     Lemma set_fin_cyclic U (h: nat -> set T): (iic_fun U h) -> (exists s, U.+ (s,s)).
     Proof. 
       move: (set_fin_codomain_prop h) => [n [p Hheq]]. 
@@ -799,7 +800,7 @@ Module h_extra_props.
 
   End h_extra_props.
 End h_extra_props.
-Export h_extra_props.
+Export h_extra_props(hmap').
 
 Module BHExt.
   Section BHExt.
@@ -1045,22 +1046,6 @@ Section leSet_fin_props.
   
 End leSet_fin_props.
 
-#[local] Set Warnings "-projection-no-head-constant,-redundant-canonical-projection".
-
-Section SubSetPType.
-  (** * defining a new finType isomorphic to {S : {set T} | P S} *)
-  Variables (T : finType)  (P : pred {set T}).
-  Record setP_type := SetP { setP_val : {set T}; setP_proof : P setP_val }.
-
-  (* subType structure *)
-  HB.instance Definition _ := [isSub for setP_val].
-  HB.instance Definition _ := [Finite of setP_type by <:].
-  (* explicit coercion *)
-  Coercion setP_val : setP_type  >-> set_of. 
-  
-End SubSetPType.
-#[local] Set Warnings "+projection-no-head-constant,+redundant-canonical-projection".
-
 Module fin_Maximal.
   (** * There's always a maximal element in a finite nonempty poset *)
   (** we consider here the simplest case *)
@@ -1125,13 +1110,30 @@ Module fin_Maximal.
 End fin_Maximal.
 Export fin_Maximal(has_maximal,maximal).
 
+#[local] Set Warnings "-projection-no-head-constant,-redundant-canonical-projection".
 
-Section SubSetPType_order.
-  (** * When O is a sporder then [:<=: O] restricted to M-independent sets is a porder *)
+Section SubSetPType.
+  (** * defining a new finType isomorphic to {S : {set T} | P S} *)
+  Variables (T : finType)  (P : pred {set T}).
+  Record setP_type := SetP { setP_val : {set T}; setP_proof : P setP_val }.
+
+  (* subType structure *)
+  HB.instance Definition _ := [isSub for setP_val].
+  HB.instance Definition _ := [Finite of setP_type by <:].
+  (* explicit coercion *)
+  Coercion setP_val : setP_type  >-> set_of. 
   
+End SubSetPType.
+#[local] Set Warnings "+projection-no-head-constant,+redundant-canonical-projection".
+
+Module Maximal_in_preKernels.
+Section Maximal_in_preKernels.
+  (** * Existence of a Maximal set in preKernels when T is a finType *)
+  (* we use a detour on {set T} *)
   Context (T : finType).
   Implicit Types (O R M U: relation T) (S: {set T}).
 
+  (** * propagate definition on (set T) to definitions on {set T} *)
   Definition RelIndep_fin U S: bool := (asbool (RelIndep U [:set: S])).
   
   Section RelIndep_fin.
@@ -1139,30 +1141,29 @@ Section SubSetPType_order.
     Lemma RelIndep_iff U S: (RelIndep U [:set: S]) <-> (RelIndep_fin U S).
     Proof. split => [Hri | /asboolP Hri]. by apply/asboolP. by []. Qed.
     
-    Lemma RelIndepP U S: 
-      reflect (RelIndep U [:set: S]) (RelIndep_fin U S).
+    Lemma RelIndepP U S: reflect (RelIndep U [:set: S]) (RelIndep_fin U S).
     Proof. by apply: (iffP idP);move/RelIndep_iff. Qed.
     
-    Lemma RelIndep_fin_subset U (S S': {set T}) :
+    Lemma Unused_RelIndep_fin_subset U (S S': {set T}) :
       S' \subset S -> RelIndep_fin U S -> RelIndep_fin U S'.
     Proof.
       move=> /fintype.subsetP SS' /RelIndepP H; apply/RelIndepP. 
       by apply: (RelIndep_Ir SS' H).
     Qed.
     
-    Lemma RelIndep_fin0 U: RelIndep_fin U finset.set0.
+    Lemma Unused_RelIndep_fin0 U: RelIndep_fin U finset.set0.
     Proof. by apply/RelIndepP;rewrite set_of_set0;apply/RelIndep_set0. Qed.
     
     Lemma RelIndep_fin1 U a : RelIndep_fin U [set a].
     Proof. apply/RelIndepP;rewrite set_of_sfin;apply/RelIndep_set1. Qed.
 
-    Lemma RelIndep_fin_Iv U S: RelIndep_fin U S <-> RelIndep_fin U^-1 S.
+    Lemma Unused_RelIndep_fin_Iv U S: RelIndep_fin U S <-> RelIndep_fin U^-1 S.
     Proof. 
       split;first by move/RelIndepP => ?;apply/RelIndepP/RelIndep_Iv.
       by move/RelIndepP/RelIndep_Iv;rewrite inverseK => ?;apply/RelIndepP.
     Qed.
     
-    Lemma RelIndep_fin_IE U S: RelIndep_fin U S = RelIndep_fin U^-1 S.
+    Lemma Unused_RelIndep_fin_IE U S: RelIndep_fin U S = RelIndep_fin U^-1 S.
     Proof. 
       apply/RelIndepP/RelIndepP;first by apply: RelIndep_Iv.
       by move => ?;rewrite -(inverseK U);apply: RelIndep_Iv.
@@ -1174,10 +1175,7 @@ Section SubSetPType_order.
   
   Definition prekernel_fin O R M: pred {set T} := 
     fun S => (RelIndep_fin O S) && ((pre_absorbant_fin R M S) && (([:set: S]) != set0)).
-  
-  (** * setIndep doit s'appeller  prekernelfinType ? *)
-  Definition setIndep O R M := setP_type (prekernel_fin O R M). 
-  
+
   Lemma prekernelE O R M S: 
     prekernel_fin O R M S <-> preKernel O R M [:set: S].
   Proof.
@@ -1187,7 +1185,7 @@ Section SubSetPType_order.
     by apply/andP;split;[apply/asboolP |].
   Qed.
   
-  Lemma prekernel_notempty O R M 
+  Lemma prekernel_fin_notempty O R M 
     (A1: NotEmpty T) (At: sporder O^-1) (Au: R `<=` O^-1):
     exists v, prekernel_fin O R M [set v].
   Proof.
@@ -1202,11 +1200,17 @@ Section SubSetPType_order.
     have H7: [set v]%classic v by exact.
     by rewrite H in H7.
   Qed.
+
+  (** * defining a new finType isomorphic to {S : {set T} | prekernel_fin S} *)
+  Definition setIndep O R M := setP_type (prekernel_fin O R M). 
   
-  Lemma leSet2_porder O R M :
-    sporder O -> 
-    @porder (setIndep O R M) 
-      [set AB | [:set: (val AB.1)] [<= O] [:set: (val AB.2)]]%classic.
+  (** * an order on setIndep O R M *)
+  Definition prekernel_fin_order O R M: relation (setIndep O R M):= 
+    [set AB | [:set: (val AB.1)] [<= O] [:set: (val AB.2)]]%classic.
+  
+  (* now we have a porder on setIndep O R M *)
+  Lemma prekernel_fin_order_is_porder O R M:
+    sporder O -> porder (@prekernel_fin_order O R M).
   Proof.
     move => H_sp.
     split => [A /= | A B /= Ha Hb | A B C /= Ha Hb].
@@ -1220,48 +1224,50 @@ Section SubSetPType_order.
       move: H_sp => [_ H1];move: (le_trans_if_tr H1) => H2. 
       by move: H2 => /(_ [:set:\val A] [:set:\val B] [:set:\val C] Ha Hb) H2.
   Qed.
-  
+
   Lemma exists_setIndep O R M 
     (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O^-1):
       (exists x : setIndep O R M, x \in {: (setIndep O R M)}).
   Proof.
     move: Asp => /sporder_inv Asp.
-    move: (@prekernel_notempty O R M A1 Asp Au) => [v Pv].
+    move: (@prekernel_fin_notempty O R M A1 Asp Au) => [v Pv].
     by exists (SetP Pv).
   Qed.
   
-  Lemma Maximal_fin O R M 
+  (* we use the general existence theorem for finite types *)
+  Lemma Maximal_in_setIndep O R M 
     (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O^-1):
     exists (m: (setIndep O R M)),
-      @maximal (setIndep O R M) m [set AB | [:set: (val AB.1)] [<= O] [:set: (val AB.2)]]%classic.
+      @maximal (setIndep O R M) m (@prekernel_fin_order O R M).
   Proof.
     move: (Asp) => /sporder_inv Asp'. 
-    move: (leSet2_porder R M Asp) => po.
+    move: (prekernel_fin_order_is_porder R M Asp) => po.
     pose proof (@exists_setIndep O R M A1 Asp Au) as Hne.
     by move: (@has_maximal (setIndep O R M) 
             [set AB | [:set: (val AB.1)] [<= O] [:set: (val AB.2)]]%classic
          po Hne).
   Qed.
   
-  Lemma Maximal_fin' O R M
+  (* back to prekernel_fin objects *)
+  Lemma Maximal_in_prekernel_fin O R M
     (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O^-1):
     exists S, prekernel_fin O R M S /\ (forall S', prekernel_fin O R M S' ->
                                     [:set: S] [<= O] [:set: S'] -> S = S').
   Proof.
-    move: (@Maximal_fin O R M A1 Asp Au)  => [S H3].
+    move: (@Maximal_in_setIndep O R M A1 Asp Au)  => [S H3].
     exists S;move: (valP S) => Pr;split; first exact.
     move => U H4; move: H3 => /(_ (SetP H4)) H3.
     by move => /H3/eqP ?;apply/eqP. 
   Qed.
-
+  
+  (* back to preKernels *)
   Lemma Maximal O R M
     (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O^-1):
     exists (S:set T), preKernel O R M S /\ (forall S':set T, preKernel O R M S' -> S [<= O] S' -> S = S').
   Proof.
-    move: (@Maximal_fin' O R M A1 Asp Au)  => [S [HSpk Hm]].
+    move: (@Maximal_in_prekernel_fin O R M A1 Asp Au)  => [S [HSpk Hm]].
     exists [:set: S]. 
     split =>[|U HUpk Hle];first by apply/prekernelE.
-    
     move: Hm => /(_ [:fin: U]) Hm.
     rewrite -(@set_to_finK T U).
     apply/fin_of_set_inj.
@@ -1269,10 +1275,12 @@ Section SubSetPType_order.
     apply: Hm;last by rewrite set_to_finK.
     by apply/prekernelE;rewrite set_to_finK.
   Qed.
-  
-End SubSetPType_order.
+  End Maximal_in_preKernels.
+End Maximal_in_preKernels.
 
-Section ChampetierExt_Theorem.
+Export Maximal_in_preKernels(Maximal).
+
+Section Extended_Champetier_Theorem.
     
   Context (T : finType) (O R B: relation T).
   Implicit Types (O R B: relation T). 
@@ -1311,7 +1319,7 @@ Section ChampetierExt_Theorem.
     by (exists S).
   Qed.
   
-End ChampetierExt_Theorem.
+End Extended_Champetier_Theorem.
 
 Section Blidia_Engel_Ext_Theorem.
   (** * Similar to Champetier but  (Asp: sporder O) *)
@@ -1331,7 +1339,7 @@ Section Blidia_Engel_Ext_Theorem.
 End Blidia_Engel_Ext_Theorem.
 
 Section simpleGraph. 
-
+  (** * simpleGraph definition *)
   Context (T : Type).
   Implicit Types (G D O Re: relation T).
 
@@ -1357,8 +1365,8 @@ Section simpleGraph.
   
 End simpleGraph.
 
-Section Champ.
-
+Section Champetier_Theeorem.
+  (** * The original Champetier Theorem *)
   Context (T : finType) (G D O: relation T).
   
   Context (Asg: simpleGraph G).
@@ -1442,5 +1450,6 @@ Section Champ.
                      A7 A8 A1 Asp (Au) (Apk)).
   Qed.
   
-End Champ.
+End Champetier_Theeorem.
+
 
