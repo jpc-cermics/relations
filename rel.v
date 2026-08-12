@@ -205,11 +205,6 @@ Section Relation_Facts.
   Proof. by move => + x y => /(_ x y) Ha /Ha . Qed.
 
   (** * Sets_facts *)
-  (** * XXXX to remove *)
-  Lemma notempty_exists (T': Type) (X:set T'): (exists z, z \in X) <-> (X != set0).
-  Proof.
-    by rewrite set0P;split;[move => [z /set_mem ?]|move => [z /mem_set ?]];exists z.
-  Qed.
   
   (** * name relID0  plutot :  (Y `<=` X) ->  Y `&` (X `\` Y) = set0.  *)
       
@@ -1292,7 +1287,7 @@ Section Relation_Facts.
   
   (* Lemme 1 : Chaque classe est non vide *)
   Lemma classe_non_vide R: equivalence R -> forall C, Classes R C -> (C != set0).
-  Proof. move => [R_ref _ _ ] C -[x0 ->];rewrite -notempty_exists;exists x0; apply/mem_set. exact. Qed.
+  Proof. by move => [R_ref _ _ ] C -[x0 ->];rewrite set0P;exists x0. Qed.
   
   (* Lemme 2 : Deux classes sont égales ou disjointes *)
   Lemma classes_disjointes_ou_egales R:
@@ -1328,11 +1323,7 @@ Section Relation_Facts.
   
   Lemma ER_check (C C': set T):
     (C `&` C') != set0 <-> exists z, C z /\ C' z.
-  Proof.
-    split. 
-    by move => /notempty_exists [z /set_mem [H1 H2]];exists z.
-    by move => [z [H1 H2]];apply/notempty_exists;exists z;apply/mem_set. 
-  Qed.
+  Proof.  by rewrite set0P;split;move => [z [? ?]];exists z. Qed.
 
 End Relation_Facts.
 
