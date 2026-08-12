@@ -22,8 +22,6 @@ Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
 
-Definition NotEmpty (T: Type) := (exists (v0:T), (v0 \in setT)).
-
 Reserved Notation "A [<=] B" (at level 4, no associativity). 
 (* set order derived from strict porder on elements *)
 Reserved Notation "A [<= U ] B" (at level 4, no associativity). 
@@ -56,7 +54,7 @@ Section preKernel.
   Context {T : choiceType} (U: relation T).
   
   Lemma absorbant_not_empty (S: set T): 
-    (NotEmpty T) -> absorbant U S -> ~ (S = set0).
+    (nonempty [set: T]) -> absorbant U S -> ~ (S = set0).
   Proof.
     move => [t _] + Hne; rewrite {}Hne /absorbant => /(_ t) /=.
     have ->: t \in set0 = false by rewrite [t \in set0]inE;apply/asboolP.
@@ -70,7 +68,7 @@ End preKernel.
 Section CheckAsym. 
   (** * Import main result from paper_monochromatic_f *)
   Context {T : choiceType} (U: relation T).
-  Hypothesis A1: (NotEmpty T).
+  Hypothesis A1: (nonempty [set: T]).
 
   Import Asyminf2Inf(Asym2P5', allL_rc_asym).
 
@@ -138,39 +136,35 @@ Module iic_paths.
     (** * Assumptions on infinite paths *)
     (* should be move on rel.v *)
     Context {T : Type}.
-    Implicit Types (U: relation T) (X: set T).
+    Implicit Types (U V: relation T) (X: set T).
 
-    Lemma notiic_rloop_sub_L1 X (S: relation X):
-      (exists (v0:T), (v0 \in X)) -> ~ (iic (Asym S)) -> (Rloop S).
-    Proof. 
-      have setTypeP: (exists x : X, x \in [set: X]) <-> (exists (t:T), (t \in X))
-        by split => [[v ?] |[v H0]];[exists (sval v) | exists (exist _ v H0)];
-                   rewrite inE;[apply: set_valP|].
-      by move => /setTypeP H0; apply: notiic_rloop. 
-    Qed. 
-    
-    Lemma notiic_rloop_sub_L2 X U:
-      ~ (iic (Asym U)) -> (exists (v0:T), (v0 \in X)) -> (Rloop (@Restrict' T X U)).
-    Proof.
-      move => H1 H0.
-      have H2: (iic (@Restrict' T X (Asym U))) -> (iic (Asym U))
-        by move => [f // ?];exists (fun n => (sval (f n))). 
-      have H3:  ~ (iic (Asym U)) -> ~ (iic (@Restrict' T X (Asym U)))
-        by contra => -[f H4];apply: H2; by (exists f).
-      by apply/(notiic_rloop_sub_L1 H0)/H3.
-    Qed.
-    
-    (* notiic_rloop for a subset X *)
-    Lemma notiic_rloop_sub X U:
-      ~ (iic (Asym U)) ->(exists (v0:T), (v0 \in X))
-      -> (exists (v:T), v \in X /\ forall w, w \in X -> U (v,w) -> U (w,v)).
-    Proof.
-      move => Ninf H0.
-      move: (notiic_rloop_sub_L2 Ninf H0) => [v H1];exists (sval v).
-      split=> [| w H2];first by rewrite inE;apply: set_valP.
-      have [w' <-]: exists (w': X), (sval w') = w by (exists (exist _ w H2)).
-      by move => ?;apply: H1.
-    Qed.
+  Lemma notiic_rloop_sub_L1 X (U: relation X):
+    (nonempty [set: X]) -> ~ (iic (Asym U)) -> (Rloop U).
+  Proof. 
+    by move => Hne Hniic;apply: (notiic_rloop Hne Hniic).
+  Qed.
+  
+  Lemma notiic_rloop_sub_L2 X V:
+    (nonempty [set: X]) -> ~ (iic (Asym V)) -> (Rloop (@Restrict' T X V)).
+  Proof.
+    have H3:  ~ (iic (Asym V)) -> ~ (iic (@Restrict' T X (Asym V)))
+      by contra;move => [f // ?];exists (fun n => (sval (f n))). 
+    move => Hne /H3 Hiic.
+    by apply/(@notiic_rloop_sub_L1 X (@Restrict' T X V) Hne).
+  Qed.
+  
+  (* notiic_rloop for a subset X *)
+  Lemma notiic_rloop_sub X V:
+    (nonempty [set: X]) -> ~ (iic (Asym V))
+    -> (exists (v:T), v \in X /\ forall w, w \in X -> V (v,w) -> V (w,v)).
+  Proof.
+    move => H0 Ninf.
+    move: (notiic_rloop_sub_L2 H0 Ninf) => [v H1];exists (sval v).
+    split=> [| w H2];first by rewrite inE;apply: set_valP.
+    have [w' <-]: exists (w': X), (sval w') = w by (exists (exist _ w H2)).
+    by move => ?;apply: H1.
+  Qed.
+  
   End iic_paths.
 End iic_paths.
 
@@ -282,7 +276,7 @@ Section Assumptions.
   Context (T: Type). 
   Implicit Types (R B O M: relation T).
   
-  Definition Assumption1:= (NotEmpty T).
+  Definition Assumption1:= (nonempty [set: T]).
   Definition Assumption2 R:= ~ (iic (Asym R)).
   Definition Assumption3 O:= ~ (iic O).
   Definition Assumption4 O:= sporder O.
@@ -382,10 +376,9 @@ Module Extend_non_absorbant_preKernel.
     (* A consequence of A2 *)
     (* begin snippet Sxone:: no-out *)    
     Lemma Sx_1 (A2: Assumption2 R):
-      (exists y, (y \in Y)) -> (exists (y:T), y \in Y /\ SeP y).
+      nonempty [set: Y] -> (exists (y:T), y \in Y /\ SeP y).
     (* end snippet Sxone*)       
-    Proof.  by move => H1; move: (notiic_rloop_sub A2 H1) => H2.  Qed.
-
+    Proof.  by move => H1; move: (notiic_rloop_sub H1 A2) => H2.  Qed.
     
     (* begin snippet Sbunp:: no-out *)    
     Lemma fact0: forall x y, x \in X `\` (Xy y) -> ~ B (x,y).
@@ -676,9 +669,14 @@ Module Extend_non_absorbant_preKernel.
       preKernel M R M X -> ~ (absorbant M X) 
       -> exists X', preKernel M R M X' /\ (X [<< O] X'). 
     Proof.
-      have Hna: (exists y, y \in Y) -> exists y, y \in Y /\ (SeP y)
+      have Hne: [set: Y] !=set0 <-> exists x, x \in Y.
+      {
+        split => [[x _] |[x Hx]];last by (exists (exist _ x Hx)).
+        by exists (sval x);rewrite inE; apply/set_valP.
+      }
+      have Hna: (nonempty [set: Y]) -> exists y, y \in Y /\ (SeP y)
             by move => H0;pose proof (Sx_1 A2 H0). 
-      move => H1 /not_absorbant_iff/Hna [y [H2 H3]]. 
+      move => H1 /not_absorbant_iff/Hne/Hna [y [H2 H3]]. 
       have H4: y \in (X:#(B) `|` (X:#(B)).^c) by rewrite (setUv X:#(B)) inE.
       move: H4 => /set_mem [ H4 | H4];rewrite -inE in H4.
       by move: (case2 A6 A7 A8 H1 H2 H3 H4) => H5;exists (X `\` Xy y `|` [set y]).

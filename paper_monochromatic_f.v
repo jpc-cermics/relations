@@ -37,7 +37,7 @@ Local Open Scope classical_set_scope.
 
 Module Type Asyminf2Inf_Type. 
   Axiom Asym2P5': 
-    forall (T:choiceType) (R: relation T) (A1: (exists (v0:T), (v0 \in setT))),
+    forall (T:choiceType) (R: relation T) (A1: nonempty [set: T]),
       (iic (Asym R.+)) -> (iic_inj R). 
 End Asyminf2Inf_Type.
 
@@ -571,7 +571,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
     
     Variables (T:choiceType) (R: relation T). 
 
-    Hypothesis A1: (exists (v0:T), (v0 \in setT)).
+    Hypothesis A1: (nonempty [set: T]).
     Definition T2 : Type := (seq T)*T*(seq T)*nat.
 
     Fixpoint iterh (h: T2 -> T2) (p0:T2) n : T2 := 
@@ -1107,7 +1107,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
 
   End val_construction.
 
-  Lemma Asym2P5' (T:choiceType) (R: relation T) (A1: (exists (v0:T), (v0 \in setT))):
+  Lemma Asym2P5' (T:choiceType) (R: relation T) (A1: nonempty [set: T]):
     (iic (Asym R.+)) -> (iic_inj R). 
   Proof.
     move => /(@Asym2P5 T R A1) [k [l H1]]. 

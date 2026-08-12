@@ -192,7 +192,7 @@ Section Paper.
       Lemma iic_RC: (iic RC).
       Proof.
         apply DC; last by apply: total_RC.
-        move: Elt_not_empty => [x _];exists x;by apply/mem_set. 
+        by move: Elt_not_empty => [x _];exists x.
       Qed.
       
     End total_RC. 
@@ -515,7 +515,7 @@ Module SSWext.
   Definition B := Eb.+. 
   Definition O := (Asym B). 
 
-  Definition SSW_1:= (NotEmpty T).
+  Definition SSW_1:= (nonempty [set: T]).
   Definition SSW_2:= ~ (iic (Asym R)).
   Definition SSW_3:= ~ (iic (Asym B)).
 
@@ -582,7 +582,7 @@ Module ABkernels.
   Definition B := A2.
   Definition O := (Asym B). 
 
-  Definition AB_1:= (NotEmpty T).
+  Definition AB_1:= (nonempty [set: T]).
   Definition AB_2:= ~ (iic (Asym R)).
   Definition AB_3:= ~ (iic (Asym B)).
   Definition AB_4:= transitive R.
@@ -643,7 +643,7 @@ Module MeunierLanglois.
   Parameter (T:choiceType) (R B: relation T).
 
   Definition O := [set xy | (Asym B) (xy.1, xy.2) /\  ~ R (xy.2,xy.1)].
-  Definition AB_1:= (NotEmpty T).
+  Definition AB_1:= (nonempty [set: T]).
   Definition AB_2:= ~ (iic (Asym R)).
   Definition AB_3:= ~ (iic (Asym B)).
   Definition AB_4:=  forall x y z, 
@@ -752,7 +752,7 @@ Module BlidiaEngel.
 
   Context (OD: O `|` O^-1 = M `|` (M)^-1).
   
-  Definition AB_1:= (NotEmpty T).
+  Definition AB_1:= (nonempty [set: T]).
   Definition AB_2:= ~ (iic R).
   Definition AB_3:= ~ (iic B).
   

@@ -1505,11 +1505,11 @@ Section Infinite_paths.
   Definition iic_inj R := exists f, (forall n, R ((f n),(f (S n)))) /\ injective f.
   (* end snippet iicinj *)  
 
-  Lemma total_rel''_to_iic R: (exists (v0:T), (v0 \in setT)) ->  total_rel'' R -> iic R. 
+  Lemma total_rel''_to_iic R: (nonempty [set: T]) ->  total_rel'' R -> iic R. 
   Proof. by move => -[v0 H1] /(_ v0) [f [H2 H3]]; exists f. Qed.
   
   (** * DC as a lemma deduced from choice *)
-  Lemma DC R:  (exists (v0:T), (v0 \in setT)) ->  total_rel R -> iic R. 
+  Lemma DC R: (nonempty [set: T]) ->  total_rel R -> iic R. 
   Proof.
     by move => H0 /total_rel_iff/total_rel'_to_total_rel''/(total_rel''_to_iic H0) H1.
   Qed.
@@ -1552,7 +1552,7 @@ Section Infinite_paths.
   Lemma test5 R: (Rloop R) -> exists v, (forall x : T, ~ ((Asym R) (v, x))).
   Proof. by move => [v H1];exists v => w [/H1 H2 H3]. Qed.
   
-  Lemma notiic_rloop R: (exists (v0:T), (v0 \in setT)) -> ~ (iic (Asym R)) -> (Rloop R).
+  Lemma notiic_rloop R: (nonempty [set: T]) -> ~ (iic (Asym R)) -> (Rloop R).
   Proof. by move => H0; apply contraPP => /test3/(DC H0) H1.  Qed.
   
   Lemma iic_sub R S: R `<=` S -> (iic R) -> (iic S).
@@ -1560,10 +1560,6 @@ Section Infinite_paths.
     by move => Hsub [f H];exists f;move: H => + n =>/(_ n)/Hsub ?.
   Qed.
   
-  
-    
-
-
 End Infinite_paths.
 
 Section ZornRelation.

@@ -340,7 +340,7 @@ Section Finite.
     by move:Hx => + y => /(_ y) Hx.
   Qed.
     
-  Lemma sink2iic U: (exists (v0:T), (v0 \in setT)) -> (forall v, ~(Sink U v)) -> (iic U).
+  Lemma sink2iic U: (nonempty [set: T]) -> (forall v, ~(Sink U v)) -> (iic U).
   Proof. 
     move => Hne  Hnsink. apply: DC;first by [].
     by move: Hnsink;contra;move => [x Hx];exists x. 
@@ -364,13 +364,13 @@ Section Finite.
     by move: (@fin_not_iic_inj U) => H1 /(sporder_iic_injective Hsp)H2. 
   Qed.
   
-  Lemma fin_rloop U: (NotEmpty T) -> (sporder U) -> exists v, (vRloop U v).
+  Lemma fin_rloop U: (nonempty [set: T]) -> (sporder U) -> exists v, (vRloop U v).
   Proof.
     move => Hne /[dup] /fin_not_iic Hniic /sporder_asym/AsymEq Has.
     by rewrite -Has in Hniic;move: (@notiic_rloop _ U Hne Hniic). 
   Qed.
   
-  Lemma fin_sink U: (NotEmpty T) -> (sporder U) -> exists v, (Sink U v).
+  Lemma fin_sink U: (nonempty [set: T]) -> (sporder U) -> exists v, (Sink U v).
   Proof.
     move => Hne /[dup] /sporder_asym Has Hsp.
     move: (fin_rloop Hne Hsp) => [v H1].
@@ -378,7 +378,7 @@ Section Finite.
   Qed.
   
   Lemma fin_rloop1 U V: 
-    (NotEmpty T) -> (sporder U) -> exists v, (v)_:#(U) `<=` V#_(v).
+    (nonempty [set: T]) -> (sporder U) -> exists v, (v)_:#(U) `<=` V#_(v).
   Proof.
     move => Hne Hsp;move: (@fin_sink _ Hne Hsp) => [v Rl].
     exists v;move: Rl => /[swap] w /(_ w) Rl.
@@ -386,7 +386,7 @@ Section Finite.
   Qed.
   
   Lemma fin_rloop2 U V W:
-    (NotEmpty T) -> (sporder U) -> V `<=` U -> exists v, (v)_:#(V) `<=` W#_(v).
+    (nonempty [set: T]) -> (sporder U) -> V `<=` U -> exists v, (v)_:#(V) `<=` W#_(v).
   Proof.
     move => Hne Hsp Hinc.
     move: (@fin_rloop1 U W Hne Hsp) => [v H1];( exists v).
@@ -396,7 +396,7 @@ Section Finite.
   Qed.
   
   Lemma NotCyclic_exists_sink U: 
-    (NotEmpty T) ->  ~ (exists s, U.+ (s,s)) -> exists v, (Sink U v).
+    (nonempty [set: T]) ->  ~ (exists s, U.+ (s,s)) -> exists v, (Sink U v).
   Proof.
     move => Hne;contra => Hnsink.
     apply/cyclic/(sink2iic Hne) => v Hsink.
@@ -404,7 +404,7 @@ Section Finite.
   Qed.
   
   Lemma NotCyclic_exists_preabsorbant U V: 
-    (NotEmpty T) ->  ~ (exists s, U.+ (s,s)) -> exists v, (v)_:#(U) `<=` V#_(v).
+    (nonempty [set: T]) ->  ~ (exists s, U.+ (s,s)) -> exists v, (v)_:#(U) `<=` V#_(v).
   Proof.
     (* use NotCyclic_exists_sink *)
     move => Hne Hncl;move: (NotCyclic_exists_sink Hne Hncl)=> [v Hsink].
@@ -420,7 +420,7 @@ Module partial_iic_lemma.
     (** * a partial iic lemma *)
     Context {T:choiceType} (U: relation T) (B: set T).
     Context (A0: forall b, b \in B -> exists a, U (b,a)).
-    Context (A1: exists a, a \in (@setT T)).
+    Context (A1: nonempty [set: T]).
     
     Definition V := 
       [set p | (p.1 \in B) /\ U p \/ (~(p.1 \in B) /\ p.2 = p.1)]%classic.
@@ -476,7 +476,7 @@ Module partial_iic_lemma_sub.
           by rewrite inE;split;[rewrite -inE;apply/valP| rewrite /B' -inE].
         by (exists (exist _ b Hb)).
         move: (A1) => [a Ha].
-        by (exists (exist _ a Ha));rewrite inE /=.
+        by (exists (exist _ a Ha)). 
       }
       have H2: (exists s, ~ (s \in B')) ->  (exists s, s \in A /\ ~ s \in B).
       {
@@ -812,7 +812,7 @@ Module BHExt.
 
     Context (A2: Assumption2 R) (A6: Assumption6 B M O)
       (A7: Assumption7 R B M) (A8: Assumption8 R B M). 
-    Context (A1: NotEmpty T) (Au: R `<=` O^-1).
+    Context (A1: nonempty [set: T]) (Au: R `<=` O^-1).
     Context (Apk : forall X , RelIndep O X <-> RelIndep M X).
     Context (A_Onotcyclic: ~ (exists s, O.+ (s,s))).
     
@@ -1186,7 +1186,7 @@ Section Maximal_in_preKernels.
   Qed.
   
   Lemma prekernel_fin_notempty O R M 
-    (A1: NotEmpty T) (At: sporder O^-1) (Au: R `<=` O^-1):
+    (A1: nonempty [set: T]) (At: sporder O^-1) (Au: R `<=` O^-1):
     exists v, prekernel_fin O R M [set v].
   Proof.
     move: (At) (@fin_not_iic_inj T O^-1) => /[dup] Hsp [H1 /[dup] Ht /Tclos_iff H2] H3.
@@ -1226,7 +1226,7 @@ Section Maximal_in_preKernels.
   Qed.
 
   Lemma exists_setIndep O R M 
-    (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O^-1):
+    (A1: nonempty [set: T]) (Asp: sporder O) (Au: R `<=` O^-1):
       (exists x : setIndep O R M, x \in {: (setIndep O R M)}).
   Proof.
     move: Asp => /sporder_inv Asp.
@@ -1236,7 +1236,7 @@ Section Maximal_in_preKernels.
   
   (* we use the general existence theorem for finite types *)
   Lemma Maximal_in_setIndep O R M 
-    (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O^-1):
+    (A1: nonempty [set: T]) (Asp: sporder O) (Au: R `<=` O^-1):
     exists (m: (setIndep O R M)),
       @maximal (setIndep O R M) m (@prekernel_fin_order O R M).
   Proof.
@@ -1250,7 +1250,7 @@ Section Maximal_in_preKernels.
   
   (* back to prekernel_fin objects *)
   Lemma Maximal_in_prekernel_fin O R M
-    (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O^-1):
+    (A1: nonempty [set: T]) (Asp: sporder O) (Au: R `<=` O^-1):
     exists S, prekernel_fin O R M S /\ (forall S', prekernel_fin O R M S' ->
                                     [:set: S] [<= O] [:set: S'] -> S = S').
   Proof.
@@ -1262,7 +1262,7 @@ Section Maximal_in_preKernels.
   
   (* back to preKernels *)
   Lemma Maximal O R M
-    (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O^-1):
+    (A1: nonempty [set: T]) (Asp: sporder O) (Au: R `<=` O^-1):
     exists (S:set T), preKernel O R M S /\ (forall S':set T, preKernel O R M S' -> S [<= O] S' -> S = S').
   Proof.
     move: (@Maximal_in_prekernel_fin O R M A1 Asp Au)  => [S [HSpk Hm]].
@@ -1289,7 +1289,7 @@ Section Extended_Champetier_Theorem.
 
   Context (A2 : Assumption2 R) (A6 : Assumption6 B M O) 
     (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
-  Context (A1: NotEmpty T) (Asp: sporder O) (Au: R `<=` O^-1).
+  Context (A1: nonempty [set: T]) (Asp: sporder O) (Au: R `<=` O^-1).
   Context (Apk : forall X, RelIndep O X <->  RelIndep M X).
   
   Lemma maximal_mabsorbant S:
@@ -1332,7 +1332,7 @@ Section Blidia_Engel_Ext_Theorem.
 
   Context (A2 : Assumption2 R) (A6 : Assumption6 B M O) 
     (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
-  Context (A1: NotEmpty T) (Au: R `<=` O^-1).
+  Context (A1: nonempty [set: T]) (Au: R `<=` O^-1).
   Context (Apk : forall (X:set T) , RelIndep O X <->  RelIndep M X).
   Context (Anc : ~ ( exists s, R.+ (s,s))).
   
@@ -1379,7 +1379,7 @@ Section Champetier_Theeorem.
   Notation M := (B `|` R).
 
   Context 
-    (A1: NotEmpty T) 
+    (A1: nonempty [set: T]) 
     (Asp: sporder O)
     (A6 : Assumption6 B M O) 
     (A7 : Assumption7 R B M)
