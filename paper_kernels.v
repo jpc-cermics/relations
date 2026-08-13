@@ -21,9 +21,9 @@ Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
 
-Module G_SSW. 
-  (** * Generalized SSW Theorem *)
-  Section G_SSW.
+Module Generalized_SSW. 
+  (** * Generalized SSW Theorem for infinite case*)
+  Section Generalized_SSW.
     (** * Existence of a Maximal in the infinite case with Zorn Lemma *)
     (** * we need [<= O] to be a porder *)
 
@@ -53,10 +53,10 @@ Module G_SSW.
       exists Sm. split;first by move: Hpk => [? _].
       by apply/not_notP => /Hsmabs.
     Qed.
-  End G_SSW.
-End G_SSW.
+  End Generalized_SSW.
+End Generalized_SSW.
 
-Export G_SSW(G_SSW).
+Export Generalized_SSW(G_SSW).
 
 Module SSWext.
   (** * Extended SSW Theorem *)
@@ -118,15 +118,16 @@ Module SSWext.
   Theorem SSWext
     (A1: SSW_1) (A2: SSW_2) (A3: SSW_3):
     exists X, RelIndep M X /\  absorbant M X.
-  (* end snippet MainTh:: no-out *)    
   Proof.
     by pose proof (@G_SSW _ R B O A1 A2 A3 L4 L5 L6 L7 L8 L9).
   Qed.
   
 End SSWext.
 
+(** * XXXX  We need the original SSW theorem (weak one) *) 
+
 Module ABkernels.
-  (** * The case of AB kernels  *)
+  (** * use G_SSW to prove the AB kernels case *)
   Parameter (T:choiceType) (A1 A2: relation T).
 
   Definition R := A1.
@@ -188,8 +189,10 @@ Module ABkernels.
   
 End ABkernels.
 
-
 Module MeunierLanglois. 
+  (** * use G_SSW to prove kernel existence in infinite graphs *)
+  (** * for a modifieed version of Meunier Langlois *)
+
   Parameter (T:choiceType) (R B: relation T).
 
   Definition O := [set xy | (Asym B) (xy.1, xy.2) /\  ~ R (xy.2,xy.1)].
@@ -286,61 +289,57 @@ Module MeunierLanglois.
   
 End MeunierLanglois. 
 
-Module BlidiaEngel.
-  (** * This is a version of Blidia and Engel for infinite graph *)
+Module BlidiaEngel_inf.
+  (** * XXXX not finished *)
   (* O is an orientation:  Asym, irreflexive relation *)
   (* D irreflexive D est inclue dans O `|` O^-1 *)
   (* O is acycliq *)
-  Section test.
-  
-  Parameter (T:choiceType) (O D: relation T).
-  
-  Definition R := D `&` O^-1. 
-  Definition B := D `&` O. 
-  
-  Notation M := (B `|` R).
+  Section BlidiaEngel_inf.
 
-  Context (OD: O `|` O^-1 = M `|` M^-1).
+    Context (T:choiceType) (O D: relation T).
   
-  Definition AB_1:= (nonempty [set: T]).
-  Definition AB_2:= ~ (iic R).
-  Definition AB_3:= ~ (iic B).
-  
-  Definition AB_4:=  forall x y z t, 
-      ~ (y = x) -> ~ (y = z) -> ~ (z = x) -> ~ (z = t)
-      -> ~ (z = y) ->  ~ (y = t) -> ~ (x = t)
-      -> O (x,y) -> (O (y,z) \/ O (z,y)) -> O (t,z) 
-      -> O (x,z) \/ O (z,x) \/ O (y,t) \/ O (t,y) \/ O (x,t) \/ O (t,x).
-  
-  Definition AB_5:=  forall x y z, 
-      ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
-      -> O (x,y) -> O (y,z) -> O (z,x)
-      -> (O (y,x) /\ O (z,y)).
+    Definition R := D `&` O^-1. 
+    Definition B := D `&` O. 
+    Notation M := (B `|` R).
 
-  (* O and D are both directions of a same graph *)
+    Context (OD: O `|` O^-1 = M `|` M^-1).
+    Definition AB_1:= (nonempty [set: T]).
+    Definition AB_2:= ~ (iic R).
+    Definition AB_3:= ~ (iic B).
+    
+    Definition AB_4:=  forall x y z t, 
+        ~ (y = x) -> ~ (y = z) -> ~ (z = x) -> ~ (z = t)
+        -> ~ (z = y) ->  ~ (y = t) -> ~ (x = t)
+        -> O (x,y) -> (O (y,z) \/ O (z,y)) -> O (t,z) 
+        -> O (x,z) \/ O (z,x) \/ O (y,t) \/ O (t,y) \/ O (x,t) \/ O (t,x).
+    
+    Definition AB_5:=  forall x y z, 
+        ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
+        -> O (x,y) -> O (y,z) -> O (z,x)
+        -> (O (y,x) /\ O (z,y)).
+    
+    (* O and D are both directions of a same graph *)
 
-  Lemma haveA5: ( O  `<=` M `|` M^-1).
-  Proof. by rewrite -OD;apply: subsetUl. Qed.
-  
-  Lemma haveA6: forall x y, B (x,y) /\ ~ (M (y, x)) -> O (x,y).
-  Proof. by move => x y [[_ Hb] _]. Qed.
-  
-  Theorem BE 
-    (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O)
-    (A7: Assumption7 R B M) (A8: Assumption8 R B M)
-    (A9: Assumption9 R B O M):
-    exists X, RelIndep M X /\ absorbant M X.
-  Proof.
-    by pose proof (@G_SSW _ R B O A1 A2 A3 A4 haveA5 haveA6 A7 A8 A9).
-  Qed.
-  
-  End test.
-  
-End BlidiaEngel.
-
+    Lemma haveA5: ( O  `<=` M `|` M^-1).
+    Proof. by rewrite -OD;apply: subsetUl. Qed.
+    
+    Lemma haveA6: forall x y, B (x,y) /\ ~ (M (y, x)) -> O (x,y).
+    Proof. by move => x y [[_ Hb] _]. Qed.
+    
+    Theorem BE 
+      (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O)
+      (A7: Assumption7 R B M) (A8: Assumption8 R B M)
+      (A9: Assumption9 R B O M):
+      exists X, RelIndep M X /\ absorbant M X.
+    Proof.
+      by pose proof (@G_SSW _ R B O A1 A2 A3 A4 haveA5 haveA6 A7 A8 A9).
+    Qed.
+  End BlidiaEngel_inf.
+End BlidiaEngel_inf.
 
 Module BHExt.
   Section BHExt.
+    (** * finType cases *)
     (** * Extended Blida en Hengel Theorem *)
   
     Context {T: finType} (O R B: relation T).
@@ -431,64 +430,51 @@ End BHExt.
 
 Export BHExt(exists_kernel).
 
-
-Section Extended_Champetier_Theorem.
+Module Extended_Champetier_Theorem.
+  Section Extended_Champetier_Theorem.
+    (** * finType cases *)
+    (** * Extended Champetier *)
     
-  Context (T : finType) (O R B: relation T).
-  Implicit Types (O R B: relation T). 
+    Context (T : finType) (O R B: relation T).
+    Implicit Types (O R B: relation T). 
   
-  Notation M := (B `|` R).
+    Notation M := (B `|` R).
 
-  Context (A2 : Assumption2 R) (A6 : Assumption6 B M O) 
+    Context (A2 : Assumption2 R) (A6 : Assumption6 B M O) 
     (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
-  Context (A1: nonempty [set: T]) (Asp: sporder O) (Au: R `<=` O^-1).
-  Context (Apk : forall X, RelIndep O X <->  RelIndep M X).
+    Context (A1: nonempty [set: T]) (Asp: sporder O) (Au: R `<=` O^-1).
+    Context (Apk : forall X, RelIndep O X <->  RelIndep M X).
   
-  Lemma maximal_mabsorbant S:
-    (preKernel O R M S) /\ (forall U, preKernel O R M U -> S [<= O] U -> S = U)
-    -> absorbant M S.
-  Proof.
-    contra; move => H1;rewrite /preKernel /= Apk => Hpk.
-    have H3: ~ absorbant M S.
-    {
-      move: H1 => [y H1] H3.
-      rewrite notin_setE in H3.
-      rewrite /absorbant /mkset => /(_ y) H4. 
-      by move: H1 => /H4;rewrite inE => H1.
-    }
-    move: (@extend T R B O S A2 A6 A7 A8 Hpk H3)
-        => [S' [Hpre [/DeltaCP H7 Hne]]].
-    exists S';first by rewrite (Apk S').
-    by split;[| apply/negP => /eqP Heq].
-  Qed.
-  
-  Lemma Kernel_ChampetierExt: 
-    exists S, RelIndep M S /\ absorbant M S.
-  Proof.
-    (* There exist a maximal set *)
-    move: (@Maximal T O R M A1 Asp Au) => [S Hm].
-    move: Hm => /[dup] /maximal_mabsorbant Ma [[/Apk Hpk _] _]. 
-    by (exists S).
-  Qed.
-  
+    Lemma maximal_mabsorbant S:
+      (preKernel O R M S) /\ (forall U, preKernel O R M U -> S [<= O] U -> S = U)
+      -> absorbant M S.
+    Proof.
+      contra; move => H1;rewrite /preKernel /= Apk => Hpk.
+      have H3: ~ absorbant M S.
+      {
+        move: H1 => [y H1] H3.
+        rewrite notin_setE in H3.
+        rewrite /absorbant /mkset => /(_ y) H4. 
+        by move: H1 => /H4;rewrite inE => H1.
+      }
+      move: (@extend T R B O S A2 A6 A7 A8 Hpk H3)
+          => [S' [Hpre [/DeltaCP H7 Hne]]].
+      exists S';first by rewrite (Apk S').
+      by split;[| apply/negP => /eqP Heq].
+    Qed.
+    
+    Lemma Kernel_ChampetierExt: 
+      exists S, RelIndep M S /\ absorbant M S.
+    Proof.
+      (* There exist a maximal set *)
+      move: (@Maximal T O R M A1 Asp Au) => [S Hm].
+      move: Hm => /[dup] /maximal_mabsorbant Ma [[/Apk Hpk _] _]. 
+      by (exists S).
+    Qed.
+  End Extended_Champetier_Theorem.
 End Extended_Champetier_Theorem.
 
-Section Blidia_Engel_Ext_Theorem.
-  (** * Similar to Champetier but  (Asp: sporder O) *)
-  (** * is replaced by Acyclicity *)
-
-  Context (T : finType) (O R B: relation T).
-  Implicit Types (O R B: relation T).
-
-  Notation M := (B `|` R).  
-
-  Context (A2 : Assumption2 R) (A6 : Assumption6 B M O) 
-    (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
-  Context (A1: nonempty [set: T]) (Au: R `<=` O^-1).
-  Context (Apk : forall (X:set T) , RelIndep O X <->  RelIndep M X).
-  Context (Anc : ~ ( exists s, R.+ (s,s))).
-  
-End Blidia_Engel_Ext_Theorem.
+Export Extended_Champetier_Theorem(Kernel_ChampetierExt).
 
 Section simpleGraph. 
   (** * simpleGraph definition *)
@@ -604,4 +590,24 @@ Section Champetier_Theeorem.
   
 End Champetier_Theeorem.
 
+Module Blidia_Hengel_Theeorem.
+  Section Blidia_Hengel_Theeorem.
+  (** * The original Blidia Hengel Theorem *)
+  (** * XXXXX I think it's similar to Champetier *)
+  (** * but sporder O is replaced by O is acyclic. *)
+  
+  Context (T : finType) (G D O: relation T).
+  
+  Context (Asg: simpleGraph G).
+  Context (Ao: Orientation G O).
+  Context (Ad: Direction G D).
 
+  Definition R := D `&` O^-1.
+  Definition B := D `&` O.
+
+  Notation M := (B `|` R).
+
+  (** * A Finir *)
+
+  End Blidia_Hengel_Theeorem.
+End Blidia_Hengel_Theeorem.
