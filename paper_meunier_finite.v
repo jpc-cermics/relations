@@ -28,109 +28,10 @@ Unset Printing Implicit Defensive.
 Local Open Scope classical_set_scope. (* we can use %classic *)
 Local Open Scope set_scope. (* we can use %SET *)
 
-Section Finite. 
-  (** * could be in rel.V *)
-  (** * for a finType we have ~ (iic_inj R) *)
-  Context {T : finType}.
-  Implicit Types (U V W: relation T).
-
-  Definition Sink U v := forall w, ~ U (v,w).
-  Definition vRloop U v := forall w, U (v, w) -> U (w,v).
-  
-  Lemma Sink_to_Rloop U v: Sink U v -> vRloop U v.
-  Proof. by move => + w H1 => /(_ w) H2. Qed.
-  
-  Lemma notF_to_notS U: 
-    (exists (v0:T), (v0 \in setT)) -> (forall v, ~(vRloop U v)) -> (forall v, ~(Sink U v)). 
-  Proof.
-    by move => Hne;contra => -[x Hx];exists x;apply: Sink_to_Rloop.
-  Qed.
-  
-  Lemma notS_to_total U: (forall v, ~(Sink U v)) <-> total_rel U.
-  Proof. 
-    split;contra => -[x Hx];exists x;first exact.
-    by move:Hx => + y => /(_ y) Hx.
-  Qed.
-    
-  Lemma sink2iic U: (nonempty [set: T]) -> (forall v, ~(Sink U v)) -> (iic U).
-  Proof. 
-    move => Hne  Hnsink. apply: DC;first by [].
-    by move: Hnsink;contra;move => [x Hx];exists x. 
-  Qed.
-  
-  Lemma cyclic U: (iic U) -> ( exists s, U.+ (s,s)). 
-  Proof. move => [h Hhiic];by apply: cyclic. Qed.
-  
-  Lemma fin_not_iic_inj U: ~ (iic_inj U). 
-  Proof. 
-    move => [f [_ finj]].
-    have inj_restrict : injective (fun i : 'I_(#|T|).+1 => f i)
-      by move=> x y /finj Exy;apply/val_inj. 
-    move: (leq_card _  inj_restrict) => H1.
-    by rewrite card_ord ltnn in H1. 
-  Qed.
-  
-  Lemma fin_not_iic U: (sporder U) -> ~ (iic U).
-  Proof.
-    move => /[dup] Hsp /sporder_antisym Ha.
-    by move: (@fin_not_iic_inj U) => H1 /(sporder_iic_injective Hsp)H2. 
-  Qed.
-  
-  Lemma fin_rloop U: (nonempty [set: T]) -> (sporder U) -> exists v, (vRloop U v).
-  Proof.
-    move => Hne /[dup] /fin_not_iic Hniic /sporder_asym/AsymEq Has.
-    by rewrite -Has in Hniic;move: (@notiic_rloop _ U Hne Hniic). 
-  Qed.
-  
-  Lemma fin_sink U: (nonempty [set: T]) -> (sporder U) -> exists v, (Sink U v).
-  Proof.
-    move => Hne /[dup] /sporder_asym Has Hsp.
-    move: (fin_rloop Hne Hsp) => [v H1].
-    by exists v;move => w /[dup] Rvw /[dup] /Has nRwv /H1 Rwv. 
-  Qed.
-  
-  Lemma fin_rloop1 U V: 
-    (nonempty [set: T]) -> (sporder U) -> exists v, (v)_:#(U) `<=` V#_(v).
-  Proof.
-    move => Hne Hsp;move: (@fin_sink _ Hne Hsp) => [v Rl].
-    exists v;move: Rl => /[swap] w /(_ w) Rl.
-    by rewrite /Aset 2!Fset_s => ?.
-  Qed.
-  
-  Lemma fin_rloop2 U V W:
-    (nonempty [set: T]) -> (sporder U) -> V `<=` U -> exists v, (v)_:#(V) `<=` W#_(v).
-  Proof.
-    move => Hne Hsp Hinc.
-    move: (@fin_rloop1 U W Hne Hsp) => [v H1];( exists v).
-    have H2: (v)_:#V `<=`  (v)_:#U 
-      by rewrite /Aset;apply: Fset_inc;apply: inverseS.
-    by apply: (@subset_trans T _ _ _ H2 H1). 
-  Qed.
-  
-  Lemma NotCyclic_exists_sink U: 
-    (nonempty [set: T]) ->  ~ (exists s, U.+ (s,s)) -> exists v, (Sink U v).
-  Proof.
-    move => Hne;contra => Hnsink.
-    apply/cyclic/(sink2iic Hne) => v Hsink.
-    by move: Hnsink Hsink => /(_ v) [x Rvx] /(_ x) nRvx.
-  Qed.
-  
-  Lemma NotCyclic_exists_preabsorbant U V: 
-    (nonempty [set: T]) ->  ~ (exists s, U.+ (s,s)) -> exists v, (v)_:#(U) `<=` V#_(v).
-  Proof.
-    (* use NotCyclic_exists_sink *)
-    move => Hne Hncl;move: (NotCyclic_exists_sink Hne Hncl)=> [v Hsink].
-    (* now prove that exists v, (Sink U v) ->  exists v, (v)_:#(U) `<=` V#_(v). *)
-    exists v;move => y;rewrite /Aset Fset_s => Rvy.
-    by move: Hsink => /(_ y) nRvy.
-  Qed.
-  
-End Finite. 
-
 
 Module BHExt.
   Section BHExt.
-    (** * Extended Blida en H. Theorem *)
+    (** * Extended Blida en Hengel Theorem *)
   
     Context {T: finType} (O R B: relation T).
 
@@ -142,58 +43,45 @@ Module BHExt.
     Context (Apk : forall X , RelIndep O X <-> RelIndep M X).
     Context (A_Onotcyclic: ~ (exists s, O.+ (s,s))).
     
-    Lemma preKernelP S: 
-      preKernel O R M S <-> preKernel M R M S.
-    Proof. by rewrite /preKernel /= Apk. Qed.
-    
-    Lemma extend_pk X: preKernel M R M X -> ~ (absorbant M X) ->
-                       exists X', preKernel M R M X' /\ X [<< O] X'.
+    (* There exists a kernel or an increasing mapping for [<< O] taking values in preKernels *)
+    Lemma kernel_or_iic_fun:
+      (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (preKernel M R M)))
+      \/ (exists S, (S \in (preKernel M R M)) /\ S \in (absorbant M)).
     Proof.
-      move => Hpk Hnma.
-      move: (@extend T R B O X A2 A6 A7 A8 Hpk Hnma) => [X' [Hpk' Hrst]].
-      by exists X'. 
-    Qed.
-
-    Lemma A0 S: S \in ((preKernel M R M) `&` (absorbant M).^c)
-                -> exists S', S' \in (preKernel M R M) /\ (S [<< O] S').
-    Proof.
-      rewrite inE => -[Hpk Hna];move: (extend_pk Hpk Hna) 
-              => [S' [/mem_set Hpk' [Hle Hd]]].
-      by exists S'. 
-    Qed.
-
-    Lemma Oinv_notcyclic: ~ (exists s, O^-1.+ (s,s)).
-    Proof. by rewrite -TclosIv. Qed.
-    
-    Lemma A1': exists S,  S \in (preKernel M R M).
-    Proof.
-      (* exists a sink and thus a preabsorbant node *)
-      move: (@NotCyclic_exists_preabsorbant T O^-1 M A1 Oinv_notcyclic) => [v Hpa].
-      (* [set v] is in (preKernel M R M). *)
-      exists [set v]%classic;rewrite inE. 
-      have Hinc:  (v)_:#R  `<=` (v)_:#O^-1 
+      (* using extend lemma *)
+      have Ch0 S: S \in ((preKernel M R M) `&` (absorbant M).^c)
+                 -> exists S', S' \in (preKernel M R M) /\ (S [<< O] S').
+      {
+        rewrite inE => -[Hpk Hna].
+        move: (@extend T R B O S A2 A6 A7 A8 Hpk Hna) 
+            => [S' [/mem_set Hpk' Hlt]].
+        by exists S'. 
+      }
+      have Ch1 : exists S, S \in (preKernel M R M).
+      {
+        have Oinv_notcyclic: ~ (exists s, O^-1.+ (s,s))
+          by rewrite -TclosIv.
+        (* exists a sink and thus a preabsorbant node *)
+        move: (@NotCyclic_exists_preabsorbant T O^-1 M A1 Oinv_notcyclic) => [v Hpa].
+        (* [set v] is in (preKernel M R M). *)
+        exists [set v]%classic;rewrite inE. 
+        have Hinc:  (v)_:#R  `<=` (v)_:#O^-1 
           by rewrite /Aset;apply: Fset_inc;apply: inverseS.
-      split;first by apply: RelIndep_set1.
-      split;first by apply: (subset_trans Hinc _).
-      + apply/negP => /eqP H.
-        have Hv: [set v]%classic v by [].
-        by rewrite H /= in Hv.
-    Qed.
-    
-    Lemma choose: (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (preKernel M R M)))
-                  \/ (exists S, (S \in (preKernel M R M)) /\ S \in (absorbant M)).
-    Proof.
-      move: (@choose_sub _ ([<< O]%O) (preKernel M R M) (absorbant M).^c A0 A1')
+        split;first by apply: RelIndep_set1.
+        split;first by apply: (subset_trans Hinc _).
+        + apply/negP => /eqP H.
+          have Hv: [set v]%classic v by [].
+          by rewrite H /= in Hv.
+      }
+      move: (@choose_sub _ ([<< O]%O) (preKernel M R M) (absorbant M).^c Ch0 Ch1)
           => [Hiic | [S [Hpk Hna]]].
       by left.
-      right. exists S.
-      split. by [].
-      by move: Hna;rewrite 2!inE /= => /contrapT.
+      by right;exists S;split;[| move: Hna;rewrite 2!inE /= => /contrapT].
     Qed.
     
-    (* we prove that the first condition 
-       (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (preKernel M R M)))
-       would lead to cyclicity for relation O *)
+    (* we prove that the existence of an increasing mapping for [<< O]
+       taking values in preKernels would contradict acyclicity
+     *)
     
     Lemma iic_to_allL  (h : nat -> (set T)):  
       (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (preKernel O R M)) ->
@@ -210,30 +98,19 @@ Module BHExt.
       by exists n, m;split;[|split;[|apply: f2in]].
     Qed.
     
-    Lemma Ocyclic S Sq: 
-      @allL (set T) ([<< O]%O) Sq S S
-      -> (S::Sq) [\in] (preKernel O R M)
-      ->  exists s, O.+ (s,s).
-    Proof.
-      move => A0 A3.
-      move: (exists_g A0 A3) => [g [G1 [G2 [G3 G4]]]].
-      move: (exists_h G2 G3 G4) => [h [H1 [H2 H3]]].
-      move: (hmap' G1 H1 H2 H3) => Hhmap.
-      move: (fin_codomain_prop (fun k => h(k*(size(S::Sq))))) => [n [p H4]].
-      by exists (h (n * size (S :: Sq)));rewrite {2}H4;apply: Hhmap.
-    Qed.
-    
     Lemma iic_and_prekernels_to_cyclic (h : nat -> (set T)):
       (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (preKernel O R M))
       -> exists s, O.+ (s,s).
     Proof.
       move => Hiic Hpk';move: (iic_to_allL Hiic Hpk') => [n [p [Ha [HallL Hpk]]]].
-      by apply: (Ocyclic HallL Hpk).
+      by apply: (Cyclicity_BH_lemma HallL Hpk).
     Qed.
     
     Lemma exists_kernel: exists S, S \in (preKernel M R M) /\ S \in (absorbant M).
     Proof.
-      move: choose => [[h [Hiic Hk]] | H1];last by [].
+      have preKernelP S': preKernel O R M S' <-> preKernel M R M S'
+        by rewrite /preKernel /= Apk.
+      move: kernel_or_iic_fun => [[h [Hiic Hk]] | H1];last by [].
       have HpkO: (forall n, (h n) \in  (preKernel O R M))
         by move => n; rewrite inE preKernelP -inE.
       by move: (iic_and_prekernels_to_cyclic Hiic HpkO) => HOcyclic.

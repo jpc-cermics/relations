@@ -49,7 +49,6 @@ Definition Kernel {T: Type} (U: relation T) :=
 
 Definition leSet' T U: relation (set T) := [set AB | AB.1 `<=` ('Δ  `|` U)#AB.2]%classic. 
 
-
 Module utilities.
   Section utilities.
     (** * XXXX to be moved in seq1.v *)
@@ -86,145 +85,6 @@ Module utilities.
   End utilities.
 End utilities.
 Export utilities.
-
-Module f_periodic. 
-  (** * some properties of the function fb: n => nth t (t::s) n. *)
-  (** * and of the periodic function f: n => nth t (t::s) n %% size (t::s) *)
-  Section f_periodic.
-    Context {T: Type} (t: T) (s: seq T).
-    
-    Definition fb (n: nat) := nth t (t::s) n.
-    Definition f (n : nat) := fb (n %% size (t::s)).
-
-    (** * f properties *)
-    Lemma f_periodic n: f (n + (size (t::s))) = f n.
-    Proof. by rewrite /f (modnDr n (size (t::s))). Qed.
-
-    Lemma f_kperiodic k n: f (n + k*(size (t::s))) = f n.
-    Proof.
-      elim: k n => [n |k Hk n];first by rewrite mul0n addn0.
-      by rewrite mulSnr addnA f_periodic Hk.
-    Qed.
-    
-    Lemma f_small n: f n = f (n %% size (t::s)).
-    Proof.
-      by rewrite {1}(divn_eq n (size (t::s))) addnC f_kperiodic.
-    Qed.
-
-    Lemma f_addn1 n: f (n %% size (t::s)).+1 = f (n.+1).
-    Proof.
-      by rewrite -addn1 f_small (modnDml n 1 (size (t::s))) -f_small addn1.
-    Qed.
-    
-    Lemma f_S: f (size (t::s)) = t.
-    Proof. by rewrite -[size (t::s)]add0n f_periodic. Qed.
-    
-    (** * fb properties *)
-    Lemma fb_allset (S: set T): (t::s) [\in] S <-> (forall n : nat, (fb n) \in S).
-    Proof. by apply: allset_nth. Qed.
-    
-    Lemma fb_f_s n: n < size (t::s) -> (fb n) = (f n). 
-    Proof. by move => /modn_small Hsiz;rewrite -{1}Hsiz. Qed.
-    
-    Lemma fb_S n: n = size (t::s) -> (fb n) = (f n).
-    Proof. by move => ->; rewrite /fb nth_default -f_S. Qed.
-    
-    Lemma fb_f n: n <= size (t::s) -> (fb n) = (f n). 
-    Proof. by rewrite leq_eqVlt => /orP [/eqP/fb_S// |/fb_f_s]. Qed.
-    
-    Lemma fb_S' n: size (t::s) <= n -> (fb n) = t.
-    Proof. by move => H; rewrite /fb nth_default. Qed.
-    
-    (** * links with [\in] and allL *)
-    (**  from property of setS on t::s to forall n property of f*)
-    Lemma f_setS (S: set T): (t::s) [\in] S -> forall n, (f n) \in S.
-    Proof. 
-      move => ?. 
-      have: forall n, (fb n) \in S by rewrite -allset_nth. 
-      by move => + n => /(_ (n %% size (t::s))) ?.
-    Qed.
-    
-    (**  The converse. too strong could be changed aas in f_setR' *)
-    Lemma f_setS' (S: set T) : (forall n, (f n) \in S) -> (t::s) [\in] S.
-    Proof. 
-      move => Hf. 
-      rewrite (@allset_nth _ S t s) => n.
-      move: Hf => /[dup] /(_ 0) Hf0 /(_ n) Hf.
-      case H1: (n < size (t::s)). 
-      by  move: H1 => /fb_f_s; rewrite /fb => ->.
-      have /fb_S': size (t::s) <= n by lia.
-      by rewrite /fb => ->.
-    Qed.
-
-    (**  from property of setR on S::(rcons Sq S) to forall n property of f*)
-    Lemma f_setR (U: relation T): allL U s t t -> forall n, U ((f n), (f n.+1)).
-    Proof.
-      move: (allL_nth' U s t t) => H1. 
-      move => /H1 + n =>  /(_ t (n %% size (t::s))) H2.
-      have H3: n %% size (t::s) < size (t::s)
-        by rewrite  ltn_pmod.
-      rewrite -rcons_cons nth_rcons H3 nth_rcons in H2.
-      have: n %% size (t::s) <= size s by [].
-      move => /H2 H4;clear H1 H2.
-      case H5: ((n %% size (t::s)).+1 == size (t::s)).
-      + move: H5 => /eqP H5.
-        rewrite H5 ltnn eq_refl in H4.
-        have H6: U ((f n), t) by [].
-        have -> : f(n.+1) = t by rewrite -f_addn1 H5 f_S.
-        exact.
-      + have H6: (n %% size (t::s)).+1 < size (t::s) by lia.
-        rewrite H6 in H4. 
-        have H8: U ((f n), (nth t (t::s) (n %% size (t::s)).+1)) by [].
-        have H10: (n %% size (t::s) + 1) %% size (t::s) = (n %% size (t::s) + 1)
-          by apply: modn_small;lia.
-        rewrite -addn1 -H10 in H8. 
-        have H11: U ((f n), (f (n %% size (t::s) + 1))) by [].
-        by rewrite addn1 f_addn1 in H11.
-    Qed.
-
-    (** a strong converse *)
-    Lemma f_setR' (U: relation T): (forall n, n <= size (t::s) -> U ((f n), (f n.+1)))
-                        -> allL U s t t.
-    Proof.
-      move => H1;rewrite (allL_nth' U _ t t t) => n Hs'.
-      have Hs: n < size (t::s) by rewrite /=;lia.
-      rewrite -rcons_cons 2!nth_rcons Hs.
-      case Hs2: ( n.+1 < size (t::s)).
-      + move: (fb_f_s Hs);rewrite /fb => ->.
-        move: (fb_f_s Hs2);rewrite /fb => ->.
-        by apply: H1;lia.
-      + have: n.+1 == size (t::s) by lia.
-        move => /[dup] /eqP H5 ->.
-        have H3: n <= size (t::s) by lia.
-        move: H1 => /(_ n H3);rewrite H5 f_S.
-        by rewrite -(fb_f_s Hs).
-    Qed.
-    
-    (** could be proved from f_setR' by contra, but maybe not shorter *)
-    Lemma f_exists (U: relation T): 
-      (exists j, j <= (size s) /\ U ((nth t (t::(rcons s t)) j), (nth t (t::(rcons s t)) j.+1)))
-      -> exists j, j <= (size s) /\ U ((f j),(f j.+1)).
-    Proof.
-      move => [j [Hs]];rewrite -rcons_cons 2!nth_rcons.
-      have ->: j < size (t::s) by rewrite /=;lia.
-      case H2: (j.+1 < size (t::s)).
-      + move => HH.
-        exists j;split;first by [].
-        rewrite -(@fb_f_s j). 
-        by rewrite -(@fb_f_s j.+1);[|rewrite H2].
-        by rewrite /=;lia.
-      + have H1': j.+1 <= size (t::s) by rewrite /=;lia.
-        have H2': j.+1 = size (t::s) by lia.
-        rewrite -H2' eq_refl => H3.
-        exists j;split;first by [].
-        by rewrite H2' f_S -(fb_f_s H1').
-    Qed.
-    
-  End f_periodic.
-End f_periodic.
-
-Export f_periodic.
-
 
 Module injectivity.
   Section injectivity.
@@ -278,6 +138,8 @@ Module injectivity.
   End injectivity.
 End injectivity.
 Export injectivity(fin_codomain_prop,not_injective_prop,cyclic).
+
+
 
 Module setT_injectivity.
   Section setT_injectivity.
@@ -483,244 +345,6 @@ End leSet_choice.
 
 Export leSet_choice(choose_inc_seq).
 
-Module f_periodic_for_leSet.
-  (** * properties of increasing  sequences of sets *)
-  (** * for the relation [<< U ]= ('Δ.^c `&` (leSet U)) *)
-  
-  Section seq_leSet.
-    Context {T:choiceType} (U V W: relation T) (S: set T) (Sq: seq (set T)).
-    (** strict increasing sequence of sets for (leSet U) *)
-    Context (A0: @allL (set T) ([<< U ]%O) Sq S S).
-    (** which are also (V,U)-prekernels *)
-    Context (A3: (S::Sq) [\in] (preKernel U V W)).
-    Implicit Types (sq: seq T) (s: T).
-    
-    Definition g := f S Sq.
-
-    Lemma A1: @allL (set T) ([<= U]%O) Sq S S.
-    Proof. by move: A0 => /allL_I [_ ?]. Qed.
-
-    Lemma A2: @allL (set T) 'Δ.^c Sq S S.
-    Proof. by move: A0 => /allL_I [? _]. Qed.
-    
-    (** * existence of j and aj such that aj \in (f j) and ~ (aj \in (f j.+1)) *)
-    (** XXX this lemma could go in rel.v *)
-    Local Lemma allL_Tr (Rset: relation (set T)): 
-      0 < size Sq -> @allL (set T) Rset Sq S S -> transitive Rset 
-      -> forall S', (S' \in Sq) -> (Rset (S, S')) /\ (Rset (S',S)).
-    Proof.
-      move => H1 H2 /Tclos_iff H3 S' H4. 
-      move: (@allL_to_Tclos_left _ Rset Sq S S S' H4 H2). 
-      move: (@allL_to_Tclos_right _ Rset Sq S S S' H4 H2). 
-      by rewrite -H3.
-    Qed.
-
-    Local Definition setRa : relation (set T):= (fun p =>  exists aj, aj \in p.1 /\ ~( aj \in p.2)). 
-
-    Definition Inc {T: Type} (SS: (set T)*(set T)) := SS.1 `<=` SS.2.
-    Notation Inc' := <=%O.
-    
-    Local Lemma DiffE: 
-      exists j, j <= (size Sq) 
-           /\ setRa ((nth S (S::(rcons Sq S)) j), (nth S (S::(rcons Sq S)) j.+1)).
-    Proof.
-      (* implied by A2 *)
-      have H1: 0 < size Sq.
-      { move: A2;contra;rewrite leqn0 => /eqP/size0nil H1.
-        by move: A2;rewrite H1 allL0 inE DeltaCP notin_setE DeltaCP.
-      }
-      (* for lemma allL_Tr *)
-      have Inc_Tr : transitive (@Inc T)
-        by move => A B C;apply: subset_trans.
-      (* main proof *)
-      move: A2;rewrite (@allL_nth' (set T) 'Δ.^c Sq S S S).
-      contra => H2.
-      have H4: allL Inc Sq S S
-        by rewrite (@allL_nth' (set T));move => j Hs b /mem_set/(H2 j Hs b)/set_mem.
-      have H6: forall S', S' \in Sq -> S = S'.
-      move => S' Hs;move: (@allL_Tr Inc H1 H4 Inc_Tr S' Hs).
-      by rewrite eqEsubset.
-      by exists 0;[lia | rewrite /= // nth_rcons H1 DeltaP;apply: H6;apply: mem_nth ].
-    Qed.
-
-    Lemma DiffE': 
-      exists j, j <= (size Sq) /\ setRa ((g j), (g j.+1)).
-    Proof.
-      move: (@f_exists _ S Sq setRa) => H1.
-      by move: DiffE  => /H1 H2. 
-    Qed.
-    
-    (** * using a j offset on f *)
-    Lemma exists_g: exists g: nat -> set T, 
-        (forall n k, g (n + k*(size (S::Sq))) = g n)
-        /\ (exists a, a \in (g 0) /\ ~ (a \in (g 1)))
-        /\ (forall n, (g n) [<= U] (g n.+1))
-        /\ (forall n, preKernel U V W (g n)).
-    Proof.
-      move: DiffE' => [j [_ [a [H1 H2]]]].
-      exists (fun n => (g (j + n))). 
-      rewrite addn0 addn1.
-      move: (@f_setS _ S Sq (preKernel U V W)) A3 => Hpk /Hpk Hpk'.
-      move: (@f_setR _ S Sq (leSet U)) A1 => Hinc /Hinc Hinc'.
-      split;first by move => n k;rewrite addnA /g f_kperiodic.
-      split;first by (exists a).
-      split;move => n;last by rewrite -inE.
-      by rewrite -addn1 addnA;move: Hinc' => /(_ (j + n));rewrite -addn1.
-    Qed.
-
-  End seq_leSet.
-End f_periodic_for_leSet.
-
-Export f_periodic_for_leSet(exists_g).
-
-Module build_h.
-  (** for any g satisfying G1-G4 assumptions choose a selection h *)
-  Section build_h.
-    Context {T:choiceType} (U V W: relation T) (g: nat -> set T).
-    Context (S: set T) (Sq: seq (set T)).
-
-    Context (G1: forall n k, g (n + k*(size (S::Sq))) = g n).
-    Context (G2: exists a, a \in (g 0) /\ ~ (a \in (g 1))).
-    Context (G3: forall n, (g n) [<= U] (g n.+1)).
-    Context (G4: forall n, preKernel U V W (g n)).
-    
-    Implicit Types (sq: seq T) (s: T).
-
-    Lemma seq_not (h: nat -> T) (A : set T): 
-      ~ (h 0) \in A -> (exists k, (h k) \in A) -> exists j, ~ (h j) \in A /\ (h j.+1) \in A.
-    Proof.
-      move => H0 [k Hk];elim: k Hk => [// | n Hr Hl].
-      by case H1: ((h n) \in A);[move: H1 => /Hr H1 |exists n;rewrite H1 Hl].
-    Qed.
-
-    Definition Ig (g: nat -> set T) := [set x | forall n, x \in (g n)]%classic.
-
-    Lemma IgP: (Ig g) =  [set x | forall n, n < size (S::Sq) -> x \in (g n)]%classic.
-    Proof.
-      rewrite predeqE => x;split => [H1 n _ //| H1 n].
-      have ->: forall n, (g n) = g (n %% (size (S::Sq)))
-          by move => n';rewrite [in LHS](divn_eq n' (size (S::Sq))) addnC G1.
-      apply: H1;apply: ltn_mod.
-    Qed.
-    
-    (** we use choose_inc_seq to choose h and prove the last extra property *)
-    (** as (g n) are RelIndep sets *)
-    Lemma exists_h: exists h : nat -> T,
-        (forall n, (h n) \in (g n))
-        /\ (forall n, (h n)=(h n.+1) \/ U (h n, h n.+1))
-        /\ ~(exists n, (h n) \in (Ig g)).
-    Proof.
-      move: (G2) => [a [Hg0 H2]].
-      have H4: exists s, s \in (g 0) by (exists a).
-      move: (@choose_inc_seq T U g H4 G3 a Hg0) => [h [H6 [H7 H8]]].
-      exists h;split;[exact|split;[exact |]].
-      move => Hinter. 
-      (* lastt step : ~(exists n, (h n) \in (Ig g)) *)
-      have P5: ~ ( h 0 \in (Ig g)) by move => /set_mem /(_ 1);rewrite H6 => ?.
-      move: (seq_not P5 Hinter) => [j [P6 P7]].
-      (* we build a contradiction as (g j) is a prekernel *)
-      have P8:  h j.+1 \in (g j) by move: P7 => /set_mem/(_ j).
-      have P9:  h j \in (g j) by apply: H7.
-      have P10: ~ ( h j = h j.+1) by move => He;rewrite He in P6.
-      move: G4 => /(_ j) [Hindep _].
-      move: Hindep => /(_ (h j) (h j.+1) P9 P8 P10) HnotU.
-      by move: H8 => /(_ j) [? | ?].
-    Qed.
-
-  End build_h.
-End build_h.
-
-Export build_h(exists_h,Ig,IgP).
-
-Module h_extra_props.
-  (** * describe what is done here *)
-  Section h_extra_props.
-    (** properties for any h satisfying G1 and H1-H3 *)  
-    Context {T:choiceType} (U: relation T) (g: nat -> set T) (h: nat-> T).
-    Context (S: set T) (Sq: seq (set T)).
-
-    Context (G1: forall n k, g (n + k*(size (S::Sq))) = g n).
-    Context (H1: forall n, (h n) \in (g n)).
-    (** XXXX reformulate with ('Δ `|` U) *)
-    Context (H2: forall n, (h n)=(h n.+1) \/ U (h n, h n.+1)).
-    Context (H3: ~(exists n, (h n) \in (Ig g))).
-    
-    Lemma h_Tclos:
-      forall m n, allL ('Δ `|` U) (mkseq (fun i => h (n + i+1)) m) (h n) (h (n+m+1)).
-    Proof.
-      have: forall n,  ('Δ `|` U) (h n, h n.+1)
-          by move: H2 => + n => /(_ n) [H1' | H1'];[left;rewrite DeltaP|right].
-      by move => /@f2allL.
-    Qed.
-    
-    (** * true but too strong *)
-    Lemma h_Tclos1: forall m n, (('Δ `|` U).+ ((h n), (h (n+m+1)))).
-    Proof.
-      move => m n.
-      have Hall: (forall m n, allL ('Δ `|` U) (mkseq (fun i => h (n + i+1)) m) (h n) (h (n+m+1))).
-      by apply: h_Tclos;split.
-      by apply: allL_to_Tclos.
-    Qed.
-    
-    (** * the property we need *)
-    Lemma hP1: forall n m, (forall j, j <= m.+1 -> (h (n+j)= (h n))) \/ U.+ (h n, h (n+m+1)).
-    Proof.
-      move => n m;elim: m n => [n|n' Hr n]. 
-      + move: H2 => /(_ n) [H2' | H2'];last first.
-        by right;rewrite addn0 addn1;apply/TclosSu.
-        left;move => j Hj;case Hc2: (j == 0). 
-        by move: Hc2 => /eqP ->;rewrite addn0.
-        by (have ->: (j = 1) by lia); rewrite addn1 H2'.
-      + move: Hr => /(_ n) [Hr | Hr].
-        ++ have H4: h (n + n'.+1) = h n by apply: Hr;lia. 
-           move: H2 => /(_ (n+ n'.+1)) [H1' | /TclosSu H1'];last first.
-           by right;rewrite -H4;rewrite addn1.
-           left;move => j;case Hc2: (j <= n'.+1).
-           by move => _;apply: Hr.
-           move => H3'.
-           have ->: j = n'.+2 by lia.
-           rewrite H4 in H1'.
-           by rewrite H1' addnS.
-        ++ rewrite -addnA addn1 in Hr.
-           move: H2 => /(_ (n+ n'.+1)) [H1' | H1'];right;rewrite addn1.
-           by rewrite H1' in Hr.
-           by have /Tclos_composel:  (U.+ `;` U) (h n, h (n + n'.+1).+1)
-                 by (exists (h (n + n'.+1))).
-    Qed.
-
-    Lemma inIg' k: 
-      (forall j : nat, j <= (size (S::Sq)) -> h (k*(size (S::Sq))+j) = h (k*(size (S::Sq))))
-      -> (h (k*(size (S::Sq)))) \in (Ig g).
-    Proof.
-      move => H4.
-      rewrite (IgP G1) inE => j Hs.
-      have <-: g (j + k * size (S :: Sq)) = g j by apply:G1.
-      have H5: j <= (size (S::Sq)) by lia.
-      by move: H4 => /(_ j H5) <-;rewrite 1!addnC.
-    Qed.
-
-    Lemma hmapk k: U.+ (h (k*(size (S::Sq))), h (k.+1*(size (S::Sq)))).
-    Proof.
-      move: hP1 => /(_ (k*(size (S::Sq))) (size Sq)) [/inIg' H5|];last first. 
-      by have ->: k * size (S :: Sq) + size Sq + 1 = k.+1 * size (S :: Sq)
-        by rewrite /=;lia.
-      by have H6: (exists n : nat, h n \in Ig g) by (exists (k * size (S :: Sq))).
-    Qed.
-
-    (** * The main lemma of this module *)    
-    Lemma hmap' k p: U.+ (h (k*(size (S::Sq))), h ((k+ p.+1)*(size (S::Sq)))).
-    Proof.
-      elim: p k => [k |p Hr k];first by rewrite [k + 1]addn1;apply: (hmapk k).
-      have: U.+ (h ((k + p.+1) * size (S :: Sq)), h ((k + p.+1).+1 * size (S :: Sq)))
-        by apply: (hmapk (k+p.+1)) =>H1.
-      have ->: (k + p.+1).+1 = k +p.+2 by lia.
-      move => H4.
-      by move: (TclosT (Hr k) H4).
-    Qed.
-
-  End h_extra_props.
-End h_extra_props.
-Export h_extra_props(hmap').
 
 Section preKernel.
 
@@ -842,6 +466,106 @@ Module iic_paths.
 End iic_paths.
 
 Export iic_paths(notiic_rloop_sub).
+
+
+Section Finite. 
+  (** * could be in rel.V *)
+  (** * for a finType we have ~ (iic_inj R) *)
+  Context {T : finType}.
+  Implicit Types (U V W: relation T).
+
+  Definition Sink U v := forall w, ~ U (v,w).
+  Definition vRloop U v := forall w, U (v, w) -> U (w,v).
+  
+  Lemma Sink_to_Rloop U v: Sink U v -> vRloop U v.
+  Proof. by move => + w H1 => /(_ w) H2. Qed.
+  
+  Lemma notF_to_notS U: 
+    (exists (v0:T), (v0 \in setT)) -> (forall v, ~(vRloop U v)) -> (forall v, ~(Sink U v)). 
+  Proof.
+    by move => Hne;contra => -[x Hx];exists x;apply: Sink_to_Rloop.
+  Qed.
+  
+  Lemma notS_to_total U: (forall v, ~(Sink U v)) <-> total_rel U.
+  Proof. 
+    split;contra => -[x Hx];exists x;first exact.
+    by move:Hx => + y => /(_ y) Hx.
+  Qed.
+    
+  Lemma sink2iic U: (nonempty [set: T]) -> (forall v, ~(Sink U v)) -> (iic U).
+  Proof. 
+    move => Hne  Hnsink. apply: DC;first by [].
+    by move: Hnsink;contra;move => [x Hx];exists x. 
+  Qed.
+  
+  Lemma cyclic U: (iic U) -> ( exists s, U.+ (s,s)). 
+  Proof. move => [h Hhiic];by apply: cyclic. Qed.
+  
+  Lemma fin_not_iic_inj U: ~ (iic_inj U). 
+  Proof. 
+    move => [f [_ finj]].
+    have inj_restrict : injective (fun i : 'I_(#|T|).+1 => f i)
+      by move=> x y /finj Exy;apply/val_inj. 
+    move: (leq_card _  inj_restrict) => H1.
+    by rewrite card_ord ltnn in H1. 
+  Qed.
+  
+  Lemma fin_not_iic U: (sporder U) -> ~ (iic U).
+  Proof.
+    move => /[dup] Hsp /sporder_antisym Ha.
+    by move: (@fin_not_iic_inj U) => H1 /(sporder_iic_injective Hsp)H2. 
+  Qed.
+  
+  Lemma fin_rloop U: (nonempty [set: T]) -> (sporder U) -> exists v, (vRloop U v).
+  Proof.
+    move => Hne /[dup] /fin_not_iic Hniic /sporder_asym/AsymEq Has.
+    by rewrite -Has in Hniic;move: (@notiic_rloop _ U Hne Hniic). 
+  Qed.
+  
+  Lemma fin_sink U: (nonempty [set: T]) -> (sporder U) -> exists v, (Sink U v).
+  Proof.
+    move => Hne /[dup] /sporder_asym Has Hsp.
+    move: (fin_rloop Hne Hsp) => [v H1].
+    by exists v;move => w /[dup] Rvw /[dup] /Has nRwv /H1 Rwv. 
+  Qed.
+  
+  Lemma fin_rloop1 U V: 
+    (nonempty [set: T]) -> (sporder U) -> exists v, (v)_:#(U) `<=` V#_(v).
+  Proof.
+    move => Hne Hsp;move: (@fin_sink _ Hne Hsp) => [v Rl].
+    exists v;move: Rl => /[swap] w /(_ w) Rl.
+    by rewrite /Aset 2!Fset_s => ?.
+  Qed.
+  
+  Lemma fin_rloop2 U V W:
+    (nonempty [set: T]) -> (sporder U) -> V `<=` U -> exists v, (v)_:#(V) `<=` W#_(v).
+  Proof.
+    move => Hne Hsp Hinc.
+    move: (@fin_rloop1 U W Hne Hsp) => [v H1];( exists v).
+    have H2: (v)_:#V `<=`  (v)_:#U 
+      by rewrite /Aset;apply: Fset_inc;apply: inverseS.
+    by apply: (@subset_trans T _ _ _ H2 H1). 
+  Qed.
+  
+  Lemma NotCyclic_exists_sink U: 
+    (nonempty [set: T]) ->  ~ (exists s, U.+ (s,s)) -> exists v, (Sink U v).
+  Proof.
+    move => Hne;contra => Hnsink.
+    apply/cyclic/(sink2iic Hne) => v Hsink.
+    by move: Hnsink Hsink => /(_ v) [x Rvx] /(_ x) nRvx.
+  Qed.
+  
+  Lemma NotCyclic_exists_preabsorbant U V: 
+    (nonempty [set: T]) ->  ~ (exists s, U.+ (s,s)) -> exists v, (v)_:#(U) `<=` V#_(v).
+  Proof.
+    (* use NotCyclic_exists_sink *)
+    move => Hne Hncl;move: (NotCyclic_exists_sink Hne Hncl)=> [v Hsink].
+    (* now prove that exists v, (Sink U v) ->  exists v, (v)_:#(U) `<=` V#_(v). *)
+    exists v;move => y;rewrite /Aset Fset_s => Rvy.
+    by move: Hsink => /(_ y) nRvy.
+  Qed.
+  
+End Finite. 
 
 Section set_relation. 
   (** * A relation on sets induced by a relation on elements *)
@@ -1360,7 +1084,7 @@ Export Extend_non_absorbant_preKernel (extend).
 
 Module Maximal_with_Zorn.
   Section Maximal_with_Zorn.
-    (** * Existence of a Maximal in the infinite case with Zorn Lemma *)
+    (** * Existence of a Maximal set in the infinite case with Zorn Lemma *)
     (** * we need [<= O] to be a porder *)
 
     Variables (T:choiceType) (R B O: relation T).
@@ -1791,3 +1515,405 @@ End Maximal_with_Zorn.
 
 Export Maximal_with_Zorn(Maximal_Zorn).
 
+Module ltSet_periodic_to_lt_periodic.
+  (** * if a sequence of prekernel is increasing for [<< U ] and cyclic *)
+  (** * then there exists a cyclic sequence for U *)
+  
+  Module f_periodic. 
+    (** * some properties of the function fb: n => nth t (t::s) n. *)
+    (** * and of the periodic function f: n => nth t (t::s) n %% size (t::s) *)
+    Section f_periodic.
+      Context {T: Type} (t: T) (s: seq T).
+      
+      Definition fb (n: nat) := nth t (t::s) n.
+      Definition f (n : nat) := fb (n %% size (t::s)).
+
+      (** * f properties *)
+      Lemma f_periodic n: f (n + (size (t::s))) = f n.
+      Proof. by rewrite /f (modnDr n (size (t::s))). Qed.
+
+      Lemma f_kperiodic k n: f (n + k*(size (t::s))) = f n.
+      Proof.
+        elim: k n => [n |k Hk n];first by rewrite mul0n addn0.
+        by rewrite mulSnr addnA f_periodic Hk.
+      Qed.
+      
+      Lemma f_small n: f n = f (n %% size (t::s)).
+      Proof.
+        by rewrite {1}(divn_eq n (size (t::s))) addnC f_kperiodic.
+      Qed.
+
+      Lemma f_addn1 n: f (n %% size (t::s)).+1 = f (n.+1).
+      Proof.
+        by rewrite -addn1 f_small (modnDml n 1 (size (t::s))) -f_small addn1.
+      Qed.
+      
+      Lemma f_S: f (size (t::s)) = t.
+      Proof. by rewrite -[size (t::s)]add0n f_periodic. Qed.
+      
+      (** * fb properties *)
+      Lemma fb_allset (S: set T): (t::s) [\in] S <-> (forall n : nat, (fb n) \in S).
+      Proof. by apply: allset_nth. Qed.
+      
+      Lemma fb_f_s n: n < size (t::s) -> (fb n) = (f n). 
+      Proof. by move => /modn_small Hsiz;rewrite -{1}Hsiz. Qed.
+      
+      Lemma fb_S n: n = size (t::s) -> (fb n) = (f n).
+      Proof. by move => ->; rewrite /fb nth_default -f_S. Qed.
+      
+      Lemma fb_f n: n <= size (t::s) -> (fb n) = (f n). 
+      Proof. by rewrite leq_eqVlt => /orP [/eqP/fb_S// |/fb_f_s]. Qed.
+      
+      Lemma fb_S' n: size (t::s) <= n -> (fb n) = t.
+      Proof. by move => H; rewrite /fb nth_default. Qed.
+      
+      (** * links with [\in] and allL *)
+      (**  from property of setS on t::s to forall n property of f*)
+      Lemma f_setS (S: set T): (t::s) [\in] S -> forall n, (f n) \in S.
+      Proof. 
+        move => ?. 
+        have: forall n, (fb n) \in S by rewrite -allset_nth. 
+        by move => + n => /(_ (n %% size (t::s))) ?.
+      Qed.
+      
+      (**  The converse. too strong could be changed aas in f_setR' *)
+      Lemma f_setS' (S: set T) : (forall n, (f n) \in S) -> (t::s) [\in] S.
+      Proof. 
+        move => Hf. 
+        rewrite (@allset_nth _ S t s) => n.
+        move: Hf => /[dup] /(_ 0) Hf0 /(_ n) Hf.
+        case H1: (n < size (t::s)). 
+        by  move: H1 => /fb_f_s; rewrite /fb => ->.
+        have /fb_S': size (t::s) <= n by lia.
+        by rewrite /fb => ->.
+      Qed.
+
+      (**  from property of setR on S::(rcons Sq S) to forall n property of f*)
+      Lemma f_setR (U: relation T): allL U s t t -> forall n, U ((f n), (f n.+1)).
+      Proof.
+        move: (allL_nth' U s t t) => H1. 
+        move => /H1 + n =>  /(_ t (n %% size (t::s))) H2.
+        have H3: n %% size (t::s) < size (t::s)
+          by rewrite  ltn_pmod.
+        rewrite -rcons_cons nth_rcons H3 nth_rcons in H2.
+        have: n %% size (t::s) <= size s by [].
+        move => /H2 H4;clear H1 H2.
+        case H5: ((n %% size (t::s)).+1 == size (t::s)).
+        + move: H5 => /eqP H5.
+          rewrite H5 ltnn eq_refl in H4.
+          have H6: U ((f n), t) by [].
+          have -> : f(n.+1) = t by rewrite -f_addn1 H5 f_S.
+          exact.
+        + have H6: (n %% size (t::s)).+1 < size (t::s) by lia.
+          rewrite H6 in H4. 
+          have H8: U ((f n), (nth t (t::s) (n %% size (t::s)).+1)) by [].
+          have H10: (n %% size (t::s) + 1) %% size (t::s) = (n %% size (t::s) + 1)
+            by apply: modn_small;lia.
+          rewrite -addn1 -H10 in H8. 
+          have H11: U ((f n), (f (n %% size (t::s) + 1))) by [].
+          by rewrite addn1 f_addn1 in H11.
+      Qed.
+
+      (** a strong converse *)
+      Lemma f_setR' (U: relation T): (forall n, n <= size (t::s) -> U ((f n), (f n.+1)))
+                                     -> allL U s t t.
+      Proof.
+        move => H1;rewrite (allL_nth' U _ t t t) => n Hs'.
+        have Hs: n < size (t::s) by rewrite /=;lia.
+        rewrite -rcons_cons 2!nth_rcons Hs.
+        case Hs2: ( n.+1 < size (t::s)).
+        + move: (fb_f_s Hs);rewrite /fb => ->.
+          move: (fb_f_s Hs2);rewrite /fb => ->.
+          by apply: H1;lia.
+        + have: n.+1 == size (t::s) by lia.
+          move => /[dup] /eqP H5 ->.
+          have H3: n <= size (t::s) by lia.
+          move: H1 => /(_ n H3);rewrite H5 f_S.
+          by rewrite -(fb_f_s Hs).
+      Qed.
+      
+      (** could be proved from f_setR' by contra, but maybe not shorter *)
+      Lemma f_exists (U: relation T): 
+        (exists j, j <= (size s) /\ U ((nth t (t::(rcons s t)) j), (nth t (t::(rcons s t)) j.+1)))
+        -> exists j, j <= (size s) /\ U ((f j),(f j.+1)).
+      Proof.
+        move => [j [Hs]];rewrite -rcons_cons 2!nth_rcons.
+        have ->: j < size (t::s) by rewrite /=;lia.
+        case H2: (j.+1 < size (t::s)).
+        + move => HH.
+          exists j;split;first by [].
+          rewrite -(@fb_f_s j). 
+          by rewrite -(@fb_f_s j.+1);[|rewrite H2].
+          by rewrite /=;lia.
+        + have H1': j.+1 <= size (t::s) by rewrite /=;lia.
+          have H2': j.+1 = size (t::s) by lia.
+          rewrite -H2' eq_refl => H3.
+          exists j;split;first by [].
+          by rewrite H2' f_S -(fb_f_s H1').
+      Qed.
+      
+    End f_periodic.
+  End f_periodic.
+
+  Export f_periodic.
+  
+  Module build_g.
+  (** * properties of increasing  sequences of sets *)
+  (** * for the relation [<< U ]= ('Δ.^c `&` (leSet U)) *)
+    Section build_g.
+    
+      Context {T:choiceType} (U V W: relation T) (S: set T) (Sq: seq (set T)).
+      (** strict increasing sequence of sets for (leSet U) *)
+      Context (A0: @allL (set T) ([<< U ]%O) Sq S S).
+      (** which are also (V,U)-prekernels *)
+      Context (A3: (S::Sq) [\in] (preKernel U V W)).
+      Implicit Types (sq: seq T) (s: T).
+    
+      Definition g := f S Sq.
+
+      Lemma A1: @allL (set T) ([<= U]%O) Sq S S.
+      Proof. by move: A0 => /allL_I [_ ?]. Qed.
+
+      Lemma A2: @allL (set T) 'Δ.^c Sq S S.
+      Proof. by move: A0 => /allL_I [? _]. Qed.
+    
+      (** * existence of j and aj such that aj \in (f j) and ~ (aj \in (f j.+1)) *)
+      (** XXX this lemma could go in rel.v *)
+      Local Lemma allL_Tr (Rset: relation (set T)): 
+        0 < size Sq -> @allL (set T) Rset Sq S S -> transitive Rset 
+        -> forall S', (S' \in Sq) -> (Rset (S, S')) /\ (Rset (S',S)).
+      Proof.
+        move => H1 H2 /Tclos_iff H3 S' H4. 
+        move: (@allL_to_Tclos_left _ Rset Sq S S S' H4 H2). 
+        move: (@allL_to_Tclos_right _ Rset Sq S S S' H4 H2). 
+        by rewrite -H3.
+      Qed.
+
+      Local Definition setRa : relation (set T):= (fun p =>  exists aj, aj \in p.1 /\ ~( aj \in p.2)). 
+
+      Definition Inc {T: Type} (SS: (set T)*(set T)) := SS.1 `<=` SS.2.
+      Notation Inc' := <=%O.
+      
+      Local Lemma DiffE: 
+        exists j, j <= (size Sq) 
+             /\ setRa ((nth S (S::(rcons Sq S)) j), (nth S (S::(rcons Sq S)) j.+1)).
+      Proof.
+        (* implied by A2 *)
+        have H1: 0 < size Sq.
+        { move: A2;contra;rewrite leqn0 => /eqP/size0nil H1.
+          by move: A2;rewrite H1 allL0 inE DeltaCP notin_setE DeltaCP.
+        }
+        (* for lemma allL_Tr *)
+        have Inc_Tr : transitive (@Inc T)
+          by move => A B C;apply: subset_trans.
+        (* main proof *)
+        move: A2;rewrite (@allL_nth' (set T) 'Δ.^c Sq S S S).
+        contra => H2.
+        have H4: allL Inc Sq S S
+          by rewrite (@allL_nth' (set T));move => j Hs b /mem_set/(H2 j Hs b)/set_mem.
+        have H6: forall S', S' \in Sq -> S = S'.
+        move => S' Hs;move: (@allL_Tr Inc H1 H4 Inc_Tr S' Hs).
+        by rewrite eqEsubset.
+        by exists 0;[lia | rewrite /= // nth_rcons H1 DeltaP;apply: H6;apply: mem_nth ].
+      Qed.
+
+      Lemma DiffE': 
+        exists j, j <= (size Sq) /\ setRa ((g j), (g j.+1)).
+      Proof.
+        move: (@f_exists _ S Sq setRa) => H1.
+        by move: DiffE  => /H1 H2. 
+      Qed.
+      
+      (** * using a j offset on f *)
+      Lemma exists_g: exists g: nat -> set T, 
+          (forall n k, g (n + k*(size (S::Sq))) = g n)
+          /\ (exists a, a \in (g 0) /\ ~ (a \in (g 1)))
+          /\ (forall n, (g n) [<= U] (g n.+1))
+          /\ (forall n, preKernel U V W (g n)).
+      Proof.
+        move: DiffE' => [j [_ [a [H1 H2]]]].
+        exists (fun n => (g (j + n))). 
+        rewrite addn0 addn1.
+        move: (@f_setS _ S Sq (preKernel U V W)) A3 => Hpk /Hpk Hpk'.
+        move: (@f_setR _ S Sq (leSet U)) A1 => Hinc /Hinc Hinc'.
+        split;first by move => n k;rewrite addnA /g f_kperiodic.
+        split;first by (exists a).
+        split;move => n;last by rewrite -inE.
+        by rewrite -addn1 addnA;move: Hinc' => /(_ (j + n));rewrite -addn1.
+      Qed.
+
+    End build_g.
+  End build_g.
+
+  Export build_g(exists_g).
+
+  Module build_h.
+    (** for any g satisfying G1-G4 assumptions choose a selection h *)
+    Section build_h.
+      Context {T:choiceType} (U V W: relation T) (g: nat -> set T).
+      Context (S: set T) (Sq: seq (set T)).
+
+      Context (G1: forall n k, g (n + k*(size (S::Sq))) = g n).
+      Context (G2: exists a, a \in (g 0) /\ ~ (a \in (g 1))).
+      Context (G3: forall n, (g n) [<= U] (g n.+1)).
+      Context (G4: forall n, preKernel U V W (g n)).
+      
+      Implicit Types (sq: seq T) (s: T).
+
+      Lemma seq_not (h: nat -> T) (A : set T): 
+        ~ (h 0) \in A -> (exists k, (h k) \in A) -> exists j, ~ (h j) \in A /\ (h j.+1) \in A.
+      Proof.
+        move => H0 [k Hk];elim: k Hk => [// | n Hr Hl].
+        by case H1: ((h n) \in A);[move: H1 => /Hr H1 |exists n;rewrite H1 Hl].
+      Qed.
+
+      Definition Ig (g: nat -> set T) := [set x | forall n, x \in (g n)]%classic.
+
+      Lemma IgP: (Ig g) =  [set x | forall n, n < size (S::Sq) -> x \in (g n)]%classic.
+      Proof.
+        rewrite predeqE => x;split => [H1 n _ //| H1 n].
+        have ->: forall n, (g n) = g (n %% (size (S::Sq)))
+            by move => n';rewrite [in LHS](divn_eq n' (size (S::Sq))) addnC G1.
+        apply: H1;apply: ltn_mod.
+      Qed.
+      
+      (** we use choose_inc_seq to choose h and prove the last extra property *)
+      (** as (g n) are RelIndep sets *)
+      Lemma exists_h: exists h : nat -> T,
+          (forall n, (h n) \in (g n))
+          /\ (forall n, (h n)=(h n.+1) \/ U (h n, h n.+1))
+          /\ ~(exists n, (h n) \in (Ig g)).
+      Proof.
+        move: (G2) => [a [Hg0 H2]].
+        have H4: exists s, s \in (g 0) by (exists a).
+        move: (@choose_inc_seq T U g H4 G3 a Hg0) => [h [H6 [H7 H8]]].
+        exists h;split;[exact|split;[exact |]].
+        move => Hinter. 
+        (* lastt step : ~(exists n, (h n) \in (Ig g)) *)
+        have P5: ~ ( h 0 \in (Ig g)) by move => /set_mem /(_ 1);rewrite H6 => ?.
+        move: (seq_not P5 Hinter) => [j [P6 P7]].
+        (* we build a contradiction as (g j) is a prekernel *)
+        have P8:  h j.+1 \in (g j) by move: P7 => /set_mem/(_ j).
+        have P9:  h j \in (g j) by apply: H7.
+        have P10: ~ ( h j = h j.+1) by move => He;rewrite He in P6.
+        move: G4 => /(_ j) [Hindep _].
+        move: Hindep => /(_ (h j) (h j.+1) P9 P8 P10) HnotU.
+        by move: H8 => /(_ j) [? | ?].
+      Qed.
+
+    End build_h.
+  End build_h.
+
+  Export build_h(exists_h,Ig,IgP).
+
+  Module h_extra_props.
+    (** * describe what is done here *)
+    Section h_extra_props.
+      (** properties for any h satisfying G1 and H1-H3 *)  
+      Context {T:choiceType} (U: relation T) (g: nat -> set T) (h: nat-> T).
+      Context (S: set T) (Sq: seq (set T)).
+
+      Context (G1: forall n k, g (n + k*(size (S::Sq))) = g n).
+      Context (H1: forall n, (h n) \in (g n)).
+      (** XXXX reformulate with ('Δ `|` U) *)
+      Context (H2: forall n, (h n)=(h n.+1) \/ U (h n, h n.+1)).
+      Context (H3: ~(exists n, (h n) \in (Ig g))).
+      
+      Lemma h_Tclos:
+        forall m n, allL ('Δ `|` U) (mkseq (fun i => h (n + i+1)) m) (h n) (h (n+m+1)).
+      Proof.
+        have: forall n,  ('Δ `|` U) (h n, h n.+1)
+            by move: H2 => + n => /(_ n) [H1' | H1'];[left;rewrite DeltaP|right].
+        by move => /@f2allL.
+      Qed.
+      
+      (** * true but too strong *)
+      Lemma h_Tclos1: forall m n, (('Δ `|` U).+ ((h n), (h (n+m+1)))).
+      Proof.
+        move => m n.
+        have Hall: (forall m n, allL ('Δ `|` U) (mkseq (fun i => h (n + i+1)) m) (h n) (h (n+m+1))).
+        by apply: h_Tclos;split.
+        by apply: allL_to_Tclos.
+      Qed.
+      
+      (** * the property we need *)
+      Lemma hP1: forall n m, (forall j, j <= m.+1 -> (h (n+j)= (h n))) \/ U.+ (h n, h (n+m+1)).
+      Proof.
+        move => n m;elim: m n => [n|n' Hr n]. 
+        + move: H2 => /(_ n) [H2' | H2'];last first.
+          by right;rewrite addn0 addn1;apply/TclosSu.
+          left;move => j Hj;case Hc2: (j == 0). 
+          by move: Hc2 => /eqP ->;rewrite addn0.
+          by (have ->: (j = 1) by lia); rewrite addn1 H2'.
+        + move: Hr => /(_ n) [Hr | Hr].
+          ++ have H4: h (n + n'.+1) = h n by apply: Hr;lia. 
+             move: H2 => /(_ (n+ n'.+1)) [H1' | /TclosSu H1'];last first.
+             by right;rewrite -H4;rewrite addn1.
+             left;move => j;case Hc2: (j <= n'.+1).
+             by move => _;apply: Hr.
+             move => H3'.
+             have ->: j = n'.+2 by lia.
+             rewrite H4 in H1'.
+             by rewrite H1' addnS.
+          ++ rewrite -addnA addn1 in Hr.
+             move: H2 => /(_ (n+ n'.+1)) [H1' | H1'];right;rewrite addn1.
+             by rewrite H1' in Hr.
+             by have /Tclos_composel:  (U.+ `;` U) (h n, h (n + n'.+1).+1)
+               by (exists (h (n + n'.+1))).
+      Qed.
+
+      Lemma inIg' k: 
+        (forall j : nat, j <= (size (S::Sq)) -> h (k*(size (S::Sq))+j) = h (k*(size (S::Sq))))
+        -> (h (k*(size (S::Sq)))) \in (Ig g).
+      Proof.
+        move => H4.
+        rewrite (IgP G1) inE => j Hs.
+        have <-: g (j + k * size (S :: Sq)) = g j by apply:G1.
+        have H5: j <= (size (S::Sq)) by lia.
+        by move: H4 => /(_ j H5) <-;rewrite 1!addnC.
+      Qed.
+
+      Lemma hmapk k: U.+ (h (k*(size (S::Sq))), h (k.+1*(size (S::Sq)))).
+      Proof.
+        move: hP1 => /(_ (k*(size (S::Sq))) (size Sq)) [/inIg' H5|];last first. 
+        by have ->: k * size (S :: Sq) + size Sq + 1 = k.+1 * size (S :: Sq)
+          by rewrite /=;lia.
+        by have H6: (exists n : nat, h n \in Ig g) by (exists (k * size (S :: Sq))).
+      Qed.
+
+      (** * The main lemma of this module *)    
+      Lemma hmap' k p: U.+ (h (k*(size (S::Sq))), h ((k+ p.+1)*(size (S::Sq)))).
+      Proof.
+        elim: p k => [k |p Hr k];first by rewrite [k + 1]addn1;apply: (hmapk k).
+        have: U.+ (h ((k + p.+1) * size (S :: Sq)), h ((k + p.+1).+1 * size (S :: Sq)))
+          by apply: (hmapk (k+p.+1)) =>H1.
+        have ->: (k + p.+1).+1 = k +p.+2 by lia.
+        move => H4.
+        by move: (TclosT (Hr k) H4).
+      Qed.
+
+    End h_extra_props.
+  End h_extra_props.
+  Export h_extra_props(hmap').
+
+  Section ltSet_periodic_to_lt_periodic.
+    Context {T: finType} (O R M: relation T).
+
+    (** * The main result of this module *)
+    Lemma Cyclicity_BH_lemma S Sq: 
+      @allL (set T) ([<< O]%O) Sq S S
+      -> (S::Sq) [\in] (preKernel O R M)
+      ->  exists s, O.+ (s,s).
+    Proof.
+      move => A0 A3.
+      move: (exists_g A0 A3) => [g [G1 [G2 [G3 G4]]]].
+      move: (exists_h G2 G3 G4) => [h [H1 [H2 H3]]].
+      move: (hmap' G1 H1 H2 H3) => Hhmap.
+      move: (fin_codomain_prop (fun k => h(k*(size(S::Sq))))) => [n [p H4]].
+      by exists (h (n * size (S :: Sq)));rewrite {2}H4;apply: Hhmap.
+    Qed.
+
+  End ltSet_periodic_to_lt_periodic.
+End ltSet_periodic_to_lt_periodic.
+
+Export ltSet_periodic_to_lt_periodic(Cyclicity_BH_lemma).
