@@ -8,6 +8,9 @@
 (*         *     GNU Lesser General Public License Version 2.1          *)
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
+
+From HB Require Import structures.
+
 Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_boot seq order boolp classical_sets contra. 
 From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
@@ -20,7 +23,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Local Open Scope classical_set_scope.
+Local Open Scope classical_set_scope. (* we can use %classic *)
 
 Reserved Notation "A [<=] B" (at level 4, no associativity). 
 (* set order derived from strict porder on elements *)
@@ -1917,3 +1920,339 @@ Module ltSet_periodic_to_lt_periodic.
 End ltSet_periodic_to_lt_periodic.
 
 Export ltSet_periodic_to_lt_periodic(Cyclicity_BH_lemma).
+
+
+Section FinsetToClassical.
+  (** * from {set T} to (set T) classicals_sets and finTYpe *) 
+  (** * from fin_relation {set T} to relation {set T} *)
+  
+  Variable (T : finType).
+  Implicit Types (A B : {set T}) (x: T).
+  
+  Definition set_of_fin A : set T := [set x | x \in A ].
+  Notation "[ ':set:' A ]" := (set_of_fin A) (format "[ ':set:'  A ]").
+  (* Coercion set_of_fin : set_of >-> set. *)
+  
+  (* reverse conversion which works for finType *)
+  Definition fin_of_set (A: set T) : {set T} := [set x in A]. 
+  Notation "[:fin: A ]" := (fin_of_set A).    
+  
+  Lemma in_set_of_fin A x: x \in [:set: A] <-> x \in A.
+  Proof.  by rewrite /set_of_fin in_setE. Qed.
+  
+  Lemma in_fin_of_set (A: set T) x: x \in [:fin: A] <-> x \in A.
+  Proof. by split => [H | H];[by rewrite inE in H | rewrite inE]. Qed.
+  
+  Lemma in_finP A x: reflect (x \in [:set: A]) (x \in A).
+  Proof.  by apply: (iffP idP);move/in_set_of_fin. Qed.
+
+  Lemma set_to_finK : cancel fin_of_set set_of_fin.
+  Proof.
+    move=> A;rewrite predeqE /fin_of_set /set_of_fin /= => x.
+    by split => [|?];rewrite inE;[move => /asboolP|apply/asboolP].
+  Qed.
+  
+  Lemma fin_to_setK : cancel set_of_fin fin_of_set.
+  Proof.
+    move=> A;apply/setP => x; case H1: (x \in A).
+    + by move: H1 => /in_set_of_fin/in_fin_of_set ->.
+    + move: H1 => /negP/in_set_of_fin/in_fin_of_set H1.
+      by case H2: (x \in [:fin:[:set:A]]).
+  Qed.
+  
+  Lemma set_of_fin0 : [:set: finset.set0] = set0.
+  Proof.
+    rewrite predeqE => x.
+    split;rewrite -in_setE;last by rewrite in_set0.
+    by move => /in_set_of_fin;rewrite finset.in_set0. 
+  Qed.
+  
+  Lemma set_of_finU A B: 
+    [:set: (A :|: B)] = [:set: A] `|` [:set: B].
+  Proof.
+    rewrite predeqE => x.
+    rewrite -[set_of_fin _ x]in_setE -[(_ `|` _) x]in_setE.
+    rewrite in_set_of_fin finset.in_setU.
+    split.
+    by move => /orP [? | ?];apply/asboolP;[left| right];apply/asboolP/in_finP.
+    by move/set_mem => [/mem_set/in_finP -> |/asboolP/in_finP ->];[rewrite orTb| rewrite orbT].
+  Qed.
+
+  Lemma set_of_finI A B : 
+    set_of_fin (A :&: B) = (set_of_fin A) `&` (set_of_fin B).
+  Proof.
+    rewrite predeqE => x.
+    rewrite -[set_of_fin _ x]in_setE -[(_ `&` _) x]in_setE.
+    rewrite in_set_of_fin finset.in_setI.
+    split;last by move => /set_mem [/mem_set/in_finP -> /mem_set/in_finP ->].
+    move => /andP [/in_finP ? /in_finP ?].
+    by rewrite inE;split;by rewrite -inE.
+  Qed.
+  
+  Lemma set_of_fin_inj: injective set_of_fin.
+  Proof.
+    move => A B;rewrite predeqE -setP => /[swap] x /(_ x) H1.
+    case H2: (x \in A);first by move/in_finP: H2 => /set_mem/H1/mem_set/in_finP ->.
+    case H3: (x \in B);last exact.
+    by move/in_finP: H3 H2 => /set_mem/H1/mem_set/in_finP ->.
+  Qed.
+
+  Lemma fin_of_set_inj: injective fin_of_set.
+  Proof.
+    move => A B;rewrite predeqE -setP => /[swap] x /(_ x).
+    rewrite 2!inE => H1. 
+    by split;move => /mem_set;[rewrite H1|rewrite -H1];apply/set_mem.
+  Qed.
+  
+  Lemma set_of_sfin v:  [:set: [set v]] = [set v]%classic.
+  Proof.
+    rewrite predeqE => x. 
+    split;first by rewrite -inE in_set_of_fin inE => /eqP ->.
+    by move => ->;rewrite -inE in_set_of_fin inE.
+  Qed.
+
+  Lemma set_of_set0 :  [:set: finset.set0] = set0.
+  Proof.
+    by rewrite predeqE => x;split;[rewrite -inE in_set_of_fin inE |].
+  Qed.
+
+End FinsetToClassical.
+
+Notation "[ ':set:' A ]" := (set_of_fin A) (format "[ ':set:'  A ]").
+Notation "[ ':fin:' A ]" := (fin_of_set A) (format "[ ':fin:'  A ]").
+
+Module fin_Maximal.
+  (** * There's always a maximal element in a finite nonempty poset *)
+  (** we consider here the simplest case *)
+  (** and give a proof by recursion 
+      we first give the proof for a sequence(seq T) 
+      and then use mem_enum to have a finite sequence 
+      representation of a finite set. *)
+  (** Note that this proof is valid for R: relation T 
+      R: {relation T} is not requested *)
+
+  Section fin_maximal.
+    
+  Variables (T: finType).
+  Implicit Types (m : T) (s : seq T) (U: relation T).
+
+  Definition seq_maximal m s U : Prop :=
+    forall x, x \in s -> U (m,x) -> m = x.
+
+  Definition maximal m U: Prop := forall x,  U (m,x) -> m = x.
+  
+  Lemma seq_has_maximal_step s (t : T) U:
+    porder U -> (exists m, m \in s /\ seq_maximal m s U) \/  s = [::]
+    ->  exists m, m \in t :: s /\ seq_maximal m (t :: s) U.
+  Proof.
+    move => [Hr Ha Ht] [[m [Hm Hmax]] | ->].
+    (* s is non-empty with maximal m *)
+    + move: (EM (U (m,t))) => [Umh | hle_m].
+      ++ (* U (m,h)  *)
+        exists t; split;first by rewrite in_cons eqxx.
+        move=> x; rewrite in_cons => /orP [/eqP -> // | Hxs] Hlt.
+        have Umx: U (m,x) by apply: (Ht m t x Umh Hlt).
+        have meqx: m = x by apply: (Hmax x Hxs Umx).
+        move: Umh;rewrite meqx => Uxh.
+        rewrite /antisymmetric in Ha.
+        by move: (Ha t x Hlt Uxh).
+      ++ (* ~ (U (m,h)) *)      
+        exists m; split;first by rewrite in_cons;rewrite Hm orbT. 
+        move => x; rewrite in_cons => /orP [/eqP -> ? //| H1 H2].
+        by move: (Hmax x H1 H2).
+    + (exists t);split;first by rewrite mem_seq1.
+      by move => x; rewrite mem_seq1 => /eqP ->.
+  Qed.
+  
+  Lemma seq_has_maximal U: 
+    porder U -> forall s, ~ (s = [::]) -> (exists m, m \in s /\ seq_maximal m s U).
+  Proof.
+    move => ?;elim => [// | a s Hr _ ].
+    apply: seq_has_maximal_step;first by [].
+    by move: (EM (s = [::])) => [-> | /Hr ?];[right | left].
+  Qed.    
+  
+  Lemma has_maximal U: porder U -> (exists x, x\in T) -> (exists m, maximal m U).
+  Proof.
+    move => Hp [x -];rewrite -mem_enum => Hx.
+    have H2: ~ (enum T = [::]) by move: Hx => /[swap] ->.
+    move: Hp => /seq_has_maximal/(_ (enum T) H2) [m [Hm HM]]. 
+    exists m;move: HM => /[swap] x' /(_ x') HM H5.
+    by apply: HM;[rewrite  mem_enum |].
+  Qed.
+  
+  End fin_maximal.
+End fin_Maximal.
+Export fin_Maximal(has_maximal,maximal).
+
+Local Open Scope set_scope. (* we can use %SET *)
+
+#[local] Set Warnings "-projection-no-head-constant,-redundant-canonical-projection".
+
+Section SubSetPType.
+  (** * defining a new finType isomorphic to {S : {set T} | P S} *)
+  Variables (T : finType)  (P : pred {set T}).
+  Record setP_type := SetP { setP_val : {set T}; setP_proof : P setP_val }.
+
+  (* subType structure *)
+  HB.instance Definition _ := [isSub for setP_val].
+  HB.instance Definition _ := [Finite of setP_type by <:].
+  (* explicit coercion *)
+  Coercion setP_val : setP_type  >-> set_of. 
+  
+End SubSetPType.
+#[local] Set Warnings "+projection-no-head-constant,+redundant-canonical-projection".
+
+Module Maximal_in_preKernels.
+Section Maximal_in_preKernels.
+  (** * Existence of a Maximal set in preKernels when T is a finType *)
+  (* we use a detour on {set T} *)
+  Context (T : finType).
+  Implicit Types (O R M U: relation T) (S: {set T}).
+
+  (** * propagate definition on (set T) to definitions on {set T} *)
+  Definition RelIndep_fin U S: bool := (asbool (RelIndep U [:set: S])).
+  
+  Section RelIndep_fin.
+  
+    Lemma RelIndep_iff U S: (RelIndep U [:set: S]) <-> (RelIndep_fin U S).
+    Proof. split => [Hri | /asboolP Hri]. by apply/asboolP. by []. Qed.
+    
+    Lemma RelIndepP U S: reflect (RelIndep U [:set: S]) (RelIndep_fin U S).
+    Proof. by apply: (iffP idP);move/RelIndep_iff. Qed.
+    
+    Lemma Unused_RelIndep_fin_subset U (S S': {set T}) :
+      S' \subset S -> RelIndep_fin U S -> RelIndep_fin U S'.
+    Proof.
+      move=> /fintype.subsetP SS' /RelIndepP H; apply/RelIndepP. 
+      by apply: (RelIndep_Ir SS' H).
+    Qed.
+    
+    Lemma Unused_RelIndep_fin0 U: RelIndep_fin U finset.set0.
+    Proof. by apply/RelIndepP;rewrite set_of_set0;apply/RelIndep_set0. Qed.
+    
+    Lemma RelIndep_fin1 U a : RelIndep_fin U [set a].
+    Proof. apply/RelIndepP;rewrite set_of_sfin;apply/RelIndep_set1. Qed.
+
+    Lemma Unused_RelIndep_fin_Iv U S: RelIndep_fin U S <-> RelIndep_fin U^-1 S.
+    Proof. 
+      split;first by move/RelIndepP => ?;apply/RelIndepP/RelIndep_Iv.
+      by move/RelIndepP/RelIndep_Iv;rewrite inverseK => ?;apply/RelIndepP.
+    Qed.
+    
+    Lemma Unused_RelIndep_fin_IE U S: RelIndep_fin U S = RelIndep_fin U^-1 S.
+    Proof. 
+      apply/RelIndepP/RelIndepP;first by apply: RelIndep_Iv.
+      by move => ?;rewrite -(inverseK U);apply: RelIndep_Iv.
+    Qed.
+    
+  End RelIndep_fin. 
+  
+  Definition pre_absorbant_fin R M S := (asbool (pre_absorbant R M [:set: S])).
+  
+  Definition prekernel_fin O R M: pred {set T} := 
+    fun S => (RelIndep_fin O S) && ((pre_absorbant_fin R M S) && (([:set: S]) != set0)).
+
+  Lemma prekernelE O R M S: 
+    prekernel_fin O R M S <-> preKernel O R M [:set: S].
+  Proof.
+    split;first by move => /andP [/asboolP H1 /andP [/asboolP H2 H3]].
+    move => [H1 [H2 H3]].
+    apply/andP;split;first by apply/asboolP.
+    by apply/andP;split;[apply/asboolP |].
+  Qed.
+  
+  Lemma prekernel_fin_notempty O R M 
+    (A1: nonempty [set: T]) (At: sporder O^-1) (Au: R `<=` O^-1):
+    exists v, prekernel_fin O R M [set v].
+  Proof.
+    move: (At) (@fin_not_iic_inj T O^-1) => /[dup] Hsp [H1 /[dup] Ht /Tclos_iff H2] H3.
+    have H4: ~(iic O^-1)
+      by move => /(@sporder_iic_injective _ _ At ) ?.
+    move: (@fin_rloop2 T O^-1 R M A1 At Au) => [v H6].
+    exists v.
+    apply/andP;split;first by apply: RelIndep_fin1.
+    apply/andP;split;first by apply/asboolP;rewrite /pre_absorbant_fin set_of_sfin.
+    rewrite set_of_sfin;apply/asboolP => H.
+    have H7: [set v]%classic v by exact.
+    by rewrite H in H7.
+  Qed.
+
+  (** * defining a new finType isomorphic to {S : {set T} | prekernel_fin S} *)
+  Definition setIndep O R M := setP_type (prekernel_fin O R M). 
+  
+  (** * an order on setIndep O R M *)
+  Definition prekernel_fin_order O R M: relation (setIndep O R M):= 
+    [set AB | [:set: (val AB.1)] [<= O] [:set: (val AB.2)]]%classic.
+  
+  (* now we have a porder on setIndep O R M *)
+  Lemma prekernel_fin_order_is_porder O R M:
+    sporder O -> porder (@prekernel_fin_order O R M).
+  Proof.
+    move => H_sp.
+    split => [A /= | A B /= Ha Hb | A B C /= Ha Hb].
+    + (* reflexive *)  apply: le_refl.
+    + (* antisymmetric *) 
+      move: (valP A) => /andP[/asboolP Pa _].
+      move: (valP B) => /andP[/asboolP Pb _].
+      move: (le_antisym_if_sp H_sp Pa Pb Ha Hb) => /set_of_fin_inj/eqP H5.
+      by apply/eqP;rewrite -val_eqE.
+    + (* transitive *)
+      move: H_sp => [_ H1];move: (le_trans_if_tr H1) => H2. 
+      by move: H2 => /(_ [:set:\val A] [:set:\val B] [:set:\val C] Ha Hb) H2.
+  Qed.
+
+  Lemma exists_setIndep O R M 
+    (A1: nonempty [set: T]) (Asp: sporder O) (Au: R `<=` O^-1):
+      (exists x : setIndep O R M, x \in {: (setIndep O R M)}).
+  Proof.
+    move: Asp => /sporder_inv Asp.
+    move: (@prekernel_fin_notempty O R M A1 Asp Au) => [v Pv].
+    by exists (SetP Pv).
+  Qed.
+  
+  (* we use the general existence theorem for finite types *)
+  Lemma Maximal_in_setIndep O R M 
+    (A1: nonempty [set: T]) (Asp: sporder O) (Au: R `<=` O^-1):
+    exists (m: (setIndep O R M)),
+      @maximal (setIndep O R M) m (@prekernel_fin_order O R M).
+  Proof.
+    move: (Asp) => /sporder_inv Asp'. 
+    move: (prekernel_fin_order_is_porder R M Asp) => po.
+    pose proof (@exists_setIndep O R M A1 Asp Au) as Hne.
+    by move: (@has_maximal (setIndep O R M) 
+            [set AB | [:set: (val AB.1)] [<= O] [:set: (val AB.2)]]%classic
+         po Hne).
+  Qed.
+  
+  (* back to prekernel_fin objects *)
+  Lemma Maximal_in_prekernel_fin O R M
+    (A1: nonempty [set: T]) (Asp: sporder O) (Au: R `<=` O^-1):
+    exists S, prekernel_fin O R M S /\ (forall S', prekernel_fin O R M S' ->
+                                    [:set: S] [<= O] [:set: S'] -> S = S').
+  Proof.
+    move: (@Maximal_in_setIndep O R M A1 Asp Au)  => [S H3].
+    exists S;move: (valP S) => Pr;split; first exact.
+    move => U H4; move: H3 => /(_ (SetP H4)) H3.
+    by move => /H3/eqP ?;apply/eqP. 
+  Qed.
+  
+  (* back to preKernels *)
+  Lemma Maximal O R M
+    (A1: nonempty [set: T]) (Asp: sporder O) (Au: R `<=` O^-1):
+    exists (S:set T), preKernel O R M S /\ (forall S':set T, preKernel O R M S' -> S [<= O] S' -> S = S').
+  Proof.
+    move: (@Maximal_in_prekernel_fin O R M A1 Asp Au)  => [S [HSpk Hm]].
+    exists [:set: S]. 
+    split =>[|U HUpk Hle];first by apply/prekernelE.
+    move: Hm => /(_ [:fin: U]) Hm.
+    rewrite -(@set_to_finK T U).
+    apply/fin_of_set_inj.
+    rewrite 2!fin_to_setK.
+    apply: Hm;last by rewrite set_to_finK.
+    by apply/prekernelE;rewrite set_to_finK.
+  Qed.
+  End Maximal_in_preKernels.
+End Maximal_in_preKernels.
+
+Export Maximal_in_preKernels(Maximal).

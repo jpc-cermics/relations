@@ -337,3 +337,271 @@ Module BlidiaEngel.
   End test.
   
 End BlidiaEngel.
+
+
+Module BHExt.
+  Section BHExt.
+    (** * Extended Blida en Hengel Theorem *)
+  
+    Context {T: finType} (O R B: relation T).
+
+    Definition M := B `|` R.
+
+    Context (A2: Assumption2 R) (A6: Assumption6 B M O)
+      (A7: Assumption7 R B M) (A8: Assumption8 R B M). 
+    Context (A1: nonempty [set: T]) (Au: R `<=` O^-1).
+    Context (Apk : forall X , RelIndep O X <-> RelIndep M X).
+    Context (A_Onotcyclic: ~ (exists s, O.+ (s,s))).
+    
+    (* There exists a kernel or an increasing mapping for [<< O] taking values in preKernels *)
+    Lemma kernel_or_iic_fun:
+      (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (preKernel M R M)))
+      \/ (exists S, (S \in (preKernel M R M)) /\ S \in (absorbant M)).
+    Proof.
+      (* using extend lemma *)
+      have Ch0 S: S \in ((preKernel M R M) `&` (absorbant M).^c)
+                 -> exists S', S' \in (preKernel M R M) /\ (S [<< O] S').
+      {
+        rewrite inE => -[Hpk Hna].
+        move: (@extend T R B O S A2 A6 A7 A8 Hpk Hna) 
+            => [S' [/mem_set Hpk' Hlt]].
+        by exists S'. 
+      }
+      have Ch1 : exists S, S \in (preKernel M R M).
+      {
+        have Oinv_notcyclic: ~ (exists s, O^-1.+ (s,s))
+          by rewrite -TclosIv.
+        (* exists a sink and thus a preabsorbant node *)
+        move: (@NotCyclic_exists_preabsorbant T O^-1 M A1 Oinv_notcyclic) => [v Hpa].
+        (* [set v] is in (preKernel M R M). *)
+        exists [set v]%classic;rewrite inE. 
+        have Hinc:  (v)_:#R  `<=` (v)_:#O^-1 
+          by rewrite /Aset;apply: Fset_inc;apply: inverseS.
+        split;first by apply: RelIndep_set1.
+        split;first by apply: (subset_trans Hinc _).
+        + apply/negP => /eqP H.
+          have Hv: [set v]%classic v by [].
+          by rewrite H /= in Hv.
+      }
+      move: (@choose_sub _ ([<< O]%O) (preKernel M R M) (absorbant M).^c Ch0 Ch1)
+          => [Hiic | [S [Hpk Hna]]].
+      by left.
+      by right;exists S;split;[| move: Hna;rewrite 2!inE /= => /contrapT].
+    Qed.
+    
+    (* we prove that the existence of an increasing mapping for [<< O]
+       taking values in preKernels would contradict acyclicity
+     *)
+    
+    Lemma iic_to_allL  (h : nat -> (set T)):  
+      (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (preKernel O R M)) ->
+      exists n p, h n = h (n+p+1)
+             /\ allL ([<< O]%O) (mkseq (fun i => h (n + i+1)) p) (h n) (h n)
+             /\ ((h n)::(mkseq (fun i => h (n + i+1)) p)) [\in] (preKernel O R M).
+    Proof. 
+      move => Hiic_fun Hpk.
+      (* non injectivity prop as T is finType *)
+      have [n [m Heq]]:  exists n p : nat, h n = h (n + p.+1)
+          by apply: set_fin_codomain_prop.
+      move: Hiic_fun => /f2allL /(_ n m) HallL.
+      rewrite -addn1 addnA in Heq;rewrite -Heq in HallL. 
+      by exists n, m;split;[|split;[|apply: f2in]].
+    Qed.
+    
+    Lemma iic_and_prekernels_to_cyclic (h : nat -> (set T)):
+      (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (preKernel O R M))
+      -> exists s, O.+ (s,s).
+    Proof.
+      move => Hiic Hpk';move: (iic_to_allL Hiic Hpk') => [n [p [Ha [HallL Hpk]]]].
+      by apply: (Cyclicity_BH_lemma HallL Hpk).
+    Qed.
+    
+    Lemma exists_kernel: exists S, S \in (preKernel M R M) /\ S \in (absorbant M).
+    Proof.
+      have preKernelP S': preKernel O R M S' <-> preKernel M R M S'
+        by rewrite /preKernel /= Apk.
+      move: kernel_or_iic_fun => [[h [Hiic Hk]] | H1];last by [].
+      have HpkO: (forall n, (h n) \in  (preKernel O R M))
+        by move => n; rewrite inE preKernelP -inE.
+      by move: (iic_and_prekernels_to_cyclic Hiic HpkO) => HOcyclic.
+    Qed.
+    
+  End BHExt.
+End BHExt.
+
+Export BHExt(exists_kernel).
+
+
+Section Extended_Champetier_Theorem.
+    
+  Context (T : finType) (O R B: relation T).
+  Implicit Types (O R B: relation T). 
+  
+  Notation M := (B `|` R).
+
+  Context (A2 : Assumption2 R) (A6 : Assumption6 B M O) 
+    (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
+  Context (A1: nonempty [set: T]) (Asp: sporder O) (Au: R `<=` O^-1).
+  Context (Apk : forall X, RelIndep O X <->  RelIndep M X).
+  
+  Lemma maximal_mabsorbant S:
+    (preKernel O R M S) /\ (forall U, preKernel O R M U -> S [<= O] U -> S = U)
+    -> absorbant M S.
+  Proof.
+    contra; move => H1;rewrite /preKernel /= Apk => Hpk.
+    have H3: ~ absorbant M S.
+    {
+      move: H1 => [y H1] H3.
+      rewrite notin_setE in H3.
+      rewrite /absorbant /mkset => /(_ y) H4. 
+      by move: H1 => /H4;rewrite inE => H1.
+    }
+    move: (@extend T R B O S A2 A6 A7 A8 Hpk H3)
+        => [S' [Hpre [/DeltaCP H7 Hne]]].
+    exists S';first by rewrite (Apk S').
+    by split;[| apply/negP => /eqP Heq].
+  Qed.
+  
+  Lemma Kernel_ChampetierExt: 
+    exists S, RelIndep M S /\ absorbant M S.
+  Proof.
+    (* There exist a maximal set *)
+    move: (@Maximal T O R M A1 Asp Au) => [S Hm].
+    move: Hm => /[dup] /maximal_mabsorbant Ma [[/Apk Hpk _] _]. 
+    by (exists S).
+  Qed.
+  
+End Extended_Champetier_Theorem.
+
+Section Blidia_Engel_Ext_Theorem.
+  (** * Similar to Champetier but  (Asp: sporder O) *)
+  (** * is replaced by Acyclicity *)
+
+  Context (T : finType) (O R B: relation T).
+  Implicit Types (O R B: relation T).
+
+  Notation M := (B `|` R).  
+
+  Context (A2 : Assumption2 R) (A6 : Assumption6 B M O) 
+    (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
+  Context (A1: nonempty [set: T]) (Au: R `<=` O^-1).
+  Context (Apk : forall (X:set T) , RelIndep O X <->  RelIndep M X).
+  Context (Anc : ~ ( exists s, R.+ (s,s))).
+  
+End Blidia_Engel_Ext_Theorem.
+
+Section simpleGraph. 
+  (** * simpleGraph definition *)
+  Context (T : Type).
+  Implicit Types (G D O Re: relation T).
+
+  Definition simpleGraph G := symmetric G /\ irreflexive G.
+  Definition Direction G D := D `|` D^-1 = G. 
+  Definition Orientation G O := Direction G O /\ asymmetric O.
+
+  Lemma RelIndep_sym Re S: (RelIndep Re S) <-> (RelIndep (Re `|` Re^-1) S).
+  Proof.
+    split => [+ x y Hx Hy Hne|+ x y Hx Hy Hne].
+    have Hne': ~ (y = x). by move => H1;rewrite H1 in Hne.
+    by move => /[dup] /(_ y x Hy Hx Hne') H1 /(_ x y Hx Hy Hne) H2 [H3 | H3].
+    by move => /(_ x y Hx Hy Hne);contra => ?;left.
+  Qed.
+  
+  Lemma direction_relIndep G D S: 
+    Direction G D -> (RelIndep D S <-> RelIndep G S).
+  Proof. by move => Hd;rewrite RelIndep_sym Hd. Qed.
+
+  Lemma orientation_relIndep G D S: 
+    Orientation G D -> (RelIndep D S <-> RelIndep G S).
+  Proof. by move => [Hd _];rewrite RelIndep_sym Hd. Qed.
+  
+End simpleGraph.
+
+Section Champetier_Theeorem.
+  (** * The original Champetier Theorem *)
+  Context (T : finType) (G D O: relation T).
+  
+  Context (Asg: simpleGraph G).
+  Context (Ao: Orientation G O).
+  Context (Ad: Direction G D).
+
+  Definition R := D `&` O^-1.
+  Definition B := D `&` O.
+
+  Notation M := (B `|` R).
+
+  Context 
+    (A1: nonempty [set: T]) 
+    (Asp: sporder O)
+    (A6 : Assumption6 B M O) 
+    (A7 : Assumption7 R B M)
+    (A8 : Assumption8 R B M).
+  
+  Lemma RB: M = D.
+  Proof.
+    have H1:  R `<=` D. by rewrite /R;apply: subIsetl.
+    have H2:  B `<=` D. by rewrite /R;apply: subIsetl.
+    rewrite predeqE => -[x y].
+    split => [[/H2 H0 | /H1 H0] // | H3].
+    case H4: ((x,y) \in O).
+    + move: H4 => /set_mem H4.
+      ++ case H5: ((y,x) \in O).
+         move: H5 => /set_mem H5.
+         by right;split.
+         by left;split.
+    + case H5: ((y,x) \in O).
+      move: H5 => /set_mem H5.
+      by right;split.
+      (** (x, y) \in O) = false /\ (y, x) \in O) = false *)
+      (** is not possible *)
+      have H6: D `|` D^-1 = G by [].
+      have H7: O `|` O^-1 = G by move: (Ao) => [Do _].
+      have H8:  D `|` D^-1 = O `|` O^-1. by rewrite H6 H7. 
+      have [ //| H9]: (O `|` O^-1) (x,y) by rewrite -H8; left.
+      by rewrite -inE H4.
+      have: (y,x) \in O by rewrite inE.  
+      by rewrite H5.
+  Qed.
+  
+  Lemma AspIv: sporder O^-1.
+  Proof. by apply: sporder_inv. Qed.
+  
+  Lemma Au:  R `<=` O^-1. 
+  Proof. by rewrite /R;apply: subIsetr. Qed.
+
+  Lemma Onoticc: ~ (iic  O^-1). 
+  Proof. by apply: (@fin_not_iic _ O^-1 AspIv). Qed.
+  
+  Lemma Rnotiic: ~ (iic R).
+  Proof. by move: Onoticc => ? /(@iic_sub T R O^-1 (Au)) ?. Qed.
+
+  Lemma Apk:  forall X , RelIndep O X <->  RelIndep M X.
+  Proof.
+    move => X. rewrite RB. 
+    rewrite (@direction_relIndep T G D X Ad).
+    by rewrite (@orientation_relIndep T G O X Ao).
+  Qed.
+  
+  Lemma Rsym : asymmetric R.
+  Proof.
+    move => x y /Au H1 /Au H2.
+    by move: H1 Ao => + [_ /(_ x y) Ha] => /Ha H3.
+  Qed.
+  
+  Lemma haveA2 : ~ (iic (Asym R)).
+    move: Rsym => /AsymEq ->;apply: Rnotiic.
+  Qed.
+
+  Lemma haveA6 : forall x y : T, B (x, y) /\ ~ M (y, x) -> O (x, y).
+  Proof. by move => x y [[_ H1] _]. Qed.
+
+  Lemma Kernel_Champetier: 
+    exists S, RelIndep M S /\ absorbant M S.
+  Proof.
+    by pose proof (@Kernel_ChampetierExt T O R B (haveA2) (haveA6)
+                     A7 A8 A1 Asp (Au) (Apk)).
+  Qed.
+  
+End Champetier_Theeorem.
+
+
