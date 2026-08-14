@@ -589,22 +589,94 @@ End Champetier_Theeorem.
 
 Module Blidia_Hengel_Theeorem.
   Section Blidia_Hengel_Theeorem.
-  (** * The original Blidia Hengel Theorem *)
-  (** * XXXXX I think it's similar to Champetier *)
-  (** * but sporder O is replaced by O is acyclic. *)
+    (** * The original Blidia Hengel Theorem *)
+    (** * but sporder O is replaced by O is acyclic. *)
   
-  Context (T : finType) (G D O: relation T).
+    Context (T : finType) (G D O: relation T).
   
-  Context (Asg: simpleGraph G).
-  Context (Ao: Orientation G O).
-  Context (Ad: Direction G D).
+    Context (Asg: simpleGraph G).
+    Context (Ao: Orientation G O).
+    Context (Ad: Direction G D).
 
-  Definition R := D `&` O^-1.
-  Definition B := D `&` O.
+    Definition R := D `&` O^-1.
+    Definition B := D `&` O.
 
-  Notation M := (B `|` R).
+    Notation M := (B `|` R).
+    
+    Context 
+      (A1: nonempty [set: T]) 
+      (A_Onotcyclic: ~ (exists s, O.+ (s,s)))
+      (A6 : Assumption6 B M O) 
+      (A7 : Assumption7 R B M)
+      (A8 : Assumption8 R B M).
+  
+    Lemma RB: M = D.
+    Proof.
+      have H1:  R `<=` D. by rewrite /R;apply: subIsetl.
+      have H2:  B `<=` D. by rewrite /R;apply: subIsetl.
+      rewrite predeqE => -[x y].
+      split => [[/H2 H0 | /H1 H0] // | H3].
+      case H4: ((x,y) \in O).
+      + move: H4 => /set_mem H4.
+        ++ case H5: ((y,x) \in O).
+           move: H5 => /set_mem H5.
+           by right;split.
+           by left;split.
+      + case H5: ((y,x) \in O).
+        move: H5 => /set_mem H5.
+        by right;split.
+        (** (x, y) \in O) = false /\ (y, x) \in O) = false *)
+        (** is not possible *)
+        have H6: D `|` D^-1 = G by [].
+        have H7: O `|` O^-1 = G by move: (Ao) => [Do _].
+        have H8:  D `|` D^-1 = O `|` O^-1. by rewrite H6 H7. 
+        have [ //| H9]: (O `|` O^-1) (x,y) by rewrite -H8; left.
+        by rewrite -inE H4.
+        have: (y,x) \in O by rewrite inE.  
+        by rewrite H5.
+    Qed.
+    
+    Lemma Au:  R `<=` O^-1. 
+    Proof. by rewrite /R;apply: subIsetr. Qed.
+    
+    Lemma Apk:  forall X , RelIndep O X <->  RelIndep M X.
+    Proof.
+      move => X. rewrite RB. 
+      rewrite (@direction_relIndep T G D X Ad).
+      by rewrite (@orientation_relIndep T G O X Ao).
+    Qed.
+    
+    Lemma Rasym : asymmetric R.
+    Proof.
+      move => x y /Au H1 /Au H2.
+      by move: H1 Ao => + [_ /(_ x y) Ha] => /Ha H3.
+    Qed.
 
-  (** * A Finir *)
+    Lemma Om1_notcyclic: ~ (exists s, O^-1.+ (s,s)).
+    Proof.
+      move => [s HOss].
+      rewrite -TclosIv in HOss.
+      have Hcyclic: (exists s : T, O.+ (s, s)) by (exists s).
+      exact.
+    Qed.
+    
+    Lemma notiicO: ~ (iic O^-1). 
+    Proof. by move => /(@cyclic T O^-1)/Om1_notcyclic. Qed.
+      
+    Lemma haveA2 : ~ (iic (Asym R)).
+    Proof.
+      move: Rasym => /(AsymEq R) => -> HiicR.
+      have: (iic O^-1) by apply: (iic_sub Au).
+      apply: notiicO.
+    Qed.
+    
+    Lemma haveA6 : forall x y : T, B (x, y) /\ ~ M (y, x) -> O (x, y).
+    Proof. by move => x y [[_ H1] _]. Qed.
+
+    Lemma Blidia_Hengel_Theorem: exists S, kernel M S. 
+    Proof.
+      by apply: (@G_SSW_fin_notcyclic T O R B haveA2 haveA6 A7 A8 A1 Au Apk A_Onotcyclic).
+    Qed.
 
   End Blidia_Hengel_Theeorem.
 End Blidia_Hengel_Theeorem.
