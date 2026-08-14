@@ -44,13 +44,11 @@ Definition pre_absorbant {T: Type} (U M: relation T) (S:set T) := S:#U `<=` M#S.
 Definition absorbant {T: Type} (M: relation T) := 
   [set S: set T| forall y, ~ (y \in S) -> (y \in M#S)].
 
-Definition preKernel {T: Type} (O U M: relation T) :=
+Definition pre_kernel {T: Type} (O U M: relation T) :=
   [set S| RelIndep O S /\ (pre_absorbant U M S) /\ S != set0 ].
 
-Definition Kernel {T: Type} (U: relation T) :=
+Definition kernel {T: Type} (U: relation T) :=
   [set S| RelIndep U S /\ absorbant U S].
-
-Definition leSet' T U: relation (set T) := [set AB | AB.1 `<=` ('Δ  `|` U)#AB.2]%classic. 
 
 Module utilities.
   Section utilities.
@@ -141,8 +139,6 @@ Module injectivity.
   End injectivity.
 End injectivity.
 Export injectivity(fin_codomain_prop,not_injective_prop,cyclic).
-
-
 
 Module setT_injectivity.
   Section setT_injectivity.
@@ -283,9 +279,9 @@ Module partial_iic_lemma_sub.
 End  partial_iic_lemma_sub.
 Export partial_iic_lemma_sub(choose_sub).
 
-Module leSet_choice.
+Module inc_selection_lemma.
   (** * an increasing selection lemma choose_inc_seq *)
-  Section leSet_choice_sec.
+  Section inc_selection_lemma.
 
     Context {T:choiceType} (U: relation T) (f : nat -> set T).
     Context (A0: exists s, s\in (f 0)) (A1: forall n, (f n) [<= U] (f n.+1)).
@@ -341,16 +337,14 @@ Module leSet_choice.
       }      
       by split;[ | split;[apply: IterP2| apply: IterP3]].
     Qed.
-    
-  End leSet_choice_sec.
-  
-End leSet_choice.
 
-Export leSet_choice(choose_inc_seq).
+  End inc_selection_lemma.
+End inc_selection_lemma.
 
+Export inc_selection_lemma(choose_inc_seq).
 
-Section preKernel.
-
+Section pre_kernel.
+  (** * properties of prekernels *)
   Context {T : choiceType} (U: relation T).
   
   Lemma absorbant_not_empty (S: set T): 
@@ -363,24 +357,7 @@ Section preKernel.
     by rewrite inE => -[y [_ ?]].
   Qed.
 
-End preKernel.
-
-Section CheckAsym. 
-  (** * Import main result from paper_monochromatic_f *)
-  Context {T : choiceType} (U: relation T).
-  Hypothesis A1: (nonempty [set: T]).
-
-  Import Asyminf2Inf(Asym2P5', allL_rc_asym).
-
-  (* begin snippet infasym:: no-out *) 
-  Lemma iic_asym_to_iic_inj:  (iic (Asym U.+)) -> (iic_inj U). 
-  (* end snippet infasym *)  
-  Proof. by apply: (@Asym2P5' T U A1). Qed.
-
-  Lemma not_iic_inj_to_not_iic_asym: ~ (iic_inj U) -> ~ (iic (Asym U.+)).
-  Proof. by move => ? /iic_asym_to_iic_inj ?. Qed.
-
-End  CheckAsym. 
+End pre_kernel.
 
 Module iic_asym.
   Section iic_asym. 
@@ -571,10 +548,12 @@ Section Finite.
 End Finite. 
 
 Section set_relation. 
-  (** * A relation on sets induced by a relation on elements *)
+  (** * Equivalent formulation of leSet *)
 
   Context {T : eqType}.
   Implicit Types (T : eqType) (U S: relation T) (A B: set T).
+  
+  Definition leSet' U: relation (set T) := [set AB | AB.1 `<=` ('Δ  `|` U)#AB.2]%classic. 
   
   Lemma lesetE U: leSet U = leSet' U. 
   Proof.
@@ -711,16 +690,16 @@ Section Assumptions.
 
 End Assumptions. 
 
-Module Extend_non_absorbant_preKernel.
-  (** * if X is in preKernel but not a kernel there exists X' such that *)
-  (** * X <= X' (X != X') and X' is also in preKernel *)
-  Section Extend_non_absorbant_preKernel.
+Module Extend_non_absorbant_pre_kernel.
+  (** * if X is in pre_kernel but not a kernel there exists X' such that *)
+  (** * X <= X' (X != X') and X' is also in pre_kernel *)
+  Section Extend_non_absorbant_pre_kernel.
     
     Context {T:choiceType} (R B O: relation T).
   
     Notation M := (B `|` R).
 
-    Lemma preKernelProp: forall S S1,
+    Lemma pre_kernelProp: forall S S1,
         RelIndep M S -> S1 `<=` S -> (S1:#(R) `<=` M#S <-> forall y, ~ (y \in S) -> y \in S1:#(R) -> y \in M#S).
     Proof.
     move => S S1 H1 H1';split => [H2 y _ /set_mem/H2/mem_set H4 //| H2 y H3].
@@ -738,9 +717,9 @@ Module Extend_non_absorbant_preKernel.
          by have H11: M (y', y) by rewrite /M;right.
   Qed.
   
-  Lemma preKernelProp1: forall S,
+  Lemma pre_kernelProp1: forall S,
       RelIndep M S -> (S:#(R) `<=` M#S <-> forall y, ~ (y \in S) -> y \in S:#(R) -> y \in  M#S).
-  Proof. move => S H1; apply: (preKernelProp H1 (@subset_refl T S)).  Qed.
+  Proof. move => S H1; apply: (pre_kernelProp H1 (@subset_refl T S)).  Qed.
   
   Variable (X: set T).
     
@@ -809,13 +788,13 @@ Module Extend_non_absorbant_preKernel.
     (** the case one:  ~ ( y \in X:#(B) ) and candidate  (X `|` [set y]) *)
 
     Lemma case1_nonempty: forall y,
-        preKernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> (X `|` [set y]) != set0.
+        pre_kernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> (X `|` [set y]) != set0.
     Proof.
       by move => y [_ [_ +]] _ _ _;rewrite 2!set0P => -[x Hx];exists x;left. 
     Qed.
     
     Lemma case1_indep: forall y, 
-        preKernel M R M  X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> RelIndep M (X `|` [set y]).
+        pre_kernel M R M  X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> RelIndep M (X `|` [set y]).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /set_mem [H1 H2] H3 H4.
       have H5: ~ y \in X:#(R) by move => /set_mem/H0'/mem_set ?. 
@@ -824,7 +803,7 @@ Module Extend_non_absorbant_preKernel.
     Qed.
     
     Lemma case1_RMprop: forall y, 
-        preKernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) ->
+        pre_kernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) ->
         forall y', ~ (y' \in (X `|` [set y])) -> y' \in (X `|` [set y]):#(R) -> y' \in M#(X `|` [set y]).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /set_mem [H1 H2] H3 H4 y' H5.
@@ -844,24 +823,24 @@ Module Extend_non_absorbant_preKernel.
     Qed.
 
     Lemma case1_RMprop1: forall y, 
-        preKernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> (X `|` [set y]):#(R) `<=` M#(X `|` [set y]).
+        pre_kernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> (X `|` [set y]):#(R) `<=` M#(X `|` [set y]).
     Proof.
       move => y H1 H2 H3 H4.
       pose proof (case1_RMprop H1 H2 H3 H4) as H5.
       pose proof (case1_indep  H1 H2 H3 H4) as H6.
-      pose proof (preKernelProp1 H6) as H7.
+      pose proof (pre_kernelProp1 H6) as H7.
       by rewrite H7.
     Qed.
     
     Lemma case1_Cprop: forall y,
-      preKernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> X [<= O] (X `|` [set y]).
+      pre_kernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> X [<= O] (X `|` [set y]).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /set_mem [H1 H2] H3 H4 y' /= H5.
       by exists y';split;[rewrite inE;left; rewrite -inE |left].
     Qed.
     
     Lemma case1_notequal: forall y,
-      preKernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) ->
+      pre_kernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) ->
       (exists x' : T, x' \in X `|` [set y] /\ ~ x' \in X).
     Proof.
       by move => y _ /set_mem [H1 _]; exists y;split;[rewrite inE;right|].
@@ -871,8 +850,8 @@ Module Extend_non_absorbant_preKernel.
     Proof. by move => [x' [HinX' HnotinX]] He;rewrite He in HnotinX. Qed.
     
     Lemma case1: forall y,
-        preKernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) )
-        -> preKernel M R M (X `|` [set y]) /\  X [<< O] (X `|` [set y]).
+        pre_kernel M R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) )
+        -> pre_kernel M R M (X `|` [set y]) /\  X [<< O] (X `|` [set y]).
     Proof.
       move => y H1 H2 H3 H4. 
       pose proof (case1_nonempty H1 H2 H3 H4).
@@ -886,11 +865,11 @@ Module Extend_non_absorbant_preKernel.
     (** the case one:  ( y \in X:#(B) ) and candidate  ((X `\` (Xy y)) `|` [set y]) *)
 
     Lemma case2_nonempty: forall y,
-        preKernel M R M X -> y \in Y -> (SeP y) -> y \in X:#(B) -> ((X `\` (Xy y)) `|` [set y]) != set0.
+        pre_kernel M R M X -> y \in Y -> (SeP y) -> y \in X:#(B) -> ((X `\` (Xy y)) `|` [set y]) != set0.
     Proof. by move => y _ _ _ _;rewrite set0P;exists y;right. Qed.
     
     Lemma case2_indep: forall y, 
-        preKernel M R M X -> y \in Y -> (SeP y) -> y \in X:#(B) -> RelIndep M ((X `\` (Xy y)) `|` [set y]).
+        pre_kernel M R M X -> y \in Y -> (SeP y) -> y \in X:#(B) -> RelIndep M ((X `\` (Xy y)) `|` [set y]).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /set_mem [H1 H2] H3 H4.
       have H5: X `\` Xy y `<=` X by apply: subDsetl.
@@ -926,7 +905,7 @@ Module Extend_non_absorbant_preKernel.
     Qed.
       
     Lemma case2_RMprop (A7:Assumption7 R B M) (A8:Assumption8 R B M): forall y, 
-        preKernel M R M X -> y \in Y -> (SeP y) -> y \in X:#(B) 
+        pre_kernel M R M X -> y \in Y -> (SeP y) -> y \in X:#(B) 
         -> ( forall y', ~ (y' \in ((X `\` (Xy y)) `|` [set y]))
                   -> y' \in ((X `\` (Xy y)) `|` [set y]):#(R) -> y' \in M#((X `\` (Xy y)) `|` [set y])).
     Proof.
@@ -1013,18 +992,18 @@ Module Extend_non_absorbant_preKernel.
     Qed.
     
     Lemma case2_RMprop1 (A7:Assumption7 R B M) (A8:Assumption8 R B M):
-      forall y, preKernel M R M X -> y \in Y -> (SeP y) -> y \in X:#(B) 
+      forall y, pre_kernel M R M X -> y \in Y -> (SeP y) -> y \in X:#(B) 
            -> ((X `\` (Xy y)) `|` [set y]):#(R) `<=` M#((X `\` (Xy y)) `|` [set y]).
     Proof.
       move => y H1 H2 H3 H4.
       pose proof (case2_RMprop A7 A8 H1 H2 H3 H4) as H7.
       pose proof (case2_indep  H1 H2 H3 H4) as H8.
-      pose proof (preKernelProp1 H8) as H9.
+      pose proof (pre_kernelProp1 H8) as H9.
       by rewrite H9.
     Qed.
     
     Lemma case2_Cprop (A6: Assumption6 B M O): forall y,
-      preKernel M R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
+      pre_kernel M R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
       -> X [<= O] ((X`\` (Xy y)) `|` [set y]).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /set_mem [H1 H2] H3 H4 x /=.
@@ -1040,15 +1019,15 @@ Module Extend_non_absorbant_preKernel.
     Qed.
     
     Lemma case2_notequal: forall y,
-      preKernel M R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) ) ->
+      pre_kernel M R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) ) ->
       (exists x' : T, x' \in ((X`\` (Xy y)) `|` [set y]) /\ ~ x' \in X).
     Proof.
       by move => y _ /set_mem [H1 _]; exists y;split;[rewrite inE;right|].
     Qed.
 
     Lemma case2 (A6: Assumption6 B M O)(A7: Assumption7 R B M)(A8: Assumption8 R B M) : forall y,
-        preKernel M R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
-        -> preKernel M R M ((X`\` (Xy y)) `|` [set y]) /\ X [<< O] ((X`\` (Xy y)) `|` [set y]).
+        pre_kernel M R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
+        -> pre_kernel M R M ((X`\` (Xy y)) `|` [set y]) /\ X [<< O] ((X`\` (Xy y)) `|` [set y]).
     Proof.
       move => y H1 H2 H3 H4. 
       pose proof (case2_nonempty H1 H2 H3 H4).
@@ -1062,8 +1041,8 @@ Module Extend_non_absorbant_preKernel.
     (** * main result *)
     Lemma extend (A2: Assumption2 R) (A6: Assumption6 B M O)
       (A7: Assumption7 R B M) (A8: Assumption8 R B M):
-      preKernel M R M X -> ~ (absorbant M X) 
-      -> exists X', preKernel M R M X' /\ (X [<< O] X'). 
+      pre_kernel M R M X -> ~ (absorbant M X) 
+      -> exists X', pre_kernel M R M X' /\ (X [<< O] X'). 
     Proof.
       have Hne: [set: Y] !=set0 <-> exists x, x \in Y.
       {
@@ -1080,10 +1059,10 @@ Module Extend_non_absorbant_preKernel.
       by move: (case1 H1 H2 H3 H4) => H5;exists (X `|` [set y]).
     Qed.
     
-    End Extend_non_absorbant_preKernel.
-End Extend_non_absorbant_preKernel.
+    End Extend_non_absorbant_pre_kernel.
+End Extend_non_absorbant_pre_kernel.
 
-Export Extend_non_absorbant_preKernel (extend).
+Export Extend_non_absorbant_pre_kernel (extend).
 
 Module Maximal_with_Zorn.
   Section Maximal_with_Zorn.
@@ -1094,14 +1073,14 @@ Module Maximal_with_Zorn.
     
     Notation M := (B `|` R).
     
-    Definition Scal := preKernel M R M. 
+    Definition Scal := pre_kernel M R M. 
 
     (* begin snippet IsMaximal:: no-out *)  
     Definition IsMaximal (S: set T):= 
       S \in Scal /\ forall T, T \in Scal -> S [<= O] T -> T = S.
     (* end snippet IsMaximal:: no-out *)  
     
-    Definition SType := {S | preKernel M R M S}.
+    Definition SType := {S | pre_kernel M R M S}.
 
     Definition Elt (C: set SType) := {x : T |exists (S: SType), S \in C /\ x \in (sval S)}.
     
@@ -1502,7 +1481,7 @@ Module Maximal_with_Zorn.
       by exists Sm; move => S; rewrite H4 -inE in_set0. 
     Qed.
     
-    (** * back to Maximal set in preKernels *)
+    (** * back to Maximal set in pre_kernels *)
     (* begin snippet Smax:: no-out *)    
     Lemma Maximal_Zorn (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O)
       (A5: Assumption5 O M) (A9: Assumption9 R B O M):
@@ -1669,7 +1648,7 @@ Module ltSet_periodic_to_lt_periodic.
       (** strict increasing sequence of sets for (leSet U) *)
       Context (A0: @allL (set T) ([<< U ]%O) Sq S S).
       (** which are also (V,U)-prekernels *)
-      Context (A3: (S::Sq) [\in] (preKernel U V W)).
+      Context (A3: (S::Sq) [\in] (pre_kernel U V W)).
       Implicit Types (sq: seq T) (s: T).
     
       Definition g := f S Sq.
@@ -1732,12 +1711,12 @@ Module ltSet_periodic_to_lt_periodic.
           (forall n k, g (n + k*(size (S::Sq))) = g n)
           /\ (exists a, a \in (g 0) /\ ~ (a \in (g 1)))
           /\ (forall n, (g n) [<= U] (g n.+1))
-          /\ (forall n, preKernel U V W (g n)).
+          /\ (forall n, pre_kernel U V W (g n)).
       Proof.
         move: DiffE' => [j [_ [a [H1 H2]]]].
         exists (fun n => (g (j + n))). 
         rewrite addn0 addn1.
-        move: (@f_setS _ S Sq (preKernel U V W)) A3 => Hpk /Hpk Hpk'.
+        move: (@f_setS _ S Sq (pre_kernel U V W)) A3 => Hpk /Hpk Hpk'.
         move: (@f_setR _ S Sq (leSet U)) A1 => Hinc /Hinc Hinc'.
         split;first by move => n k;rewrite addnA /g f_kperiodic.
         split;first by (exists a).
@@ -1759,7 +1738,7 @@ Module ltSet_periodic_to_lt_periodic.
       Context (G1: forall n k, g (n + k*(size (S::Sq))) = g n).
       Context (G2: exists a, a \in (g 0) /\ ~ (a \in (g 1))).
       Context (G3: forall n, (g n) [<= U] (g n.+1)).
-      Context (G4: forall n, preKernel U V W (g n)).
+      Context (G4: forall n, pre_kernel U V W (g n)).
       
       Implicit Types (sq: seq T) (s: T).
 
@@ -1905,7 +1884,7 @@ Module ltSet_periodic_to_lt_periodic.
     (** * The main result of this module *)
     Lemma Cyclicity_BH_lemma S Sq: 
       @allL (set T) ([<< O]%O) Sq S S
-      -> (S::Sq) [\in] (preKernel O R M)
+      -> (S::Sq) [\in] (pre_kernel O R M)
       ->  exists s, O.+ (s,s).
     Proof.
       move => A0 A3.
@@ -2103,9 +2082,9 @@ Section SubSetPType.
 End SubSetPType.
 #[local] Set Warnings "+projection-no-head-constant,+redundant-canonical-projection".
 
-Module Maximal_in_preKernels.
-Section Maximal_in_preKernels.
-  (** * Existence of a Maximal set in preKernels when T is a finType *)
+Module Maximal_in_pre_kernels.
+Section Maximal_in_pre_kernels.
+  (** * Existence of a Maximal set in pre_kernels when T is a finType *)
   (* we use a detour on {set T} *)
   Context (T : finType).
   Implicit Types (O R M U: relation T) (S: {set T}).
@@ -2154,7 +2133,7 @@ Section Maximal_in_preKernels.
     fun S => (RelIndep_fin O S) && ((pre_absorbant_fin R M S) && (([:set: S]) != set0)).
 
   Lemma prekernelE O R M S: 
-    prekernel_fin O R M S <-> preKernel O R M [:set: S].
+    prekernel_fin O R M S <-> pre_kernel O R M [:set: S].
   Proof.
     split;first by move => /andP [/asboolP H1 /andP [/asboolP H2 H3]].
     move => [H1 [H2 H3]].
@@ -2237,10 +2216,10 @@ Section Maximal_in_preKernels.
     by move => /H3/eqP ?;apply/eqP. 
   Qed.
   
-  (* back to preKernels *)
+  (* back to pre_kernels *)
   Lemma Maximal O R M
     (A1: nonempty [set: T]) (Asp: sporder O) (Au: R `<=` O^-1):
-    exists (S:set T), preKernel O R M S /\ (forall S':set T, preKernel O R M S' -> S [<= O] S' -> S = S').
+    exists (S:set T), pre_kernel O R M S /\ (forall S':set T, pre_kernel O R M S' -> S [<= O] S' -> S = S').
   Proof.
     move: (@Maximal_in_prekernel_fin O R M A1 Asp Au)  => [S [HSpk Hm]].
     exists [:set: S]. 
@@ -2252,7 +2231,7 @@ Section Maximal_in_preKernels.
     apply: Hm;last by rewrite set_to_finK.
     by apply/prekernelE;rewrite set_to_finK.
   Qed.
-  End Maximal_in_preKernels.
-End Maximal_in_preKernels.
+  End Maximal_in_pre_kernels.
+End Maximal_in_pre_kernels.
 
-Export Maximal_in_preKernels(Maximal).
+Export Maximal_in_pre_kernels(Maximal).

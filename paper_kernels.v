@@ -13,13 +13,31 @@ From mathcomp Require Import all_boot seq order boolp classical_sets contra.
 From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
 
-From RL Require Import  seq1 seq2 rel paper_kernels_common.
+From RL Require Import  seq1 seq2 rel paper_kernels_common 
+        paper_monochromatic_f.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
+
+Section CheckAsym. 
+  (** * Import main result from paper_monochromatic_f *)
+  Context {T : choiceType} (U: relation T).
+  Hypothesis A1: (nonempty [set: T]).
+
+  Import Asyminf2Inf(Asym2P5', allL_rc_asym).
+
+  (* begin snippet infasym:: no-out *) 
+  Lemma iic_asym_to_iic_inj:  (iic (Asym U.+)) -> (iic_inj U). 
+  (* end snippet infasym *)  
+  Proof. by apply: (@Asym2P5' T U A1). Qed.
+
+  Lemma not_iic_inj_to_not_iic_asym: ~ (iic_inj U) -> ~ (iic (Asym U.+)).
+  Proof. by move => ? /iic_asym_to_iic_inj ?. Qed.
+
+End  CheckAsym. 
 
 Module Generalized_SSW. 
   (** * Generalized SSW Theorem for infinite case*)
@@ -36,7 +54,7 @@ Module Generalized_SSW.
       (A7: Assumption7 R B M) (A8: Assumption8 R B M) (A9: Assumption9 R B O M).
         
     (* begin snippet MainTh:: no-out *)    
-    Theorem G_SSW: exists S, RelIndep M S /\  absorbant M S.
+    Theorem G_SSW: exists S, kernel M S.
     (* end snippet MainTh:: no-out *)    
     Proof.
       (* a Maximal set using Zorn Lemma *)
@@ -58,8 +76,150 @@ End Generalized_SSW.
 
 Export Generalized_SSW(G_SSW).
 
+Module Generalized_SSW_fin_notcyclic.
+  Section Generalized_SSW_fin_notcyclic.
+    (** * Generalized_SSW for finType and no cyclicity *)
+    
+    Context {T: finType} (O R B: relation T).
+
+    Definition M := B `|` R.
+
+    Context (A2: Assumption2 R) (A6: Assumption6 B M O)
+      (A7: Assumption7 R B M) (A8: Assumption8 R B M). 
+    Context (A1: nonempty [set: T]) (Au: R `<=` O^-1).
+    Context (Apk : forall X , RelIndep O X <-> RelIndep M X).
+    Context (A_Onotcyclic: ~ (exists s, O.+ (s,s))).
+    
+    (* There exists a kernel or an increasing mapping for [<< O] taking values in pre_kernels *)
+    Lemma kernel_or_iic_fun:
+      (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (pre_kernel M R M)))
+      \/ (exists S, (S \in (pre_kernel M R M)) /\ S \in (absorbant M)).
+    Proof.
+      (* using extend lemma *)
+      have Ch0 S: S \in ((pre_kernel M R M) `&` (absorbant M).^c)
+                 -> exists S', S' \in (pre_kernel M R M) /\ (S [<< O] S').
+      {
+        rewrite inE => -[Hpk Hna].
+        move: (@extend T R B O S A2 A6 A7 A8 Hpk Hna) 
+            => [S' [/mem_set Hpk' Hlt]].
+        by exists S'. 
+      }
+      have Ch1 : exists S, S \in (pre_kernel M R M).
+      {
+        have Oinv_notcyclic: ~ (exists s, O^-1.+ (s,s))
+          by rewrite -TclosIv.
+        (* exists a sink and thus a preabsorbant node *)
+        move: (@NotCyclic_exists_preabsorbant T O^-1 M A1 Oinv_notcyclic) => [v Hpa].
+        (* [set v] is in (pre_kernel M R M). *)
+        exists [set v]%classic;rewrite inE. 
+        have Hinc:  (v)_:#R  `<=` (v)_:#O^-1 
+          by rewrite /Aset;apply: Fset_inc;apply: inverseS.
+        split;first by apply: RelIndep_set1.
+        split;first by apply: (subset_trans Hinc _).
+        + apply/negP => /eqP H.
+          have Hv: [set v]%classic v by [].
+          by rewrite H /= in Hv.
+      }
+      move: (@choose_sub _ ([<< O]%O) (pre_kernel M R M) (absorbant M).^c Ch0 Ch1)
+          => [Hiic | [S [Hpk Hna]]].
+      by left.
+      by right;exists S;split;[| move: Hna;rewrite 2!inE /= => /contrapT].
+    Qed.
+    
+    (* we prove that the existence of an increasing mapping for [<< O]
+       taking values in pre_kernels would contradict acyclicity
+     *)
+    
+    Lemma iic_to_allL  (h : nat -> (set T)):  
+      (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (pre_kernel O R M)) ->
+      exists n p, h n = h (n+p+1)
+             /\ allL ([<< O]%O) (mkseq (fun i => h (n + i+1)) p) (h n) (h n)
+             /\ ((h n)::(mkseq (fun i => h (n + i+1)) p)) [\in] (pre_kernel O R M).
+    Proof. 
+      move => Hiic_fun Hpk.
+      (* non injectivity prop as T is finType *)
+      have [n [m Heq]]:  exists n p : nat, h n = h (n + p.+1)
+          by apply: set_fin_codomain_prop.
+      move: Hiic_fun => /f2allL /(_ n m) HallL.
+      rewrite -addn1 addnA in Heq;rewrite -Heq in HallL. 
+      by exists n, m;split;[|split;[|apply: f2in]].
+    Qed.
+    
+    Lemma iic_and_prekernels_to_cyclic (h : nat -> (set T)):
+      (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (pre_kernel O R M))
+      -> exists s, O.+ (s,s).
+    Proof.
+      move => Hiic Hpk';move: (iic_to_allL Hiic Hpk') => [n [p [Ha [HallL Hpk]]]].
+      by apply: (Cyclicity_BH_lemma HallL Hpk).
+    Qed.
+    
+    Theorem G_SSW_fin_notcyclic: exists S, kernel M S.
+    Proof.
+      have pre_kernelP S': pre_kernel O R M S' <-> pre_kernel M R M S'
+        by rewrite /pre_kernel /= Apk.
+      have: exists S, S \in (pre_kernel M R M) /\ S \in (absorbant M).
+      {
+        move: kernel_or_iic_fun => [[h [Hiic Hk]] | H1];last by [].
+        have HpkO: (forall n, (h n) \in  (pre_kernel O R M))
+          by move => n; rewrite inE pre_kernelP -inE.
+        by move: (iic_and_prekernels_to_cyclic Hiic HpkO) => HOcyclic.
+      }
+      by move => [S [/set_mem [Hk _] /set_mem Habs]];exists S.
+    Qed.
+    
+  End Generalized_SSW_fin_notcyclic.
+End Generalized_SSW_fin_notcyclic.
+
+Export Generalized_SSW_fin_notcyclic(G_SSW_fin_notcyclic).
+
+Module Generalized_SSW_fin_porder.
+  Section Generalized_SSW_fin_porder.
+    (** * finType cases *)
+    (** * Extended Champetier *)
+    
+    Context (T : finType) (O R B: relation T).
+    Implicit Types (O R B: relation T). 
+  
+    Notation M := (B `|` R).
+
+    Context (A2 : Assumption2 R) (A6 : Assumption6 B M O) 
+    (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
+    Context (A1: nonempty [set: T]) (Asp: sporder O) (Au: R `<=` O^-1).
+    Context (Apk : forall X, RelIndep O X <->  RelIndep M X).
+  
+    Lemma maximal_mabsorbant S:
+      (pre_kernel O R M S) /\ (forall U, pre_kernel O R M U -> S [<= O] U -> S = U)
+      -> absorbant M S.
+    Proof.
+      contra; move => H1;rewrite /pre_kernel /= Apk => Hpk.
+      have H3: ~ absorbant M S.
+      {
+        move: H1 => [y H1] H3.
+        rewrite notin_setE in H3.
+        rewrite /absorbant /mkset => /(_ y) H4. 
+        by move: H1 => /H4;rewrite inE => H1.
+      }
+      move: (@extend T R B O S A2 A6 A7 A8 Hpk H3)
+          => [S' [Hpre [/DeltaCP H7 Hne]]].
+      exists S';first by rewrite (Apk S').
+      by split;[| apply/negP => /eqP Heq].
+    Qed.
+    
+    Lemma G_SSW_fin_porder: exists S, kernel M S. 
+    Proof.
+      (* There exist a maximal set *)
+      move: (@Maximal T O R M A1 Asp Au) => [S Hm].
+      move: Hm => /[dup] /maximal_mabsorbant Ma [[/Apk Hpk _] _]. 
+      by (exists S).
+    Qed.
+  End Generalized_SSW_fin_porder.
+End Generalized_SSW_fin_porder.
+
+Export Generalized_SSW_fin_porder(G_SSW_fin_porder).
+
 Module SSWext.
-  (** * Extended SSW Theorem *)
+  (** * use G_SSW to prove kernel existence in infinite graphs *)
+  (** * The Extended SSW Theorem and the SSW theorem as a corollary *)
   Parameter (T:choiceType) (Eb Er: relation T).
 
   Definition R := Er.+. 
@@ -69,7 +229,7 @@ Module SSWext.
   Definition SSW_1:= (nonempty [set: T]).
   Definition SSW_2:= ~ (iic (Asym R)).
   Definition SSW_3:= ~ (iic (Asym B)).
-
+  
   Notation M := (B `|` R).
   
   Lemma R_trans: transitive R.
@@ -121,13 +281,36 @@ Module SSWext.
   Proof.
     by pose proof (@G_SSW _ R B O A1 A2 A3 L4 L5 L6 L7 L8 L9).
   Qed.
+
+  Corollary SSW
+    (A1: SSW_1) (A2': ~ (iic_inj Er)) (A3': ~ (iic_inj Eb)):
+    exists S, RelIndep M S /\  absorbant M S.
+  Proof.
+    move: A2' => /(not_iic_inj_to_not_iic_asym A1) A2'.
+    move: A3' => /(not_iic_inj_to_not_iic_asym A1) A3'.
+    by apply: SSWext.
+  Qed.
+  
+  (* if x \in M#S there exists y \in S such that x and y are 
+   *  connected by a Eb path or a Er path 
+   *  This could be elsewhere.
+   *)
+  Lemma M2path x (S: set T): 
+    x \in M#S -> exists y, y \in S /\ exists s, ~ x \in s /\ ~ y \in s /\ uniq s 
+                                /\ (allL Eb s x y \/ allL Er s x y).
+  Proof.
+    rewrite inE /M /Fset => -[y [[H1 | H1] /mem_set H2]];(exists y;split;first by []).
+    + move: H1 => /(@TCP_uniq T Eb) [s [H3 [H4 [H5 H6]]]].
+      by (exists s;have H7: (allL Eb s x y \/ allL Er s x y) by left).
+    + move: H1 => /(@TCP_uniq T Er) [s [H3 [H4 [H5 H6]]]].
+      by (exists s;have H7: (allL Eb s x y \/ allL Er s x y) by right).
+  Qed.
   
 End SSWext.
 
-(** * XXXX  We need the original SSW theorem (weak one) *) 
-
 Module ABkernels.
-  (** * use G_SSW to prove the AB kernels case *)
+  (** * use G_SSW to prove kernel existence in infinite graphs *)
+  (** * in the AB kernels case *)
   Parameter (T:choiceType) (A1 A2: relation T).
 
   Definition R := A1.
@@ -179,9 +362,9 @@ Module ABkernels.
     by have: (M `|` M^-1) (x',x) by right;right;apply: (A4 x y x' H1 H2).
   Qed.
 
-  Theorem SSWext
+  Theorem AB_kernels
     (A1: AB_1) (A2: AB_2) (A3: AB_3) (A4: AB_4) (A5: AB_5):
-    exists X, RelIndep M X /\ absorbant M X.
+    exists S, kernel M S.
   Proof.
     by pose proof (@G_SSW _ R B O A1 A2 A3 (L4 A5) L5 L6 (L7 A4 A5)
                      (L8 A4 A5) (L9 A4 A5)).
@@ -206,7 +389,8 @@ Module MeunierLanglois.
   Definition AB_5:=  forall x y z, 
       ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
       -> B (x,y) -> B (y,z) -> B (x,z) \/ ( R (z,x) /\ R (z,y) ).
-  
+
+  (* a transitivity property for B `&` (B^-1 `|` R^-1) *)
   Definition AB_6:=  forall x y z, 
       B (x,y) -> ~ (B^-1 (x,y)) -> ~ (R (y,x)) 
       -> B (y,z) -> ~ (B^-1 (y,z)) -> ~ (R (z,y))
@@ -278,9 +462,9 @@ Module MeunierLanglois.
       by have: M (y,x) by left.
   Qed.
   
-  Theorem MLinf
+  Theorem ML_inf
     (A1: AB_1) (A2: AB_2) (A3: AB_3) (A4: AB_4) (A5: AB_5) (A6: AB_6):
-    exists X, RelIndep M X /\ absorbant M X.
+    exists S, kernel M S.
   (* end snippet MainTh:: no-out *)    
   Proof.
     by pose proof (@G_SSW _ R B O A1 A2 (L3 A3) (L4 A5 A6) 
@@ -288,193 +472,6 @@ Module MeunierLanglois.
   Qed.
   
 End MeunierLanglois. 
-
-Module BlidiaEngel_inf.
-  (** * XXXX not finished *)
-  (* O is an orientation:  Asym, irreflexive relation *)
-  (* D irreflexive D est inclue dans O `|` O^-1 *)
-  (* O is acycliq *)
-  Section BlidiaEngel_inf.
-
-    Context (T:choiceType) (O D: relation T).
-  
-    Definition R := D `&` O^-1. 
-    Definition B := D `&` O. 
-    Notation M := (B `|` R).
-
-    Context (OD: O `|` O^-1 = M `|` M^-1).
-    Definition AB_1:= (nonempty [set: T]).
-    Definition AB_2:= ~ (iic R).
-    Definition AB_3:= ~ (iic B).
-    
-    Definition AB_4:=  forall x y z t, 
-        ~ (y = x) -> ~ (y = z) -> ~ (z = x) -> ~ (z = t)
-        -> ~ (z = y) ->  ~ (y = t) -> ~ (x = t)
-        -> O (x,y) -> (O (y,z) \/ O (z,y)) -> O (t,z) 
-        -> O (x,z) \/ O (z,x) \/ O (y,t) \/ O (t,y) \/ O (x,t) \/ O (t,x).
-    
-    Definition AB_5:=  forall x y z, 
-        ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
-        -> O (x,y) -> O (y,z) -> O (z,x)
-        -> (O (y,x) /\ O (z,y)).
-    
-    (* O and D are both directions of a same graph *)
-
-    Lemma haveA5: ( O  `<=` M `|` M^-1).
-    Proof. by rewrite -OD;apply: subsetUl. Qed.
-    
-    Lemma haveA6: forall x y, B (x,y) /\ ~ (M (y, x)) -> O (x,y).
-    Proof. by move => x y [[_ Hb] _]. Qed.
-    
-    Theorem BE 
-      (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O)
-      (A7: Assumption7 R B M) (A8: Assumption8 R B M)
-      (A9: Assumption9 R B O M):
-      exists X, RelIndep M X /\ absorbant M X.
-    Proof.
-      by pose proof (@G_SSW _ R B O A1 A2 A3 A4 haveA5 haveA6 A7 A8 A9).
-    Qed.
-  End BlidiaEngel_inf.
-End BlidiaEngel_inf.
-
-Module BHExt.
-  Section BHExt.
-    (** * finType cases *)
-    (** * Extended Blida en Hengel Theorem *)
-  
-    Context {T: finType} (O R B: relation T).
-
-    Definition M := B `|` R.
-
-    Context (A2: Assumption2 R) (A6: Assumption6 B M O)
-      (A7: Assumption7 R B M) (A8: Assumption8 R B M). 
-    Context (A1: nonempty [set: T]) (Au: R `<=` O^-1).
-    Context (Apk : forall X , RelIndep O X <-> RelIndep M X).
-    Context (A_Onotcyclic: ~ (exists s, O.+ (s,s))).
-    
-    (* There exists a kernel or an increasing mapping for [<< O] taking values in preKernels *)
-    Lemma kernel_or_iic_fun:
-      (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (preKernel M R M)))
-      \/ (exists S, (S \in (preKernel M R M)) /\ S \in (absorbant M)).
-    Proof.
-      (* using extend lemma *)
-      have Ch0 S: S \in ((preKernel M R M) `&` (absorbant M).^c)
-                 -> exists S', S' \in (preKernel M R M) /\ (S [<< O] S').
-      {
-        rewrite inE => -[Hpk Hna].
-        move: (@extend T R B O S A2 A6 A7 A8 Hpk Hna) 
-            => [S' [/mem_set Hpk' Hlt]].
-        by exists S'. 
-      }
-      have Ch1 : exists S, S \in (preKernel M R M).
-      {
-        have Oinv_notcyclic: ~ (exists s, O^-1.+ (s,s))
-          by rewrite -TclosIv.
-        (* exists a sink and thus a preabsorbant node *)
-        move: (@NotCyclic_exists_preabsorbant T O^-1 M A1 Oinv_notcyclic) => [v Hpa].
-        (* [set v] is in (preKernel M R M). *)
-        exists [set v]%classic;rewrite inE. 
-        have Hinc:  (v)_:#R  `<=` (v)_:#O^-1 
-          by rewrite /Aset;apply: Fset_inc;apply: inverseS.
-        split;first by apply: RelIndep_set1.
-        split;first by apply: (subset_trans Hinc _).
-        + apply/negP => /eqP H.
-          have Hv: [set v]%classic v by [].
-          by rewrite H /= in Hv.
-      }
-      move: (@choose_sub _ ([<< O]%O) (preKernel M R M) (absorbant M).^c Ch0 Ch1)
-          => [Hiic | [S [Hpk Hna]]].
-      by left.
-      by right;exists S;split;[| move: Hna;rewrite 2!inE /= => /contrapT].
-    Qed.
-    
-    (* we prove that the existence of an increasing mapping for [<< O]
-       taking values in preKernels would contradict acyclicity
-     *)
-    
-    Lemma iic_to_allL  (h : nat -> (set T)):  
-      (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (preKernel O R M)) ->
-      exists n p, h n = h (n+p+1)
-             /\ allL ([<< O]%O) (mkseq (fun i => h (n + i+1)) p) (h n) (h n)
-             /\ ((h n)::(mkseq (fun i => h (n + i+1)) p)) [\in] (preKernel O R M).
-    Proof. 
-      move => Hiic_fun Hpk.
-      (* non injectivity prop as T is finType *)
-      have [n [m Heq]]:  exists n p : nat, h n = h (n + p.+1)
-          by apply: set_fin_codomain_prop.
-      move: Hiic_fun => /f2allL /(_ n m) HallL.
-      rewrite -addn1 addnA in Heq;rewrite -Heq in HallL. 
-      by exists n, m;split;[|split;[|apply: f2in]].
-    Qed.
-    
-    Lemma iic_and_prekernels_to_cyclic (h : nat -> (set T)):
-      (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (preKernel O R M))
-      -> exists s, O.+ (s,s).
-    Proof.
-      move => Hiic Hpk';move: (iic_to_allL Hiic Hpk') => [n [p [Ha [HallL Hpk]]]].
-      by apply: (Cyclicity_BH_lemma HallL Hpk).
-    Qed.
-    
-    Lemma exists_kernel: exists S, S \in (preKernel M R M) /\ S \in (absorbant M).
-    Proof.
-      have preKernelP S': preKernel O R M S' <-> preKernel M R M S'
-        by rewrite /preKernel /= Apk.
-      move: kernel_or_iic_fun => [[h [Hiic Hk]] | H1];last by [].
-      have HpkO: (forall n, (h n) \in  (preKernel O R M))
-        by move => n; rewrite inE preKernelP -inE.
-      by move: (iic_and_prekernels_to_cyclic Hiic HpkO) => HOcyclic.
-    Qed.
-    
-  End BHExt.
-End BHExt.
-
-Export BHExt(exists_kernel).
-
-Module Extended_Champetier_Theorem.
-  Section Extended_Champetier_Theorem.
-    (** * finType cases *)
-    (** * Extended Champetier *)
-    
-    Context (T : finType) (O R B: relation T).
-    Implicit Types (O R B: relation T). 
-  
-    Notation M := (B `|` R).
-
-    Context (A2 : Assumption2 R) (A6 : Assumption6 B M O) 
-    (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
-    Context (A1: nonempty [set: T]) (Asp: sporder O) (Au: R `<=` O^-1).
-    Context (Apk : forall X, RelIndep O X <->  RelIndep M X).
-  
-    Lemma maximal_mabsorbant S:
-      (preKernel O R M S) /\ (forall U, preKernel O R M U -> S [<= O] U -> S = U)
-      -> absorbant M S.
-    Proof.
-      contra; move => H1;rewrite /preKernel /= Apk => Hpk.
-      have H3: ~ absorbant M S.
-      {
-        move: H1 => [y H1] H3.
-        rewrite notin_setE in H3.
-        rewrite /absorbant /mkset => /(_ y) H4. 
-        by move: H1 => /H4;rewrite inE => H1.
-      }
-      move: (@extend T R B O S A2 A6 A7 A8 Hpk H3)
-          => [S' [Hpre [/DeltaCP H7 Hne]]].
-      exists S';first by rewrite (Apk S').
-      by split;[| apply/negP => /eqP Heq].
-    Qed.
-    
-    Lemma Kernel_ChampetierExt: 
-      exists S, RelIndep M S /\ absorbant M S.
-    Proof.
-      (* There exist a maximal set *)
-      move: (@Maximal T O R M A1 Asp Au) => [S Hm].
-      move: Hm => /[dup] /maximal_mabsorbant Ma [[/Apk Hpk _] _]. 
-      by (exists S).
-    Qed.
-  End Extended_Champetier_Theorem.
-End Extended_Champetier_Theorem.
-
-Export Extended_Champetier_Theorem(Kernel_ChampetierExt).
 
 Section simpleGraph. 
   (** * simpleGraph definition *)
@@ -568,14 +565,14 @@ Section Champetier_Theeorem.
     by rewrite (@orientation_relIndep T G O X Ao).
   Qed.
   
-  Lemma Rsym : asymmetric R.
+  Lemma Rasym : asymmetric R.
   Proof.
     move => x y /Au H1 /Au H2.
     by move: H1 Ao => + [_ /(_ x y) Ha] => /Ha H3.
   Qed.
   
   Lemma haveA2 : ~ (iic (Asym R)).
-    move: Rsym => /AsymEq ->;apply: Rnotiic.
+    move: Rasym => /AsymEq ->;apply: Rnotiic.
   Qed.
 
   Lemma haveA6 : forall x y : T, B (x, y) /\ ~ M (y, x) -> O (x, y).
@@ -584,8 +581,8 @@ Section Champetier_Theeorem.
   Lemma Kernel_Champetier: 
     exists S, RelIndep M S /\ absorbant M S.
   Proof.
-    by pose proof (@Kernel_ChampetierExt T O R B (haveA2) (haveA6)
-                     A7 A8 A1 Asp (Au) (Apk)).
+    by pose proof 
+         (@G_SSW_fin_porder T O R B (haveA2) (haveA6) A7 A8 A1 Asp (Au) (Apk)).
   Qed.
   
 End Champetier_Theeorem.
