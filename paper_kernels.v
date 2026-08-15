@@ -473,14 +473,16 @@ Module MeunierLanglois.
   
 End MeunierLanglois. 
 
-Section simpleGraph. 
-  (** * simpleGraph definition *)
-  Context (T : Type).
-  Implicit Types (G D O Re: relation T).
+Definition simpleGraph (T: Type) (G:relation T) := symmetric G /\ irreflexive G.
+Definition Direction (T: Type) (G D: relation T) := D `|` D^-1 = G. 
+Definition Orientation (T: Type) (G O: relation T) := Direction G O /\ asymmetric O.
 
-  Definition simpleGraph G := symmetric G /\ irreflexive G.
-  Definition Direction G D := D `|` D^-1 = G. 
-  Definition Orientation G O := Direction G O /\ asymmetric O.
+Module  simpleGraph. 
+  Section simpleGraph. 
+  (** * simpleGraph orientation direction  definitions *)
+  (** * and properties *)
+  Context {T : Type}.
+  Implicit Types (G D O Re: relation T).
 
   Lemma RelIndep_sym Re S: (RelIndep Re S) <-> (RelIndep (Re `|` Re^-1) S).
   Proof.
@@ -497,33 +499,19 @@ Section simpleGraph.
   Lemma orientation_relIndep G D S: 
     Orientation G D -> (RelIndep D S <-> RelIndep G S).
   Proof. by move => [Hd _];rewrite RelIndep_sym Hd. Qed.
-  
-End simpleGraph.
 
-Section Champetier_Theeorem.
-  (** * The original Champetier Theorem *)
-  Context (T : finType) (G D O: relation T).
-  
-  Context (Asg: simpleGraph G).
-  Context (Ao: Orientation G O).
+  Context (G D O: relation T).
+  Context (Ag: simpleGraph G).
   Context (Ad: Direction G D).
+  Context (Ao: Orientation G O).
 
   Definition R := D `&` O^-1.
   Definition B := D `&` O.
-
-  Notation M := (B `|` R).
-
-  Context 
-    (A1: nonempty [set: T]) 
-    (Asp: sporder O)
-    (A6 : Assumption6 B M O) 
-    (A7 : Assumption7 R B M)
-    (A8 : Assumption8 R B M).
   
-  Lemma RB: M = D.
+  Lemma RB: (B `|` R) = D.
   Proof.
-    have H1:  R `<=` D. by rewrite /R;apply: subIsetl.
-    have H2:  B `<=` D. by rewrite /R;apply: subIsetl.
+    have H1:  R `<=` D by rewrite /R;apply: subIsetl.
+    have H2:  B `<=` D by rewrite /R;apply: subIsetl.
     rewrite predeqE => -[x y].
     split => [[/H2 H0 | /H1 H0] // | H3].
     case H4: ((x,y) \in O).
@@ -546,46 +534,115 @@ Section Champetier_Theeorem.
       by rewrite H5.
   Qed.
   
-  Lemma AspIv: sporder O^-1.
-  Proof. by apply: sporder_inv. Qed.
-  
-  Lemma Au:  R `<=` O^-1. 
-  Proof. by rewrite /R;apply: subIsetr. Qed.
-
-  Lemma Onoticc: ~ (iic  O^-1). 
-  Proof. by apply: (@fin_not_iic _ O^-1 AspIv). Qed.
-  
-  Lemma Rnotiic: ~ (iic R).
-  Proof. by move: Onoticc => ? /(@iic_sub T R O^-1 (Au)) ?. Qed.
-
-  Lemma Apk:  forall X , RelIndep O X <->  RelIndep M X.
+  Lemma test: O `<=` D `|` D^-1.
   Proof.
-    move => X. rewrite RB. 
-    rewrite (@direction_relIndep T G D X Ad).
-    by rewrite (@orientation_relIndep T G O X Ao).
-  Qed.
-  
-  Lemma Rasym : asymmetric R.
-  Proof.
-    move => x y /Au H1 /Au H2.
-    by move: H1 Ao => + [_ /(_ x y) Ha] => /Ha H3.
-  Qed.
-  
-  Lemma haveA2 : ~ (iic (Asym R)).
-    move: Rasym => /AsymEq ->;apply: Rnotiic.
+    have Heq: O `|` O^-1 = D `|` D^-1 by move: Ao => [-> _].
+    have: O `|` O^-1 `<=` D `|` D^-1  by rewrite Heq.
+    by rewrite subUset => -[Hoinc _].
   Qed.
 
-  Lemma haveA6 : forall x y : T, B (x, y) /\ ~ M (y, x) -> O (x, y).
-  Proof. by move => x y [[_ H1] _]. Qed.
-
-  Lemma Kernel_Champetier: 
-    exists S, RelIndep M S /\ absorbant M S.
+  Lemma test': O^-1 `<=` D `|` D^-1.
   Proof.
-    by pose proof 
-         (@G_SSW_fin_porder T O R B (haveA2) (haveA6) A7 A8 A1 Asp (Au) (Apk)).
+    have Heq: O `|` O^-1 = D `|` D^-1 by move: Ao => [-> _].
+    have: O `|` O^-1 `<=` D `|` D^-1  by rewrite Heq.
+    by rewrite subUset => -[_ Hoinc].
+  Qed.
+
+  Lemma test'' x y: O(x,y) -> B(x,y) \/ R(y,x).
+    move => /[dup] Hoxy /test [Dxy | Dyx].
+    by left.
+    by right.
   Qed.
   
-End Champetier_Theeorem.
+  End simpleGraph.
+End simpleGraph.
+
+Export simpleGraph.
+
+Module  Champetier_Theorem.
+  Section Champetier_Theorem.
+    (** * The original Champetier Theorem *)
+    Context (T : finType) (G D O: relation T).
+    
+    Context (Asg: simpleGraph G).
+    Context (Ao: Orientation G O).
+    Context (Ad: Direction G D).
+
+    Definition R := D `&` O^-1.
+    Definition B := D `&` O.
+
+    Notation M := (B `|` R).
+
+    Context 
+      (A1: nonempty [set: T]) 
+        (Asp: sporder O)
+        (A8 : Assumption8 R B M).
+    
+    Lemma AspIv: sporder O^-1.
+    Proof. by apply: sporder_inv. Qed.
+    
+    Lemma Au:  R `<=` O^-1. 
+    Proof. by rewrite /R;apply: subIsetr. Qed.
+
+    Lemma Onoticc: ~ (iic  O^-1). 
+    Proof. by apply: (@fin_not_iic _ O^-1 AspIv). Qed.
+    
+    Lemma Rnotiic: ~ (iic R).
+    Proof. by move: Onoticc => ? /(@iic_sub T R O^-1 (Au)) ?. Qed.
+
+    Lemma Apk:  forall X , RelIndep O X <->  RelIndep M X.
+    Proof.
+      move => X. 
+      rewrite (RB Ad Ao).
+      rewrite (@direction_relIndep T G D X Ad).
+      by rewrite (@orientation_relIndep T G O X Ao).
+    Qed.
+    
+    Lemma Rasym : asymmetric R.
+    Proof.
+      move => x y /Au H1 /Au H2.
+      by move: H1 Ao => + [_ /(_ x y) Ha] => /Ha H3.
+    Qed.
+    
+    Lemma haveA2 : ~ (iic (Asym R)).
+      move: Rasym => /AsymEq ->;apply: Rnotiic.
+    Qed.
+
+    Lemma haveA6 : forall x y : T, B (x, y) /\ ~ M (y, x) -> O (x, y).
+    Proof. by move => x y [[_ H1] _]. Qed.
+
+    (** * Il faut la propriéété des cycles pour avoir A7 et A8 *)
+    
+    Lemma haveA7 : Assumption7 R B M. 
+    Proof.
+      move: Asp => [_ Otr]. 
+      move => x x' y y' _ Rxy' My'x' Bx'y nBxy [nRx'y nMyx'] [nRxy nMyx]
+               nMxx' nMx'x _ _ _ _ _ nMy'x.
+      move: My'x' => [[_ Oy'x'] | [_ Ox'y']].
+      + move: Bx'y => [_ Ox'y].
+        have Oy'y: O (y',y) by apply: (Otr y' x' y Oy'x' Ox'y).
+        move: Oy'y => /(@test'' T G D O Ad Ao) [By'y | Ryy'].
+        ++ by left.
+        ++ admit.
+      + move: Rxy' => [_ Oy'x].
+        have Ox'x: O (x',x) by apply: (Otr x' y' x Ox'y' Oy'x).
+        move: Ox'x => /(@test'' T G D O Ad Ao) [Bx'x | Rxx'].
+        ++ by have Hmx'x: M(x',x) by left.
+        ++ by have Hmx'x: M(x,x') by right.
+    Admitted.
+    
+    (** * A Champetier th with Assumption A8 *)
+    Lemma Kernel_Champetier: 
+      exists S, RelIndep M S /\ absorbant M S.
+    Proof.
+      by pose proof 
+           (@G_SSW_fin_porder T O R B haveA2 haveA6 haveA7 A8 A1 Asp Au Apk).
+    Qed.
+    
+
+    
+  End Champetier_Theorem.
+End Champetier_Theorem.
 
 Module Blidia_Hengel_Theeorem.
   Section Blidia_Hengel_Theeorem.
@@ -610,38 +667,13 @@ Module Blidia_Hengel_Theeorem.
       (A7 : Assumption7 R B M)
       (A8 : Assumption8 R B M).
   
-    Lemma RB: M = D.
-    Proof.
-      have H1:  R `<=` D. by rewrite /R;apply: subIsetl.
-      have H2:  B `<=` D. by rewrite /R;apply: subIsetl.
-      rewrite predeqE => -[x y].
-      split => [[/H2 H0 | /H1 H0] // | H3].
-      case H4: ((x,y) \in O).
-      + move: H4 => /set_mem H4.
-        ++ case H5: ((y,x) \in O).
-           move: H5 => /set_mem H5.
-           by right;split.
-           by left;split.
-      + case H5: ((y,x) \in O).
-        move: H5 => /set_mem H5.
-        by right;split.
-        (** (x, y) \in O) = false /\ (y, x) \in O) = false *)
-        (** is not possible *)
-        have H6: D `|` D^-1 = G by [].
-        have H7: O `|` O^-1 = G by move: (Ao) => [Do _].
-        have H8:  D `|` D^-1 = O `|` O^-1. by rewrite H6 H7. 
-        have [ //| H9]: (O `|` O^-1) (x,y) by rewrite -H8; left.
-        by rewrite -inE H4.
-        have: (y,x) \in O by rewrite inE.  
-        by rewrite H5.
-    Qed.
-    
     Lemma Au:  R `<=` O^-1. 
     Proof. by rewrite /R;apply: subIsetr. Qed.
     
     Lemma Apk:  forall X , RelIndep O X <->  RelIndep M X.
     Proof.
-      move => X. rewrite RB. 
+      move => X. 
+      rewrite (RB Ad Ao).
       rewrite (@direction_relIndep T G D X Ad).
       by rewrite (@orientation_relIndep T G O X Ao).
     Qed.
