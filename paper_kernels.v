@@ -564,10 +564,14 @@ Module  Champetier_Theorem.
     (** * The original Champetier Theorem *)
     Context (T : finType) (G D O: relation T).
     
+    Definition Three_cycles := 
+      forall x y z, D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z) -> D(y,x).
+
     Context (Asg: simpleGraph G).
     Context (Ao: Orientation G O).
     Context (Ad: Direction G D).
-
+    Context (Atc: Three_cycles).
+    
     Definition R := D `&` O^-1.
     Definition B := D `&` O.
 
@@ -611,35 +615,53 @@ Module  Champetier_Theorem.
     Lemma haveA6 : forall x y : T, B (x, y) /\ ~ M (y, x) -> O (x, y).
     Proof. by move => x y [[_ H1] _]. Qed.
 
-    (** * Il faut la propriéété des cycles pour avoir A7 et A8 *)
-    
     Lemma haveA7 : Assumption7 R B M. 
     Proof.
       move: Asp => [_ Otr]. 
       move => x x' y y' _ Rxy' My'x' Bx'y nBxy [nRx'y nMyx'] [nRxy nMyx]
                nMxx' nMx'x _ _ _ _ _ nMy'x.
-      move: My'x' => [[_ Oy'x'] | [_ Ox'y']].
-      + move: Bx'y => [_ Ox'y].
+      move: My'x' => [[Dy'x' Oy'x'] | [_ Ox'y']].
+      + move: Bx'y => [Dx'y Ox'y].
         have Oy'y: O (y',y) by apply: (Otr y' x' y Oy'x' Ox'y).
-        move: Oy'y => /(@test'' T G D O Ad Ao) [By'y | Ryy'].
+        move: Oy'y => /(@test'' T G D O Ad Ao) [By'y | [Dyy' _]].
         ++ by left.
-        ++ admit.
+        ++ (** * here we need the 3-cycle property *)
+          rewrite (RB Ad Ao) in nMyx'.
+          move: (@Atc y y' x' Dyy' Dy'x' Dx'y nMyx') => Dy'y.
+          (** now we have Dyy' and Dy'y *)
+          by rewrite (RB Ad Ao).
       + move: Rxy' => [_ Oy'x].
         have Ox'x: O (x',x) by apply: (Otr x' y' x Ox'y' Oy'x).
         move: Ox'x => /(@test'' T G D O Ad Ao) [Bx'x | Rxx'].
         ++ by have Hmx'x: M(x',x) by left.
         ++ by have Hmx'x: M(x,x') by right.
-    Admitted.
-    
-    (** * A Champetier th with Assumption A8 *)
-    Lemma Kernel_Champetier: 
-      exists S, RelIndep M S /\ absorbant M S.
-    Proof.
-      by pose proof 
-           (@G_SSW_fin_porder T O R B haveA2 haveA6 haveA7 A8 A1 Asp Au Apk).
     Qed.
     
-
+    Lemma haveA8 : Assumption8 R B M. 
+    Proof.
+      move: Asp => [_ Otr]. 
+      move => x' y y' _ _ _ Ryy' My'x' Bx'y [nRx'y nMyx']. 
+      rewrite (RB Ad Ao).
+      move: My'x' => [By'x' | Ry'x'].
+      + move: By'x' Bx'y => [Dy'x' Oy'x'] [Dx'y Ox'y]. 
+        have Oy'y: O (y',y) by apply: (@Otr y' x' y Oy'x' Ox'y).
+        move: Oy'y => /(@test'' T G D O Ad Ao) [By'y | [Dyy' _]].
+        ++ by rewrite -(RB Ad Ao);left. 
+        ++ (** here we need the 3-cycle property *)
+          rewrite (RB Ad Ao) in nMyx'.
+          by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nMyx') => Dy'y.
+      + (**  here we need the 3-cycle property *)
+        move: Ryy' Ry'x' Bx'y => [Dyy' _] [Dy'x' _] [Dx'y _].
+        rewrite (RB Ad Ao) in nMyx'.
+        by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nMyx') => Dy'y.
+    Qed.
+    
+    (** A stronger Champetier theorem as we weed a weaker version of the three cycles assymption *)
+    Lemma Kernel_Champetier:  exists S, RelIndep M S /\ absorbant M S.
+    Proof.
+      by pose proof 
+           (@G_SSW_fin_porder T O R B haveA2 haveA6 haveA7 haveA8 A1 Asp Au Apk).
+    Qed.
     
   End Champetier_Theorem.
 End Champetier_Theorem.
