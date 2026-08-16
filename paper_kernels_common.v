@@ -663,7 +663,9 @@ Section Assumptions.
   Definition Assumption6 B M O:= 
     (forall x y, B (x,y) /\ ~ (M (y, x)) -> O (x,y)).
   
-  Definition Assumption7 R B M:= 
+  Definition Assumption7
+
+ R B M:= 
     (forall x x' y y', ~(x' = x) 
                   -> R (x,y') -> M (y', x')
                   -> (B (x',y)) -> ~ (B (x, y)) 

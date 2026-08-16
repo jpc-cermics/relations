@@ -577,10 +577,7 @@ Module  Champetier_Theorem.
 
     Notation M := (B `|` R).
 
-    Context 
-      (A1: nonempty [set: T]) 
-        (Asp: sporder O)
-        (A8 : Assumption8 R B M).
+    Context (A1: nonempty [set: T]) (Asp: sporder O).
     
     Lemma AspIv: sporder O^-1.
     Proof. by apply: sporder_inv. Qed.
@@ -637,26 +634,17 @@ Module  Champetier_Theorem.
         ++ by have Hmx'x: M(x,x') by right.
     Qed.
     
+    (** here we just need the 3-cycle property *)
     Lemma haveA8 : Assumption8 R B M. 
     Proof.
-      move: Asp => [_ Otr]. 
-      move => x' y y' _ _ _ Ryy' My'x' Bx'y [nRx'y nMyx']. 
+      (* reformulate everything with D *)
       rewrite (RB Ad Ao).
-      move: My'x' => [By'x' | Ry'x'].
-      + move: By'x' Bx'y => [Dy'x' Oy'x'] [Dx'y Ox'y]. 
-        have Oy'y: O (y',y) by apply: (@Otr y' x' y Oy'x' Ox'y).
-        move: Oy'y => /(@test'' T G D O Ad Ao) [By'y | [Dyy' _]].
-        ++ by rewrite -(RB Ad Ao);left. 
-        ++ (** here we need the 3-cycle property *)
-          rewrite (RB Ad Ao) in nMyx'.
-          by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nMyx') => Dy'y.
-      + (**  here we need the 3-cycle property *)
-        move: Ryy' Ry'x' Bx'y => [Dyy' _] [Dy'x' _] [Dx'y _].
-        rewrite (RB Ad Ao) in nMyx'.
-        by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nMyx') => Dy'y.
+      move => x' y y' _ _ _ [Dyy' _] Dy'x' [Dx'y _] [_ nDyx']. 
+      by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx').
     Qed.
-    
-    (** A stronger Champetier theorem as we weed a weaker version of the three cycles assymption *)
+
+    (** A stronger Champetier theorem as we weed a weaker
+        version of the three cycles assymption *)
     Lemma Kernel_Champetier:  exists S, RelIndep M S /\ absorbant M S.
     Proof.
       by pose proof 
@@ -669,26 +657,27 @@ End Champetier_Theorem.
 Module Blidia_Hengel_Theeorem.
   Section Blidia_Hengel_Theeorem.
     (** * The original Blidia Hengel Theorem *)
-    (** * but sporder O is replaced by O is acyclic. *)
-  
     Context (T : finType) (G D O: relation T).
-  
+    
+    Definition R := D `&` O^-1.
+    Definition B := D `&` O.
+    Notation M := (B `|` R).
+
+    Definition Three_cycles := 
+      forall x y z, D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z) -> D(y,x).
+
+    Definition Forbiden_graph :=
+      forall x y z t, R (x,y) -> D(y,z) -> B(z,t) -> 
+                 D(x,t) \/ D(t,x) \/ D(x,z) \/ D (z,x) \/ D(y,t) \/ D(t,y).
+    
     Context (Asg: simpleGraph G).
     Context (Ao: Orientation G O).
     Context (Ad: Direction G D).
-
-    Definition R := D `&` O^-1.
-    Definition B := D `&` O.
-
-    Notation M := (B `|` R).
+    Context (Atc: Three_cycles).
+    Context (Afg: Forbiden_graph).
+    Context (A1: nonempty [set: T]).
+    Context (A_Onotcyclic: ~ (exists s, O.+ (s,s))).
     
-    Context 
-      (A1: nonempty [set: T]) 
-      (A_Onotcyclic: ~ (exists s, O.+ (s,s)))
-      (A6 : Assumption6 B M O) 
-      (A7 : Assumption7 R B M)
-      (A8 : Assumption8 R B M).
-  
     Lemma Au:  R `<=` O^-1. 
     Proof. by rewrite /R;apply: subIsetr. Qed.
     
@@ -724,13 +713,37 @@ Module Blidia_Hengel_Theeorem.
       apply: notiicO.
     Qed.
     
-    Lemma haveA6 : forall x y : T, B (x, y) /\ ~ M (y, x) -> O (x, y).
+    Lemma haveA6 : Assumption6 B M O.
     Proof. by move => x y [[_ H1] _]. Qed.
 
+    Lemma haveA7: Assumption7 R B M. 
+    Proof.
+      rewrite (RB Ad Ao).
+      move => x x' y y' _ Rxy' Dy'x' Bx'y nBxy [nRx'y nDyx'] [nRxy nDyx]
+               nDxx' nDx'x _ _ _ _ _ nDy'x.
+      have nDxy: ~ (D (x,y))
+        by rewrite -(RB Ad Ao) => /= -[Bxy| Rxy].
+      have Dx'y: D(x',y) by move: Bx'y=> [? _].
+      
+      by move: (@Afg x y' x' y Rxy' Dy'x' Bx'y) =>
+            [Dxy | [Dyx | [Dxx' | [ Dx'x | [ Dy'y |Dyy']]]]];
+            [| | | | |move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx')].
+    Qed.
+    
+    Lemma haveA8 : Assumption8 R B M. 
+    Proof.
+      (* reformulate everything with D *)
+      rewrite (RB Ad Ao).
+      move => x' y y' _ _ _ [Dyy' _] Dy'x' [Dx'y _] [_ nDyx']. 
+      by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx').
+    Qed.
+    
     Lemma Blidia_Hengel_Theorem: exists S, kernel M S. 
     Proof.
-      by apply: (@G_SSW_fin_notcyclic T O R B haveA2 haveA6 A7 A8 A1 Au Apk A_Onotcyclic).
+      by apply: (@G_SSW_fin_notcyclic T O R B haveA2 haveA6 haveA7 haveA8 A1 Au Apk A_Onotcyclic).
     Qed.
-
+    
   End Blidia_Hengel_Theeorem.
 End Blidia_Hengel_Theeorem.
+
+(** * XXXX il manque la version étendue de Blidia Hengel qui est dans Meunier Langlois*)
