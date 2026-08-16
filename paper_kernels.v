@@ -505,8 +505,8 @@ Module  simpleGraph.
   Context (Ad: Direction G D).
   Context (Ao: Orientation G O).
 
-  Definition R := D `&` O^-1.
-  Definition B := D `&` O.
+  Definition R := D `&` O.
+  Definition B := D `&` O^-1.
   
   Lemma RB: (B `|` R) = D.
   Proof.
@@ -518,11 +518,11 @@ Module  simpleGraph.
     + move: H4 => /set_mem H4.
       ++ case H5: ((y,x) \in O).
          move: H5 => /set_mem H5.
-         by right;split.
          by left;split.
+         by right;split.
     + case H5: ((y,x) \in O).
       move: H5 => /set_mem H5.
-      by right;split.
+      by left;split.
       (** (x, y) \in O) = false /\ (y, x) \in O) = false *)
       (** is not possible *)
       have H6: D `|` D^-1 = G by [].
@@ -548,11 +548,8 @@ Module  simpleGraph.
     by rewrite subUset => -[_ Hoinc].
   Qed.
 
-  Lemma test'' x y: O(x,y) -> B(x,y) \/ R(y,x).
-    move => /[dup] Hoxy /test [Dxy | Dyx].
-    by left.
-    by right.
-  Qed.
+  Lemma test'' x y: O(x,y) -> B(y,x) \/ R(x,y).
+  Proof. by move => /[dup] ? /test [?|?];[right|left]. Qed.
   
   End simpleGraph.
 End simpleGraph.
@@ -572,8 +569,8 @@ Module  Champetier_Theorem.
     Context (Ad: Direction G D).
     Context (Atc: Three_cycles).
     
-    Definition R := D `&` O^-1.
-    Definition B := D `&` O.
+    Definition R := D `&` O.
+    Definition B := D `&` O^-1.
 
     Notation M := (B `|` R).
 
@@ -582,21 +579,30 @@ Module  Champetier_Theorem.
     Lemma AspIv: sporder O^-1.
     Proof. by apply: sporder_inv. Qed.
     
-    Lemma Au:  R `<=` O^-1. 
+    Lemma Au:  R `<=` O. 
     Proof. by rewrite /R;apply: subIsetr. Qed.
 
-    Lemma Onoticc: ~ (iic  O^-1). 
-    Proof. by apply: (@fin_not_iic _ O^-1 AspIv). Qed.
+    Lemma Au':  R `<=` O^-1^-1. 
+    Proof. by move: Au;rewrite (inverseK O). Qed.
+           
+    Lemma Onoticc: ~ (iic  O). 
+    Proof. by apply: (@fin_not_iic _ O Asp). Qed.
     
     Lemma Rnotiic: ~ (iic R).
-    Proof. by move: Onoticc => ? /(@iic_sub T R O^-1 (Au)) ?. Qed.
+    Proof. by move: Onoticc => ? /(@iic_sub T R O (Au)) ?. Qed.
 
-    Lemma Apk:  forall X , RelIndep O X <->  RelIndep M X.
+    Lemma Aom1: Orientation G O^-1.
+    Proof.
+      move: Ao => [Hd /asymmetric_inv Has].
+      by split;[rewrite /Direction (inverseK O) setUC|].
+    Qed.
+    
+    Lemma Apk:  forall X , RelIndep O^-1 X <->  RelIndep M X.
     Proof.
       move => X. 
       rewrite (RB Ad Ao).
       rewrite (@direction_relIndep T G D X Ad).
-      by rewrite (@orientation_relIndep T G O X Ao).
+      by rewrite (@orientation_relIndep T G O^-1 X Aom1).
     Qed.
     
     Lemma Rasym : asymmetric R.
@@ -609,7 +615,7 @@ Module  Champetier_Theorem.
       move: Rasym => /AsymEq ->;apply: Rnotiic.
     Qed.
 
-    Lemma haveA6 : forall x y : T, B (x, y) /\ ~ M (y, x) -> O (x, y).
+    Lemma haveA6 : forall x y : T, B (x, y) /\ ~ M (y, x) -> O^-1 (x, y).
     Proof. by move => x y [[_ H1] _]. Qed.
 
     Lemma haveA7 : Assumption7 R B M. 
@@ -617,19 +623,19 @@ Module  Champetier_Theorem.
       move: Asp => [_ Otr]. 
       move => x x' y y' _ Rxy' My'x' Bx'y nBxy [nRx'y nMyx'] [nRxy nMyx]
                nMxx' nMx'x _ _ _ _ _ nMy'x.
-      move: My'x' => [[Dy'x' Oy'x'] | [_ Ox'y']].
-      + move: Bx'y => [Dx'y Ox'y].
-        have Oy'y: O (y',y) by apply: (Otr y' x' y Oy'x' Ox'y).
-        move: Oy'y => /(@test'' T G D O Ad Ao) [By'y | [Dyy' _]].
+      move: My'x' => [[Dy'x' Ox'y'] | [_ Oy'x']].
+      + move: Bx'y => [Dx'y Oyx'].
+        have Oyy': O^-1 (y',y) by apply: (Otr y x' y' Oyx' Ox'y').
+        move: Oyy' => /(@test'' T G D O Ad Ao) [By'y | [Dyy' _]].
         ++ by left.
         ++ (** * here we need the 3-cycle property *)
           rewrite (RB Ad Ao) in nMyx'.
           move: (@Atc y y' x' Dyy' Dy'x' Dx'y nMyx') => Dy'y.
           (** now we have Dyy' and Dy'y *)
           by rewrite (RB Ad Ao).
-      + move: Rxy' => [_ Oy'x].
-        have Ox'x: O (x',x) by apply: (Otr x' y' x Ox'y' Oy'x).
-        move: Ox'x => /(@test'' T G D O Ad Ao) [Bx'x | Rxx'].
+      + move: Rxy' => [_ Oxy'].
+        have Oxx': O (x,x') by apply: (Otr x y' x' Oxy' Oy'x').
+        move: Oxx' => /(@test'' T G D O Ad Ao) [Bx'x | Rxx'].
         ++ by have Hmx'x: M(x',x) by left.
         ++ by have Hmx'x: M(x,x') by right.
     Qed.
@@ -648,7 +654,7 @@ Module  Champetier_Theorem.
     Lemma Kernel_Champetier:  exists S, RelIndep M S /\ absorbant M S.
     Proof.
       by pose proof 
-           (@G_SSW_fin_porder T O R B haveA2 haveA6 haveA7 haveA8 A1 Asp Au Apk).
+           (@G_SSW_fin_porder T O^-1 R B haveA2 haveA6 haveA7 haveA8 A1 AspIv Au' Apk).
     Qed.
     
   End Champetier_Theorem.
@@ -659,8 +665,8 @@ Module Blidia_Hengel_Theeorem.
     (** * The original Blidia Hengel Theorem *)
     Context (T : finType) (G D O: relation T).
     
-    Definition R := D `&` O^-1.
-    Definition B := D `&` O.
+    Definition R := D `&` O.
+    Definition B := D `&` O^-1.
     Notation M := (B `|` R).
 
     Definition Three_cycles := 
@@ -677,16 +683,25 @@ Module Blidia_Hengel_Theeorem.
     Context (Afg: Forbiden_graph).
     Context (A1: nonempty [set: T]).
     Context (A_Onotcyclic: ~ (exists s, O.+ (s,s))).
-    
-    Lemma Au:  R `<=` O^-1. 
+
+    Lemma Au:  R `<=` O. 
     Proof. by rewrite /R;apply: subIsetr. Qed.
+
+    Lemma Au':  R `<=` O^-1^-1. 
+    Proof. by move: Au;rewrite (inverseK O). Qed.
     
-    Lemma Apk:  forall X , RelIndep O X <->  RelIndep M X.
+    Lemma Aom1: Orientation G O^-1.
+    Proof.
+      move: Ao => [Hd /asymmetric_inv Has].
+      by split;[rewrite /Direction (inverseK O) setUC|].
+    Qed.
+    
+    Lemma Apk:  forall X , RelIndep O^-1 X <->  RelIndep M X.
     Proof.
       move => X. 
       rewrite (RB Ad Ao).
       rewrite (@direction_relIndep T G D X Ad).
-      by rewrite (@orientation_relIndep T G O X Ao).
+      by rewrite (@orientation_relIndep T G O^-1 X Aom1).
     Qed.
     
     Lemma Rasym : asymmetric R.
@@ -703,17 +718,17 @@ Module Blidia_Hengel_Theeorem.
       exact.
     Qed.
     
-    Lemma notiicO: ~ (iic O^-1). 
-    Proof. by move => /(@cyclic T O^-1)/Om1_notcyclic. Qed.
+    Lemma notiicO: ~ (iic O). 
+    Proof. by move => /(@cyclic T O)/A_Onotcyclic. Qed.
       
     Lemma haveA2 : ~ (iic (Asym R)).
     Proof.
       move: Rasym => /(AsymEq R) => -> HiicR.
-      have: (iic O^-1) by apply: (iic_sub Au).
+      have: (iic O) by apply: (iic_sub Au').
       apply: notiicO.
     Qed.
     
-    Lemma haveA6 : Assumption6 B M O.
+    Lemma haveA6 : Assumption6 B M O^-1.
     Proof. by move => x y [[_ H1] _]. Qed.
 
     Lemma haveA7: Assumption7 R B M. 
@@ -740,7 +755,7 @@ Module Blidia_Hengel_Theeorem.
     
     Lemma Blidia_Hengel_Theorem: exists S, kernel M S. 
     Proof.
-      by apply: (@G_SSW_fin_notcyclic T O R B haveA2 haveA6 haveA7 haveA8 A1 Au Apk A_Onotcyclic).
+      by apply: (@G_SSW_fin_notcyclic T O^-1 R B haveA2 haveA6 haveA7 haveA8 A1 Au' Apk Om1_notcyclic).
     Qed.
     
   End Blidia_Hengel_Theeorem.
