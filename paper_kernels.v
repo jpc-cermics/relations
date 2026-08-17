@@ -465,7 +465,6 @@ Module MeunierLanglois.
   Theorem ML_inf
     (A1: AB_1) (A2: AB_2) (A3: AB_3) (A4: AB_4) (A5: AB_5) (A6: AB_6):
     exists S, kernel M S.
-  (* end snippet MainTh:: no-out *)    
   Proof.
     by pose proof (@G_SSW _ R B O A1 A2 (L3 A3) (L4 A5 A6) 
                   L5 L6 (L7 A4 A5) (L8 A4 A5) (L9 A4 A5)).
@@ -672,6 +671,7 @@ Module Blidia_Hengel_Theeorem.
     Definition Three_cycles := 
       forall x y z, D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z) -> D(y,x).
 
+    (* la règle sur les O implique cette règle sur les RDB *)
     Definition Forbiden_graph :=
       forall x y z t, R (x,y) -> D(y,z) -> B(z,t) -> 
                  D(x,t) \/ D(t,x) \/ D(x,z) \/ D (z,x) \/ D(y,t) \/ D(t,y).
@@ -739,7 +739,6 @@ Module Blidia_Hengel_Theeorem.
       have nDxy: ~ (D (x,y))
         by rewrite -(RB Ad Ao) => /= -[Bxy| Rxy].
       have Dx'y: D(x',y) by move: Bx'y=> [? _].
-      
       by move: (@Afg x y' x' y Rxy' Dy'x' Bx'y) =>
             [Dxy | [Dyx | [Dxx' | [ Dx'x | [ Dy'y |Dyy']]]]];
             [| | | | |move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx')].
@@ -761,4 +760,103 @@ Module Blidia_Hengel_Theeorem.
   End Blidia_Hengel_Theeorem.
 End Blidia_Hengel_Theeorem.
 
-(** * XXXX il manque la version étendue de Blidia Hengel qui est dans Meunier Langlois*)
+Module Meunier_Langlois_P2_5.
+  Section Meunier_Langlois_P2_5.
+    (** * The original Blidia Hengel Theorem *)
+    Context (T : finType) (G D O: relation T).
+    
+    Definition R := D `&` O.
+    Definition B := D `&` O^-1.
+    Notation M := (B `|` R).
+
+    Definition Three_cycles := 
+      forall x y z, D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z) -> D(y,x).
+
+    Definition M_L_Forbiden_graph :=
+      forall x y z t, R (x,y) -> D(y,z) -> B(z,t) -> 
+                 D(x,t) \/ D(t,x) \/ D(x,z) \/ D (z,x) \/ D(y,t) 
+                 \/ B(y,x) \/ R(t,z).
+    
+    Context (Asg: simpleGraph G).
+    Context (Ao: Orientation G O).
+    Context (Ad: Direction G D).
+    Context (Atc: Three_cycles).
+    Context (Afg: M_L_Forbiden_graph).
+    Context (A1: nonempty [set: T]).
+    Context (A_Onotcyclic: ~ (exists s, O.+ (s,s))).
+
+    Lemma Au:  R `<=` O. 
+    Proof. by rewrite /R;apply: subIsetr. Qed.
+
+    Lemma Au':  R `<=` O^-1^-1. 
+    Proof. by move: Au;rewrite (inverseK O). Qed.
+    
+    Lemma Aom1: Orientation G O^-1.
+    Proof.
+      move: Ao => [Hd /asymmetric_inv Has].
+      by split;[rewrite /Direction (inverseK O) setUC|].
+    Qed.
+    
+    Lemma Apk:  forall X , RelIndep O^-1 X <->  RelIndep M X.
+    Proof.
+      move => X. 
+      rewrite (RB Ad Ao).
+      rewrite (@direction_relIndep T G D X Ad).
+      by rewrite (@orientation_relIndep T G O^-1 X Aom1).
+    Qed.
+    
+    Lemma Rasym : asymmetric R.
+    Proof.
+      move => x y /Au H1 /Au H2.
+      by move: H1 Ao => + [_ /(_ x y) Ha] => /Ha H3.
+    Qed.
+
+    Lemma Om1_notcyclic: ~ (exists s, O^-1.+ (s,s)).
+    Proof.
+      move => [s HOss].
+      rewrite -TclosIv in HOss.
+      have Hcyclic: (exists s : T, O.+ (s, s)) by (exists s).
+      exact.
+    Qed.
+    
+    Lemma notiicO: ~ (iic O). 
+    Proof. by move => /(@cyclic T O)/A_Onotcyclic. Qed.
+      
+    Lemma haveA2 : ~ (iic (Asym R)).
+    Proof.
+      move: Rasym => /(AsymEq R) => -> HiicR.
+      have: (iic O) by apply: (iic_sub Au').
+      apply: notiicO.
+    Qed.
+    
+    Lemma haveA6 : Assumption6 B M O^-1.
+    Proof. by move => x y [[_ H1] _]. Qed.
+
+    Lemma haveA7: Assumption7 R B M. 
+    Proof.
+      rewrite (RB Ad Ao).
+      move => x x' y y' _ Rxy' Dy'x' Bx'y nBxy [nRx'y nDyx'] [nRxy nDyx]
+               nDxx' nDx'x _ _ _ _ _ nDy'x.
+      have nDxy: ~ (D (x,y))
+        by rewrite -(RB Ad Ao) => /= -[Bxy| Rxy].
+      have Dx'y: D(x',y) by move: Bx'y=> [? _].
+      by move: (@Afg x y' x' y Rxy' Dy'x' Bx'y) =>
+            [Dxy | [Dyx | [Dxx' | [ Dx'x | [ Dy'y | [[Dy'x _] | [Dyx' _]]]]]]].
+    Qed.
+    
+    Lemma haveA8 : Assumption8 R B M. 
+    Proof.
+      (* reformulate everything with D *)
+      rewrite (RB Ad Ao).
+      move => x' y y' _ _ _ [Dyy' _] Dy'x' [Dx'y _] [_ nDyx']. 
+      by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx').
+    Qed.
+    
+    Lemma Meunier_Langlois_P2_5: exists S, kernel M S. 
+    Proof.
+      by apply: (@G_SSW_fin_notcyclic T O^-1 R B haveA2 haveA6 haveA7 haveA8 A1 Au' Apk Om1_notcyclic).
+    Qed.
+    
+  End Meunier_Langlois_P2_5.
+End Meunier_Langlois_P2_5.
+
