@@ -495,10 +495,24 @@ Module  simpleGraph.
     Direction G D -> (RelIndep D S <-> RelIndep G S).
   Proof. by move => Hd;rewrite RelIndep_sym Hd. Qed.
 
-  Lemma orientation_relIndep G D S: 
-    Orientation G D -> (RelIndep D S <-> RelIndep G S).
+  Lemma orientation_relIndep G O S: 
+    Orientation G O -> (RelIndep O S <-> RelIndep G S).
   Proof. by move => [Hd _];rewrite RelIndep_sym Hd. Qed.
 
+  Lemma directionIv G D: Direction G D -> Direction G D^-1.
+  Proof. by move => Hd;rewrite /Direction (inverseK D) setUC. Qed.
+
+  Lemma directionIr G D: (simpleGraph G) -> Direction G D -> irreflexive D.
+  Proof. 
+    move => [_ +] Hd x => /(_ x) Hnotgxx.
+    have: D `|` D^-1 `<=` G by rewrite Hd.
+    rewrite subUset => -[Hdsub _] => /Hdsub. 
+    by move => ?.
+  Qed.
+  
+  Lemma orientationIv G O: Orientation G O -> Orientation G O^-1.
+  Proof. by move => [/directionIv Hd /asymmetric_inv Has]. Qed.
+  
   Context (G D O: relation T).
   Context (Ag: simpleGraph G).
   Context (Ad: Direction G D).
@@ -555,28 +569,37 @@ End simpleGraph.
 
 Export simpleGraph.
 
-Module  Champetier_Theorem.
-  Section Champetier_Theorem.
-    (** * The original Champetier Theorem *)
+Module Finite_case_Kernel_Theorems.
+  Section Finite_case_Kernel_Theorems.
+
     Context (T : finType) (G D O: relation T).
     
     Definition Three_cycles := 
       forall x y z, D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z) -> D(y,x).
 
-    Context (Asg: simpleGraph G).
-    Context (Ao: Orientation G O).
-    Context (Ad: Direction G D).
-    Context (Atc: Three_cycles).
-    
     Definition R := D `&` O.
     Definition B := D `&` O^-1.
 
+    (* we will show that M = D *)
     Notation M := (B `|` R).
 
-    Context (A1: nonempty [set: T]) (Asp: sporder O).
+    Definition Forbiden_graph :=
+      forall x y z t, R (x,y) -> D(y,z) -> B(z,t) -> 
+                 D(x,t) \/ D(t,x) \/ D(x,z) \/ D (z,x) \/ D(y,t) \/ D(t,y).
     
-    Lemma AspIv: sporder O^-1.
-    Proof. by apply: sporder_inv. Qed.
+    Definition M_L_Forbiden_graph :=
+      forall x y z t, R (x,y) -> D(y,z) -> B(z,t) -> 
+                 D(x,t) \/ D(t,x) \/ D(x,z) \/ D (z,x) \/ D(y,t) 
+                 \/ B(y,x) \/ R(t,z).
+
+    Definition M_L_Forbiden_graph2 :=
+      forall x y z, R (x,y) -> D(y,z) -> B(z,x) -> 
+               D(x,z) \/ B(y,x) \/ R(x,z).
+    
+    Context (A1: nonempty [set: T]).
+    Context (Asg: simpleGraph G).
+    Context (Ao: Orientation G O).
+    Context (Ad: Direction G D).
     
     Lemma Au:  R `<=` O. 
     Proof. by rewrite /R;apply: subIsetr. Qed.
@@ -584,24 +607,17 @@ Module  Champetier_Theorem.
     Lemma Au':  R `<=` O^-1^-1. 
     Proof. by move: Au;rewrite (inverseK O). Qed.
            
-    Lemma Onoticc: ~ (iic  O). 
-    Proof. by apply: (@fin_not_iic _ O Asp). Qed.
-    
-    Lemma Rnotiic: ~ (iic R).
-    Proof. by move: Onoticc => ? /(@iic_sub T R O (Au)) ?. Qed.
-
-    Lemma Aom1: Orientation G O^-1.
-    Proof.
-      move: Ao => [Hd /asymmetric_inv Has].
-      by split;[rewrite /Direction (inverseK O) setUC|].
+    Lemma Rnotiic (Asp: sporder O): ~ (iic R).
+    Proof. 
+      have: ~ (iic  O) by apply: (@fin_not_iic _ O Asp).              
+      by move => notHiicO /(@iic_sub T R O (Au)) HiicO.
     Qed.
     
     Lemma Apk:  forall X , RelIndep O^-1 X <->  RelIndep M X.
     Proof.
-      move => X. 
-      rewrite (RB Ad Ao).
-      rewrite (@direction_relIndep T G D X Ad).
-      by rewrite (@orientation_relIndep T G O^-1 X Aom1).
+      move: Ao => [/directionIv DOm1 _] X. 
+      rewrite (RB Ad Ao) (@direction_relIndep T G D X Ad).
+      by rewrite (@direction_relIndep T G O^-1 X DOm1).
     Qed.
     
     Lemma Rasym : asymmetric R.
@@ -609,15 +625,29 @@ Module  Champetier_Theorem.
       move => x y /Au H1 /Au H2.
       by move: H1 Ao => + [_ /(_ x y) Ha] => /Ha H3.
     Qed.
+
+    Lemma Om1_notcyclic: 
+      ~ (exists s, O.+ (s,s)) -> ~ (exists s, O^-1.+ (s,s)).
+    Proof.
+      move => HOnc [s Hoc];rewrite -TclosIv in Hoc. 
+      by have ?: (exists s : T, O.+ (s, s)) by (exists s).
+    Qed.
     
-    Lemma haveA2 : ~ (iic (Asym R)).
-      move: Rasym => /AsymEq ->;apply: Rnotiic.
+    Lemma A2_from_Asp (Asp: sporder O): ~ (iic (Asym R)).
+      by move: Rasym => /AsymEq ->;apply: Rnotiic.
     Qed.
 
+    Lemma A2_from_Anc (Anc: ~ (exists s, O.+ (s,s))) : ~ (iic (Asym R)).
+    Proof.
+      have notiicO:  ~ (iic O) by move => /(@cyclic T O)/Anc.
+      move: Rasym => /(AsymEq R) => -> HiicR.
+      by have: (iic O) by apply: (iic_sub Au').
+    Qed.
+    
     Lemma haveA6 : forall x y : T, B (x, y) /\ ~ M (y, x) -> O^-1 (x, y).
     Proof. by move => x y [[_ H1] _]. Qed.
 
-    Lemma haveA7 : Assumption7 R B M. 
+    Lemma A7_from_Asp_Atc (Asp: sporder O) (Atc: Three_cycles): Assumption7 R B M. 
     Proof.
       move: Asp => [_ Otr]. 
       move => x x' y y' _ Rxy' My'x' Bx'y nBxy [nRx'y nMyx'] [nRxy nMyx]
@@ -638,100 +668,8 @@ Module  Champetier_Theorem.
         ++ by have Hmx'x: M(x',x) by left.
         ++ by have Hmx'x: M(x,x') by right.
     Qed.
-    
-    (** here we just need the 3-cycle property *)
-    Lemma haveA8 : Assumption8 R B M. 
-    Proof.
-      (* reformulate everything with D *)
-      rewrite (RB Ad Ao).
-      move => x' y y' _ _ _ [Dyy' _] Dy'x' [Dx'y _] [_ nDyx']. 
-      by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx').
-    Qed.
 
-    (** A stronger Champetier theorem as we weed a weaker
-        version of the three cycles assymption *)
-    Lemma Kernel_Champetier:  exists S, RelIndep M S /\ absorbant M S.
-    Proof.
-      by pose proof 
-           (@G_SSW_fin_porder T O^-1 R B haveA2 haveA6 haveA7 haveA8 A1 AspIv Au' Apk).
-    Qed.
-    
-  End Champetier_Theorem.
-End Champetier_Theorem.
-
-Module Blidia_Hengel_Theeorem.
-  Section Blidia_Hengel_Theeorem.
-    (** * The original Blidia Hengel Theorem *)
-    Context (T : finType) (G D O: relation T).
-    
-    Definition R := D `&` O.
-    Definition B := D `&` O^-1.
-    Notation M := (B `|` R).
-
-    Definition Three_cycles := 
-      forall x y z, D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z) -> D(y,x).
-
-    (* la règle sur les O implique cette règle sur les RDB *)
-    Definition Forbiden_graph :=
-      forall x y z t, R (x,y) -> D(y,z) -> B(z,t) -> 
-                 D(x,t) \/ D(t,x) \/ D(x,z) \/ D (z,x) \/ D(y,t) \/ D(t,y).
-    
-    Context (Asg: simpleGraph G).
-    Context (Ao: Orientation G O).
-    Context (Ad: Direction G D).
-    Context (Atc: Three_cycles).
-    Context (Afg: Forbiden_graph).
-    Context (A1: nonempty [set: T]).
-    Context (A_Onotcyclic: ~ (exists s, O.+ (s,s))).
-
-    Lemma Au:  R `<=` O. 
-    Proof. by rewrite /R;apply: subIsetr. Qed.
-
-    Lemma Au':  R `<=` O^-1^-1. 
-    Proof. by move: Au;rewrite (inverseK O). Qed.
-    
-    Lemma Aom1: Orientation G O^-1.
-    Proof.
-      move: Ao => [Hd /asymmetric_inv Has].
-      by split;[rewrite /Direction (inverseK O) setUC|].
-    Qed.
-    
-    Lemma Apk:  forall X , RelIndep O^-1 X <->  RelIndep M X.
-    Proof.
-      move => X. 
-      rewrite (RB Ad Ao).
-      rewrite (@direction_relIndep T G D X Ad).
-      by rewrite (@orientation_relIndep T G O^-1 X Aom1).
-    Qed.
-    
-    Lemma Rasym : asymmetric R.
-    Proof.
-      move => x y /Au H1 /Au H2.
-      by move: H1 Ao => + [_ /(_ x y) Ha] => /Ha H3.
-    Qed.
-
-    Lemma Om1_notcyclic: ~ (exists s, O^-1.+ (s,s)).
-    Proof.
-      move => [s HOss].
-      rewrite -TclosIv in HOss.
-      have Hcyclic: (exists s : T, O.+ (s, s)) by (exists s).
-      exact.
-    Qed.
-    
-    Lemma notiicO: ~ (iic O). 
-    Proof. by move => /(@cyclic T O)/A_Onotcyclic. Qed.
-      
-    Lemma haveA2 : ~ (iic (Asym R)).
-    Proof.
-      move: Rasym => /(AsymEq R) => -> HiicR.
-      have: (iic O) by apply: (iic_sub Au').
-      apply: notiicO.
-    Qed.
-    
-    Lemma haveA6 : Assumption6 B M O^-1.
-    Proof. by move => x y [[_ H1] _]. Qed.
-
-    Lemma haveA7: Assumption7 R B M. 
+    Lemma A7_from_Afg_Atc (Afg: Forbiden_graph)(Atc: Three_cycles): Assumption7 R B M. 
     Proof.
       rewrite (RB Ad Ao).
       move => x x' y y' _ Rxy' Dy'x' Bx'y nBxy [nRx'y nDyx'] [nRxy nDyx]
@@ -743,96 +681,8 @@ Module Blidia_Hengel_Theeorem.
             [Dxy | [Dyx | [Dxx' | [ Dx'x | [ Dy'y |Dyy']]]]];
             [| | | | |move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx')].
     Qed.
-    
-    Lemma haveA8 : Assumption8 R B M. 
-    Proof.
-      (* reformulate everything with D *)
-      rewrite (RB Ad Ao).
-      move => x' y y' _ _ _ [Dyy' _] Dy'x' [Dx'y _] [_ nDyx']. 
-      by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx').
-    Qed.
-    
-    Lemma Blidia_Hengel_Theorem: exists S, kernel M S. 
-    Proof.
-      by apply: (@G_SSW_fin_notcyclic T O^-1 R B haveA2 haveA6 haveA7 haveA8 A1 Au' Apk Om1_notcyclic).
-    Qed.
-    
-  End Blidia_Hengel_Theeorem.
-End Blidia_Hengel_Theeorem.
 
-Module Meunier_Langlois_P2_5.
-  Section Meunier_Langlois_P2_5.
-    (** * The original Blidia Hengel Theorem *)
-    Context (T : finType) (G D O: relation T).
-    
-    Definition R := D `&` O.
-    Definition B := D `&` O^-1.
-    Notation M := (B `|` R).
-
-    Definition Three_cycles := 
-      forall x y z, D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z) -> D(y,x).
-
-    Definition M_L_Forbiden_graph :=
-      forall x y z t, R (x,y) -> D(y,z) -> B(z,t) -> 
-                 D(x,t) \/ D(t,x) \/ D(x,z) \/ D (z,x) \/ D(y,t) 
-                 \/ B(y,x) \/ R(t,z).
-    
-    Context (Asg: simpleGraph G).
-    Context (Ao: Orientation G O).
-    Context (Ad: Direction G D).
-    Context (Atc: Three_cycles).
-    Context (Afg: M_L_Forbiden_graph).
-    Context (A1: nonempty [set: T]).
-    Context (A_Onotcyclic: ~ (exists s, O.+ (s,s))).
-
-    Lemma Au:  R `<=` O. 
-    Proof. by rewrite /R;apply: subIsetr. Qed.
-
-    Lemma Au':  R `<=` O^-1^-1. 
-    Proof. by move: Au;rewrite (inverseK O). Qed.
-    
-    Lemma Aom1: Orientation G O^-1.
-    Proof.
-      move: Ao => [Hd /asymmetric_inv Has].
-      by split;[rewrite /Direction (inverseK O) setUC|].
-    Qed.
-    
-    Lemma Apk:  forall X , RelIndep O^-1 X <->  RelIndep M X.
-    Proof.
-      move => X. 
-      rewrite (RB Ad Ao).
-      rewrite (@direction_relIndep T G D X Ad).
-      by rewrite (@orientation_relIndep T G O^-1 X Aom1).
-    Qed.
-    
-    Lemma Rasym : asymmetric R.
-    Proof.
-      move => x y /Au H1 /Au H2.
-      by move: H1 Ao => + [_ /(_ x y) Ha] => /Ha H3.
-    Qed.
-
-    Lemma Om1_notcyclic: ~ (exists s, O^-1.+ (s,s)).
-    Proof.
-      move => [s HOss].
-      rewrite -TclosIv in HOss.
-      have Hcyclic: (exists s : T, O.+ (s, s)) by (exists s).
-      exact.
-    Qed.
-    
-    Lemma notiicO: ~ (iic O). 
-    Proof. by move => /(@cyclic T O)/A_Onotcyclic. Qed.
-      
-    Lemma haveA2 : ~ (iic (Asym R)).
-    Proof.
-      move: Rasym => /(AsymEq R) => -> HiicR.
-      have: (iic O) by apply: (iic_sub Au').
-      apply: notiicO.
-    Qed.
-    
-    Lemma haveA6 : Assumption6 B M O^-1.
-    Proof. by move => x y [[_ H1] _]. Qed.
-
-    Lemma haveA7: Assumption7 R B M. 
+    Lemma A7_from_MLfg (MLfg: M_L_Forbiden_graph): Assumption7 R B M. 
     Proof.
       rewrite (RB Ad Ao).
       move => x x' y y' _ Rxy' Dy'x' Bx'y nBxy [nRx'y nDyx'] [nRxy nDyx]
@@ -840,23 +690,65 @@ Module Meunier_Langlois_P2_5.
       have nDxy: ~ (D (x,y))
         by rewrite -(RB Ad Ao) => /= -[Bxy| Rxy].
       have Dx'y: D(x',y) by move: Bx'y=> [? _].
-      by move: (@Afg x y' x' y Rxy' Dy'x' Bx'y) =>
+      by move: (@MLfg x y' x' y Rxy' Dy'x' Bx'y) =>
             [Dxy | [Dyx | [Dxx' | [ Dx'x | [ Dy'y | [[Dy'x _] | [Dyx' _]]]]]]].
     Qed.
     
-    Lemma haveA8 : Assumption8 R B M. 
+    Lemma A8_from_Atc (Atc: Three_cycles): Assumption8 R B M. 
     Proof.
       (* reformulate everything with D *)
       rewrite (RB Ad Ao).
       move => x' y y' _ _ _ [Dyy' _] Dy'x' [Dx'y _] [_ nDyx']. 
       by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx').
     Qed.
-    
-    Lemma Meunier_Langlois_P2_5: exists S, kernel M S. 
+
+    Lemma A8_from_MLfg2 (MLfg2: M_L_Forbiden_graph2): Assumption8 R B M. 
     Proof.
-      by apply: (@G_SSW_fin_notcyclic T O^-1 R B haveA2 haveA6 haveA7 haveA8 A1 Au' Apk Om1_notcyclic).
+      (* reformulate everything with D *)
+      rewrite (RB Ad Ao).
+      move => x' y y' _ _ _ Ryy' Dy'x' Bx'y [_ nDyx'].
+      by move: (@MLfg2 y y' x' Ryy' Dy'x' Bx'y) 
+              => [Dyx'|[[Dy'y _]|[Dyx']]].
     Qed.
     
-  End Meunier_Langlois_P2_5.
-End Meunier_Langlois_P2_5.
+    (** A stronger Champetier theorem as we use a weaker
+        version of the three cycles assymption *)
+    
+    Lemma Kernel_Champetier (Asp: sporder O) (Atc: Three_cycles): 
+      exists S, RelIndep M S /\ absorbant M S.
+    Proof.
+      by pose proof 
+           (@G_SSW_fin_porder T O^-1 R B 
+              (A2_from_Asp Asp) haveA6 (A7_from_Asp_Atc Asp Atc) 
+              (A8_from_Atc Atc) A1 (sporder_inv Asp) Au' Apk).
+    Qed.
 
+    (** A stronger Blidia Hengel theorem as we use a weaker
+        version of the three cycles assymption *)
+ 
+    Lemma Blidia_Hengel_Theorem
+      (Anc: ~ (exists s, O.+ (s,s)))(Afg: Forbiden_graph)(Atc: Three_cycles):
+      exists S, kernel M S. 
+    Proof.
+      by apply: (@G_SSW_fin_notcyclic T O^-1 R B 
+                   (A2_from_Anc Anc) haveA6 
+                   (A7_from_Afg_Atc Afg Atc)
+                   (A8_from_Atc Atc) A1 Au' Apk
+                   (Om1_notcyclic Anc)).
+    Qed.
+
+    Lemma Meunier_Langlois_P2_5
+      (Anc: ~ (exists s, O.+ (s,s)))
+      (MLfg: M_L_Forbiden_graph)
+      (MLfg2: M_L_Forbiden_graph2)
+      : exists S, kernel M S. 
+    Proof.
+      by apply: (@G_SSW_fin_notcyclic T O^-1 R B 
+                   (A2_from_Anc Anc) haveA6 
+                   (A7_from_MLfg MLfg)
+                   (A8_from_MLfg2 MLfg2) A1 Au' Apk
+                   (Om1_notcyclic Anc)).
+    Qed.
+    
+  End Finite_case_Kernel_Theorems.
+End Finite_case_Kernel_Theorems.
