@@ -586,12 +586,12 @@ Module Finite_case_Kernel_Theorems.
     Definition Forbiden_graph :=
       forall x y z t, R (x,y) -> D(y,z) -> B(z,t) -> 
                  D(x,t) \/ D(t,x) \/ D(x,z) \/ D (z,x) \/ D(y,t) \/ D(t,y).
-    
-    Definition M_L_Forbiden_graph :=
-      forall x y z t, R (x,y) -> D(y,z) -> B(z,t) -> 
-                 D(x,t) \/ D(t,x) \/ D(x,z) \/ D (z,x) \/ D(y,t) 
-                 \/ B(y,x) \/ R(t,z).
 
+    Definition M_L_Forbiden_graph := forall x y z t,
+      R (x,y) -> D(y,z) -> B(z,t) -> 
+      (~ (t = x) /\ (D(x,t) \/ D(t,x) \/ D(x,z) \/ D (z,x) \/ D(y,t) \/ B(y,x) \/ R(t,z)))
+      \/ ( t = x /\ (D(x,z) \/ B(y,x) \/ R(x,z))).
+    
     Definition M_L_Forbiden_graph2 :=
       forall x y z, R (x,y) -> D(y,z) -> B(z,x) -> 
                D(x,z) \/ B(y,x) \/ R(x,z).
@@ -686,12 +686,13 @@ Module Finite_case_Kernel_Theorems.
     Proof.
       rewrite (RB Ad Ao).
       move => x x' y y' _ Rxy' Dy'x' Bx'y nBxy [nRx'y nDyx'] [nRxy nDyx]
-               nDxx' nDx'x _ _ _ _ _ nDy'x.
+               nDxx' nDx'x _ _ _ Hxney _ nDy'x.
       have nDxy: ~ (D (x,y))
         by rewrite -(RB Ad Ao) => /= -[Bxy| Rxy].
       have Dx'y: D(x',y) by move: Bx'y=> [? _].
-      by move: (@MLfg x y' x' y Rxy' Dy'x' Bx'y) =>
-            [Dxy | [Dyx | [Dxx' | [ Dx'x | [ Dy'y | [[Dy'x _] | [Dyx' _]]]]]]].
+      move: (@MLfg x y' x' y Rxy' Dy'x' Bx'y) => -[[_ Hd] | [Hyeqx _]].
+      by move: Hd => [Dxy | [Dyx | [Dxx' | [ Dx'x | [ Dy'y | [[Dy'x _] | [Dyx' _]]]]]]].
+      by [].
     Qed.
     
     Lemma A8_from_Atc (Atc: Three_cycles): Assumption8 R B M. 
@@ -702,18 +703,18 @@ Module Finite_case_Kernel_Theorems.
       by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx').
     Qed.
 
-    Lemma A8_from_MLfg2 (MLfg2: M_L_Forbiden_graph2): Assumption8 R B M. 
+    Lemma A8_from_MLfg (MLfg: M_L_Forbiden_graph): Assumption8 R B M. 
     Proof.
       (* reformulate everything with D *)
       rewrite (RB Ad Ao).
       move => x' y y' _ _ _ Ryy' Dy'x' Bx'y [_ nDyx'].
-      by move: (@MLfg2 y y' x' Ryy' Dy'x' Bx'y) 
-              => [Dyx'|[[Dy'y _]|[Dyx']]].
+      move: (@MLfg y y' x' y Ryy' Dy'x' Bx'y) => [[Hyney _] |[_ Hd]].
+      by [].
+      by move: Hd => [Dyx'|[[Dy'y _]|[Dyx']]].
     Qed.
     
     (** A stronger Champetier theorem as we use a weaker
         version of the three cycles assymption *)
-    
     Lemma Kernel_Champetier (Asp: sporder O) (Atc: Three_cycles): 
       exists S, RelIndep M S /\ absorbant M S.
     Proof.
@@ -725,9 +726,8 @@ Module Finite_case_Kernel_Theorems.
 
     (** A stronger Blidia Hengel theorem as we use a weaker
         version of the three cycles assymption *)
- 
     Lemma Blidia_Hengel_Theorem
-      (Anc: ~ (exists s, O.+ (s,s)))(Afg: Forbiden_graph)(Atc: Three_cycles):
+      (Anc: ~ (exists s, O.+ (s,s))) (Afg: Forbiden_graph) (Atc: Three_cycles):
       exists S, kernel M S. 
     Proof.
       by apply: (@G_SSW_fin_notcyclic T O^-1 R B 
@@ -738,15 +738,12 @@ Module Finite_case_Kernel_Theorems.
     Qed.
 
     Lemma Meunier_Langlois_P2_5
-      (Anc: ~ (exists s, O.+ (s,s)))
-      (MLfg: M_L_Forbiden_graph)
-      (MLfg2: M_L_Forbiden_graph2)
-      : exists S, kernel M S. 
+      (Anc: ~ (exists s, O.+ (s,s))) (MLfg: M_L_Forbiden_graph) : exists S, kernel M S. 
     Proof.
       by apply: (@G_SSW_fin_notcyclic T O^-1 R B 
                    (A2_from_Anc Anc) haveA6 
                    (A7_from_MLfg MLfg)
-                   (A8_from_MLfg2 MLfg2) A1 Au' Apk
+                   (A8_from_MLfg MLfg) A1 Au' Apk
                    (Om1_notcyclic Anc)).
     Qed.
     
