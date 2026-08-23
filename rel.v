@@ -140,6 +140,22 @@ Section Relation_Facts.
   Context (T : Type).
   Implicit Types (T : Type) (R S U: relation T) (X Y: set T).
 
+  (** link with ssrbool.v 
+             reflexive R <-> R is reflexive.
+           irreflexive R <-> R is irreflexive.
+             symmetric R <-> R (in rel T) is symmetric (equation).
+         pre_symmetric R <-> R is symmetric (implication).
+         antisymmetric R <-> R is antisymmetric.
+                 total R <-> R is total.
+            transitive R <-> R is transitive.
+       left_transitive R <-> R is a congruence on its left hand side.
+      right_transitive R <-> R is a congruence on its right hand side.
+       equivalence_rel R <-> R is an equivalence relation.
+
+    we also define asymmetric R: Prop := forall x y:T, R (x,y) -> ~ R (y,x).
+    
+   **)
+  
   Definition reflexive R : Prop := forall x:T, R (x,x).
   
   Lemma reflexiveE R : reflexive R <-> ssrbool.reflexive R.
@@ -153,18 +169,31 @@ Section Relation_Facts.
   Definition symmetric R: Prop := forall x y:T, R (x,y) -> R (y,x).
 
   Lemma symmetricE R : symmetric R <-> ssrbool.symmetric R.
-  Proof. split => + x y. 
-         by move => /[dup] /(_ x y) ? /(_ y x) ?;apply/asboolP/asboolP.  
-         move => /(_ x y) Hsy.
-         rewrite -(asboolE (R (x,y)))  -(asboolE (R (y,x))).
-         have <-: (R2rel R) x y = `[< R (x, y) >] by [].
-         have <-: (R2rel R) y x = `[< R (y, x) >] by [].
-         by rewrite Hsy.
+  Proof.
+    split => + x y. 
+    by move => /[dup] /(_ x y) ? /(_ y x) ?;apply/asboolP/asboolP.  
+    move => /(_ x y) Hsy.
+    rewrite -(asboolE (R (x,y)))  -(asboolE (R (y,x))).
+    have <-: (R2rel R) x y = `[< R (x, y) >] by [].
+    have <-: (R2rel R) y x = `[< R (y, x) >] by [].
+    by rewrite Hsy.
   Qed.
   
   Definition antisymmetric R: Prop := forall x y:T, R (x,y) -> R (y,x) -> x = y.
+
+  Lemma antisymmetricE R :antisymmetric R  <-> ssrbool.antisymmetric R.
+  Proof. 
+    split => + x y.
+    by move => /(_ x y) Has /andP [/asboolP ? /asboolP ?];apply: Has.
+    by move => /(_ x y) Has ? ?;apply/Has/andP;split;apply/asboolP.
+  Qed.
+  
   Definition asymmetric R: Prop := forall x y:T, R (x,y) -> ~ R (y,x).
+
   Definition irreflexive R : Prop := forall x:T, ~ R (x,x).
+  
+  Lemma irreflexiveE R: irreflexive R  <-> ssrbool.irreflexive R.
+  Proof. by split => + x => /(_ x);[move => /asboolF|move => /asboolP]. Qed.
   
   Record preorder R : Prop :=
     { preord_refl: reflexive R; preord_trans: transitive R}.
@@ -225,17 +254,6 @@ Section Relation_Facts.
   Lemma union_inc_b (R S U:relation T): S `<=` U -> R `<=` U -> (S `|` R) `<=` U.
   Proof. by move => H1 H2;(have <- : U `|` R = U by apply setUidPl);apply setSU. Qed.
 
-  (** [Union_Setminus] states that the union of two sets [X] and [Y] can be
-      rewritten as the disjoint-style union of [X] with the set difference [Y \ X].
-      Formally: [X `|` Y = X `|` (Y `\` X)].
-
-      This holds because any element of [Y] is either already in [X] (and thus
-      covered by the left [X] component) or strictly in [Y] but not in [X]
-      (and thus belongs to [Y `\` X]).  The two sides are therefore equal as sets.
-
-      This identity is useful to decompose a union into disjoint parts, for
-      instance when reasoning about stable sets, closures, or restrictions where
-      one wants to avoid double-counting elements shared between [X] and [Y]. *)
   Lemma Union_Setminus X Y: X `|` Y = X `|` (Y `\` X). 
   Proof.
     rewrite /setU /setD /mkset predeqE => x.
