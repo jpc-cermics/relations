@@ -376,7 +376,7 @@ Module iic_asym.
       have H4: transitive (Asym U.+) by apply: Asym_preserve_transitivity;apply: TclosT.
       have H5: Asym U.+ (f (n' + p), f (n' + p).+1) by apply: Hi.
       rewrite /transitive in H4.
-      move: (H4 (f n') (f (n' + p)) (f (n'+p).+1) H2 H5).
+      move: (H4 (f (n' + p)) (f n') (f (n'+p).+1) H2 H5).
       by rewrite -addn1 -[p.+1]addn1 addnA.
     Qed.
     
@@ -591,7 +591,7 @@ Section Set_order.
     (** ingredients *)
     Lemma le_trans_if_tr U: transitive U -> transitive ([<= U]%O).
     Proof.
-      rewrite lesetE => /Tclos_iff H0 A B C /= H1 H2.
+      rewrite lesetE => /Tclos_iff H0 B A C /= H1 H2.
       have : ('Δ  `|` U)#B `<=` ('Δ  `|` U)#(('Δ  `|` U)#C) by apply: Fset_inc1.
       rewrite Fset_comp H0 DuT_eq_Tstar compose_rt_rt -DuT_eq_Tstar -H0 => H3.
       by apply: subset_trans H1 H3.
@@ -1180,7 +1180,7 @@ Module Maximal_with_Zorn.
       Lemma transitive_RC:  sporder O -> transitive RC. 
       Proof.
         move => [_ H3].
-        by move => x y z [/= [H0 ->]| [H1 H1']] [ /= [H0' /= ->]| /= [H2 H2']]; 
+        by move => y x z [/= [H0 ->]| [H1 H1']] [ /= [H0' /= ->]| /= [H2 H2']]; 
                   [left | right | right |right;split;[ | apply H3 with (sval y)]].
       Qed.
 
@@ -2032,7 +2032,7 @@ Module fin_Maximal.
       ++ (* U (m,h)  *)
         exists t; split;first by rewrite in_cons eqxx.
         move=> x; rewrite in_cons => /orP [/eqP -> // | Hxs] Hlt.
-        have Umx: U (m,x) by apply: (Ht m t x Umh Hlt).
+        have Umx: U (m,x) by apply: (Ht t m x Umh Hlt).
         have meqx: m = x by apply: (Hmax x Hxs Umx).
         move: Umh;rewrite meqx => Uxh.
         rewrite /antisymmetric in Ha.

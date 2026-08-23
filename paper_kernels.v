@@ -344,22 +344,22 @@ Module ABkernels.
   Lemma L7 (A4: AB_4) (A5: AB_5): (Assumption7 R B M).
   Proof. 
     move => x x' y y' H1 H2 [H3|H3] H4 H5 H6 H7 H8 H9.
-    by left;apply: (A5 y' x' y H3 H4).
-    by have: M (x,x') by right;apply: (A4 x y' x' H2 H3).
+    by left;apply: (A5 x' y' y H3 H4).
+    by have: M (x,x') by right;apply: (A4 y' x x' H2 H3).
   Qed.
   
   Lemma L8 (A4: AB_4) (A5: AB_5): (Assumption8 R B M).
   Proof. 
     move => x' y y' B0 B0' B0'' H1 [H2| H2] H3 [H4 H5].
-    by left;apply: (A5 y' x' y H2 H3).
-    by have H11: M (y,x') by right;apply: (A4 y y' x' H1 H2).
+    by left;apply: (A5 x' y' y H2 H3).
+    by have H11: M (y,x') by right;apply: (A4 y' y x' H1 H2).
   Qed.
   
   Lemma L9 (A4: AB_4) (A5: AB_5) : (Assumption9 R B O M). 
   Proof. 
     move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
-    by move: H3 => /(@AsymI _ B) H3;left;apply: (A5 y x' y' H2 H3).
-    by have: (M `|` M^-1) (x',x) by right;right;apply: (A4 x y x' H1 H2).
+    by move: H3 => /(@AsymI _ B) H3;left;apply: (A5 x' y y' H2 H3).
+    by have: (M `|` M^-1) (x',x) by right;right;apply: (A4 y x x' H1 H2).
   Qed.
 
   Theorem AB_kernels
@@ -409,7 +409,7 @@ Module MeunierLanglois.
     split. 
     + move => x [/= H1 _].
       by pose proof (@Asym_irreflexive T B x). 
-    + move => x y z [/= [H1 H1'] H2] [/= [H3 H3'] H4].
+    + move => y x z [/= [H1 H1'] H2] [/= [H3 H3'] H4].
       move: (A6 x y z H1 H1' H2 H3 H3' H4) => [H5 [H6 H7]].
       by split. 
   Qed.
@@ -654,7 +654,7 @@ Module Finite_case_Kernel_Theorems.
                nMxx' nMx'x _ _ _ _ _ nMy'x.
       move: My'x' => [[Dy'x' Ox'y'] | [_ Oy'x']].
       + move: Bx'y => [Dx'y Oyx'].
-        have Oyy': O^-1 (y',y) by apply: (Otr y x' y' Oyx' Ox'y').
+        have Oyy': O^-1 (y',y) by apply: (Otr x' y y' Oyx' Ox'y').
         move: Oyy' => /(@test'' T G D O Ad Ao) [By'y | [Dyy' _]].
         ++ by left.
         ++ (** * here we need the 3-cycle property *)
@@ -663,7 +663,7 @@ Module Finite_case_Kernel_Theorems.
           (** now we have Dyy' and Dy'y *)
           by rewrite (RB Ad Ao).
       + move: Rxy' => [_ Oxy'].
-        have Oxx': O (x,x') by apply: (Otr x y' x' Oxy' Oy'x').
+        have Oxx': O (x,x') by apply: (Otr y' x x' Oxy' Oy'x').
         move: Oxx' => /(@test'' T G D O Ad Ao) [Bx'x | Rxx'].
         ++ by have Hmx'x: M(x',x) by left.
         ++ by have Hmx'x: M(x,x') by right.

@@ -930,7 +930,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
             last by (have <-: n = n' by lia);move: H0 => /(_ n) [_ [? _]].
           move: H2 => /Hr H2 H3.
           move: H0 => /(_ n') [[+ _] _] => /(@allL_to_Tclos T) H4.
-          by pose proof (@TclosT T R (f n') (f n'.+1) _ H4 H3).
+          by pose proof (@TclosT T R (f n'.+1) (f n')  _ H4 H3).
         Qed.
         
         Lemma Asym2P9 (R: relation T): 
@@ -939,7 +939,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
         Proof.
           move => H0 n;elim => [//| n' Hr H1].
           move: H0 => /(_ n') /(@allL_to_Tclos T R) H0.
-          case H2: (n < n');first by move: H2 => /Hr H2;apply: (@TclosT T R (f n) (f n') _).
+          case H2: (n < n');first by move: H2 => /Hr H2;apply: (@TclosT T R (f n') (f n) _).
           by have /eqP ->: (n == n') by lia.
         Qed.
 
@@ -955,7 +955,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
             move: H1'' => /Asym2P9/(_ n n' H1) H3.
             move: H0 => /(_ n') [H4 _].
             pose proof (@allL_to_Tclos_left T _ _ _ _ x H2 H4). 
-            by apply: (@TclosT T R (f n) (f n') _).
+            by apply: (@TclosT T R (f n') (f n) _).
           + move: H0' => /eqP ->.
             move: H0 => /(_ n') [H0 _].
             by pose proof (@allL_to_Tclos_left T R (g n') (f n') (f n'.+1) x H2 H0). 
@@ -970,7 +970,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
           + move: H3 => /(@Asym2P9 R H0) H3.
             move: H0 => /(_ n) H4.
             pose proof (@allL_to_Tclos_right T _ _ _ _ x H2 H4). 
-            by apply: (@TclosT T R x (f n.+1) _).
+            by apply: (@TclosT T R (f n.+1) x _).
           + have /eqP <-: (n.+1 == n') by lia.
             move: H0 => /(_ n) H4.
             by pose proof (@allL_to_Tclos_right T _ _ _ _ x H2 H4). 

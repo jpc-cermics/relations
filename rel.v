@@ -140,20 +140,28 @@ Section Relation_Facts.
   Context (T : Type).
   Implicit Types (T : Type) (R S U: relation T) (X Y: set T).
 
-  (** XXXX We could use reflexive, transitive, ... from  Coq.ssr.ssrbool 
-      using the coercion to rel T *)
-  
   Definition reflexive R : Prop := forall x:T, R (x,x).
-  Ltac unfold_reflexive := rewrite /reflexive/ssrbool.reflexive/R2rel.
   
-  Lemma reflexiveE R : reflexive R <-> ssrbool.reflexive (R2rel R).
-  Proof. 
-    rewrite /reflexive/ssrbool.reflexive/R2rel.
-    by split;move => ? x;apply/asboolP.
+  Lemma reflexiveE R : reflexive R <-> ssrbool.reflexive R.
+  Proof. by split => + x => /(_ x);rewrite asboolE. Qed.
+  
+  Definition transitive R: Prop := forall y x z:T, R (x,y) -> R (y,z) -> R (x,z).
+
+  Lemma transitiveE R : transitive R <-> ssrbool.transitive R.
+  Proof. by split => + y x z => /(_ y x z);rewrite 3!asboolE. Qed.
+  
+  Definition symmetric R: Prop := forall x y:T, R (x,y) -> R (y,x).
+
+  Lemma symmetricE R : symmetric R <-> ssrbool.symmetric R.
+  Proof. split => + x y. 
+         by move => /[dup] /(_ x y) ? /(_ y x) ?;apply/asboolP/asboolP.  
+         move => /(_ x y) Hsy.
+         rewrite -(asboolE (R (x,y)))  -(asboolE (R (y,x))).
+         have <-: (R2rel R) x y = `[< R (x, y) >] by [].
+         have <-: (R2rel R) y x = `[< R (y, x) >] by [].
+         by rewrite Hsy.
   Qed.
   
-  Definition transitive R: Prop := forall x y z:T, R (x,y) -> R (y,z) -> R (x,z).
-  Definition symmetric R: Prop := forall x y:T, R (x,y) -> R (y,x).
   Definition antisymmetric R: Prop := forall x y:T, R (x,y) -> R (y,x) -> x = y.
   Definition asymmetric R: Prop := forall x y:T, R (x,y) -> ~ R (y,x).
   Definition irreflexive R : Prop := forall x:T, ~ R (x,x).
@@ -183,14 +191,14 @@ Section Relation_Facts.
   
   (* sporder is also asymmetric *)
   Lemma tr_ir_to_asym R: transitive R -> irreflexive R -> asymmetric R.
-  Proof. by move => Tr Ir x y H1 H2; pose proof (Ir x (Tr x y x H1 H2)). Qed.
+  Proof. by move => Tr Ir x y H1 H2; pose proof (Ir x (Tr y x x H1 H2)). Qed.
   
   Lemma sporder_asym R: sporder R -> asymmetric R.
   Proof. by move => [Hir Ht];apply: tr_ir_to_asym. Qed.
   
   (* sporder is also antisymmetric *)
   Lemma tr_ir_to_antisym R: transitive R -> irreflexive R -> antisymmetric R.
-  Proof. by move => Tr Ir x y H1 H2; pose proof (Ir x (Tr x y x H1 H2)). Qed.
+  Proof. by move => Tr Ir x y H1 H2; pose proof (Ir x (Tr y x x H1 H2)). Qed.
 
   Lemma sporder_antisym R: sporder R -> antisymmetric R.
   Proof. by move => [Hir Ht];apply: tr_ir_to_antisym. Qed.
@@ -198,7 +206,7 @@ Section Relation_Facts.
   Lemma sporder_inv R: sporder R -> sporder R^-1.
   Proof.
     move => [Hi Ht];split => [x /Hi //|]. 
-    by move: Ht => + x y z /[swap] => /(_ z y x) Ht /Ht H2 /H2.
+    by move: Ht => + y x z /[swap] => /(_ y z x) Ht /Ht H2 /H2.
   Qed.
   
   Lemma asymmetric_inv R: asymmetric R ->  asymmetric R^-1.
@@ -423,7 +431,7 @@ Section Relation_Facts.
     have H2': R^(1) `<=` S by rewrite iter1_id.
     case H3: (n == 0);first by move: H3 => /eqP -> => /H2'.
     move: H3 => /neq0_lt0n /Hr H3.
-    rewrite -addn1 (iter_compose R n 1) => -[z [/H3 H4 /H2' H5]];apply: (Ht x z y H4 H5). 
+    rewrite -addn1 (iter_compose R n 1) => -[z [/H3 H4 /H2' H5]];apply: (Ht z x y H4 H5). 
   Qed. 
   
   Lemma iterIv R (n: nat) : R^(n)^-1 = (R^-1)^(n).
@@ -502,7 +510,7 @@ Section Relation_Facts.
   Qed.
   
   Lemma TclosT R: transitive R.+.
-  Proof. by move => x y z /Tclos_iterk [n1 H1] /Tclos_iterk [n2 H2];
+  Proof. by move => y x z /Tclos_iterk [n1 H1] /Tclos_iterk [n2 H2];
                    exists (n1.+1 + n2.+1);[|rewrite iter_compose;exists y].
   Qed.
   
@@ -660,7 +668,7 @@ Section Relation_Facts.
   
   Lemma RTclosT R: transitive R.*.
   Proof.
-    rewrite RTclosE => x y z [/DeltaP -> //| /Tclos_iterk [n1 H1]].
+    rewrite RTclosE => y x z [/DeltaP -> //| /Tclos_iterk [n1 H1]].
     move => [/DeltaP <- //|/Tclos_iterk [n2 H2]];first by right;(exists n1.+1).
     by right;exists (n1.+1 + n2.+1);[exact|rewrite iter_compose;exists y].
   Qed.
@@ -1136,11 +1144,9 @@ Section Relation_Facts.
   Lemma clos_tn_iff R: forall (n: nat), transitive R -> R^(n.+1) `<=` R.
   Proof.
     move => n H1.
-    elim: n.
-    - by rewrite iter1_id.
-    - move => n H2.
-      rewrite -addn1 iter_compose iter1_id => -[x y] -[z [/H2 /= H3 /= H4]].
-      by apply: (H1 x z _). 
+    elim: n => [| n H2];first by rewrite iter1_id.
+    rewrite -addn1 iter_compose iter1_id => -[x z] -[y [/H2 /= H3 /= H4]].
+      by apply: (H1 y x z). 
   Qed.
   
   Lemma Tclos_iff R: transitive R <-> R = R.+.
@@ -1169,7 +1175,7 @@ Section Relation_Facts.
   
   Lemma Asym_preserve_transitivity R: transitive R -> transitive (Asym R).
   Proof.
-    move => H0 x y z [H1 /= H1'] [H2 /= H2'];split => [ | /= H3].
+    move => H0 y x z [H1 /= H1'] [H2 /= H2'];split => [ | /= H3].
     by apply: H0 H1 H2.
     by have: R (y,x) by apply: H0 H2 H3.
   Qed.
@@ -1293,12 +1299,10 @@ Section Relation_Facts.
   Lemma classes_disjointes_ou_egales R:
     equivalence R -> forall (x y: T), (exists z, R (x,z) /\ R (y,z)) -> class_of R x = class_of R y.
   Proof.
-    move => [R_ref R_tr R_sy] x y [z [H1 H2]].
-    rewrite predeqE;move => x0;split.
-    + rewrite/class_of/mkset => H3.
-      by pose proof (R_tr y x x0 (R_tr y z x H2 (R_sy x z H1)) H3).
-    + rewrite/class_of/mkset => H3.
-      by pose proof (R_tr x y x0 (R_tr x z y H1 (R_sy y z H2)) H3).
+    move => [R_ref R_tr R_sy] x z [y [Rxy Rzy]].
+    rewrite predeqE;move => t;split;rewrite/class_of/mkset => Hr.
+    by pose proof (R_tr x z t (R_tr y z x Rzy (R_sy x y Rxy)) Hr).
+    by pose proof (R_tr z x t (R_tr y x z Rxy (R_sy z y Rzy)) Hr).
   Qed.
 
   (* Lemme 3 : Toute l'union des classes couvre T *)

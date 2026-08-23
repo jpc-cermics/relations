@@ -94,7 +94,7 @@ Section Set_order.
     (** ingredients *)
     Lemma le_trans_if_tr R: transitive R -> transitive (leSet R).
     Proof.
-      rewrite lesetE => /Tclos_iff H0 A B C /= H1 H2.
+      rewrite lesetE => /Tclos_iff H0 B A C /= H1 H2.
       have : ('Δ  `|` R)#B `<=` ('Δ  `|` R)#(('Δ  `|` R)#C) by apply: Fset_inc1.
       rewrite Fset_comp H0 DuT_eq_Tstar compose_rt_rt -DuT_eq_Tstar -H0 => H3.
       by apply: subset_trans H1 H3.
@@ -168,7 +168,7 @@ Section Infinite_paths.
     have H4: transitive (Asym R.+) by apply: Asym_preserve_transitivity;apply: TclosT.
     have H5: Asym R.+ (f (n' + p), f (n' + p).+1) by apply: Hi.
     rewrite /transitive in H4.
-    move: (H4 (f n') (f (n' + p)) (f (n'+p).+1) H2 H5).
+    move: (H4 (f (n' + p)) (f n') (f (n'+p).+1) H2 H5).
     by rewrite -addn1 -[p.+1]addn1 addnA.
   Qed.
   
@@ -346,7 +346,7 @@ Section Paper.
     Lemma transitive_RC: transitive RC. 
     Proof.
       have H3: transitive (Asym Eb.+) by apply/Asym_preserve_transitivity/TclosT.
-      by move => x y z [/= [H0 ->]| [H1 H1']] [ /= [H0' /= ->]| /= [H2 H2']]; 
+      by move => y x z [/= [H0 ->]| [H1 H1']] [ /= [H0' /= ->]| /= [H2 H2']]; 
                 [left | right | right |right;split;[ | apply H3 with (sval y)]].
     Qed.
 
