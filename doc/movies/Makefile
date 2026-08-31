@@ -57,9 +57,6 @@ SNIPPETS = \
 	snippets/paper_relations/Aw-n.tex \
 	snippets/rel/RelIndep-n.tex \
 	snippets/rel/Rloop-n.tex \
-	snippets/rel/Sone-n.tex \
-	snippets/rel/Sthree-n.tex \
-	snippets/rel/Stwo-n.tex \
 	snippets/rel/asym-n.tex \
 	snippets/rel/lefttotal-n.tex \
 	snippets/rel/iic-n.tex \

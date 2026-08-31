@@ -26,7 +26,7 @@ Unset Printing Implicit Defensive.
 Local Open Scope classical_set_scope.
 
 Section Preorder.
-
+  
   Variables (T: Type) (R: relation T).
 
   Definition le: rel T := R2rel R.
