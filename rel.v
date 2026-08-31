@@ -92,7 +92,7 @@ Definition RelIndep (T:Type) (R: relation T) (S: set T) :=
 (* possible Coercion of relation T to rel T *)
 Definition R2rel (T: Type) (R: relation T) : rel T := (fun x y => asbool (R (x,y))).
 Definition rel2R (T: Type) (R: rel T) : relation T := (fun xy => R xy.1 xy.2).
-Global Coercion R2rel : relation >-> rel.
+(* Global Coercion R2rel : relation >-> rel. *)
 
 Notation "Δ_( X )" := (@Delta _ X) 
                         (at level 2, no associativity, format "Δ_( X )").
@@ -158,17 +158,17 @@ Section Relation_Facts.
   
   Definition reflexive R : Prop := forall x:T, R (x,x).
   
-  Lemma reflexiveE R : reflexive R <-> ssrbool.reflexive R.
+  Lemma reflexiveE R : reflexive R <-> ssrbool.reflexive (R2rel R).
   Proof. by split => + x => /(_ x);rewrite asboolE. Qed.
   
   Definition transitive R: Prop := forall y x z:T, R (x,y) -> R (y,z) -> R (x,z).
 
-  Lemma transitiveE R : transitive R <-> ssrbool.transitive R.
+  Lemma transitiveE R : transitive R <-> ssrbool.transitive (R2rel R).
   Proof. by split => + y x z => /(_ y x z);rewrite 3!asboolE. Qed.
   
   Definition symmetric R: Prop := forall x y:T, R (x,y) -> R (y,x).
 
-  Lemma symmetricE R : symmetric R <-> ssrbool.symmetric R.
+  Lemma symmetricE R : symmetric R <-> ssrbool.symmetric (R2rel R).
   Proof.
     split => + x y. 
     by move => /[dup] /(_ x y) ? /(_ y x) ?;apply/asboolP/asboolP.  
@@ -181,7 +181,7 @@ Section Relation_Facts.
   
   Definition antisymmetric R: Prop := forall x y:T, R (x,y) -> R (y,x) -> x = y.
 
-  Lemma antisymmetricE R :antisymmetric R  <-> ssrbool.antisymmetric R.
+  Lemma antisymmetricE R :antisymmetric R  <-> ssrbool.antisymmetric (R2rel R).
   Proof. 
     split => + x y.
     by move => /(_ x y) Has /andP [/asboolP ? /asboolP ?];apply: Has.
@@ -192,7 +192,7 @@ Section Relation_Facts.
 
   Definition irreflexive R : Prop := forall x:T, ~ R (x,x).
   
-  Lemma irreflexiveE R: irreflexive R  <-> ssrbool.irreflexive R.
+  Lemma irreflexiveE R: irreflexive R  <-> ssrbool.irreflexive (R2rel R).
   Proof. by split => + x => /(_ x);[move => /asboolF|move => /asboolP]. Qed.
   
   Record preorder R : Prop :=
@@ -1473,7 +1473,7 @@ Section Infinite_paths.
   Lemma choice' R: total_rel R -> total_rel' R.
   Proof.
     move => Htr.
-    have /choice [f Rxfx] x: exists y, (R: rel T) x y
+    have /choice [f Rxfx] x: exists y, ((R2rel R): rel T) x y
         by move: Htr => /(_ x) [y Rxy]; exists y;apply/asboolP.
     by exists f => x; move: Rxfx => /(_ x)/asboolP. 
   Qed.

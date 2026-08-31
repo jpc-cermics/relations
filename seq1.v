@@ -773,7 +773,7 @@ Section allset_Lifted.
   Qed.
   
   (** * a link with path.v using coercion from relation to rel *)
-  Lemma Lift2path R st x y: (x::(rcons st y)) [L\in] R <-> path R x (rcons st y).
+  Lemma Lift2path R st x y: (x::(rcons st y)) [L\in] R <-> path (R2rel R) x (rcons st y).
   Proof.
     rewrite (allL_nth' R st x y x).
     split => [Hl |/(@pathP _ _ _ _ x) Hr n Hs] .
@@ -1041,18 +1041,18 @@ Section link_with_path.
   Qed.
   
   Lemma path_bppE {T: Type} (x t:T) (st: seq T) (R: relation T): 
-    path R x st = (spairs t (x::st)) [\in] R.
+    path (R2rel R) x st = (spairs t (x::st)) [\in] R.
   Proof.
     elim/last_ind: st => [//| st a Hr]. 
     rewrite rcons_path {}Hr /=.
     elim/last_ind: st x => [x| st b _ x];first by rewrite /= andbT [RHS]inE.
     move: (cat_rcons a (rcons st b) [::]); rewrite cats0 => ->.
     rewrite /spairs /= pairmap_cat /= last_rcons all_cat /= andbT.
-    by have -> :  (R: rel T) b a = ((b, a) \in R) by rewrite [RHS]inE. 
+    by have -> :  (R2rel R) b a = ((b, a) \in R) by rewrite [RHS]inE. 
   Qed.
   
   Lemma path_allLE (T: Type) (x y:T) (st: seq T) (R: relation T): 
-    path R x (rcons st y) = allL R st x y.
+    path (R2rel R) x (rcons st y) = allL R st x y.
   Proof. rewrite /allL (Lift_eq x (x :: rcons st y));apply: path_bppE. Qed.
   
 End link_with_path.

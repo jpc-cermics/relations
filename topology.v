@@ -30,18 +30,22 @@ Section Preorder.
   Variables (T: Type) (R: relation T).
 
   Definition le: rel T := R2rel R.
-  Hypothesis le_trans : @Corelib.ssr.ssrbool.transitive T R. (* using coercion *)
-  Hypothesis le_refl : @Corelib.ssr.ssrbool.reflexive T R. (* using coercion *)
-
+  Hypothesis le_trans : ssrbool.transitive le. 
+  Hypothesis le_refl : ssrbool.reflexive le.
+  
   (* Note that this where the dvd_display is associated with the type NatDvd.t. *)
   
   Fact rel_display : @Order.disp_t. Proof. exact. Qed.
+
+#[local] Set Warnings "-redundant-canonical-projection".
 
   HB.instance Definition _ := gen_eqMixin T.   
   HB.instance Definition _ := gen_choiceMixin T.   
   Set Warnings "-redundant-canonical-projection".
   HB.instance Definition _  :=
-    @Order.Le_isPreorder.Build rel_display T R le_refl le_trans.
+    @Order.Le_isPreorder.Build rel_display T (R2rel R) le_refl le_trans.
+
+#[local] Set Warnings "+redundant-canonical-projection".
   (* 
   Check <=%O.
   Variables (x y: T).
@@ -111,6 +115,8 @@ Section Topology_porder.
   
 End Topology_porder.
 
+Set Warnings "-redundant-canonical-projection".
+
 Section Intersection_Topology.
 
   (** * Intersection topology *)
@@ -136,12 +142,13 @@ Section Intersection_Topology.
           move: H1;rewrite /open_sets' /mkset => H1.
           by [].
   Qed.
-  
+
   HB.instance Definition _ := Choice.on W.
-  Set Warnings "-redundant-canonical-projection".
   HB.instance Definition _ := isOpenTopological.Build W openT openI open_bigU.
   
 End Intersection_Topology.
+
+Set Warnings "+redundant-canonical-projection".
 
 Section Intersection_Topology_facts. 
 
@@ -325,6 +332,7 @@ Section Intermediate_results_open.
   
 End Intermediate_results_open.
 
+Set Warnings "-projection-no-head-constant,-redundant-canonical-projection".
 
 Section Relation_Topology.
   (** * aset_topology: Topology associated to a relation using the After sets *)
@@ -352,23 +360,23 @@ Section Relation_Topology.
   Local Lemma open_bigI' (I : Type) (f : I -> set W):
     (forall (i : I), tau (f i)) -> tau (\bigcap_i f i).
   Proof. by apply:Aset_stableI. Qed.
-  
-  (* HB.instance Definition _ := Choice.on W. *)
+
   HB.instance Definition _ := gen_eqMixin W.   
   HB.instance Definition _ := gen_choiceMixin W.   
-  Set Warnings "-redundant-canonical-projection".
   HB.instance Definition _ := isOpenTopological.Build W openT' openI' open_bigU'.
   
 End Relation_Topology.
 
+Set Warnings "+projection-no-head-constant,+redundant-canonical-projection".
+
 Section test.
   (* pr 1807 *)
   Context (T: Type) (v: relation T). 
-  Check aset_topology v : topologicalType. 
+  (* Check aset_topology v : topologicalType.  **)
   Let U := aset_topology v.
   Variable (A: set U).
-  Check (closure A).
-  
+  (* Check (closure A). **)
+
 End test.
 
  
