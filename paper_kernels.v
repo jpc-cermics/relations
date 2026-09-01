@@ -84,8 +84,8 @@ Module Generalized_SSW_fin_notcyclic.
 
     Definition M := B `|` R.
 
-    Context (A1: nonempty [set: T]) (A2: Assumption2 R) 
-      (A6: Assumption6 B M O) (A7: Assumption7 R B M) (A8: Assumption8 R B M). 
+    Context (A1: nonempty [set: T]) (A2: Assumption2 R).
+    Context (A6: Assumption6 B M O) (A7: Assumption7 R B M) (A8: Assumption8 R B M). 
     Context (Au: R `<=` O^-1).
     Context (Apk : forall X , RelIndep O X <-> RelIndep M X).
     Context (A_Onotcyclic: ~ (exists s, O.+ (s,s))).
@@ -182,11 +182,12 @@ Module Generalized_SSW_fin_porder.
   
     Notation M := (B `|` R).
 
-    Context (A1: nonempty [set: T]) (A2 : Assumption2 R) 
-      (A6 : Assumption6 B M O) (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
-    Context (Asp: sporder O) (Au: R `<=` O^-1).
-    Context (Apk : forall X, RelIndep O X <->  RelIndep M X).
-  
+    Context (A1: nonempty [set: T]) (A2 : Assumption2 R).
+    Context (A6 : Assumption6 B M O) (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
+    Context (Au: R `<=` O^-1).
+    Context (Apk: forall X , RelIndep O X <-> RelIndep M X).
+    Context (Asp: sporder O).
+    
     Lemma maximal_mabsorbant S:
       (pre_kernel O R M S) /\ (forall U, pre_kernel O R M U -> S [<= O] U -> S = U)
       -> absorbant M S.
@@ -720,9 +721,9 @@ Module Finite_case_Kernel_Theorems.
       by pose proof 
            (@G_SSW_fin_porder T O^-1 R B 
               A1 (A2_from_Asp Asp) haveA6 (A7_from_Asp_Atc Asp Atc) 
-              (A8_from_Atc Atc) (sporder_inv Asp) Au' Apk).
+              (A8_from_Atc Atc) Au' Apk (sporder_inv Asp)).
     Qed.
-
+    
     (** A stronger Blidia Hengel theorem as we use a weaker
         version of the three cycles assymption *)
     Lemma Blidia_Hengel_Theorem
