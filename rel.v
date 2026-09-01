@@ -279,6 +279,11 @@ Section Relation_Facts.
   Lemma inverseS R S: R `<=` S -> R^-1 `<=` S^-1. 
   Proof. by move => H1 x /H1 H2. Qed.
 
+  (** * Complementary *)
+  
+  Lemma relCinverse R: R.^c^-1 = (R^-1).^c.
+  Proof. by rewrite predeqE => -[x y];split. Qed.
+  
   (** * Composition *)
 
   Lemma composeA R S U: (R `;` S) `;` U = R `;` (S `;` U).

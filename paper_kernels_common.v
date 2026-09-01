@@ -657,9 +657,7 @@ Section Assumptions.
   
   Definition Assumption1:= (nonempty [set: T]).
   Definition Assumption2 R:= ~ (iic (Asym R)).
-
-  Definition Assumption3 B M O:= 
-    (forall x y, B (x,y) /\ ~ (M (y, x)) -> O (x,y)).
+  Definition Assumption3 B M O:= B `&` M.^c^-1 `<=` O.
   
   Definition Assumption4 R B M:= 
     (forall x x' y y', ~(x' = x) 
@@ -678,17 +676,25 @@ Section Assumptions.
                 -> ~ (R (x',y)) /\ ~ M (y, x')
                 -> (M (y',y))).
 
-  Definition Assumption6 O:= ~ (iic O).
-  Definition Assumption7 O:= sporder O.
-  Definition Assumption8 O M := O  `<=` M `|` M^-1.
+  Definition Assumption6_1 O:= ~ (iic O).
+  Definition Assumption6_2 O:= sporder O.
+  Definition Assumption6_3 O M := O  `<=` M `|` M^-1.
   
-  Definition Assumption9 R B O M:= 
+  Definition Assumption6_4 R B O M:= 
     (forall x y x' y' , ~ (x = y) -> ~ (x = x') -> ~ (x = y')
                    -> ~ (y = x') -> ~ (x' = y') -> ~ (y' = y) 
                    -> R (x,y) -> M (y,x') -> O (x',y') -> ~(M (y,x)) 
                    -> ~ ((M `|` M^-1) (x',x))
                    ->  ~ ((M `|` M^-1) (y',x))
                    -> M (y,y')).
+  
+  Definition Assumption6'_1 R O := R `<=` O^-1.
+  Definition Assumption6'_2 M O := forall X , RelIndep O X <-> RelIndep M X.
+  Definition Assumption6'_3 O := sporder O.
+
+  Definition Assumption6''_1 R O := R `<=` O^-1.
+  Definition Assumption6''_2 M O := forall X , RelIndep O X <-> RelIndep M X.
+  Definition Assumption6''_3 O := ~ (exists s, O.+ (s,s)).
 
 End Assumptions. 
 
@@ -1017,7 +1023,7 @@ Module Extend_non_absorbant_pre_kernel.
         have H7: X x  by rewrite -{1}(Xpart y);right.
         have H8: ~ (M (y, x))
           by move => H8;have H9: (exists y0 : T, M (y, y0) /\ X y0) by (exists x).
-        by right; apply: A3.
+        by right;apply: A3. 
     Qed.
     
     Lemma case2_notequal: forall y,
@@ -1380,7 +1386,7 @@ Module Maximal_with_Zorn.
           by apply: (H10 H7 H9 H4 H5).
       Qed.
       
-      Lemma Sinf_not_empty (A3: Assumption6 O) (A4: Assumption7 O):
+      Lemma Sinf_not_empty (A3: Assumption6_1 O) (A4: Assumption6_2 O):
         (Sinf C) != set0.
       Proof.
         move: (@Elt_not_empty C Hne) => [s _];rewrite set0P.
@@ -1389,8 +1395,8 @@ Module Maximal_with_Zorn.
       Qed.
       
       (* begin snippet SinfScalP:: no-out *)    
-      Lemma Sinf_ScalP (A2: Assumption2 R) (A3: Assumption6 O) 
-        (A4: Assumption7 O) (A5:Assumption8 O M) (A9: Assumption9 R B O M):
+      Lemma Sinf_ScalP (A2: Assumption2 R) (A3: Assumption6_1 O) 
+        (A4: Assumption6_2 O) (A5:Assumption6_3 O M) (A9: Assumption6_4 R B O M):
         (Sinf C):#(R) `<=` M#(Sinf C).
       (* end snippet SinfScalP *)
       Proof.
@@ -1448,15 +1454,15 @@ Module Maximal_with_Zorn.
       Qed.
       
       (* begin snippet SinfScal:: no-out *)    
-      Lemma Sinf_Scal (A2: Assumption2 R) (A3: Assumption6 O) (A4: Assumption7 O)
-        (A5:Assumption8 O M) (A9: Assumption9 R B O M):
+      Lemma Sinf_Scal (A2: Assumption2 R) (A3: Assumption6_1 O) (A4: Assumption6_2 O)
+        (A5:Assumption6_3 O M) (A9: Assumption6_4 R B O M):
         (Sinf C) \in Scal. 
       (* end snippet SinfScal *)
       Proof.
         by rewrite inE;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
       Qed.
       
-      Lemma Sinf_final (A2: Assumption2 R) (A3: Assumption6 O) (A4: Assumption7 O)   (A5:Assumption8 O M) (A9: Assumption9 R B O M):
+      Lemma Sinf_final (A2: Assumption2 R) (A3: Assumption6_1 O) (A4: Assumption6_2 O)   (A5:Assumption6_3 O M) (A9: Assumption6_4 R B O M):
         exists Si, forall (S: SType), C S -> S [<=] Si.
       Proof.
         move: (Sinf_Scal A2 A3 A4 A5 A9) => /set_mem H2;exists (exist _ (Sinf C) H2);move => S /mem_set H3. 
@@ -1468,8 +1474,8 @@ Module Maximal_with_Zorn.
     (** * existence of Smax with Zorn Lemma for type SType *)
     (* begin snippet SmaxSType:: no-out *)    
     Lemma Maximal_SType
-      (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption6 O) (A4: Assumption7 O) (A5: Assumption8 O M)
-      (A9: Assumption9 R B O M):
+      (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption6_1 O) (A4: Assumption6_2 O) (A5: Assumption6_3 O M)
+      (A9: Assumption6_4 R B O M):
       exists Sm, forall S, Sm [<=] S -> S = Sm.
     (* end snippet SmaxSType *)
     Proof.
@@ -1485,8 +1491,8 @@ Module Maximal_with_Zorn.
     
     (** * back to Maximal set in pre_kernels *)
     (* begin snippet Smax:: no-out *)    
-    Lemma Maximal_Zorn (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption6 O) (A4: Assumption7 O)
-      (A5: Assumption8 O M) (A9: Assumption9 R B O M):
+    Lemma Maximal_Zorn (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption6_1 O) (A4: Assumption6_2 O)
+      (A5: Assumption6_3 O M) (A9: Assumption6_4 R B O M):
       exists Sm, IsMaximal Sm.
     (* end snippet Smax *)    
     Proof. 
