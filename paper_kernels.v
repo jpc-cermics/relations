@@ -174,9 +174,8 @@ End Generalized_SSW_fin_notcyclic.
 Export Generalized_SSW_fin_notcyclic(G_SSW_fin_notcyclic).
 
 Module Generalized_SSW_fin_porder.
+  (** * Generalized_SSW for finType and O is a sporder *)
   Section Generalized_SSW_fin_porder.
-    (** * finType cases *)
-    (** * Extended Champetier *)
     
     Context (T : finType) (O R B: relation T).
     Implicit Types (O R B: relation T). 
@@ -208,7 +207,7 @@ Module Generalized_SSW_fin_porder.
       by split;[| apply/negP => /eqP Heq].
     Qed.
     
-    Lemma G_SSW_fin_porder: exists S, kernel M S. 
+    Theorem G_SSW_fin_porder: exists S, kernel M S. 
     Proof.
       (* There exist a maximal set *)
       move: (@Maximal T O R M A1 Asp Au) => [S Hm].
@@ -285,10 +284,10 @@ Module SSWext.
   Qed.
   
   Corollary SSW
-    (A1: SSW_1) (A2': ~ (iic_inj Er)) (A3: ~ (iic_inj Eb)):
+    (A1: SSW_1) (A2: ~ (iic_inj Er)) (A3: ~ (iic_inj Eb)):
     exists S, kernel M S.
   Proof.
-    move: A2' => /(not_iic_inj_to_not_iic_asym A1) A2'.
+    move: A2 => /(not_iic_inj_to_not_iic_asym A1) A2.
     move: A3 => /(not_iic_inj_to_not_iic_asym A1) A3.
     by apply: SSWext.
   Qed.
@@ -374,7 +373,7 @@ Module ABkernels.
   
 End ABkernels.
 
-Module MeunierLanglois. 
+Module MeunierLanglois_inf. 
   (** * use G_SSW to prove kernel existence in infinite graphs *)
   (** * for a modifieed version of Meunier Langlois *)
 
@@ -472,7 +471,7 @@ Module MeunierLanglois.
                   L5 (L9 A4 A5)).
   Qed.
   
-End MeunierLanglois. 
+End MeunierLanglois_inf. 
 
 Definition simpleGraph (T: Type) (G:relation T) := symmetric G /\ irreflexive G.
 Definition Direction (T: Type) (G D: relation T) := D `|` D^-1 = G. 
@@ -555,14 +554,7 @@ Module  simpleGraph.
     have: O `|` O^-1 `<=` D `|` D^-1  by rewrite Heq.
     by rewrite subUset => -[Hoinc _].
   Qed.
-
-  Lemma test': O^-1 `<=` D `|` D^-1.
-  Proof.
-    have Heq: O `|` O^-1 = D `|` D^-1 by move: Ao => [-> _].
-    have: O `|` O^-1 `<=` D `|` D^-1  by rewrite Heq.
-    by rewrite subUset => -[_ Hoinc].
-  Qed.
-
+  
   Lemma test'' x y: O(x,y) -> B(y,x) \/ R(x,y).
   Proof. by move => /[dup] ? /test [?|?];[right|left]. Qed.
   
@@ -717,7 +709,7 @@ Module Finite_case_Kernel_Theorems.
     
     (** A stronger Champetier theorem as we use a weaker
         version of the three cycles assymption *)
-    Lemma Kernel_Champetier (Asp: sporder O) (Atc: Three_cycles): 
+    Theorem Kernel_Champetier (Asp: sporder O) (Atc: Three_cycles): 
       exists S, RelIndep M S /\ absorbant M S.
     Proof.
       by pose proof 
@@ -728,7 +720,7 @@ Module Finite_case_Kernel_Theorems.
     
     (** A stronger Blidia Hengel theorem as we use a weaker
         version of the three cycles assymption *)
-    Lemma Blidia_Hengel_Theorem
+    Theorem Kernel_Blidia_Hengel
       (Anc: ~ (exists s, O.+ (s,s))) (Afg: Forbiden_graph) (Atc: Three_cycles):
       exists S, kernel M S. 
     Proof.
@@ -739,7 +731,7 @@ Module Finite_case_Kernel_Theorems.
                    (Om1_notcyclic Anc)).
     Qed.
 
-    Lemma Meunier_Langlois_P2_5
+    Theorem Meunier_Langlois_P2_5
       (Anc: ~ (exists s, O.+ (s,s))) (MLfg: M_L_Forbiden_graph) : exists S, kernel M S. 
     Proof.
       by apply: (@G_SSW_fin_notcyclic T O^-1 R B 
