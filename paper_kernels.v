@@ -49,21 +49,22 @@ Module Generalized_SSW.
 
     Notation M := (B `|` R).
     
-    Context (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 O)
-      (A4: Assumption4 O) (A5: Assumption5 O M) (A6: Assumption6 B M O)
-      (A7: Assumption7 R B M) (A8: Assumption8 R B M) (A9: Assumption9 R B O M).
+    Context (A1: Assumption1 T) (A2: Assumption2 R) 
+      (A3: Assumption3 B M O) (A4: Assumption4 R B M) (A5:  Assumption5 R B M).
+    Context (A6: Assumption6 O) (A7: Assumption7 O) (A8: Assumption8 O M)
+      (A9: Assumption9 R B O M).
         
     (* begin snippet MainTh:: no-out *)    
     Theorem G_SSW: exists S, kernel M S.
     (* end snippet MainTh:: no-out *)    
     Proof.
       (* a Maximal set using Zorn Lemma *)
-      move: (Maximal_Zorn A1 A2 A3 A4 A5 A9) => [Sm [/set_mem Hpk Hmax]].
+      move: (Maximal_Zorn A1 A2 A6 A7 A8 A9) => [Sm [/set_mem Hpk Hmax]].
       (* The Maximal set is absorbant using the extend Lemma *)
       have Hsmabs: ~ (absorbant M Sm) -> False.
       {
         move => Hna.
-        move: (extend A2 A6 A7 A8 Hpk Hna) => [X' [/mem_set H4 [/DeltaCP Hne Hle]]]. 
+        move: (extend A2 A3 A4 A5 Hpk Hna) => [X' [/mem_set H4 [/DeltaCP Hne Hle]]]. 
         move: H4 Hle => /Hmax H4 /H4 Heq.
         by rewrite -Heq in Hne.
       }
@@ -84,8 +85,8 @@ Module Generalized_SSW_fin_notcyclic.
 
     Definition M := B `|` R.
 
-    Context (A1: nonempty [set: T]) (A2: Assumption2 R).
-    Context (A6: Assumption6 B M O) (A7: Assumption7 R B M) (A8: Assumption8 R B M). 
+    Context (A1: nonempty [set: T]) (A2: Assumption2 R)
+      (A3: Assumption3 B M O) (A4: Assumption4 R B M) (A5:  Assumption5 R B M). 
     Context (Au: R `<=` O^-1).
     Context (Apk : forall X , RelIndep O X <-> RelIndep M X).
     Context (A_Onotcyclic: ~ (exists s, O.+ (s,s))).
@@ -100,7 +101,7 @@ Module Generalized_SSW_fin_notcyclic.
                  -> exists S', S' \in (pre_kernel M R M) /\ (S [<< O] S').
       {
         rewrite inE => -[Hpk Hna].
-        move: (@extend T R B O S A2 A6 A7 A8 Hpk Hna) 
+        move: (@extend T R B O S A2 A3 A4 A5 Hpk Hna) 
             => [S' [/mem_set Hpk' Hlt]].
         by exists S'. 
       }
@@ -182,8 +183,9 @@ Module Generalized_SSW_fin_porder.
   
     Notation M := (B `|` R).
 
-    Context (A1: nonempty [set: T]) (A2 : Assumption2 R).
-    Context (A6 : Assumption6 B M O) (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
+    Context (A1: nonempty [set: T]) (A2 : Assumption2 R)
+      (A3 : Assumption3 B M O) (A4 : Assumption4 R B M) (A5 :  Assumption5 R B M).
+    
     Context (Au: R `<=` O^-1).
     Context (Apk: forall X , RelIndep O X <-> RelIndep M X).
     Context (Asp: sporder O).
@@ -200,7 +202,7 @@ Module Generalized_SSW_fin_porder.
         rewrite /absorbant /mkset => /(_ y) H4. 
         by move: H1 => /H4;rewrite inE => H1.
       }
-      move: (@extend T R B O S A2 A6 A7 A8 Hpk H3)
+      move: (@extend T R B O S A2 A3 A4 A5 Hpk H3)
           => [S' [Hpre [/DeltaCP H7 Hne]]].
       exists S';first by rewrite (Apk S').
       by split;[| apply/negP => /eqP Heq].
@@ -239,10 +241,10 @@ Module SSWext.
   Lemma B_trans: transitive B.
   Proof. by apply: (@TclosT _ Eb). Qed.
   
-  Lemma L4: (Assumption4 O). 
+  Lemma L4: (Assumption7 O). 
   Proof. by apply: (@Asym_sporder _ B);apply: TclosT. Qed.
   
-  Lemma L5: (Assumption5 O M).
+  Lemma L5: (Assumption8 O M).
   Proof. 
     have H1: O `<=` M
       by apply: (@subset_trans _ B _ _ (@AsymI _ B)
@@ -250,19 +252,19 @@ Module SSWext.
     by pose proof (@subset_trans _ _ O _  H1 (@subsetUl _ M M^-1)).
   Qed.
   
-  Lemma L6: (Assumption6 B M O).
+  Lemma L6: (Assumption3 B M O).
   Proof. move => x y [? ?];split;first exact.
          move => ?; by have: M (y, x) by left.
   Qed.
 
-  Lemma L7: (Assumption7 R B M).
+  Lemma L7: (Assumption4 R B M).
   Proof. 
     move => x x' y y' H1 H2 [H3|H3] H4 H5 H6 H7 H8 H9.
     by left;apply: (B_trans H3 H4).
     by have: M (x,x') by right;apply: (R_trans H2 H3).
   Qed.
   
-  Lemma L8: (Assumption8 R B M).
+  Lemma L8: ( Assumption5 R B M).
   Proof. 
     move => x' y y' B0 B0' B0'' H1 [H2| H2] H3 [H4 H5].
     by left;apply: (B_trans H2 H3).
@@ -279,15 +281,15 @@ Module SSWext.
   Theorem SSWext
     (A1: SSW_1) (A2: SSW_2) (A3: SSW_3): exists S, kernel M S.
   Proof.
-    by pose proof (@G_SSW _ R B O A1 A2 A3 L4 L5 L6 L7 L8 L9).
+    by pose proof (@G_SSW _ R B O A1 A2 L6 L7 L8 A3 L4 L5 L9).
   Qed.
   
   Corollary SSW
-    (A1: SSW_1) (A2': ~ (iic_inj Er)) (A3': ~ (iic_inj Eb)):
+    (A1: SSW_1) (A2': ~ (iic_inj Er)) (A3: ~ (iic_inj Eb)):
     exists S, kernel M S.
   Proof.
     move: A2' => /(not_iic_inj_to_not_iic_asym A1) A2'.
-    move: A3' => /(not_iic_inj_to_not_iic_asym A1) A3'.
+    move: A3 => /(not_iic_inj_to_not_iic_asym A1) A3.
     by apply: SSWext.
   Qed.
   
@@ -325,10 +327,10 @@ Module ABkernels.
 
   Notation M := (B `|` R).
 
-  Lemma L4 (A5: AB_5) : (Assumption4 O). 
+  Lemma L4 (A5: AB_5) : (Assumption7 O). 
   Proof. by apply: (@Asym_sporder _ B). Qed.
   
-  Lemma L5: (Assumption5 O M).
+  Lemma L5: (Assumption8 O M).
   Proof. 
     have H1: O `<=` M 
       by apply: (@subset_trans _ B _ _ (@AsymI _ B)
@@ -336,19 +338,19 @@ Module ABkernels.
     by pose proof (@subset_trans _ _ O _  H1 (@subsetUl _ M M^-1)).
   Qed.
   
-  Lemma L6: (Assumption6 B M O).
+  Lemma L6: (Assumption3 B M O).
   Proof. move => x y [? ?];split;first exact.
          move => ?; by have: M (y, x) by left.
   Qed.
 
-  Lemma L7 (A4: AB_4) (A5: AB_5): (Assumption7 R B M).
+  Lemma L7 (A4: AB_4) (A5: AB_5): (Assumption4 R B M).
   Proof. 
     move => x x' y y' H1 H2 [H3|H3] H4 H5 H6 H7 H8 H9.
     by left;apply: (A5 x' y' y H3 H4).
     by have: M (x,x') by right;apply: (A4 y' x x' H2 H3).
   Qed.
   
-  Lemma L8 (A4: AB_4) (A5: AB_5): (Assumption8 R B M).
+  Lemma L8 (A4: AB_4) (A5: AB_5): ( Assumption5 R B M).
   Proof. 
     move => x' y y' B0 B0' B0'' H1 [H2| H2] H3 [H4 H5].
     by left;apply: (A5 x' y' y H2 H3).
@@ -366,8 +368,8 @@ Module ABkernels.
     (A1: AB_1) (A2: AB_2) (A3: AB_3) (A4: AB_4) (A5: AB_5):
     exists S, kernel M S.
   Proof.
-    by pose proof (@G_SSW _ R B O A1 A2 A3 (L4 A5) L5 L6 (L7 A4 A5)
-                     (L8 A4 A5) (L9 A4 A5)).
+    by pose proof (@G_SSW _ R B O A1 A2 L6 (L7 A4 A5)
+                     (L8 A4 A5) A3 (L4 A5) L5 (L9 A4 A5)).
   Qed.
   
 End ABkernels.
@@ -398,26 +400,26 @@ Module MeunierLanglois.
 
   Notation M := (B `|` R).
   
-  Lemma L3 (A3: AB_3): (Assumption3 O).
+  Lemma L3 (A3: AB_3): (Assumption6 O).
   Proof.
     move: A3. contra => -[f H].
     by exists f;move => n;move: H => /(_ n) [/= H1 _].
   Qed.
   
-  Lemma L4 (A5: AB_5) (A6: AB_6) : (Assumption4 O). 
+  Lemma L4 (A5: AB_5) (A3: AB_6) : (Assumption7 O). 
   Proof. 
     split. 
     + move => x [/= H1 _].
       by pose proof (@Asym_irreflexive T B x). 
     + move => y x z [/= [H1 H1'] H2] [/= [H3 H3'] H4].
-      move: (A6 x y z H1 H1' H2 H3 H3' H4) => [H5 [H6 H7]].
+      move: (A3 x y z H1 H1' H2 H3 H3' H4) => [H5 [H6 H7]].
       by split. 
   Qed.
   
-  Lemma L5: (Assumption5 O M).
+  Lemma L5: (Assumption8 O M).
   Proof. by move => [x y] [[/= ? _] _];left;left.  Qed.
   
-  Lemma L6: (Assumption6 B M O).
+  Lemma L6: (Assumption3 B M O).
   Proof.
     move => x y [H1 H2].
     split. 
@@ -427,7 +429,7 @@ Module MeunierLanglois.
     by have H4:  M (y, x) by right. 
   Qed.
   
-  Lemma L7 (A4: AB_4) (A5: AB_5): (Assumption7 R B M).
+  Lemma L7 (A4: AB_4) (A5: AB_5): (Assumption4 R B M).
   Proof. 
     move => x x' y y' H1 H2 [H3|H3] H4 H5 H6 H7 H8 H9 H10 H11 H12 H13 H14 H15.
     + left;move: (A5  y' x' y H12 H14 H10 H3 H4) => [? // | [_ H10']]. 
@@ -437,7 +439,7 @@ Module MeunierLanglois.
       by (have H11': M(x', x) by left).
   Qed.
   
-  Lemma L8 (A4: AB_4) (A5: AB_5): (Assumption8 R B M).
+  Lemma L8 (A4: AB_4) (A5: AB_5): ( Assumption5 R B M).
   Proof. 
     move => x' y y' P0 P0' P0'' H1 [H2| H2] H3 [H4 H5].
     + left;move: (A5 y' x' y P0 P0'' P0' H2 H3) => [? // | [_ H6]].
@@ -466,8 +468,8 @@ Module MeunierLanglois.
     (A1: AB_1) (A2: AB_2) (A3: AB_3) (A4: AB_4) (A5: AB_5) (A6: AB_6):
     exists S, kernel M S.
   Proof.
-    by pose proof (@G_SSW _ R B O A1 A2 (L3 A3) (L4 A5 A6) 
-                  L5 L6 (L7 A4 A5) (L8 A4 A5) (L9 A4 A5)).
+    by pose proof (@G_SSW _ R B O A1 A2 L6 (L7 A4 A5) (L8 A4 A5) (L3 A3) (L4 A5 A6) 
+                  L5 (L9 A4 A5)).
   Qed.
   
 End MeunierLanglois. 
@@ -644,10 +646,10 @@ Module Finite_case_Kernel_Theorems.
       by have: (iic O) by apply: (iic_sub Au').
     Qed.
     
-    Lemma haveA6 : forall x y : T, B (x, y) /\ ~ M (y, x) -> O^-1 (x, y).
+    Lemma haveA3' : forall x y : T, B (x, y) /\ ~ M (y, x) -> O^-1 (x, y).
     Proof. by move => x y [[_ H1] _]. Qed.
 
-    Lemma A7_from_Asp_Atc (Asp: sporder O) (Atc: Three_cycles): Assumption7 R B M. 
+    Lemma A4'_from_Asp_Atc (Asp: sporder O) (Atc: Three_cycles): Assumption4 R B M. 
     Proof.
       move: Asp => [_ Otr]. 
       move => x x' y y' _ Rxy' My'x' Bx'y nBxy [nRx'y nMyx'] [nRxy nMyx]
@@ -669,7 +671,7 @@ Module Finite_case_Kernel_Theorems.
         ++ by have Hmx'x: M(x,x') by right.
     Qed.
 
-    Lemma A7_from_Afg_Atc (Afg: Forbiden_graph)(Atc: Three_cycles): Assumption7 R B M. 
+    Lemma A4'_from_Afg_Atc (Afg: Forbiden_graph)(Atc: Three_cycles): Assumption4 R B M. 
     Proof.
       rewrite (RB Ad Ao).
       move => x x' y y' _ Rxy' Dy'x' Bx'y nBxy [nRx'y nDyx'] [nRxy nDyx]
@@ -682,7 +684,7 @@ Module Finite_case_Kernel_Theorems.
             [| | | | |move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx')].
     Qed.
 
-    Lemma A7_from_MLfg (MLfg: M_L_Forbiden_graph): Assumption7 R B M. 
+    Lemma A4'_from_MLfg (MLfg: M_L_Forbiden_graph): Assumption4 R B M. 
     Proof.
       rewrite (RB Ad Ao).
       move => x x' y y' _ Rxy' Dy'x' Bx'y nBxy [nRx'y nDyx'] [nRxy nDyx]
@@ -695,7 +697,7 @@ Module Finite_case_Kernel_Theorems.
       by [].
     Qed.
     
-    Lemma A8_from_Atc (Atc: Three_cycles): Assumption8 R B M. 
+    Lemma A5_from_Atc (Atc: Three_cycles):  Assumption5 R B M. 
     Proof.
       (* reformulate everything with D *)
       rewrite (RB Ad Ao).
@@ -703,7 +705,7 @@ Module Finite_case_Kernel_Theorems.
       by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx').
     Qed.
 
-    Lemma A8_from_MLfg (MLfg: M_L_Forbiden_graph): Assumption8 R B M. 
+    Lemma A5_from_MLfg (MLfg: M_L_Forbiden_graph):  Assumption5 R B M. 
     Proof.
       (* reformulate everything with D *)
       rewrite (RB Ad Ao).
@@ -720,8 +722,8 @@ Module Finite_case_Kernel_Theorems.
     Proof.
       by pose proof 
            (@G_SSW_fin_porder T O^-1 R B 
-              A1 (A2_from_Asp Asp) haveA6 (A7_from_Asp_Atc Asp Atc) 
-              (A8_from_Atc Atc) Au' Apk (sporder_inv Asp)).
+              A1 (A2_from_Asp Asp) haveA3' (A4'_from_Asp_Atc Asp Atc) 
+              (A5_from_Atc Atc) Au' Apk (sporder_inv Asp)).
     Qed.
     
     (** A stronger Blidia Hengel theorem as we use a weaker
@@ -731,9 +733,9 @@ Module Finite_case_Kernel_Theorems.
       exists S, kernel M S. 
     Proof.
       by apply: (@G_SSW_fin_notcyclic T O^-1 R B 
-                   A1 (A2_from_Anc Anc) haveA6 
-                   (A7_from_Afg_Atc Afg Atc)
-                   (A8_from_Atc Atc) Au' Apk
+                   A1 (A2_from_Anc Anc) haveA3' 
+                   (A4'_from_Afg_Atc Afg Atc)
+                   (A5_from_Atc Atc) Au' Apk
                    (Om1_notcyclic Anc)).
     Qed.
 
@@ -741,9 +743,9 @@ Module Finite_case_Kernel_Theorems.
       (Anc: ~ (exists s, O.+ (s,s))) (MLfg: M_L_Forbiden_graph) : exists S, kernel M S. 
     Proof.
       by apply: (@G_SSW_fin_notcyclic T O^-1 R B 
-                   A1 (A2_from_Anc Anc) haveA6 
-                   (A7_from_MLfg MLfg)
-                   (A8_from_MLfg MLfg) Au' Apk
+                   A1 (A2_from_Anc Anc) haveA3' 
+                   (A4'_from_MLfg MLfg)
+                   (A5_from_MLfg MLfg) Au' Apk
                    (Om1_notcyclic Anc)).
     Qed.
     

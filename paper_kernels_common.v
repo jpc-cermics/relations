@@ -657,13 +657,11 @@ Section Assumptions.
   
   Definition Assumption1:= (nonempty [set: T]).
   Definition Assumption2 R:= ~ (iic (Asym R)).
-  Definition Assumption3 O:= ~ (iic O).
-  Definition Assumption4 O:= sporder O.
-  Definition Assumption5 O M := O  `<=` M `|` M^-1.
-  Definition Assumption6 B M O:= 
+
+  Definition Assumption3 B M O:= 
     (forall x y, B (x,y) /\ ~ (M (y, x)) -> O (x,y)).
   
-  Definition Assumption7 R B M:= 
+  Definition Assumption4 R B M:= 
     (forall x x' y y', ~(x' = x) 
                   -> R (x,y') -> M (y', x')
                   -> (B (x',y)) -> ~ (B (x, y)) 
@@ -674,11 +672,15 @@ Section Assumptions.
                   -> ~ (M (y',x))
                   -> (M (y',y))).
   
-  Definition Assumption8 R B M:=
+  Definition Assumption5 R B M:=
     (forall x' y y', ~ (y' = x') -> ~ (y = y') -> ~ (y = x') 
                 -> R (y,y') -> M (y',x') -> B (x',y) 
                 -> ~ (R (x',y)) /\ ~ M (y, x')
                 -> (M (y',y))).
+
+  Definition Assumption6 O:= ~ (iic O).
+  Definition Assumption7 O:= sporder O.
+  Definition Assumption8 O M := O  `<=` M `|` M^-1.
   
   Definition Assumption9 R B O M:= 
     (forall x y x' y' , ~ (x = y) -> ~ (x = x') -> ~ (x = y')
@@ -904,7 +906,7 @@ Module Extend_non_absorbant_pre_kernel.
       by apply: RelIndep_U.
     Qed.
       
-    Lemma case2_RMprop (A7:Assumption7 R B M) (A8:Assumption8 R B M): forall y, 
+    Lemma case2_RMprop (A4:Assumption4 R B M) (A5:Assumption5 R B M): forall y, 
         pre_kernel M R M X -> y \in Y -> (SeP y) -> y \in X:#(B) 
         -> ( forall y', ~ (y' \in ((X `\` (Xy y)) `|` [set y]))
                   -> y' \in ((X `\` (Xy y)) `|` [set y]):#(R) -> y' \in M#((X `\` (Xy y)) `|` [set y])).
@@ -926,7 +928,7 @@ Module Extend_non_absorbant_pre_kernel.
         (** x' \in Xy *)
         move: (EM (M (y',x))) => [H10 | H10].
         ++ by (exists x);split;[ | left;apply/set_mem]. 
-        ++ (* we will use A7 to conclude that M(y',y) *)
+        ++ (* we will use A4' to conclude that M(y',y) *)
            exists y; split; last by right. 
            have P1: ~ (x' = x) by move => H11;move: H6 H9;move: H11 => -> /set_mem [_ ?] ?. 
            have P2: R (x,y') by apply: H5.
@@ -952,7 +954,7 @@ Module Extend_non_absorbant_pre_kernel.
            have P14: ~ (y = x' )
              by move => I1;(have: M (x',y) by left);move: P6;rewrite I1 => -[_ I3] I4.
            have P15: ~ (M (y',x)) by exact.
-           by move: (A7 x x' y y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12 P13 P14 P15).
+           by move: (A4 x x' y y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12 P13 P14 P15).
         ++ have H7: x = y. by [].
            have H8: R (y,y') by rewrite H7 in H5.
            case H9: (y' \in M#(X)); last first.
@@ -987,22 +989,22 @@ Module Extend_non_absorbant_pre_kernel.
                     have B3: B (x',y) by move: H10;rewrite /Xy => -[_ ?]. 
                     have B4: ~ (R (x',y)) /\ ~ M (y, x') by apply: (fact4 H0' H11 H12). 
                     
-                    move: (A8 x' y y' B0 B0' B0'' B1 B2 B3 B4) => B5.
+                    move: (A5 x' y y' B0 B0' B0'' B1 B2 B3 B4) => B5.
                     by (exists y);split;[ | right].
     Qed.
     
-    Lemma case2_RMprop1 (A7:Assumption7 R B M) (A8:Assumption8 R B M):
+    Lemma case2_RMprop1 (A4:Assumption4 R B M) (A5:Assumption5 R B M):
       forall y, pre_kernel M R M X -> y \in Y -> (SeP y) -> y \in X:#(B) 
            -> ((X `\` (Xy y)) `|` [set y]):#(R) `<=` M#((X `\` (Xy y)) `|` [set y]).
     Proof.
       move => y H1 H2 H3 H4.
-      pose proof (case2_RMprop A7 A8 H1 H2 H3 H4) as H7.
+      pose proof (case2_RMprop A4 A5 H1 H2 H3 H4) as H7.
       pose proof (case2_indep  H1 H2 H3 H4) as H8.
       pose proof (pre_kernelProp1 H8) as H9.
       by rewrite H9.
     Qed.
     
-    Lemma case2_Cprop (A6: Assumption6 B M O): forall y,
+    Lemma case2_Cprop (A3: Assumption3 B M O): forall y,
       pre_kernel M R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
       -> X [<= O] ((X`\` (Xy y)) `|` [set y]).
     Proof.
@@ -1015,7 +1017,7 @@ Module Extend_non_absorbant_pre_kernel.
         have H7: X x  by rewrite -{1}(Xpart y);right.
         have H8: ~ (M (y, x))
           by move => H8;have H9: (exists y0 : T, M (y, y0) /\ X y0) by (exists x).
-        by right; apply: A6.
+        by right; apply: A3.
     Qed.
     
     Lemma case2_notequal: forall y,
@@ -1025,22 +1027,22 @@ Module Extend_non_absorbant_pre_kernel.
       by move => y _ /set_mem [H1 _]; exists y;split;[rewrite inE;right|].
     Qed.
 
-    Lemma case2 (A6: Assumption6 B M O)(A7: Assumption7 R B M)(A8: Assumption8 R B M) : forall y,
+    Lemma case2 (A3: Assumption3 B M O)(A4: Assumption4 R B M)(A5: Assumption5 R B M) : forall y,
         pre_kernel M R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) )
         -> pre_kernel M R M ((X`\` (Xy y)) `|` [set y]) /\ X [<< O] ((X`\` (Xy y)) `|` [set y]).
     Proof.
       move => y H1 H2 H3 H4. 
       pose proof (case2_nonempty H1 H2 H3 H4).
       pose proof (case2_indep H1 H2 H3 H4).
-      pose proof (case2_RMprop1 A7 A8 H1 H2 H3 H4).
-      pose proof (case2_Cprop A6 H1 H2 H3 H4).
+      pose proof (case2_RMprop1 A4 A5 H1 H2 H3 H4).
+      pose proof (case2_Cprop A3 H1 H2 H3 H4).
       move: (case2_notequal H1 H2 H3 H4) => /set_not_equal H7.
       by split;[|split;[rewrite DeltaCP|]].
     Qed.
 
     (** * main result *)
-    Lemma extend (A2: Assumption2 R) (A6: Assumption6 B M O)
-      (A7: Assumption7 R B M) (A8: Assumption8 R B M):
+    Lemma extend (A2: Assumption2 R) (A3: Assumption3 B M O)
+      (A4: Assumption4 R B M) (A5: Assumption5 R B M):
       pre_kernel M R M X -> ~ (absorbant M X) 
       -> exists X', pre_kernel M R M X' /\ (X [<< O] X'). 
     Proof.
@@ -1054,7 +1056,7 @@ Module Extend_non_absorbant_pre_kernel.
       move => H1 /not_absorbant_iff/Hne/Hna [y [H2 H3]]. 
       have H4: y \in (X:#(B) `|` (X:#(B)).^c) by rewrite (setUv X:#(B)) inE.
       move: H4 => /set_mem [ H4 | H4];rewrite -inE in H4.
-      by move: (case2 A6 A7 A8 H1 H2 H3 H4) => H5;exists (X `\` Xy y `|` [set y]).
+      by move: (case2 A3 A4 A5 H1 H2 H3 H4) => H5;exists (X `\` Xy y `|` [set y]).
       move: H4;rewrite in_setC notin_setE -[X in ~ X]inE => H4.
       by move: (case1 H1 H2 H3 H4) => H5;exists (X `|` [set y]).
     Qed.
@@ -1378,7 +1380,7 @@ Module Maximal_with_Zorn.
           by apply: (H10 H7 H9 H4 H5).
       Qed.
       
-      Lemma Sinf_not_empty (A3: Assumption3 O) (A4: Assumption4 O):
+      Lemma Sinf_not_empty (A3: Assumption6 O) (A4: Assumption7 O):
         (Sinf C) != set0.
       Proof.
         move: (@Elt_not_empty C Hne) => [s _];rewrite set0P.
@@ -1387,8 +1389,8 @@ Module Maximal_with_Zorn.
       Qed.
       
       (* begin snippet SinfScalP:: no-out *)    
-      Lemma Sinf_ScalP (A2: Assumption2 R) (A3: Assumption3 O) 
-        (A4: Assumption4 O) (A5:Assumption5 O M) (A9: Assumption9 R B O M):
+      Lemma Sinf_ScalP (A2: Assumption2 R) (A3: Assumption6 O) 
+        (A4: Assumption7 O) (A5:Assumption8 O M) (A9: Assumption9 R B O M):
         (Sinf C):#(R) `<=` M#(Sinf C).
       (* end snippet SinfScalP *)
       Proof.
@@ -1446,15 +1448,15 @@ Module Maximal_with_Zorn.
       Qed.
       
       (* begin snippet SinfScal:: no-out *)    
-      Lemma Sinf_Scal (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O)
-        (A5:Assumption5 O M) (A9: Assumption9 R B O M):
+      Lemma Sinf_Scal (A2: Assumption2 R) (A3: Assumption6 O) (A4: Assumption7 O)
+        (A5:Assumption8 O M) (A9: Assumption9 R B O M):
         (Sinf C) \in Scal. 
       (* end snippet SinfScal *)
       Proof.
         by rewrite inE;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
       Qed.
       
-      Lemma Sinf_final (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O)   (A5:Assumption5 O M) (A9: Assumption9 R B O M):
+      Lemma Sinf_final (A2: Assumption2 R) (A3: Assumption6 O) (A4: Assumption7 O)   (A5:Assumption8 O M) (A9: Assumption9 R B O M):
         exists Si, forall (S: SType), C S -> S [<=] Si.
       Proof.
         move: (Sinf_Scal A2 A3 A4 A5 A9) => /set_mem H2;exists (exist _ (Sinf C) H2);move => S /mem_set H3. 
@@ -1466,7 +1468,7 @@ Module Maximal_with_Zorn.
     (** * existence of Smax with Zorn Lemma for type SType *)
     (* begin snippet SmaxSType:: no-out *)    
     Lemma Maximal_SType
-      (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O) (A5: Assumption5 O M)
+      (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption6 O) (A4: Assumption7 O) (A5: Assumption8 O M)
       (A9: Assumption9 R B O M):
       exists Sm, forall S, Sm [<=] S -> S = Sm.
     (* end snippet SmaxSType *)
@@ -1483,8 +1485,8 @@ Module Maximal_with_Zorn.
     
     (** * back to Maximal set in pre_kernels *)
     (* begin snippet Smax:: no-out *)    
-    Lemma Maximal_Zorn (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 O) (A4: Assumption4 O)
-      (A5: Assumption5 O M) (A9: Assumption9 R B O M):
+    Lemma Maximal_Zorn (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption6 O) (A4: Assumption7 O)
+      (A5: Assumption8 O M) (A9: Assumption9 R B O M):
       exists Sm, IsMaximal Sm.
     (* end snippet Smax *)    
     Proof. 
