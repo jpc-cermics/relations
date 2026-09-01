@@ -84,9 +84,9 @@ Module Generalized_SSW_fin_notcyclic.
 
     Definition M := B `|` R.
 
-    Context (A2: Assumption2 R) (A6: Assumption6 B M O)
-      (A7: Assumption7 R B M) (A8: Assumption8 R B M). 
-    Context (A1: nonempty [set: T]) (Au: R `<=` O^-1).
+    Context (A1: nonempty [set: T]) (A2: Assumption2 R) 
+      (A6: Assumption6 B M O) (A7: Assumption7 R B M) (A8: Assumption8 R B M). 
+    Context (Au: R `<=` O^-1).
     Context (Apk : forall X , RelIndep O X <-> RelIndep M X).
     Context (A_Onotcyclic: ~ (exists s, O.+ (s,s))).
     
@@ -182,9 +182,9 @@ Module Generalized_SSW_fin_porder.
   
     Notation M := (B `|` R).
 
-    Context (A2 : Assumption2 R) (A6 : Assumption6 B M O) 
-    (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
-    Context (A1: nonempty [set: T]) (Asp: sporder O) (Au: R `<=` O^-1).
+    Context (A1: nonempty [set: T]) (A2 : Assumption2 R) 
+      (A6 : Assumption6 B M O) (A7 : Assumption7 R B M) (A8 : Assumption8 R B M).
+    Context (Asp: sporder O) (Au: R `<=` O^-1).
     Context (Apk : forall X, RelIndep O X <->  RelIndep M X).
   
     Lemma maximal_mabsorbant S:
@@ -276,15 +276,14 @@ Module SSWext.
   Qed.
   
   Theorem SSWext
-    (A1: SSW_1) (A2: SSW_2) (A3: SSW_3):
-    exists X, RelIndep M X /\  absorbant M X.
+    (A1: SSW_1) (A2: SSW_2) (A3: SSW_3): exists S, kernel M S.
   Proof.
     by pose proof (@G_SSW _ R B O A1 A2 A3 L4 L5 L6 L7 L8 L9).
   Qed.
-
+  
   Corollary SSW
     (A1: SSW_1) (A2': ~ (iic_inj Er)) (A3': ~ (iic_inj Eb)):
-    exists S, RelIndep M S /\  absorbant M S.
+    exists S, kernel M S.
   Proof.
     move: A2' => /(not_iic_inj_to_not_iic_asym A1) A2'.
     move: A3' => /(not_iic_inj_to_not_iic_asym A1) A3'.
@@ -293,7 +292,7 @@ Module SSWext.
   
   (* if x \in M#S there exists y \in S such that x and y are 
    *  connected by a Eb path or a Er path 
-   *  This could be elsewhere.
+   * 
    *)
   Lemma M2path x (S: set T): 
     x \in M#S -> exists y, y \in S /\ exists s, ~ x \in s /\ ~ y \in s /\ uniq s 
@@ -720,8 +719,8 @@ Module Finite_case_Kernel_Theorems.
     Proof.
       by pose proof 
            (@G_SSW_fin_porder T O^-1 R B 
-              (A2_from_Asp Asp) haveA6 (A7_from_Asp_Atc Asp Atc) 
-              (A8_from_Atc Atc) A1 (sporder_inv Asp) Au' Apk).
+              A1 (A2_from_Asp Asp) haveA6 (A7_from_Asp_Atc Asp Atc) 
+              (A8_from_Atc Atc) (sporder_inv Asp) Au' Apk).
     Qed.
 
     (** A stronger Blidia Hengel theorem as we use a weaker
@@ -731,9 +730,9 @@ Module Finite_case_Kernel_Theorems.
       exists S, kernel M S. 
     Proof.
       by apply: (@G_SSW_fin_notcyclic T O^-1 R B 
-                   (A2_from_Anc Anc) haveA6 
+                   A1 (A2_from_Anc Anc) haveA6 
                    (A7_from_Afg_Atc Afg Atc)
-                   (A8_from_Atc Atc) A1 Au' Apk
+                   (A8_from_Atc Atc) Au' Apk
                    (Om1_notcyclic Anc)).
     Qed.
 
@@ -741,9 +740,9 @@ Module Finite_case_Kernel_Theorems.
       (Anc: ~ (exists s, O.+ (s,s))) (MLfg: M_L_Forbiden_graph) : exists S, kernel M S. 
     Proof.
       by apply: (@G_SSW_fin_notcyclic T O^-1 R B 
-                   (A2_from_Anc Anc) haveA6 
+                   A1 (A2_from_Anc Anc) haveA6 
                    (A7_from_MLfg MLfg)
-                   (A8_from_MLfg MLfg) A1 Au' Apk
+                   (A8_from_MLfg MLfg) Au' Apk
                    (Om1_notcyclic Anc)).
     Qed.
     
