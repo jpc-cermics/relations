@@ -663,13 +663,12 @@ Section Assumptions.
     forall x x' y y', ~(x' = x) -> ~ (y = y') -> ~ (y' = x) 
                  -> ~ (y' = x') -> ~ (y = x ) -> ~ (y = x' )
                  -> R (x,y') -> M (y', x') -> B (x',y)
-                 -> ~ (B (x, y)) 
                  -> ~ (R (x',y)) /\ ~(M (y,x')) 
-                 -> ~ (R (x,y)) /\ ~(M (y,x)) 
+                 -> ~ (M (x,y)) /\ ~(M (y,x)) 
                  -> ~ (M (x,x')) /\ ~ (M (x',x))
                  -> ~ (M (y',x))
                  -> M (y',y).
-                            
+  
   Definition Assumption5 R B M:=
     forall x' y y', ~ (y' = x') -> ~ (y = y') -> ~ (y = x') 
                 -> R (y,y') -> M (y',x') -> B (x',y) 
@@ -943,25 +942,30 @@ Module Extend_non_absorbant_pre_kernel.
            have P7: R (x,y') by apply: H5.
            have P8: M (y',x')  by apply: H8.
            have P9: B (x',y) by move: H9;rewrite /Xy => -[H9 H9'].
-           have P10: ~ (B (x,y)) by apply: fact0. 
-           have P11: ~ (R (x',y)) /\ ~ (M (y,x')) 
+           have P10: ~ (R (x',y)) /\ ~ (M (y,x')) 
              by apply: (fact4 H0');rewrite inE;move: (@XyI y) => H11;move: H9 => /H11. 
-           have P12: ~ (R (x,y)) /\ ~ (M (y,x)) 
-             by apply: (fact4 H0');rewrite inE.
-           have P13_1:  ~ (M (x,x'))
+           have P11:  ~ (M (x,y)) /\ ~ (M (y,x)).
+           { 
+             have ?: ~ (B (x,y)) by apply: fact0. 
+             have [? ?]: ~ (R (x,y)) /\ ~ (M (y,x))  by apply: (fact4 H0');rewrite inE.
+             split;first by move => [? | ?].
+             move => [Byx | Ryx];first by have ?: M(y,x) by left.
+             by have ?: M(y,x) by right.
+           }
+           have P12_1:  ~ (M (x,x'))
              by apply: H0;[by rewrite inE
                      | by rewrite inE;move: (@XyI y) => H11;move: H9 => /H11
                      | by move => H11; rewrite H11 in P1].
-           have P13_3:  ~ (M (x',x))
+           have P12_2:  ~ (M (x',x))
              by apply: H0;[rewrite inE;move: (@XyI y) => H11;move: H9 => /H11 
                           | rewrite inE | move => H11;rewrite H11 in P1].
-           have P13: ~ (M (x,x')) /\ ~ (M (x',x)) by split.
-           have P14: ~ (M (y',x)) by exact.
+           have P12: ~ (M (x,x')) /\ ~ (M (x',x)) by split.
+           have P13: ~ (M (y',x)) by exact.
            have P4: ~ (y' = x')
              by move => I1;(have I2: M(x, x') by right ; rewrite -I1).
            have P6: ~ (y  = x')
-             by move => I1;(have: M (x',y) by left);move: P11;rewrite I1 => -[_ I3] I4.
-           by move: (A4 x x' y y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12 P13 P14).
+             by move => I1;(have: M (x',y) by left);move: P10;rewrite I1 => -[_ I3] I4.
+           by move: (A4 x x' y y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12 P13).
         ++ have H7: x = y. by [].
            have H8: R (y,y') by rewrite H7 in H5.
            case H9: (y' \in M#(X)); last first.

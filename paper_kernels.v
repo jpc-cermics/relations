@@ -249,7 +249,7 @@ Module SSWext.
 
   Lemma A4: (Assumption4 R B M).
   Proof. 
-    move => x x' y y' _ _ _ _ _ _ H7 [H8| H8] H9 _ _ _ [H13 H13'] _.
+    move => x x' y y' _ _ _ _ _ _ H7 [H8|H8] H9 _ _ [H12 H12'] _.
     by left;apply: (B_trans H8 H9).
     by have: M (x,x') by right;apply: (R_trans H7 H8).
   Qed.
@@ -335,7 +335,7 @@ Module ABkernels.
 
   Lemma A4 (Ab4: AB_4) (Ab5: AB_5): (Assumption4 R B M).
   Proof. 
-    move => x x' y y' _ _ _ _ _ _ H7 [H8| H8] H9 _ _ _ [H13 H13'] _.
+    move => x x' y y' _ _ _ _ _ _ H7 [H8|H8] H9 _ _ [H12 H12'] _.
     by left;apply: (Ab5 x' y' y H8 H9).
     by have: M (x,x') by right;apply: (Ab4 y' x x' H7 H8).
   Qed.
@@ -411,9 +411,9 @@ Module MeunierLanglois_inf.
   
   Lemma L7 (A4: AB_4) (A5: AB_5): (Assumption4 R B M).
   Proof. 
-    move => x x' y y' H1 H2 H3 H4 H5 H6 H7 [H8| H8] H9 H10 H11 H12 [H13 H13'] _.
+    move => x x' y y' H1 H2 H3 H4 H5 H6 H7 [H8|H8] H9 H10 H11 [H12 H12'] _.
     + left;move: (A5  y' x' y H4 H6 H2 H8 H9) => [? // | [_ H10']]. 
-      (have H11': M(y,x') by right);by move : H11 => -[_ ?].
+      (have H11': M(y,x') by right);by move : H10 => -[_ ?].
     + move: (A4 x y' x' H3 H4 H1 H7 H8) => [H10' | [_ H10']].
       by (have H11': M(x, x') by right). 
       by (have H11': M(x', x) by left).
@@ -644,7 +644,7 @@ Module Finite_case_Kernel_Theorems.
     Lemma A4_from_Asp_Atc (Asp: sporder O) (Atc: Three_cycles): Assumption4 R B M. 
     Proof.
       move: Asp => [_ Otr]. 
-      move => x x' y y' _ _ _ _ _ _ Rxy' My'x' Bx'y nBxy [nRx'y nMyx'] [nRxy nMyx] [nMxx' nMx'x] nMy'x.
+      move => x x' y y' _ _ _ _ _ _ Rxy' My'x' Bx'y [nRx'y nMyx'] [nMxy nMyx] [nMxx' nMx'x] nMy'x.
       move: My'x' => [[Dy'x' Ox'y'] | [_ Oy'x']].
       + move: Bx'y => [Dx'y Oyx'].
         have Oyy': O^-1 (y',y) by apply: (Otr x' y y' Oyx' Ox'y').
@@ -665,9 +665,7 @@ Module Finite_case_Kernel_Theorems.
     Lemma A4_from_Afg_Atc (Afg: Forbiden_graph)(Atc: Three_cycles): Assumption4 R B M. 
     Proof.
       rewrite (RB Ad Ao).
-      move => x x' y y' _ _ _ _ _ _ Rxy' Dy'x' Bx'y nBxy [nRx'y nDyx'] [nRxy nDyx] [nMxx' nDx'x] nDy'x.
-      have nDxy: ~ (D (x,y))
-        by rewrite -(RB Ad Ao) => /= -[Bxy| Rxy].
+      move => x x' y y' _ _ _ _ _ _ Rxy' Dy'x' Bx'y [nRx'y nDyx'] [nDxy nDyx] [nDxx' nDx'x] nDy'x.
       have Dx'y: D(x',y) by move: Bx'y=> [? _].
       by move: (@Afg x y' x' y Rxy' Dy'x' Bx'y) =>
             [Dxy | [Dyx | [Dxx' | [ Dx'x | [ Dy'y |Dyy']]]]];
@@ -677,14 +675,11 @@ Module Finite_case_Kernel_Theorems.
     Lemma A4_from_MLfg (MLfg: M_L_Forbiden_graph): Assumption4 R B M. 
     Proof.
       rewrite (RB Ad Ao).
-      move => x x' y y' _ _ _ _ Hnyeqx _ Rxy' Dy'x' Bx'y nBxy [nRx'y nDyx'] 
-               [nRxy nDyx] [nMxx' nDx'x] nDy'x.
-      have nDxy: ~ (D (x,y))
-        by rewrite -(RB Ad Ao) => /= -[Bxy| Rxy].
+      move => x x' y y' _ _ _ _ _ _ Rxy' Dy'x' Bx'y [nRx'y nDyx'] [nDxy nDyx] [nDxx' nDx'x] nDy'x.
       have Dx'y: D(x',y) by move: Bx'y=> [? _].
       move: (@MLfg x y' x' y Rxy' Dy'x' Bx'y) => -[[_ Hd] | [Hyeqx _]].
       by move: Hd => [Dxy | [Dyx | [Dxx' | [ Dx'x | [ Dy'y | [[Dy'x _] | [Dyx' _]]]]]]].
-      by [].
+      by rewrite Hyeqx in Dx'y.
     Qed.
     
     Lemma A5_from_Atc (Atc: Three_cycles):  Assumption5 R B M. 
