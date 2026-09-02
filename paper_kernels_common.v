@@ -660,33 +660,33 @@ Section Assumptions.
   Definition Assumption3 B M O:= B `&` M.^c^-1 `<=` O.
   
   Definition Assumption4 R B M:= 
-    (forall x x' y y', ~(x' = x) 
-                  -> R (x,y') -> M (y', x')
-                  -> (B (x',y)) -> ~ (B (x, y)) 
-                  -> ~ (R (x',y)) /\ ~(M (y,x')) 
-                  -> ~(R (x,y)) /\ ~(M (y,x)) 
-                  -> ~ (M (x,x')) -> ~ (M (x',x))
-                  -> ~ (y = y') -> ~ (y' = x) -> ~ (y' = x') -> ~ (y = x ) -> ~ (y = x' )
-                  -> ~ (M (y',x))
-                  -> (M (y',y))).
-  
+    forall x x' y y', ~(x' = x) -> ~ (y = y') -> ~ (y' = x) 
+                 -> ~ (y' = x') -> ~ (y = x ) -> ~ (y = x' )
+                 -> R (x,y') -> M (y', x') -> B (x',y)
+                 -> ~ (B (x, y)) 
+                 -> ~ (R (x',y)) /\ ~(M (y,x')) 
+                 -> ~ (R (x,y)) /\ ~(M (y,x)) 
+                 -> ~ (M (x,x')) /\ ~ (M (x',x))
+                 -> ~ (M (y',x))
+                 -> M (y',y).
+                            
   Definition Assumption5 R B M:=
-    (forall x' y y', ~ (y' = x') -> ~ (y = y') -> ~ (y = x') 
+    forall x' y y', ~ (y' = x') -> ~ (y = y') -> ~ (y = x') 
                 -> R (y,y') -> M (y',x') -> B (x',y) 
                 -> ~ (R (x',y)) /\ ~ M (y, x')
-                -> (M (y',y))).
+                -> M (y',y).
 
   Definition Assumption6_1 O:= ~ (iic O).
   Definition Assumption6_2 O:= sporder O.
   Definition Assumption6_3 O M := O  `<=` M `|` M^-1.
   
   Definition Assumption6_4 R B O M:= 
-    (forall x y x' y' , ~ (x = y) -> ~ (x = x') -> ~ (x = y')
+    forall x y x' y' , ~ (x = y) -> ~ (x = x') -> ~ (x = y')
                    -> ~ (y = x') -> ~ (x' = y') -> ~ (y' = y) 
                    -> R (x,y) -> M (y,x') -> O (x',y') -> ~(M (y,x)) 
                    -> ~ ((M `|` M^-1) (x',x))
-                   ->  ~ ((M `|` M^-1) (y',x))
-                   -> M (y,y')).
+                   -> ~ ((M `|` M^-1) (y',x))
+                   -> M (y,y').
   
   Definition Assumption6'_1 R O := R `<=` O^-1.
   Definition Assumption6'_2 M O := forall X , RelIndep O X <-> RelIndep M X.
@@ -937,30 +937,31 @@ Module Extend_non_absorbant_pre_kernel.
         ++ (* we will use A4' to conclude that M(y',y) *)
            exists y; split; last by right. 
            have P1: ~ (x' = x) by move => H11;move: H6 H9;move: H11 => -> /set_mem [_ ?] ?. 
-           have P2: R (x,y') by apply: H5.
-           have P3: M (y',x')  by apply: H8.
-           have P4: B (x',y) by move: H9;rewrite /Xy => -[H9 H9'].
-           have P5: ~ (B (x,y)) by apply: fact0. 
-           have P6: ~ (R (x',y)) /\ ~ (M (y,x')) 
+           have P2: ~ (y = y') by apply: P0.
+           have P3: ~ (y' = x) by apply: P0'.
+           have P5: ~ (y = x ) by move => I1;rewrite -I1 -inE in H6'.
+           have P7: R (x,y') by apply: H5.
+           have P8: M (y',x')  by apply: H8.
+           have P9: B (x',y) by move: H9;rewrite /Xy => -[H9 H9'].
+           have P10: ~ (B (x,y)) by apply: fact0. 
+           have P11: ~ (R (x',y)) /\ ~ (M (y,x')) 
              by apply: (fact4 H0');rewrite inE;move: (@XyI y) => H11;move: H9 => /H11. 
-           have P7: ~ (R (x,y)) /\ ~ (M (y,x)) 
+           have P12: ~ (R (x,y)) /\ ~ (M (y,x)) 
              by apply: (fact4 H0');rewrite inE.
-           have P8:  ~ (M (x,x'))
+           have P13_1:  ~ (M (x,x'))
              by apply: H0;[by rewrite inE
                      | by rewrite inE;move: (@XyI y) => H11;move: H9 => /H11
                      | by move => H11; rewrite H11 in P1].
-           have P9:  ~ (M (x',x))
+           have P13_3:  ~ (M (x',x))
              by apply: H0;[rewrite inE;move: (@XyI y) => H11;move: H9 => /H11 
                           | rewrite inE | move => H11;rewrite H11 in P1].
-           have P10: ~ (y = y') by apply: P0.
-           have P11: ~ (y' = x) by apply: P0'.
-           have P12: ~ (y' = x')
+           have P13: ~ (M (x,x')) /\ ~ (M (x',x)) by split.
+           have P14: ~ (M (y',x)) by exact.
+           have P4: ~ (y' = x')
              by move => I1;(have I2: M(x, x') by right ; rewrite -I1).
-           have P13: ~ (y = x ) by move => I1;rewrite -I1 -inE in H6'.
-           have P14: ~ (y = x' )
-             by move => I1;(have: M (x',y) by left);move: P6;rewrite I1 => -[_ I3] I4.
-           have P15: ~ (M (y',x)) by exact.
-           by move: (A4 x x' y y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12 P13 P14 P15).
+           have P6: ~ (y  = x')
+             by move => I1;(have: M (x',y) by left);move: P11;rewrite I1 => -[_ I3] I4.
+           by move: (A4 x x' y y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12 P13 P14).
         ++ have H7: x = y. by [].
            have H8: R (y,y') by rewrite H7 in H5.
            case H9: (y' \in M#(X)); last first.
