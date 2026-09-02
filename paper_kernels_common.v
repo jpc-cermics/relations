@@ -566,9 +566,7 @@ Section set_relation.
       by exists b; split;[ | right].
   Qed.
   
-  (* begin snippet lesetI:: no-out *)   
   Lemma Ile U A B: A `<=` B -> A [<= U] B.
-  (* end snippet lesetI *)
   Proof. by move => H1 /= a /set_mem/H1 ?;exists a;split;[rewrite inE|left]. Qed.
 
   Lemma leI U S: S `<=` U -> ([<= S]%O)  `<=` ([<= U]%O).
@@ -631,11 +629,9 @@ Section Set_order.
   
   End Util.
   
-  (* begin snippet lesetporder:: no-out *)   
   Lemma leSet2_porder U: 
     sporder U -> 
     @porder {S: set T| RelIndep U S} [set AB | (sval AB.1) [<= U] (sval AB.2)].
-  (* end snippet lesetporder  *)   
   Proof.
     move => H_sp.
     split => [ [A ?] | [A Ha] [B Hb] H1 H2 | [A ?] [B ?] [C ?]].
@@ -730,9 +726,7 @@ Module Extend_non_absorbant_pre_kernel.
   
   Variable (X: set T).
     
-  (* begin snippet Sx:: no-out *)    
   Definition Y:= [set y | ~ (y \in X) /\ ~ (y \in M#X)].
-  (* end snippet Sx *)       
   
   Lemma not_absorbant_iff: 
     ~ (absorbant M X) <-> exists y, y \in Y. 
@@ -743,32 +737,22 @@ Module Extend_non_absorbant_pre_kernel.
   Qed.
   
   (** * C'est l'ensemble X_y de la nouvelle preuve *)
-  (* begin snippet Tm:: no-out *)    
   Definition Xy y:= [set x | x \in X /\ (B (x,y))].
-  (* end snippet Tm *)       
   
-    (* begin snippet TmI:: no-out *)    
     Lemma XyI: forall y, Xy y `<=` X.
-    (* end snippet TmI *)       
     Proof. by move => x y [/set_mem H2 _]. Qed.
     
     Lemma Xpart: forall y, ( X `\` (Xy y)) `|` (Xy y) = X.
     Proof. move => y;apply: (@setDKU T (Xy y) X);apply: XyI. Qed.
     
-    (* begin snippet Sxm:: no-out *)    
     Definition SeP y := forall y', y' \in Y -> R(y,y') -> R(y',y).
-    (* end snippet Sxm*)       
     
     (* A consequence of A2 *)
-    (* begin snippet Sxone:: no-out *)    
     Lemma Sx_1 (A2: Assumption2 R):
       nonempty [set: Y] -> (exists (y:T), y \in Y /\ SeP y).
-    (* end snippet Sxone*)       
     Proof.  by move => H1; move: (notiic_rloop_sub H1 A2) => H2.  Qed.
     
-    (* begin snippet Sbunp:: no-out *)    
     Lemma fact0: forall x y, x \in X `\` (Xy y) -> ~ B (x,y).
-    (* end snippet Sbunp*)       
     Proof. 
       move => x y /set_mem [H3 H4].
       rewrite -inE in H3.
@@ -1088,10 +1072,8 @@ Module Maximal_with_Zorn.
     
     Definition Scal := pre_kernel M R M. 
 
-    (* begin snippet IsMaximal:: no-out *)  
     Definition IsMaximal (S: set T):= 
       S \in Scal /\ forall T, T \in Scal -> S [<= O] T -> T = S.
-    (* end snippet IsMaximal:: no-out *)  
     
     Definition SType := {S | pre_kernel M R M S}.
 
@@ -1103,10 +1085,8 @@ Module Maximal_with_Zorn.
     Lemma Scal2S: forall S, S \in Scal -> exists (S': SType), (sval S') = S.
     Proof. by move => S /set_mem H1; exists (exist _ S H1). Qed.
 
-    (* begin snippet Scalnotempty:: no-out *) 
     Lemma Scal_not_empty (A1: Assumption1 T) (A2: Assumption2 R):
       exists v, Scal [set v].
-    (* end snippet Scalnotempty *)
     Proof.
       have: Rloop R by apply: notiic_rloop.
       move => [v H1]; exists v.
@@ -1172,21 +1152,17 @@ Module Maximal_with_Zorn.
       Hypothesis Hne: C != set0.
       
       (* Set Sinf associated to a chain C *)
-      (* begin snippet Sinf:: no-out *)   
       Definition Sinf := 
         [ set v: T | 
           exists S, (S \in C) /\ (v \in (sval S)) /\
                  (forall T, T \in C -> S [<=] T -> v \in (sval T))].
-      (* end snippet Sinf *)   
 
       (* A relation on the set Elt C, all the elements
        of T which are elements of a set in C *)
-      (* begin snippet RC:: no-out *)   
       Definition RC:= [set xy: (Elt C)*(Elt C) |
                         ((sval xy.1) \in Sinf /\ xy.2 = xy.1)
                         \/ (~ ((sval xy.1) \in Sinf) /\
                              O (sval xy.1, sval xy.2))].
-      (* end snippet RC*)   
       
       Lemma transitive_RC:  sporder O -> transitive RC. 
       Proof.
@@ -1196,9 +1172,7 @@ Module Maximal_with_Zorn.
       Qed.
 
       (** * Elt C  is not empty *)
-      (* begin snippet Eltnotempty:: no-out *)   
       Lemma Elt_not_empty: exists _ : Elt C, True.
-      (* end snippet Eltnotempty *)   
       Proof.
         have: exists (S: SType), S \in C /\ (exists x, x \in (sval S)).
         { 
@@ -1243,9 +1217,7 @@ Module Maximal_with_Zorn.
           by exists (exist _ s1 H7).
         Qed.
         
-        (* begin snippet totalRC:: no-out *)    
         Lemma total_RC: total_rel RC. 
-        (* end snippet totalRC *)    
         Proof.
           move => s.
           case H3: ((sval s) \in Sinf); first by (exists s); left.
@@ -1302,11 +1274,9 @@ Module Maximal_with_Zorn.
             by rewrite leqNgt H3 in H7.
         Qed.
         
-        (* begin snippet totalRCPTr:: no-out *)    
         Lemma total_RC_P3:
           sporder O ->  ~ (iic O) ->
           forall s, exists f, f 0=s /\ (exists n, (sval (f n)) \in Sinf /\ RC ((f 0), (f n))).
-        (* end snippet totalRCPTr *)
         Proof.
           move => H0 H1; move: (total_RC_P2 H1) => + s => /(_ s) [f [[H2 H3] [n H4]]].
           exists f;split;first exact.
@@ -1320,11 +1290,9 @@ Module Maximal_with_Zorn.
           by split;[| apply: H10].
         Qed.
 
-        (* begin snippet ChooseRCCi:: no-out *)    
         Lemma ChooseRC5:sporder O -> ~ (iic O)
                         -> forall (s: Elt C), (sval s \in Sinf) \/ 
                                           exists (s':T), (s' \in Sinf) /\ O (sval s, s').
-        (* end snippet ChooseRCCi *)    
         Proof. 
           move => H0 H1; move: (total_RC_P3 H0 H1) => + s => /(_ s) [f [H2 [n [H3 H3']]]].
           case H4: (sval (f 0) \in Sinf); first by left;rewrite -H2 H4.
@@ -1333,10 +1301,8 @@ Module Maximal_with_Zorn.
           by move: H3' => [/= [H3' _] | /= [H5 H6]//];rewrite H4 in H3'.
         Qed.
 
-        (* begin snippet ChooseRCSi:: no-out *)    
         Lemma ChooseRC6:sporder O -> ~ (iic O)
                         -> forall (S: SType), (S \in C) -> (sval S) [<= O] Sinf.
-        (* end snippet ChooseRCSi *) 
         Proof. 
           move => H0 H1 S H2 s /= H3.
           have H4: exists (S: SType), S \in C /\ s \in (sval S) by (exists S).
@@ -1354,9 +1320,7 @@ Module Maximal_with_Zorn.
       
       Implicit Type (C: set SType).
       
-      (* begin snippet Chains:: no-out *)    
       Definition ChainsB := @Chains SType leSet1. 
-      (* end snippet Chains *)    
       
       Lemma Chains_is_total C: C \in ChainsB <-> total_on C (curry leSet1).
       Proof. split => [/set_mem H2 c1 c2 ? ?| H1];first by apply: H2. 
@@ -1399,11 +1363,9 @@ Module Maximal_with_Zorn.
                                               [exists (sval s) | exists s'].
       Qed.
       
-      (* begin snippet SinfScalP:: no-out *)    
       Lemma Sinf_ScalP (A2: Assumption2 R) (A3: Assumption6_1 O) 
         (A4: Assumption6_2 O) (A5:Assumption6_3 O M) (A9: Assumption6_4 R B O M):
         (Sinf C):#(R) `<=` M#(Sinf C).
-      (* end snippet SinfScalP *)
       Proof.
         move: Hc => H1 y [x [B1 H3]].
         move: (H3) => [X [H4 [H5 H6]]].
@@ -1458,11 +1420,9 @@ Module Maximal_with_Zorn.
           exists y'. split. by apply: (A9 x y x' y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12). by rewrite -inE.
       Qed.
       
-      (* begin snippet SinfScal:: no-out *)    
       Lemma Sinf_Scal (A2: Assumption2 R) (A3: Assumption6_1 O) (A4: Assumption6_2 O)
         (A5:Assumption6_3 O M) (A9: Assumption6_4 R B O M):
         (Sinf C) \in Scal. 
-      (* end snippet SinfScal *)
       Proof.
         by rewrite inE;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
       Qed.
@@ -1477,12 +1437,10 @@ Module Maximal_with_Zorn.
     End Sinf_chains.
     
     (** * existence of Smax with Zorn Lemma for type SType *)
-    (* begin snippet SmaxSType:: no-out *)    
     Lemma Maximal_SType
       (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption6_1 O) (A4: Assumption6_2 O) (A5: Assumption6_3 O M)
       (A9: Assumption6_4 R B O M):
       exists Sm, forall S, Sm [<=] S -> S = Sm.
-    (* end snippet SmaxSType *)
     Proof.
       apply: (@Zorn_relation SType leSet1 (leSet1_porder A4 A5)) => C.
       move: (@Sinf_final C) => H2 /mem_set H3.
@@ -1495,11 +1453,9 @@ Module Maximal_with_Zorn.
     Qed.
     
     (** * back to Maximal set in pre_kernels *)
-    (* begin snippet Smax:: no-out *)    
     Lemma Maximal_Zorn (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption6_1 O) (A4: Assumption6_2 O)
       (A5: Assumption6_3 O M) (A9: Assumption6_4 R B O M):
       exists Sm, IsMaximal Sm.
-    (* end snippet Smax *)    
     Proof. 
       move: (Maximal_SType A1 A2 A3 A4 A5 A9) => [Sm H1];exists (sval Sm); split; first by  apply: S2Scal.
       by move => S /Scal2S [S' <-] H3; f_equal;by apply H1.

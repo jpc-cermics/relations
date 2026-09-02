@@ -29,9 +29,7 @@ Section CheckAsym.
 
   Import Asyminf2Inf(Asym2P5', allL_rc_asym).
 
-  (* begin snippet infasym:: no-out *) 
   Lemma iic_asym_to_iic_inj:  (iic (Asym U.+)) -> (iic_inj U). 
-  (* end snippet infasym *)  
   Proof. by apply: (@Asym2P5' T U A1). Qed.
 
   Lemma not_iic_inj_to_not_iic_asym: ~ (iic_inj U) -> ~ (iic (Asym U.+)).
@@ -54,9 +52,7 @@ Module Generalized_SSW.
     Context (A6_1: Assumption6_1 O) (A6_2: Assumption6_2 O) (A6_3: Assumption6_3 O M)
       (A6_4: Assumption6_4 R B O M).
     
-    (* begin snippet MainTh:: no-out *)    
     Theorem G_SSW: exists S, kernel M S.
-    (* end snippet MainTh:: no-out *)    
     Proof.
       (* a Maximal set using Zorn Lemma *)
       move: (Maximal_Zorn A1 A2 A6_1 A6_2 A6_3 A6_4) => [Sm [/set_mem Hpk Hmax]].
