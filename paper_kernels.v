@@ -47,13 +47,12 @@ Module Generalized_SSW.
 
     Notation M := (B `|` R).
     
-    Context (A1: Assumption1 T) (A2: Assumption2 R) 
-      (A3: Assumption3 B M O) (A4: Assumption4 R B M) (A5:  Assumption5 R B M).
-    Context (A6_1: Assumption6_1 O) (A6_2: Assumption6_2 O) (A6_3: Assumption6_3 O M)
-      (A6_4: Assumption6_4 R B O M).
+    Context (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 B M O)
+      (A4: Assumption4 R B M) (A5:  Assumption5 R B M) (A6: Assumption6 R B O M).
     
     Theorem G_SSW: exists S, kernel M S.
     Proof.
+      move: A6 => [A6_1 [A6_2 [A6_3 A6_4]]].
       (* a Maximal set using Zorn Lemma *)
       move: (Maximal_Zorn A1 A2 A6_1 A6_2 A6_3 A6_4) => [Sm [/set_mem Hpk Hmax]].
       (* The Maximal set is absorbant using the extend Lemma *)
@@ -81,18 +80,15 @@ Module Generalized_SSW_fin_notcyclic.
 
     Definition M := B `|` R.
 
-    Context (A1: nonempty [set: T]) (A2: Assumption2 R)
-      (A3: Assumption3 B M O) (A4: Assumption4 R B M) (A5:  Assumption5 R B M).
-    
-    Context (Au: Assumption6''_1 R O).
-    Context (Apk : Assumption6''_2 M O).
-    Context (A_Onotcyclic: Assumption6''_3 O). 
+    Context (A1: nonempty [set: T]) (A2: Assumption2 R) (A3: Assumption3 B M O) 
+      (A4: Assumption4 R B M) (A5:  Assumption5 R B M) (A6'': Assumption6'' R O M).
     
     (* There exists a kernel or an increasing mapping for [<< O] taking values in pre_kernels *)
     Lemma kernel_or_iic_fun:
       (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (pre_kernel M R M)))
       \/ (exists S, (S \in (pre_kernel M R M)) /\ S \in (absorbant M)).
     Proof.
+      move: A6'' => [Au [Apk A_Onotcyclic]].
       (* using extend lemma *)
       have Ch0 S: S \in ((pre_kernel M R M) `&` (absorbant M).^c)
                   -> exists S', S' \in (pre_kernel M R M) /\ (S [<< O] S').
@@ -153,6 +149,7 @@ Module Generalized_SSW_fin_notcyclic.
     
     Theorem G_SSW_fin_notcyclic: exists S, kernel M S.
     Proof.
+      move: A6'' => [Au [Apk A_Onotcyclic]].
       have pre_kernelP S': pre_kernel O R M S' <-> pre_kernel M R M S'
         by rewrite /pre_kernel /= Apk.
       have: exists S, S \in (pre_kernel M R M) /\ S \in (absorbant M).
@@ -179,17 +176,14 @@ Module Generalized_SSW_fin_porder.
     
     Notation M := (B `|` R).
 
-    Context (A1: nonempty [set: T]) (A2 : Assumption2 R)
-      (A3 : Assumption3 B M O) (A4 : Assumption4 R B M) (A5 :  Assumption5 R B M).
+    Context (A1: nonempty [set: T]) (A2 : Assumption2 R) (A3 : Assumption3 B M O)
+      (A4 : Assumption4 R B M) (A5 :  Assumption5 R B M) (A6': Assumption6' R O M).
     
-    Context (Au: Assumption6'_1 R O).
-    Context (Apk: Assumption6'_2 M O).
-    Context (Asp: Assumption6'_3 O). 
-
     Lemma maximal_mabsorbant S:
       (pre_kernel O R M S) /\ (forall U, pre_kernel O R M U -> S [<= O] U -> S = U)
       -> absorbant M S.
     Proof.
+      move: A6' => [Au [Apk Asp]].
       contra; move => H1;rewrite /pre_kernel /= Apk => Hpk.
       have H3: ~ absorbant M S.
       {
@@ -206,6 +200,7 @@ Module Generalized_SSW_fin_porder.
     
     Theorem G_SSW_fin_porder: exists S, kernel M S. 
     Proof.
+      move: A6' => [Au [Apk Asp]].
       (* There exist a maximal set *)
       move: (@Maximal T O R M A1 Asp Au) => [S Hm].
       move: Hm => /[dup] /maximal_mabsorbant Ma [[/Apk Hpk _] _]. 
@@ -257,6 +252,9 @@ Module SSWext.
     by have H11: M (y,x') by right;apply: (R_trans H1 H2).
   Qed.
   
+  Lemma A6_1 (Assw3: SSW_3): (Assumption6_1 O).
+  Proof. by exact. Qed.
+         
   Lemma A6_2: (Assumption6_2 O). 
   Proof. by apply: (@Asym_sporder _ B);apply: TclosT. Qed.
   
@@ -274,11 +272,19 @@ Module SSWext.
     by move: H3 => /(@AsymI _ B) H3;left;apply: (B_trans H2 H3).
     by have: (M `|` M^-1) (x',x) by right;right;apply: (R_trans H1 H2).
   Qed.
+
+  Lemma A6 (Assw3: SSW_3) : (Assumption6 R B O M).
+  Proof. 
+    split;first by apply: A6_1.
+    split;first by apply: A6_2.
+    split;first by apply: A6_3.
+    by apply: A6_4.
+  Qed.
   
   Theorem SSWext
     (Assw1: SSW_1) (Assw2: SSW_2) (Assw3: SSW_3): exists S, kernel M S.
   Proof.
-    by pose proof (@G_SSW _ R B O Assw1 Assw2 A3 A4 A5 Assw3 A6_2 A6_3 A6_4).
+    by pose proof (@G_SSW _ R B O Assw1 Assw2 A3 A4 A5 (A6 Assw3)).
   Qed.
   
   Corollary SSW
@@ -343,6 +349,9 @@ Module ABkernels.
     by have H11: M (y,x') by right;apply: (Ab4 y' y x' H1 H2).
   Qed.
 
+  Lemma A6_1 (Ab3: AB_3) : (Assumption6_1 O). 
+  Proof. by []. Qed.
+
   Lemma A6_2 (Ab5: AB_5) : (Assumption6_2 O). 
   Proof. by apply: (@Asym_sporder _ B). Qed.
   
@@ -361,12 +370,20 @@ Module ABkernels.
     by have: (M `|` M^-1) (x',x) by right;right;apply: (Ab4 y x x' H1 H2).
   Qed.
 
+  Lemma A6 (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5): (Assumption6 R B O M). 
+  Proof.
+    split;first by apply: A6_1.
+    split;first by apply: A6_2.
+    split;first by apply: A6_3.
+    by apply: A6_4.
+  Qed.
+
   Theorem AB_kernels
     (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5):
     exists S, kernel M S.
   Proof.
     by pose proof (@G_SSW _ R B O Ab1 Ab2 A3 (A4 Ab4 Ab5)
-                     (A5 Ab4 Ab5) Ab3 (A6_2 Ab5) A6_3 (A6_4 Ab4 Ab5)).
+                     (A5 Ab4 Ab5) (A6 Ab3 Ab4 Ab5)).
   Qed.
   
 End ABkernels.
@@ -397,15 +414,14 @@ Module MeunierLanglois_inf.
 
   Notation M := (B `|` R).
   
-  
-  Lemma L6: (Assumption3 B M O).
+  Lemma A3: (Assumption3 B M O).
   Proof.
     move => [x y] [H1 H2];split => [|/= H3].
     by split;[|move => /= H3;have H4:  M (y, x) by left].
     by have H4:  M (y, x) by right. 
   Qed.
   
-  Lemma L7 (A4: AB_4) (A5: AB_5): (Assumption4 R B M).
+  Lemma A4 (A4: AB_4) (A5: AB_5): (Assumption4 R B M).
   Proof. 
     move => x x' y y' H1 H2 H3 H4 H5 H6 H7 [H8|H8] H9 H10 H11 [H12 H12'] _.
     + left;move: (A5  y' x' y H4 H6 H2 H8 H9) => [? // | [_ H10']]. 
@@ -415,7 +431,7 @@ Module MeunierLanglois_inf.
       by (have H11': M(x', x) by left).
   Qed.
   
-  Lemma L8 (A4: AB_4) (A5: AB_5): ( Assumption5 R B M).
+  Lemma A5 (A4: AB_4) (A5: AB_5): ( Assumption5 R B M).
   Proof. 
     move => x' y y' P0 P0' P0'' H1 [H2| H2] H3 [H4 H5].
     + left;move: (A5 y' x' y P0 P0'' P0' H2 H3) => [? // | [_ H6]].
@@ -434,13 +450,13 @@ Module MeunierLanglois_inf.
     by exists f;move => n;move: H => /(_ n) [/= H1 _].
   Qed.
   
-  Lemma A6_2 (Ab3: AB_6) : (Assumption6_2 O). 
+  Lemma A6_2 (Ab6: AB_6) : (Assumption6_2 O). 
   Proof. 
     split. 
     + move => x [/= H1 _].
       by pose proof (@Asym_irreflexive T B x). 
     + move => y x z [/= [H1 H1'] H2] [/= [H3 H3'] H4].
-      move: (Ab3 x y z H1 H1' H2 H3 H3' H4) => [H5 [H6 H7]].
+      move: (Ab6 x y z H1 H1' H2 H3 H3' H4) => [H5 [H6 H7]].
       by split. 
   Qed.
   
@@ -459,12 +475,20 @@ Module MeunierLanglois_inf.
       by have: M (y,x) by left.
   Qed.
   
+  Lemma A6 (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5) (Ab6: AB_6): (Assumption6 R B O M).
+  Proof.
+    split;first by apply: A6_1.
+    split;first by apply: A6_2.
+    split;first by apply: A6_3.
+    by apply: A6_4.
+  Qed.
+  
   Theorem ML_inf
     (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5) (Ab6: AB_6):
     exists S, kernel M S.
   Proof.
-    by pose proof (@G_SSW _ R B O Ab1 Ab2 L6 (L7 Ab4 Ab5) (L8 Ab4 Ab5) (A6_1 Ab3) (A6_2 Ab6) 
-                  A6_3 (A6_4 Ab4 Ab5)).
+    by apply: (@G_SSW _ R B O Ab1 Ab2 A3 (A4 Ab4 Ab5) (A5 Ab4 Ab5)
+                     (A6 Ab3 Ab4 Ab5 Ab6)).
   Qed.
   
 End MeunierLanglois_inf. 
@@ -695,7 +719,21 @@ Module Finite_case_Kernel_Theorems.
       by [].
       by move: Hd => [Dyx'|[[Dy'y _]|[Dyx']]].
     Qed.
+
+    Lemma A6' (Asp: sporder O) : (Assumption6' R O^-1 M).
+    Proof.
+      split;first by apply: Au'.
+      split;first by apply: Apk.
+      by apply: (sporder_inv Asp).
+    Qed.
     
+    Lemma A6'' (Anc: ~ (exists s, O.+ (s,s))) : (Assumption6'' R O^-1 M).
+    Proof.
+      split;first by apply: Au'.
+      split;first by apply: Apk.
+      by apply: (Om1_notcyclic Anc).
+    Qed.
+
     (** A stronger Champetier theorem as we use a weaker
         version of the three cycles assymption *)
     Theorem Kernel_Champetier (Asp: sporder O) (Atc: Three_cycles): 
@@ -704,7 +742,7 @@ Module Finite_case_Kernel_Theorems.
       by pose proof 
            (@G_SSW_fin_porder T O^-1 R B 
               A1 (A2_from_Asp Asp) A3 (A4_from_Asp_Atc Asp Atc) 
-              (A5_from_Atc Atc) Au' Apk (sporder_inv Asp)).
+              (A5_from_Atc Atc) (A6' Asp)).
     Qed.
     
     (** A stronger Blidia Hengel theorem as we use a weaker
@@ -716,8 +754,7 @@ Module Finite_case_Kernel_Theorems.
       by apply: (@G_SSW_fin_notcyclic T O^-1 R B 
                    A1 (A2_from_Anc Anc) A3 
                    (A4_from_Afg_Atc Afg Atc)
-                   (A5_from_Atc Atc) Au' Apk
-                   (Om1_notcyclic Anc)).
+                   (A5_from_Atc Atc) (A6'' Anc)).
     Qed.
 
     Theorem Meunier_Langlois_P2_5
@@ -726,8 +763,7 @@ Module Finite_case_Kernel_Theorems.
       by apply: (@G_SSW_fin_notcyclic T O^-1 R B 
                    A1 (A2_from_Anc Anc) A3 
                    (A4_from_MLfg MLfg)
-                   (A5_from_MLfg MLfg) Au' Apk
-                   (Om1_notcyclic Anc)).
+                   (A5_from_MLfg MLfg) (A6'' Anc)). 
     Qed.
     
   End Finite_case_Kernel_Theorems.

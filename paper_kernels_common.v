@@ -674,7 +674,6 @@ Section Assumptions.
   Definition Assumption6_1 O:= ~ (iic O).
   Definition Assumption6_2 O:= sporder O.
   Definition Assumption6_3 O M := O  `<=` M `|` M^-1.
-  
   Definition Assumption6_4 R B O M:= 
     forall x y x' y' , ~ (x = y) -> ~ (x = x') -> ~ (x = y')
                    -> ~ (y = x') -> ~ (x' = y') -> ~ (y' = y) 
@@ -682,14 +681,24 @@ Section Assumptions.
                    -> ~ ((M `|` M^-1) (x',x))
                    -> ~ ((M `|` M^-1) (y',x))
                    -> M (y,y').
+
+  Definition Assumption6 R B O M:=  Assumption6_1 O /\  Assumption6_2 O 
+                                /\ Assumption6_3 O M /\ Assumption6_4 R B O M. 
   
   Definition Assumption6'_1 R O := R `<=` O^-1.
   Definition Assumption6'_2 M O := forall X , RelIndep O X <-> RelIndep M X.
   Definition Assumption6'_3 O := sporder O.
 
+  Definition Assumption6' R O M:= 
+    Assumption6'_1 R O /\  Assumption6'_2 M O /\ Assumption6'_3 O. 
+
+
   Definition Assumption6''_1 R O := R `<=` O^-1.
   Definition Assumption6''_2 M O := forall X , RelIndep O X <-> RelIndep M X.
   Definition Assumption6''_3 O := ~ (exists s, O.+ (s,s)).
+
+  Definition Assumption6'' R O M:=
+    Assumption6''_1 R O /\  Assumption6''_2 M O /\ Assumption6''_3 O. 
 
 End Assumptions. 
 
