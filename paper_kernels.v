@@ -43,6 +43,7 @@ Module Generalized_SSW.
     (** * Existence of a Maximal in the infinite case with Zorn Lemma *)
     (** * we need [<= O] to be a porder *)
 
+    (* begin snippet GSSW:: no-out *)  
     Context {T:choiceType} (R B O: relation T).
 
     Notation M := (B `|` R).
@@ -51,6 +52,7 @@ Module Generalized_SSW.
       (A4: Assumption4 R B M) (A5:  Assumption5 R B M) (A6: Assumption6 R B O M).
     
     Theorem G_SSW: exists S, kernel M S.
+    (* end snippet GSSW *)
     Proof.
       move: A6 => [A6_1 [A6_2 [A6_3 A6_4]]].
       (* a Maximal set using Zorn Lemma *)
@@ -76,13 +78,15 @@ Module Generalized_SSW_fin_notcyclic.
   Section Generalized_SSW_fin_notcyclic.
     (** * Generalized_SSW for finType and no cyclicity *)
     
+    (* begin snippet GSSWpp:: no-out *)  
     Context {T: finType} (O R B: relation T).
 
     Definition M := B `|` R.
 
     Context (A1: nonempty [set: T]) (A2: Assumption2 R) (A3: Assumption3 B M O) 
       (A4: Assumption4 R B M) (A5:  Assumption5 R B M) (A6'': Assumption6'' R O M).
-    
+    (* end snippet GSSWpp *)      
+
     (* There exists a kernel or an increasing mapping for [<< O] taking values in pre_kernels *)
     Lemma kernel_or_iic_fun:
       (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (pre_kernel M R M)))
@@ -147,7 +151,9 @@ Module Generalized_SSW_fin_notcyclic.
       by apply: (Cyclicity_BH_lemma HallL Hpk).
     Qed.
     
+    (* begin snippet GSSWppN:: no-out *)  
     Theorem G_SSW_fin_notcyclic: exists S, kernel M S.
+    (* end snippet GSSWppN *)  
     Proof.
       move: A6'' => [Au [Apk A_Onotcyclic]].
       have pre_kernelP S': pre_kernel O R M S' <-> pre_kernel M R M S'
@@ -171,14 +177,15 @@ Module Generalized_SSW_fin_porder.
   (** * Generalized_SSW for finType and O is a sporder *)
   Section Generalized_SSW_fin_porder.
     
+    (* begin snippet GSSWp:: no-out *)  
     Context (T : finType) (O R B: relation T).
-    Implicit Types (O R B: relation T). 
     
     Notation M := (B `|` R).
 
     Context (A1: nonempty [set: T]) (A2 : Assumption2 R) (A3 : Assumption3 B M O)
       (A4 : Assumption4 R B M) (A5 :  Assumption5 R B M) (A6': Assumption6' R O M).
-    
+    (* end snippet GSSWp *)      
+
     Lemma maximal_mabsorbant S:
       (pre_kernel O R M S) /\ (forall U, pre_kernel O R M U -> S [<= O] U -> S = U)
       -> absorbant M S.
@@ -198,7 +205,9 @@ Module Generalized_SSW_fin_porder.
       by split;[| apply/negP => /eqP Heq].
     Qed.
     
+    (* begin snippet GSSWpN:: no-out *)  
     Theorem G_SSW_fin_porder: exists S, kernel M S. 
+    (* end snippet GSSWpN *)  
     Proof.
       move: A6' => [Au [Apk Asp]].
       (* There exist a maximal set *)
@@ -214,24 +223,20 @@ Export Generalized_SSW_fin_porder(G_SSW_fin_porder).
 Module SSWext.
   (** * use G_SSW to prove kernel existence in infinite graphs *)
   (** * The Extended SSW Theorem and the SSW theorem as a corollary *)
+
+
+  (* begin snippet SSWext:: no-out *)  
   Parameter (T:choiceType) (Eb Er: relation T).
-
-  Definition R := Er.+. 
-  Definition B := Eb.+. 
-  Definition O := (Asym B). 
-
-  Definition SSW_1:= (nonempty [set: T]).
-  Definition SSW_2:= ~ (iic (Asym R)).
-  Definition SSW_3:= ~ (iic (Asym B)).
-  
+  Definition R := Er.+. Definition B := Eb.+. Definition O := (Asym B). 
   Notation M := (B `|` R).
+  (* end snippet SSWext *)    
   
   Lemma R_trans: transitive R.
   Proof. by apply: (@TclosT _ Er). Qed.
 
   Lemma B_trans: transitive B.
   Proof. by apply: (@TclosT _ Eb). Qed.
-  
+
   Lemma A3: (Assumption3 B M O).
   Proof. 
     move => [x y] [? ?];split;first exact.
@@ -251,10 +256,10 @@ Module SSWext.
     by left;apply: (B_trans H2 H3).
     by have H11: M (y,x') by right;apply: (R_trans H1 H2).
   Qed.
-  
-  Lemma A6_1 (Assw3: SSW_3): (Assumption6_1 O).
+
+  Lemma A6_1:  ~ (iic (Asym B)) -> (Assumption6_1 O).
   Proof. by exact. Qed.
-         
+  
   Lemma A6_2: (Assumption6_2 O). 
   Proof. by apply: (@Asym_sporder _ B);apply: TclosT. Qed.
   
@@ -272,8 +277,8 @@ Module SSWext.
     by move: H3 => /(@AsymI _ B) H3;left;apply: (B_trans H2 H3).
     by have: (M `|` M^-1) (x',x) by right;right;apply: (R_trans H1 H2).
   Qed.
-
-  Lemma A6 (Assw3: SSW_3) : (Assumption6 R B O M).
+  
+  Lemma A6 : ~ (iic (Asym B)) -> (Assumption6 R B O M).
   Proof. 
     split;first by apply: A6_1.
     split;first by apply: A6_2.
@@ -281,16 +286,23 @@ Module SSWext.
     by apply: A6_4.
   Qed.
   
-  Theorem SSWext
-    (Assw1: SSW_1) (Assw2: SSW_2) (Assw3: SSW_3): exists S, kernel M S.
+  (* begin snippet SSWextN:: no-out *)  
+  Theorem SSWext:
+    (nonempty [set: T]) -> ~ (iic (Asym R)) -> ~ (iic (Asym B))
+    -> exists S, kernel M S.
+  (* end snippet SSWextN *)  
   Proof.
+    move => Assw1 Assw2 Assw3. 
     by pose proof (G_SSW Assw1 Assw2 A3 A4 A5 (A6 Assw3)).
   Qed.
   
-  Corollary SSW
-    (A1: SSW_1) (A2: ~ (iic_inj Er)) (A3: ~ (iic_inj Eb)):
-    exists S, kernel M S.
+  (* begin snippet SSWextNN:: no-out *)  
+  Corollary SSW: 
+    (nonempty [set: T]) -> ~ (iic_inj Er) -> ~ (iic_inj Eb) 
+    -> exists S, kernel M S.
+  (* end snippet SSWextNN *)  
   Proof.
+    move => A1 A2 A3. 
     move: A2 => /(not_iic_inj_to_not_iic_asym A1) A2.
     move: A3 => /(not_iic_inj_to_not_iic_asym A1) A3.
     by apply: SSWext.
@@ -316,6 +328,9 @@ End SSWext.
 Module ABkernels.
   (** * use G_SSW to prove kernel existence in infinite graphs *)
   (** * in the AB kernels case *)
+
+
+  (* begin snippet ABkernels:: no-out *)  
   Parameter (T:choiceType) (A1 A2: relation T).
 
   Definition R := A1.
@@ -329,7 +344,8 @@ Module ABkernels.
   Definition AB_5:= transitive B.
 
   Notation M := (B `|` R).
-  
+  (* end snippet ABkernels *)  
+
   Lemma A3: (Assumption3 B M O).
   Proof. move => [x y] [? ?];split;first exact.
          move => ?; by have: M (y, x) by left.
@@ -378,9 +394,11 @@ Module ABkernels.
     by apply: A6_4.
   Qed.
 
+  (* begin snippet ABkernelsN:: no-out *)  
   Theorem AB_kernels
     (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5):
     exists S, kernel M S.
+  (* end snippet ABkernelsN *)  
   Proof.
     by pose proof (G_SSW Ab1 Ab2 A3 (A4 Ab4 Ab5)
                      (A5 Ab4 Ab5) (A6 Ab3 Ab4 Ab5)).
@@ -392,6 +410,8 @@ Module MeunierLanglois_inf.
   (** * use G_SSW to prove kernel existence in infinite graphs *)
   (** * for a modifieed version of Meunier Langlois *)
 
+
+  (* begin snippet MLinf:: no-out *)  
   Parameter (T:choiceType) (R B: relation T).
 
   Definition O := [set xy | (Asym B) (xy.1, xy.2) /\  ~ R (xy.2,xy.1)].
@@ -402,18 +422,20 @@ Module MeunierLanglois_inf.
       ~ (y = x) -> ~ (y = z) -> ~ (z = x)       
       -> R (x,y) -> R (y,z) -> R (x,z) \/ ( B (y,x) /\ B (z,x) ).
   
-  Definition AB_5:=  forall x y z, 
+  Definition AB_5':=  forall x y z, 
       ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
       -> B (x,y) -> B (y,z) -> B (x,z) \/ ( R (z,x) /\ R (z,y) ).
+  
+  Definition AB_5:=  forall x y z, 
+      ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
+      -> B (x,y) -> B (y,z) -> B (x,z) \/ ( True /\ R (z,y) ).
 
   (* a transitivity property for B `&` (B^-1 `|` R^-1) *)
-  Definition AB_6:=  forall x y z, 
-      B (x,y) -> ~ (B^-1 (x,y)) -> ~ (R (y,x)) 
-      -> B (y,z) -> ~ (B^-1 (y,z)) -> ~ (R (z,y))
-      -> B (x,z) /\ ~ (B^-1 (x,z)) /\ ~ (R (z,x)).
-
   Notation M := (B `|` R).
-  
+
+  Definition AB_6:=  forall x y z, 
+      B (x,y) /\ ~ M(y,x) -> B(y,z) /\ ~ M(z,y) -> B(x,z) /\ ~M (z,x).
+  (* end snippet MLinf *)  
   Lemma A3: (Assumption3 B M O).
   Proof.
     move => [x y] [H1 H2];split => [|/= H3].
@@ -449,15 +471,20 @@ Module MeunierLanglois_inf.
     move: Ab3. contra => -[f H].
     by exists f;move => n;move: H => /(_ n) [/= H1 _].
   Qed.
-  
+
   Lemma A6_2 (Ab6: AB_6) : (Assumption6_2 O). 
   Proof. 
     split. 
     + move => x [/= H1 _].
       by pose proof (@Asym_irreflexive T B x). 
     + move => y x z [/= [H1 H1'] H2] [/= [H3 H3'] H4].
-      move: (Ab6 x y z H1 H1' H2 H3 H3' H4) => [H5 [H6 H7]].
-      by split. 
+      have Rexy : B (x, y) /\ ~ M (y, x) by split => [ | [? | ?]].
+      have Reyz : B (y,z) /\ ~M(z,y)  by split => [ | [? | ?]].
+      move: (Ab6 x y z Rexy Reyz) => [Bxz nMzx].
+      split;last first.
+      by move => /= ?;(have ?: M(z,x) by right).
+      split;first exact.
+      by move => /= ?;(have ?: M(z,x) by left).
   Qed.
   
   Lemma A6_3: (Assumption6_3 O M).
@@ -483,120 +510,17 @@ Module MeunierLanglois_inf.
     by apply: A6_4.
   Qed.
   
+  (* begin snippet MLinfN:: no-out *)  
   Theorem ML_inf
     (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5) (Ab6: AB_6):
     exists S, kernel M S.
+  (* end snippet MLinfN *)  
   Proof.
     by apply: (G_SSW Ab1 Ab2 A3 (A4 Ab4 Ab5) (A5 Ab4 Ab5)
                      (A6 Ab3 Ab4 Ab5 Ab6)).
   Qed.
   
 End MeunierLanglois_inf. 
-
-Module MeunierLanglois_inf'. 
-  (** * use G_SSW to prove kernel existence in infinite graphs *)
-  (** * for a modifieed version of Meunier Langlois *)
-  (** * here AB_4 is simplified compared to the previous one *)
-
-  Parameter (T:choiceType) (R B: relation T).
-
-  Definition O := [set xy | (Asym B) (xy.1, xy.2) /\  ~ R (xy.2,xy.1)].
-  Definition AB_1:= (nonempty [set: T]).
-  Definition AB_2:= ~ (iic (Asym R)).
-  Definition AB_3:= ~ (iic (Asym B)).
-  Definition AB_4:=  forall x y z, 
-      ~ (y = x) -> ~ (y = z) -> ~ (z = x)       
-      -> R (x,y) -> R (y,z) -> R (x,z) \/ ( B (y,x) /\ B (z,x) ).
-  
-  Definition AB_5:=  forall x y z, 
-      ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
-      -> B (x,y) -> B (y,z) -> B (x,z) \/ R (z,y).
-
-  (* a transitivity property for B `&` (B^-1 `|` R^-1) *)
-  Notation M := (B `|` R).
-
-  Definition AB_6:=  forall x y z, 
-      B (x,y) /\ ~ M(y,x) -> B(y,z) /\ ~ M(z,y) -> B(x,z) /\ ~M (z,x).
-  
-  Lemma A3: (Assumption3 B M O).
-  Proof.
-    move => [x y] [H1 H2];split => [|/= H3].
-    by split;[|move => /= H3;have H4:  M (y, x) by left].
-    by have H4:  M (y, x) by right. 
-  Qed.
-  
-  Lemma A4 (Ab4: AB_4) (Ab5: AB_5): (Assumption4 R B M).
-  Proof. 
-    move => x x' y y' H1 H2 H3 H4 H5 H6 H7 [H8|H8] H9 [H10 H10'] H11 [H12 H12'] _.
-    + left;move: (Ab5  y' x' y H4 H6 H2 H8 H9) => [? // | ?].
-      by (have H11': M(y,x') by right). 
-    + move: (Ab4 x y' x' H3 H4 H1 H7 H8) => -[ Rxx' | [_ Bx'x]].
-      by (have H11': M(x, x') by right). 
-      by (have H11': M(x', x) by left).
-  Qed.
-  
-  Lemma A5 (Ab4: AB_4) (Ab5: AB_5): (Assumption5 R B M).
-  Proof. 
-    move => x' y y' P0 P0' P0'' H1 [H2| H2] H3 [H4 H5].
-    + left;move: (Ab5 y' x' y P0 P0'' P0' H2 H3) => [? // | ?].
-      by have H11: M(y,x') by right.
-    + have H6: y' <> y by move => I7;rewrite I7 in P0'.
-      have H7: x' <> y by move => I7;rewrite I7 in P0''.
-      move: (Ab4 y y' x' H6 P0 H7 H1 H2) => [ ? | [? _]].
-      by have H11: M(y,x') by right.
-      by left.
-  Qed.
-  
-  Lemma A6_1 (Ab3: AB_3): (Assumption6_1 O).
-  Proof.
-    move: Ab3. contra => -[f H].
-    by exists f;move => n;move: H => /(_ n) [/= H1 _].
-  Qed.
-  
-  Lemma A6_2 (Ab6: AB_6) : (Assumption6_2 O). 
-  Proof. 
-    split. 
-    + move => x [/= H1 _].
-      by pose proof (@Asym_irreflexive T B x). 
-    + move => y x z [/= [H1 H1'] H2] [/= [H3 H3'] H4].
-      have Rexy : B (x, y) /\ ~ M (y, x) by split => [ | [? | ?]].
-      have Reyz : B (y,z) /\ ~M(z,y)  by split => [ | [? | ?]].
-      move: (Ab6 x y z Rexy Reyz) => [Bxz nMzx].
-      split;last first.
-      by move => /= ?;(have ?: M(z,x) by right).
-      split;first exact.
-      by move => /= ?;(have ?: M(z,x) by left).
-  Qed.
-  
-  Lemma A6_3: (Assumption6_3 O M).
-  Proof. by move => [x y] [[/= ? _] _];left;left.  Qed.
-
-  Lemma A6_4 (Ab4: AB_4) (Ab5: AB_5) : (Assumption6_4 R B O M).
-  Proof. 
-    move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] [[/= H3 /=H3'] /=H3''] H4 H5 H6.
-    + have P4': ~ (y' = x') by move => I1;rewrite I1 in P4.
-      move: (Ab5 y x' y' P3 P4' P5 H2 H3) => [? | ? //];first by left.
-    + have P0': ~ (y = x) by move => I1;rewrite I1 in P0.
-      have P1': ~ (x' = x) by move => I1;rewrite I1 in P1.
-      move: (Ab4 x y x' P0' P3 P1' H1 H2) => [? | [? _]].
-      by have: (M (x', x) \/ M^-1 (x', x)) by right;right.
-      by have: M (y,x) by left.
-  Qed.
-  
-  Lemma A6 (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5) (Ab6: AB_6): (Assumption6 R B O M).
-  Proof.
-    by split;[apply: A6_1 | split;[apply: A6_2 | split;[apply: A6_3 | apply: A6_4]]].
-  Qed.
-  
-  Theorem ML_inf
-    (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5) (Ab6: AB_6):
-    exists S, kernel M S.
-  Proof.
-    by apply: (G_SSW Ab1 Ab2 A3 (A4 Ab4 Ab5) (A5 Ab4 Ab5)
-                     (A6 Ab3 Ab4 Ab5 Ab6)).
-  Qed.
-  
-End MeunierLanglois_inf'. 
 
 Definition simpleGraph (T: Type) (G:relation T) := symmetric G /\ irreflexive G.
 Definition Direction (T: Type) (G D: relation T) := D `|` D^-1 = G. 
@@ -691,6 +615,7 @@ Export simpleGraph.
 Module Finite_case_Kernel_Theorems.
   Section Finite_case_Kernel_Theorems.
 
+    (* begin snippet FinCaseContext:: no-out *)  
     Context (T : finType) (G D O: relation T).
     
     Definition Three_cycles := 
@@ -698,8 +623,6 @@ Module Finite_case_Kernel_Theorems.
 
     Definition R := D `&` O.
     Definition B := D `&` O^-1.
-
-    (* we will show that M = D *)
     Notation M := (B `|` R).
 
     Definition Forbiden_graph :=
@@ -719,6 +642,7 @@ Module Finite_case_Kernel_Theorems.
     Context (Asg: simpleGraph G).
     Context (Ao: Orientation G O).
     Context (Ad: Direction G D).
+    (* end snippet FinCaseContext *)
     
     Lemma Au:  R `<=` O. 
     Proof. by rewrite /R;apply: subIsetr. Qed.
@@ -841,8 +765,10 @@ Module Finite_case_Kernel_Theorems.
 
     (** A stronger Champetier theorem as we use a weaker
         version of the three cycles assymption *)
+    (* begin snippet FinCaseChampetier:: no-out *)  
     Theorem Kernel_Champetier (Asp: sporder O) (Atc: Three_cycles): 
-      exists S, RelIndep M S /\ absorbant M S.
+      exists S, kernel M S.
+    (* end snippet FinCaseChampetier *)  
     Proof.
       by pose proof 
            (@G_SSW_fin_porder T O^-1 R B 
@@ -852,18 +778,21 @@ Module Finite_case_Kernel_Theorems.
     
     (** A stronger Blidia Hengel theorem as we use a weaker
         version of the three cycles assymption *)
+    (* begin snippet FinCaseBH:: no-out *)  
     Theorem Kernel_Blidia_Hengel
       (Anc: ~ (exists s, O.+ (s,s))) (Afg: Forbiden_graph) (Atc: Three_cycles):
       exists S, kernel M S. 
+    (* end snippet FinCaseBH *)  
     Proof.
       by apply: (@G_SSW_fin_notcyclic T O^-1 R B 
                    A1 (A2_from_Anc Anc) A3 
                    (A4_from_Afg_Atc Afg Atc)
                    (A5_from_Atc Atc) (A6'' Anc)).
     Qed.
-
+    (* begin snippet FinCaseML:: no-out *)  
     Theorem Meunier_Langlois_P2_5
       (Anc: ~ (exists s, O.+ (s,s))) (MLfg: M_L_Forbiden_graph) : exists S, kernel M S. 
+    (* end snippet FinCaseML *)  
     Proof.
       by apply: (@G_SSW_fin_notcyclic T O^-1 R B 
                    A1 (A2_from_Anc Anc) A3 
