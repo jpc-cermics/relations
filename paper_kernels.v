@@ -284,7 +284,7 @@ Module SSWext.
   Theorem SSWext
     (Assw1: SSW_1) (Assw2: SSW_2) (Assw3: SSW_3): exists S, kernel M S.
   Proof.
-    by pose proof (@G_SSW _ R B O Assw1 Assw2 A3 A4 A5 (A6 Assw3)).
+    by pose proof (G_SSW Assw1 Assw2 A3 A4 A5 (A6 Assw3)).
   Qed.
   
   Corollary SSW
@@ -382,7 +382,7 @@ Module ABkernels.
     (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5):
     exists S, kernel M S.
   Proof.
-    by pose proof (@G_SSW _ R B O Ab1 Ab2 A3 (A4 Ab4 Ab5)
+    by pose proof (G_SSW Ab1 Ab2 A3 (A4 Ab4 Ab5)
                      (A5 Ab4 Ab5) (A6 Ab3 Ab4 Ab5)).
   Qed.
   
@@ -421,25 +421,25 @@ Module MeunierLanglois_inf.
     by have H4:  M (y, x) by right. 
   Qed.
   
-  Lemma A4 (A4: AB_4) (A5: AB_5): (Assumption4 R B M).
+  Lemma A4 (Ab4: AB_4) (Ab5: AB_5): (Assumption4 R B M).
   Proof. 
     move => x x' y y' H1 H2 H3 H4 H5 H6 H7 [H8|H8] H9 H10 H11 [H12 H12'] _.
-    + left;move: (A5  y' x' y H4 H6 H2 H8 H9) => [? // | [_ H10']]. 
+    + left;move: (Ab5  y' x' y H4 H6 H2 H8 H9) => [? // | [_ H10']]. 
       (have H11': M(y,x') by right);by move : H10 => -[_ ?].
-    + move: (A4 x y' x' H3 H4 H1 H7 H8) => [H10' | [_ H10']].
+    + move: (Ab4 x y' x' H3 H4 H1 H7 H8) => [H10' | [_ H10']].
       by (have H11': M(x, x') by right). 
       by (have H11': M(x', x) by left).
   Qed.
   
-  Lemma A5 (A4: AB_4) (A5: AB_5): ( Assumption5 R B M).
+  Lemma A5 (Ab4: AB_4) (Ab5: AB_5): (Assumption5 R B M).
   Proof. 
     move => x' y y' P0 P0' P0'' H1 [H2| H2] H3 [H4 H5].
-    + left;move: (A5 y' x' y P0 P0'' P0' H2 H3) => [? // | [_ H6]].
+    + left;move: (Ab5 y' x' y P0 P0'' P0' H2 H3) => [? // | [_ H6]].
       by have H11: M(y,x') by right.
     + have H6: y' <> y by move => I7;rewrite I7 in P0'.
       have H7: x' <> y by move => I7;rewrite I7 in P0''.
       
-      move: (A4 y y' x' H6 P0 H7 H1 H2) => [H6' | [H6' _]].
+      move: (Ab4 y y' x' H6 P0 H7 H1 H2) => [H6' | [H6' _]].
       by have H11: M(y,x') by right.
       by left.
   Qed.
@@ -487,7 +487,7 @@ Module MeunierLanglois_inf.
     (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5) (Ab6: AB_6):
     exists S, kernel M S.
   Proof.
-    by apply: (@G_SSW _ R B O Ab1 Ab2 A3 (A4 Ab4 Ab5) (A5 Ab4 Ab5)
+    by apply: (G_SSW Ab1 Ab2 A3 (A4 Ab4 Ab5) (A5 Ab4 Ab5)
                      (A6 Ab3 Ab4 Ab5 Ab6)).
   Qed.
   
