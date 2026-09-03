@@ -493,6 +493,111 @@ Module MeunierLanglois_inf.
   
 End MeunierLanglois_inf. 
 
+Module MeunierLanglois_inf'. 
+  (** * use G_SSW to prove kernel existence in infinite graphs *)
+  (** * for a modifieed version of Meunier Langlois *)
+  (** * here AB_4 is simplified compared to the previous one *)
+
+  Parameter (T:choiceType) (R B: relation T).
+
+  Definition O := [set xy | (Asym B) (xy.1, xy.2) /\  ~ R (xy.2,xy.1)].
+  Definition AB_1:= (nonempty [set: T]).
+  Definition AB_2:= ~ (iic (Asym R)).
+  Definition AB_3:= ~ (iic (Asym B)).
+  Definition AB_4:=  forall x y z, 
+      ~ (y = x) -> ~ (y = z) -> ~ (z = x)       
+      -> R (x,y) -> R (y,z) -> R (x,z) \/ ( B (y,x) /\ B (z,x) ).
+  
+  Definition AB_5:=  forall x y z, 
+      ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
+      -> B (x,y) -> B (y,z) -> B (x,z) \/ R (z,y).
+
+  (* a transitivity property for B `&` (B^-1 `|` R^-1) *)
+  Notation M := (B `|` R).
+
+  Definition AB_6:=  forall x y z, 
+      B (x,y) /\ ~ M(y,x) -> B(y,z) /\ ~ M(z,y) -> B(x,z) /\ ~M (z,x).
+  
+  Lemma A3: (Assumption3 B M O).
+  Proof.
+    move => [x y] [H1 H2];split => [|/= H3].
+    by split;[|move => /= H3;have H4:  M (y, x) by left].
+    by have H4:  M (y, x) by right. 
+  Qed.
+  
+  Lemma A4 (Ab4: AB_4) (Ab5: AB_5): (Assumption4 R B M).
+  Proof. 
+    move => x x' y y' H1 H2 H3 H4 H5 H6 H7 [H8|H8] H9 [H10 H10'] H11 [H12 H12'] _.
+    + left;move: (Ab5  y' x' y H4 H6 H2 H8 H9) => [? // | ?].
+      by (have H11': M(y,x') by right). 
+    + move: (Ab4 x y' x' H3 H4 H1 H7 H8) => -[ Rxx' | [_ Bx'x]].
+      by (have H11': M(x, x') by right). 
+      by (have H11': M(x', x) by left).
+  Qed.
+  
+  Lemma A5 (Ab4: AB_4) (Ab5: AB_5): (Assumption5 R B M).
+  Proof. 
+    move => x' y y' P0 P0' P0'' H1 [H2| H2] H3 [H4 H5].
+    + left;move: (Ab5 y' x' y P0 P0'' P0' H2 H3) => [? // | ?].
+      by have H11: M(y,x') by right.
+    + have H6: y' <> y by move => I7;rewrite I7 in P0'.
+      have H7: x' <> y by move => I7;rewrite I7 in P0''.
+      move: (Ab4 y y' x' H6 P0 H7 H1 H2) => [ ? | [? _]].
+      by have H11: M(y,x') by right.
+      by left.
+  Qed.
+  
+  Lemma A6_1 (Ab3: AB_3): (Assumption6_1 O).
+  Proof.
+    move: Ab3. contra => -[f H].
+    by exists f;move => n;move: H => /(_ n) [/= H1 _].
+  Qed.
+  
+  Lemma A6_2 (Ab6: AB_6) : (Assumption6_2 O). 
+  Proof. 
+    split. 
+    + move => x [/= H1 _].
+      by pose proof (@Asym_irreflexive T B x). 
+    + move => y x z [/= [H1 H1'] H2] [/= [H3 H3'] H4].
+      have Rexy : B (x, y) /\ ~ M (y, x) by split => [ | [? | ?]].
+      have Reyz : B (y,z) /\ ~M(z,y)  by split => [ | [? | ?]].
+      move: (Ab6 x y z Rexy Reyz) => [Bxz nMzx].
+      split;last first.
+      by move => /= ?;(have ?: M(z,x) by right).
+      split;first exact.
+      by move => /= ?;(have ?: M(z,x) by left).
+  Qed.
+  
+  Lemma A6_3: (Assumption6_3 O M).
+  Proof. by move => [x y] [[/= ? _] _];left;left.  Qed.
+
+  Lemma A6_4 (Ab4: AB_4) (Ab5: AB_5) : (Assumption6_4 R B O M).
+  Proof. 
+    move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] [[/= H3 /=H3'] /=H3''] H4 H5 H6.
+    + have P4': ~ (y' = x') by move => I1;rewrite I1 in P4.
+      move: (Ab5 y x' y' P3 P4' P5 H2 H3) => [? | ? //];first by left.
+    + have P0': ~ (y = x) by move => I1;rewrite I1 in P0.
+      have P1': ~ (x' = x) by move => I1;rewrite I1 in P1.
+      move: (Ab4 x y x' P0' P3 P1' H1 H2) => [? | [? _]].
+      by have: (M (x', x) \/ M^-1 (x', x)) by right;right.
+      by have: M (y,x) by left.
+  Qed.
+  
+  Lemma A6 (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5) (Ab6: AB_6): (Assumption6 R B O M).
+  Proof.
+    by split;[apply: A6_1 | split;[apply: A6_2 | split;[apply: A6_3 | apply: A6_4]]].
+  Qed.
+  
+  Theorem ML_inf
+    (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5) (Ab6: AB_6):
+    exists S, kernel M S.
+  Proof.
+    by apply: (G_SSW Ab1 Ab2 A3 (A4 Ab4 Ab5) (A5 Ab4 Ab5)
+                     (A6 Ab3 Ab4 Ab5 Ab6)).
+  Qed.
+  
+End MeunierLanglois_inf'. 
+
 Definition simpleGraph (T: Type) (G:relation T) := symmetric G /\ irreflexive G.
 Definition Direction (T: Type) (G D: relation T) := D `|` D^-1 = G. 
 Definition Orientation (T: Type) (G O: relation T) := Direction G O /\ asymmetric O.
