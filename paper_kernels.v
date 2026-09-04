@@ -406,7 +406,7 @@ Module ABkernels.
   
 End ABkernels.
 
-Module MeunierLanglois_inf. 
+Module Meunier_Langlois_inf. 
   (** * use G_SSW to prove kernel existence in infinite graphs *)
   (** * for a modifieed version of Meunier Langlois *)
 
@@ -520,7 +520,7 @@ Module MeunierLanglois_inf.
                      (A6 Ab3 Ab4 Ab5 Ab6)).
   Qed.
   
-End MeunierLanglois_inf. 
+End Meunier_Langlois_inf. 
 
 Definition simpleGraph (T: Type) (G:relation T) := symmetric G /\ irreflexive G.
 Definition Direction (T: Type) (G D: relation T) := D `|` D^-1 = G. 
@@ -612,31 +612,230 @@ End simpleGraph.
 
 Export simpleGraph.
 
-Module Finite_case_Kernel_Theorems.
-  Section Finite_case_Kernel_Theorems.
+Module Finite_case_Kernel_Champetier.
+  Section Finite_case_Kernel_Champetier.
+    (** A stronger Champetier theorem as we use a weaker
+        version of the three cycles assymption *)
 
-    (* begin snippet FinCaseContext:: no-out *)  
+    (* begin snippet ChampetierContext:: no-out *)  
     Context (T : finType) (G D O: relation T).
-    
+    Context (A1: nonempty [set: T]).
+    Context (Asg: simpleGraph G).
+    Context (Ao: Orientation G O).
+    Context (Ad: Direction G D).
+
     Definition Three_cycles := 
       forall x y z, D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z) -> D(y,x).
 
     Definition R := D `&` O.
     Definition B := D `&` O^-1.
     Notation M := (B `|` R).
+    (* end snippet ChampetierContext *)  
+
+    Lemma Au:  R `<=` O. 
+    Proof. by rewrite /R;apply: subIsetr. Qed.
+
+    Lemma Au':  R `<=` O^-1^-1. 
+    Proof. by move: Au;rewrite (inverseK O). Qed.
+           
+    Lemma Rnotiic (Asp: sporder O): ~ (iic R).
+    Proof. 
+      have: ~ (iic  O) by apply: (@fin_not_iic _ O Asp).              
+      by move => notHiicO /(@iic_sub T R O Au) HiicO.
+    Qed.
+    
+    Lemma Apk:  forall X , RelIndep O^-1 X <->  RelIndep M X.
+    Proof.
+      move: Ao => [/directionIv DOm1 _] X. 
+      rewrite (RB Ad Ao) (@direction_relIndep T G D X Ad).
+      by rewrite (@direction_relIndep T G O^-1 X DOm1).
+    Qed.
+    
+    Lemma Rasym: asymmetric R.
+    Proof.
+      move => x y /Au H1 /Au H2.
+      by move: H1 Ao => + [_ /(_ x y) Ha] => /Ha H3.
+    Qed.
+
+    Lemma Om1_notcyclic: 
+      ~ (exists s, O.+ (s,s)) -> ~ (exists s, O^-1.+ (s,s)).
+    Proof.
+      move => HOnc [s Hoc];rewrite -TclosIv in Hoc. 
+      by have ?: (exists s : T, O.+ (s, s)) by (exists s).
+    Qed.
+    
+    Lemma A2_from_Asp (Asp: sporder O): Assumption2 R.
+      by rewrite /Assumption2;move: Rasym => /AsymEq ->;apply: Rnotiic.
+    Qed.
+
+    Lemma A3 : B `&` M.^c^-1 `<=` O^-1. 
+    Proof. by move => [x y] [[_ H1] _]. Qed.
+    
+    Lemma A4_from_Asp_Atc (Asp: sporder O) (Atc: Three_cycles): Assumption4 R B M. 
+    Proof.
+      move: Asp => [_ Otr]. 
+      move => x x' y y' _ _ _ _ _ _ Rxy' My'x' Bx'y [nRx'y nMyx'] [nMxy nMyx] [nMxx' nMx'x] nMy'x.
+      move: My'x' => [[Dy'x' Ox'y'] | [_ Oy'x']].
+      + move: Bx'y => [Dx'y Oyx'].
+        have Oyy': O^-1 (y',y) by apply: (Otr x' y y' Oyx' Ox'y').
+        move: Oyy' => /(@test'' T G D O Ad Ao) [By'y | [Dyy' _]].
+        ++ by left.
+        ++ (** * here we need the 3-cycle property *)
+          rewrite (RB Ad Ao) in nMyx'.
+          move: (@Atc y y' x' Dyy' Dy'x' Dx'y nMyx') => Dy'y.
+          (** now we have Dyy' and Dy'y *)
+          by rewrite (RB Ad Ao).
+      + move: Rxy' => [_ Oxy'].
+        have Oxx': O (x,x') by apply: (Otr y' x x' Oxy' Oy'x').
+        move: Oxx' => /(@test'' T G D O Ad Ao) [Bx'x | Rxx'].
+        ++ by have Hmx'x: M(x',x) by left.
+        ++ by have Hmx'x: M(x,x') by right.
+    Qed.
+
+    Lemma A5_from_Atc (Atc: Three_cycles):  Assumption5 R B M. 
+    Proof.
+      (* reformulate everything with D *)
+      rewrite (RB Ad Ao).
+      move => x' y y' _ _ _ [Dyy' _] Dy'x' [Dx'y _] [_ nDyx']. 
+      by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx').
+    Qed.
+    
+    Lemma A6' (Asp: sporder O) : (Assumption6' R O^-1 M).
+    Proof.
+      split;first by apply: Au'.
+      split;first by apply: Apk.
+      by apply: (sporder_inv Asp).
+    Qed.
+    
+    (* begin snippet FinCaseChampetier:: no-out *)  
+    Theorem Kernel_Champetier (Asp: sporder O) (Atc: Three_cycles): 
+      exists S, kernel M S.
+    (* end snippet FinCaseChampetier *)  
+    Proof.
+      by apply: (@G_SSW_fin_porder T O^-1 R B 
+                   A1 (A2_from_Asp Asp) A3 (A4_from_Asp_Atc Asp Atc) 
+                   (A5_from_Atc Atc) (A6' Asp)).
+    Qed.
+    
+  End Finite_case_Kernel_Champetier.
+End Finite_case_Kernel_Champetier.
+
+Module Finite_case_Kernel_Blidia_Engel.
+  Section Finite_case_Kernel_Blidia_Engel.
+
+    (* begin snippet BlidiaEngelContext:: no-out *)  
+    Context (T : finType) (G D O: relation T).
+
+    Context (A1: nonempty [set: T]).
+    Context (Asg: simpleGraph G).
+    Context (Ao: Orientation G O).
+    Context (Ad: Direction G D).
+        
+    Definition Three_cycles := 
+      forall x y z, D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z) -> D(y,x).
+
+    Definition R := D `&` O. Definition B := D `&` O^-1. Notation M := (B `|` R).
 
     Definition Forbiden_graph :=
       forall x y z t, R (x,y) -> D(y,z) -> B(z,t) -> 
                  D(x,t) \/ D(t,x) \/ D(x,z) \/ D (z,x) \/ D(y,t) \/ D(t,y).
+    (* end snippet BlidiaEngelContext *)  
+    
+    Lemma Au:  R `<=` O. 
+    Proof. by rewrite /R;apply: subIsetr. Qed.
 
+    Lemma Au':  R `<=` O^-1^-1. 
+    Proof. by move: Au;rewrite (inverseK O). Qed.
+           
+    Lemma Rnotiic (Asp: sporder O): ~ (iic R).
+    Proof. 
+      have: ~ (iic  O) by apply: (@fin_not_iic _ O Asp).              
+      by move => notHiicO /(@iic_sub T R O (Au)) HiicO.
+    Qed.
+    
+    Lemma Apk:  forall X , RelIndep O^-1 X <->  RelIndep M X.
+    Proof.
+      move: Ao => [/directionIv DOm1 _] X. 
+      rewrite (RB Ad Ao) (@direction_relIndep T G D X Ad).
+      by rewrite (@direction_relIndep T G O^-1 X DOm1).
+    Qed.
+    
+    Lemma Rasym: asymmetric R.
+    Proof.
+      move => x y /Au H1 /Au H2.
+      by move: H1 Ao => + [_ /(_ x y) Ha] => /Ha H3.
+    Qed.
+
+    Lemma Om1_notcyclic: 
+      ~ (exists s, O.+ (s,s)) -> ~ (exists s, O^-1.+ (s,s)).
+    Proof.
+      move => HOnc [s Hoc];rewrite -TclosIv in Hoc. 
+      by have ?: (exists s : T, O.+ (s, s)) by (exists s).
+    Qed.
+    
+    Lemma A2_from_Anc (Anc: ~ (exists s, O.+ (s,s))): Assumption2 R.
+    Proof.
+      have notiicO:  ~ (iic O) by move => /(@cyclic T O)/Anc.
+      rewrite /Assumption2;move: Rasym => /(AsymEq R) => -> HiicR.
+      by have: (iic O) by apply: (iic_sub Au').
+    Qed.
+    
+    Lemma A3 : B `&` M.^c^-1 `<=` O^-1. 
+    Proof. by move => [x y] [[_ H1] _]. Qed.
+    
+    Lemma A4_from_Afg_Atc (Afg: Forbiden_graph)(Atc: Three_cycles): Assumption4 R B M. 
+    Proof.
+      rewrite (RB Ad Ao).
+      move => x x' y y' _ _ _ _ _ _ Rxy' Dy'x' Bx'y [nRx'y nDyx'] [nDxy nDyx] [nDxx' nDx'x] nDy'x.
+      have Dx'y: D(x',y) by move: Bx'y=> [? _].
+      by move: (@Afg x y' x' y Rxy' Dy'x' Bx'y) =>
+            [Dxy | [Dyx | [Dxx' | [ Dx'x | [ Dy'y |Dyy']]]]];
+            [| | | | |move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx')].
+    Qed.
+    
+    Lemma A5_from_Atc (Atc: Three_cycles):  Assumption5 R B M. 
+    Proof.
+      (* reformulate everything with D *)
+      rewrite (RB Ad Ao).
+      move => x' y y' _ _ _ [Dyy' _] Dy'x' [Dx'y _] [_ nDyx']. 
+      by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx').
+    Qed.
+
+    Lemma A6'' (Anc: ~ (exists s, O.+ (s,s))) : (Assumption6'' R O^-1 M).
+    Proof.
+      split;first by apply: Au'.
+      split;first by apply: Apk.
+      by apply: (Om1_notcyclic Anc).
+    Qed.
+
+    (* begin snippet FinCaseBH:: no-out *)  
+    Theorem Kernel_Blidia_Hengel
+      (Anc: ~ (exists s, O.+ (s,s))) (Afg: Forbiden_graph) (Atc: Three_cycles):
+      exists S, kernel M S. 
+    (* end snippet FinCaseBH *)  
+    Proof.
+      by apply: (@G_SSW_fin_notcyclic T O^-1 R B 
+                   A1 (A2_from_Anc Anc) A3 
+                   (A4_from_Afg_Atc Afg Atc)
+                   (A5_from_Atc Atc) (A6'' Anc)).
+    Qed.
+    
+  End Finite_case_Kernel_Blidia_Engel.
+End Finite_case_Kernel_Blidia_Engel.
+
+Module Finite_case_Kernel_Meunier_Langlois_P2_5.
+  Section Finite_case_Kernel_Meunier_Langlois_P2_5.
+
+    (* begin snippet MLPdcContext:: no-out *)  
+    Context (T : finType) (G D O: relation T).
+    Definition R := D `&` O.
+    Definition B := D `&` O^-1.
+    Notation M := (B `|` R).
+    
     Definition M_L_Forbiden_graph := forall x y z t,
       R (x,y) -> D(y,z) -> B(z,t) -> 
       (~ (t = x) /\ (D(x,t) \/ D(t,x) \/ D(x,z) \/ D (z,x) \/ D(y,t) \/ B(y,x) \/ R(t,z)))
       \/ ( t = x /\ (D(x,z) \/ B(y,x) \/ R(x,z))).
-    
-    Definition M_L_Forbiden_graph2 :=
-      forall x y z, R (x,y) -> D(y,z) -> B(z,x) -> 
-               D(x,z) \/ B(y,x) \/ R(x,z).
     
     Context (A1: nonempty [set: T]).
     Context (Asg: simpleGraph G).
@@ -690,37 +889,6 @@ Module Finite_case_Kernel_Theorems.
     Lemma A3 : B `&` M.^c^-1 `<=` O^-1. 
     Proof. by move => [x y] [[_ H1] _]. Qed.
     
-    Lemma A4_from_Asp_Atc (Asp: sporder O) (Atc: Three_cycles): Assumption4 R B M. 
-    Proof.
-      move: Asp => [_ Otr]. 
-      move => x x' y y' _ _ _ _ _ _ Rxy' My'x' Bx'y [nRx'y nMyx'] [nMxy nMyx] [nMxx' nMx'x] nMy'x.
-      move: My'x' => [[Dy'x' Ox'y'] | [_ Oy'x']].
-      + move: Bx'y => [Dx'y Oyx'].
-        have Oyy': O^-1 (y',y) by apply: (Otr x' y y' Oyx' Ox'y').
-        move: Oyy' => /(@test'' T G D O Ad Ao) [By'y | [Dyy' _]].
-        ++ by left.
-        ++ (** * here we need the 3-cycle property *)
-          rewrite (RB Ad Ao) in nMyx'.
-          move: (@Atc y y' x' Dyy' Dy'x' Dx'y nMyx') => Dy'y.
-          (** now we have Dyy' and Dy'y *)
-          by rewrite (RB Ad Ao).
-      + move: Rxy' => [_ Oxy'].
-        have Oxx': O (x,x') by apply: (Otr y' x x' Oxy' Oy'x').
-        move: Oxx' => /(@test'' T G D O Ad Ao) [Bx'x | Rxx'].
-        ++ by have Hmx'x: M(x',x) by left.
-        ++ by have Hmx'x: M(x,x') by right.
-    Qed.
-
-    Lemma A4_from_Afg_Atc (Afg: Forbiden_graph)(Atc: Three_cycles): Assumption4 R B M. 
-    Proof.
-      rewrite (RB Ad Ao).
-      move => x x' y y' _ _ _ _ _ _ Rxy' Dy'x' Bx'y [nRx'y nDyx'] [nDxy nDyx] [nDxx' nDx'x] nDy'x.
-      have Dx'y: D(x',y) by move: Bx'y=> [? _].
-      by move: (@Afg x y' x' y Rxy' Dy'x' Bx'y) =>
-            [Dxy | [Dyx | [Dxx' | [ Dx'x | [ Dy'y |Dyy']]]]];
-            [| | | | |move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx')].
-    Qed.
-    
     Lemma A4_from_MLfg (MLfg: M_L_Forbiden_graph): Assumption4 R B M. 
     Proof.
       rewrite (RB Ad Ao).
@@ -729,14 +897,6 @@ Module Finite_case_Kernel_Theorems.
       move: (@MLfg x y' x' y Rxy' Dy'x' Bx'y) => -[[_ Hd] | [Hyeqx _]].
       by move: Hd => [Dxy | [Dyx | [Dxx' | [ Dx'x | [ Dy'y | [[Dy'x _] | [Dyx' _]]]]]]].
       by rewrite Hyeqx in Dx'y.
-    Qed.
-    
-    Lemma A5_from_Atc (Atc: Three_cycles):  Assumption5 R B M. 
-    Proof.
-      (* reformulate everything with D *)
-      rewrite (RB Ad Ao).
-      move => x' y y' _ _ _ [Dyy' _] Dy'x' [Dx'y _] [_ nDyx']. 
-      by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx').
     Qed.
 
     Lemma A5_from_MLfg (MLfg: M_L_Forbiden_graph):  Assumption5 R B M. 
@@ -749,13 +909,6 @@ Module Finite_case_Kernel_Theorems.
       by move: Hd => [Dyx'|[[Dy'y _]|[Dyx']]].
     Qed.
 
-    Lemma A6' (Asp: sporder O) : (Assumption6' R O^-1 M).
-    Proof.
-      split;first by apply: Au'.
-      split;first by apply: Apk.
-      by apply: (sporder_inv Asp).
-    Qed.
-    
     Lemma A6'' (Anc: ~ (exists s, O.+ (s,s))) : (Assumption6'' R O^-1 M).
     Proof.
       split;first by apply: Au'.
@@ -763,42 +916,17 @@ Module Finite_case_Kernel_Theorems.
       by apply: (Om1_notcyclic Anc).
     Qed.
 
-    (** A stronger Champetier theorem as we use a weaker
-        version of the three cycles assymption *)
-    (* begin snippet FinCaseChampetier:: no-out *)  
-    Theorem Kernel_Champetier (Asp: sporder O) (Atc: Three_cycles): 
-      exists S, kernel M S.
-    (* end snippet FinCaseChampetier *)  
-    Proof.
-      by pose proof 
-           (@G_SSW_fin_porder T O^-1 R B 
-              A1 (A2_from_Asp Asp) A3 (A4_from_Asp_Atc Asp Atc) 
-              (A5_from_Atc Atc) (A6' Asp)).
-    Qed.
-    
-    (** A stronger Blidia Hengel theorem as we use a weaker
-        version of the three cycles assymption *)
-    (* begin snippet FinCaseBH:: no-out *)  
-    Theorem Kernel_Blidia_Hengel
-      (Anc: ~ (exists s, O.+ (s,s))) (Afg: Forbiden_graph) (Atc: Three_cycles):
-      exists S, kernel M S. 
-    (* end snippet FinCaseBH *)  
-    Proof.
-      by apply: (@G_SSW_fin_notcyclic T O^-1 R B 
-                   A1 (A2_from_Anc Anc) A3 
-                   (A4_from_Afg_Atc Afg Atc)
-                   (A5_from_Atc Atc) (A6'' Anc)).
-    Qed.
-    (* begin snippet FinCaseML:: no-out *)  
+    (* begin snippet MLPdc:: no-out *)  
     Theorem Meunier_Langlois_P2_5
       (Anc: ~ (exists s, O.+ (s,s))) (MLfg: M_L_Forbiden_graph) : exists S, kernel M S. 
-    (* end snippet FinCaseML *)  
+    (* end snippet MLPdc *)  
     Proof.
       by apply: (@G_SSW_fin_notcyclic T O^-1 R B 
                    A1 (A2_from_Anc Anc) A3 
                    (A4_from_MLfg MLfg)
                    (A5_from_MLfg MLfg) (A6'' Anc)). 
     Qed.
-    
-  End Finite_case_Kernel_Theorems.
-End Finite_case_Kernel_Theorems.
+
+  End Finite_case_Kernel_Meunier_Langlois_P2_5.
+End Finite_case_Kernel_Meunier_Langlois_P2_5.
+
