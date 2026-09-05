@@ -13,7 +13,7 @@ From mathcomp Require Import all_boot seq order boolp classical_sets contra.
 From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
 
-From RL Require Import  seq1 seq2 rel paper_kernels_common1 
+From RL Require Import  seq1 seq2 rel paper_kernels_common 
   paper_monochromatic_f.
 
 Set Implicit Arguments.
