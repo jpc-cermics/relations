@@ -92,10 +92,12 @@ SNIPPETS = \
 	snippets/paper_kernels/ABkernelsN-n.tex \
 	snippets/paper_kernels/MLinf-n.tex \
 	snippets/paper_kernels/MLinfN-n.tex \
-	snippets/paper_kernels/FinCaseContext-n.tex \
+	snippets/paper_kernels/ChampetierContext-n.tex \
 	snippets/paper_kernels/FinCaseChampetier-n.tex \
+	snippets/paper_kernels/BlidiaEngelContext-n.tex \
 	snippets/paper_kernels/FinCaseBH-n.tex \
-	snippets/paper_kernels/FinCaseML-n.tex \
+	snippets/paper_kernels/MLPdcContext-n.tex \
+	snippets/paper_kernels/MLPdc-n.tex \
 
 OBSOL= \
 	snippets/seq1/Active-n.tex \

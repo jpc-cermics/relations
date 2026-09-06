@@ -631,9 +631,7 @@ Module Finite_case_Kernel_Champetier.
     Definition Three_cycles := 
       forall x y z, D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z) -> D(y,x).
 
-    Definition R := D `&` O^-1.
-    Definition B := D `&` O.
-    Notation M := (B `|` R).
+    Definition R := D `&` O^-1. Definition B := D `&` O. Notation M := (B `|` R).
     (* end snippet ChampetierContext *)  
 
     Lemma Au:  R `<=` O^-1. 
@@ -821,105 +819,8 @@ End Finite_case_Kernel_Blidia_Engel.
 
 Module Finite_case_Kernel_Meunier_Langlois_P2_5.
   Section Finite_case_Kernel_Meunier_Langlois_P2_5.
-    (** * This is not exactly Meunier_Langlois_P2_5 *)
-    (** * here we have assumption (Anc: ~ (exists s, O.+ (s,s))) *)
-    (** * which is stronger *)
-    
-    (* begin snippet MLPdcContext:: no-out *)  
-    Context (T : finType) (G D O: relation T).
-    Definition R := D `&` O^-1. Definition B := D `&` O. Notation M := (B `|` R).
-    
-    Definition M_L_Forbiden_graph := forall x y z t,
-      R (x,y) -> D(y,z) -> B(z,t) -> 
-      (~ (t = x) /\ (D(x,t) \/ D(t,x) \/ D(x,z) \/ D (z,x) \/ D(y,t) \/ B(y,x) \/ R(t,z)))
-      \/ ( t = x /\ (D(x,z) \/ B(y,x) \/ R(x,z))).
-    
-    Context (A1: nonempty [set: T]).
-    Context (Asg: simpleGraph G).
-    Context (Ao: Orientation G O).
-    Context (Ad: Direction G D).
-    (* end snippet FinCaseContext *)
-    
-    Lemma Au:  R `<=` O^-1. 
-    Proof. by rewrite /R;apply: subIsetr. Qed.
-
-    Lemma Rnotiic (Asp: sporder O): ~ (iic R).
-    Proof. 
-      have: ~ (iic O^-1) by apply: (@fin_not_iic _ O^-1 (sporder_inv Asp)).              
-      by move => notHiicO /(@iic_sub T R O^-1 Au) HiicO.
-    Qed.
-    
-    Lemma Apk:  forall X , RelIndep O X <->  RelIndep M X.
-    Proof.
-      move: Ao => [DO _] X. 
-      rewrite (RB Ad Ao) (@direction_relIndep T G D X Ad).
-      by rewrite (@direction_relIndep T G O X DO).
-    Qed.
-    
-    Lemma Rasym: asymmetric R.
-    Proof.
-      move => x y /Au H1 /Au H2.
-      by move: H1 Ao => + [_ /(_ x y) Ha] => /Ha H3.
-    Qed.
-    
-    Lemma Om1_notcyclic: 
-      ~ (exists s, O.+ (s,s)) -> ~ (exists s, O^-1.+ (s,s)).
-    Proof.
-      move => HOnc [s Hoc];rewrite -TclosIv in Hoc. 
-      by have ?: (exists s : T, O.+ (s, s)) by (exists s).
-    Qed.
-    
-    Lemma A2_from_Anc (Anc: ~ (exists s, O.+ (s,s))): Assumption2 R.
-    Proof.
-      move: Anc => /Om1_notcyclic Anc'.
-      have notiicOm1: ~ (iic O^-1) by move => /(@cyclic T O^-1)/Anc'.
-      rewrite /Assumption2;move: Rasym => /(AsymEq R) => -> HiicR.
-      by have: (iic O^-1) by apply: (iic_sub Au).
-    Qed.
-    
-    Lemma A3 : B `&` M.^c^-1 `<=` O. 
-    Proof. by move => [x y] [[_ H1] _]. Qed.
-    
-    Lemma A4_from_MLfg (MLfg: M_L_Forbiden_graph): Assumption4 R B M. 
-    Proof.
-      rewrite (RB Ad Ao).
-      move => x x' y y' _ _ _ _ _ _ Rxy' Dy'x' Bx'y [nRx'y nDyx'] [nDxy nDyx] [nDxx' nDx'x] nDy'x.
-      have Dx'y: D(x',y) by move: Bx'y=> [? _].
-      move: (@MLfg x y' x' y Rxy' Dy'x' Bx'y) => -[[_ Hd] | [Hyeqx _]].
-      by move: Hd => [Dxy | [Dyx | [Dxx' | [ Dx'x | [ Dy'y | [[Dy'x _] | [Dyx' _]]]]]]].
-      by rewrite Hyeqx in Dx'y.
-    Qed.
-
-    Lemma A5_from_MLfg (MLfg: M_L_Forbiden_graph):  Assumption5 R B M. 
-    Proof.
-      (* reformulate everything with D *)
-      rewrite (RB Ad Ao).
-      move => x' y y' _ _ _ Ryy' Dy'x' Bx'y [_ nDyx'].
-      move: (@MLfg y y' x' y Ryy' Dy'x' Bx'y) => [[Hyney _] |[_ Hd]].
-      by [].
-      by move: Hd => [Dyx'|[[Dy'y _]|[Dyx']]].
-    Qed.
-    
-    Lemma A6'' (Anc: ~ (exists s, O.+ (s,s))) : (Assumption6'' R O M).
-    Proof. by split;[left;apply: Au | split;[right;apply: Apk|]]. Qed.
-    
-    (* begin snippet MLPdc:: no-out *)  
-    Theorem Meunier_Langlois_P2_5
-      (Anc: ~ (exists s, O.+ (s,s))) (MLfg: M_L_Forbiden_graph) : exists S, kernel M S. 
-    (* end snippet MLPdc *)  
-    Proof.
-      by apply: (@G_SSW_fin_notcyclic T O R B 
-                   A1 (A2_from_Anc Anc) A3 
-                   (A4_from_MLfg MLfg)
-                   (A5_from_MLfg MLfg) (A6'' Anc)). 
-    Qed.
-
-  End Finite_case_Kernel_Meunier_Langlois_P2_5.
-End Finite_case_Kernel_Meunier_Langlois_P2_5.
-
-
-Module Finite_case_Kernel_Meunier_Langlois_P2_5'.
-  Section Finite_case_Kernel_Meunier_Langlois_P2_5'.
+    (** * Meunier_Langlois Proposition 2.5 *)
+    (** * but not in the case of a simple graph *)
 
     (* begin snippet MLPdcContext:: no-out *)  
     Context (T : finType) (R B: relation T).
@@ -991,6 +892,6 @@ Module Finite_case_Kernel_Meunier_Langlois_P2_5'.
                    (A5_from_MLfg MLfg) (A6'' Abnc Arnc)). 
     Qed.
 
-  End Finite_case_Kernel_Meunier_Langlois_P2_5'.
-End Finite_case_Kernel_Meunier_Langlois_P2_5'.
+  End Finite_case_Kernel_Meunier_Langlois_P2_5.
+End Finite_case_Kernel_Meunier_Langlois_P2_5.
 

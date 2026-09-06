@@ -1268,7 +1268,7 @@
     \end{\al{input}}
   \end{\al{sentence}}
 }
-\newcommand{\SnippetFinCaseContext}{
+\newcommand{\SnippetChampetierContext}{
 %
   \begin{\al{sentence}}
     \begin{\al{input}}
@@ -1276,8 +1276,32 @@
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PY{k+kn}{Context}~\PY{o}{(}\PY{n+nv}{A1}\PY{o}{:}~\PY{n}{nonempty}~\PY{o}{[}\PY{n+nb}{set}\PY{o}{:}~\PY{n}{T}\PY{o}{]).}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PY{k+kn}{Context}~\PY{o}{(}\PY{n+nv}{Asg}\PY{o}{:}~\PY{n}{simpleGraph}~\PY{n}{G}\PY{o}{).}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PY{k+kn}{Context}~\PY{o}{(}\PY{n+nv}{Ao}\PY{o}{:}~\PY{n}{Orientation}~\PY{n}{G}~\PY{n}{O}\PY{o}{).}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PY{k+kn}{Context}~\PY{o}{(}\PY{n+nv}{Ad}\PY{o}{:}~\PY{n}{Direction}~\PY{n}{G}~\PY{n}{D}\PY{o}{).}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
   \begin{\al{txt}}
-    ~~~~\Al{nl}
+    \Al{nl}
   \end{\al{txt}}
   \Al{sep}
   \begin{\al{sentence}}
@@ -1293,61 +1317,41 @@
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{R}~\PY{o}{:=}~\PY{n}{D}~\PY{o}{\(\cap\)}~\PY{n}{O}\PY{o}{.}\Al{nl}
+      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{R}~\PY{o}{:=}~\PY{n}{D}~\PY{o}{\(\cap\)}~\PY{n}{O}\PY{o}{\PYZca{}\PYZhy{}}\PY{l+m+mi}{1}\PY{o}{.}~
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{B}~\PY{o}{:=}~\PY{n}{D}~\PY{o}{\(\cap\)}~\PY{n}{O}\PY{o}{\PYZca{}\PYZhy{}}\PY{l+m+mi}{1}\PY{o}{.}\Al{nl}
+      \PY{k+kn}{Definition}~\PY{n+nf}{B}~\PY{o}{:=}~\PY{n}{D}~\PY{o}{\(\cap\)}~\PY{n}{O}\PY{o}{.}~
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      ~~~~\PY{k+kn}{Notation}~\PY{n+nf}{M}~\PY{o}{:=}~\PY{o}{(}\PY{n}{B}~\PY{o}{\(\cup\)}~\PY{n}{R}\PY{o}{).}\Al{nl}
+      ~~\PY{k+kn}{Notation}~\PY{n+nf}{M}~\PY{o}{:=}~\PY{o}{(}\PY{n}{B}~\PY{o}{\(\cup\)}~\PY{n}{R}\PY{o}{).}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetFinCaseChampetier}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PY{k+kn}{Theorem}~\PY{n+nf}{Kernel\PYZus{}Champetier}~\PY{o}{(}\PY{n+nv}{Asp}\PY{o}{:}~\PY{n}{sporder}~\PY{n}{O}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{Atc}\PY{o}{:}~\PY{n}{Three\PYZus{}cycles}\PY{o}{):}~\Al{nl}
+      ~~~~~~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetBlidiaEngelContext}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PY{k+kn}{Context}~\PY{o}{(}\PY{n+nv}{T}~\PY{o}{:}~\PY{n}{finType}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{G}~\PY{n+nv}{D}~\PY{n+nv}{O}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{).}\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
   \begin{\al{txt}}
     \Al{nl}
-  \end{\al{txt}}
-  \Al{sep}
-  \begin{\al{sentence}}
-    \begin{\al{input}}
-      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{Forbiden\PYZus{}graph}~\PY{o}{:=}\Al{nl}
-      ~~~~~~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}~\PY{n+nv}{t}\PY{o}{,}~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{B}\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\Al{nl}
-      ~~~~~~~~~~~~~~~~~\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{t}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{t}\PY{o}{,}\PY{n}{y}\PY{o}{).}\Al{nl}
-    \end{\al{input}}
-  \end{\al{sentence}}
-  \Al{sep}
-  \begin{\al{txt}}
-    \Al{nl}
-  \end{\al{txt}}
-  \Al{sep}
-  \begin{\al{sentence}}
-    \begin{\al{input}}
-      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{M\PYZus{}L\PYZus{}Forbiden\PYZus{}graph}~\PY{o}{:=}~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}~\PY{n+nv}{t}\PY{o}{,}\Al{nl}
-      ~~~~~~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{B}\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\Al{nl}
-      ~~~~~~\PY{o}{(\PYZti{}}~\PY{o}{(}\PY{n}{t}~\PY{o}{=}~\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{t}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{B}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{R}\PY{o}{(}\PY{n}{t}\PY{o}{,}\PY{n}{z}\PY{o}{)))}\Al{nl}
-      ~~~~~~\PY{o}{\(\,\vee\,\)}~\PY{o}{(}~\PY{n}{t}~\PY{o}{=}~\PY{n}{x}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{B}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{R}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{))).}\Al{nl}
-    \end{\al{input}}
-  \end{\al{sentence}}
-  \Al{sep}
-  \begin{\al{txt}}
-    ~~~~\Al{nl}
-  \end{\al{txt}}
-  \Al{sep}
-  \begin{\al{sentence}}
-    \begin{\al{input}}
-      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{M\PYZus{}L\PYZus{}Forbiden\PYZus{}graph2}~\PY{o}{:=}\Al{nl}
-      ~~~~~~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}\PY{o}{,}~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{B}\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\Al{nl}
-      ~~~~~~~~~~~~~~~\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{B}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{R}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{).}\Al{nl}
-    \end{\al{input}}
-  \end{\al{sentence}}
-  \Al{sep}
-  \begin{\al{txt}}
-    ~~~~\Al{nl}
   \end{\al{txt}}
   \Al{sep}
   \begin{\al{sentence}}
@@ -1370,16 +1374,52 @@
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      ~~~~\PY{k+kn}{Context}~\PY{o}{(}\PY{n+nv}{Ad}\PY{o}{:}~\PY{n}{Direction}~\PY{n}{G}~\PY{n}{D}\PY{o}{).}
+      ~~~~\PY{k+kn}{Context}~\PY{o}{(}\PY{n+nv}{Ad}\PY{o}{:}~\PY{n}{Direction}~\PY{n}{G}~\PY{n}{D}\PY{o}{).}\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
-}
-\newcommand{\SnippetFinCaseChampetier}{
-%
+  \Al{sep}
+  \begin{\al{txt}}
+    ~~~~~~~~\Al{nl}
+  \end{\al{txt}}
+  \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      ~~~~\PY{k+kn}{Theorem}~\PY{n+nf}{Kernel\PYZus{}Champetier}~\PY{o}{(}\PY{n+nv}{Asp}\PY{o}{:}~\PY{n}{sporder}~\PY{n}{O}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{Atc}\PY{o}{:}~\PY{n}{Three\PYZus{}cycles}\PY{o}{):}~\Al{nl}
-      ~~~~~~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}
+      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{Three\PYZus{}cycles}~\PY{o}{:=}~\Al{nl}
+      ~~~~~~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}\PY{o}{,}~\PY{n}{D}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{).}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{txt}}
+    \Al{nl}
+  \end{\al{txt}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{R}~\PY{o}{:=}~\PY{n}{D}~\PY{o}{\(\cap\)}~\PY{n}{O}\PY{o}{\PYZca{}\PYZhy{}}\PY{l+m+mi}{1}\PY{o}{.}~
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Definition}~\PY{n+nf}{B}~\PY{o}{:=}~\PY{n}{D}~\PY{o}{\(\cap\)}~\PY{n}{O}\PY{o}{.}~
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Notation}~\PY{n+nf}{M}~\PY{o}{:=}~\PY{o}{(}\PY{n}{B}~\PY{o}{\(\cup\)}~\PY{n}{R}\PY{o}{).}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{txt}}
+    \Al{nl}
+  \end{\al{txt}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{Forbiden\PYZus{}graph}~\PY{o}{:=}\Al{nl}
+      ~~~~~~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}~\PY{n+nv}{t}\PY{o}{,}~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{B}\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\Al{nl}
+      ~~~~~~~~~~~~~~~~~\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{t}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{t}\PY{o}{,}\PY{n}{y}\PY{o}{).}
     \end{\al{input}}
   \end{\al{sentence}}
 }
@@ -1393,12 +1433,56 @@
     \end{\al{input}}
   \end{\al{sentence}}
 }
-\newcommand{\SnippetFinCaseML}{
+\newcommand{\SnippetMLPdcContext}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PY{k+kn}{Context}~\PY{o}{(}\PY{n+nv}{T}~\PY{o}{:}~\PY{n}{finType}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{B}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{).}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PY{k+kn}{Notation}~\PY{n+nf}{M}~\PY{o}{:=}~\PY{o}{(}\PY{n}{B}~\PY{o}{\(\cup\)}~\PY{n}{R}\PY{o}{).}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PY{k+kn}{Notation}~\PY{n+nf}{O}~\PY{o}{:=}~\PY{n}{B}\PY{o}{.}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{txt}}
+    ~~~~\Al{nl}
+  \end{\al{txt}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PY{k+kn}{Definition}~\PY{n+nf}{M\PYZus{}L\PYZus{}Forbiden\PYZus{}graph}~\PY{o}{:=}~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}~\PY{n+nv}{t}\PY{o}{,}\Al{nl}
+      ~~~~~~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{M}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{B}\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\Al{nl}
+      ~~~~~~\PY{o}{(\PYZti{}}~\PY{o}{(}\PY{n}{t}~\PY{o}{=}~\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{M}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{M}\PY{o}{(}\PY{n}{t}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{M}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{M}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{M}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{B}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{R}\PY{o}{(}\PY{n}{t}\PY{o}{,}\PY{n}{z}\PY{o}{)))}\Al{nl}
+      ~~~~~~\PY{o}{\(\,\vee\,\)}~\PY{o}{(}~\PY{n}{t}~\PY{o}{=}~\PY{n}{x}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{M}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{B}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{R}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{))).}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{txt}}
+    ~~~~\Al{nl}
+  \end{\al{txt}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PY{k+kn}{Context}~\PY{o}{(}\PY{n+nv}{A1}\PY{o}{:}~\PY{n}{nonempty}~\PY{o}{[}\PY{n+nb}{set}\PY{o}{:}~\PY{n}{T}\PY{o}{]).}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetMLPdc}{
 %
   \begin{\al{sentence}}
     \begin{\al{input}}
       ~~~~\PY{k+kn}{Theorem}~\PY{n+nf}{Meunier\PYZus{}Langlois\PYZus{}P2\PYZus{}5}\Al{nl}
-      ~~~~~~\PY{o}{(}\PY{n+nv}{Anc}\PY{o}{:}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{k}{\(\exists\)}~\PY{n+nv}{s}\PY{o}{,}~\PY{n}{O}\PY{o}{.+}~\PY{o}{(}\PY{n}{s}\PY{o}{,}\PY{n}{s}\PY{o}{)))}~\PY{o}{(}\PY{n+nv}{MLfg}\PY{o}{:}~\PY{n}{M\PYZus{}L\PYZus{}Forbiden\PYZus{}graph}\PY{o}{)}~\PY{o}{:}~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}~
+      ~~~~~~\PY{o}{(}\PY{n+nv}{Abnc}\PY{o}{:}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{k}{\(\exists\)}~\PY{n+nv}{s}\PY{o}{,}~\PY{n}{B}\PY{o}{.+}~\PY{o}{(}\PY{n}{s}\PY{o}{,}\PY{n}{s}\PY{o}{)))}~\PY{o}{(}\PY{n+nv}{Arnc}\PY{o}{:}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{k}{\(\exists\)}~\PY{n+nv}{s}\PY{o}{,}~\PY{n}{R}\PY{o}{.+}~\PY{o}{(}\PY{n}{s}\PY{o}{,}\PY{n}{s}\PY{o}{)))}~\Al{nl}
+      ~~~~~~\PY{o}{(}\PY{n+nv}{MLfg}\PY{o}{:}~\PY{n}{M\PYZus{}L\PYZus{}Forbiden\PYZus{}graph}\PY{o}{)}~\PY{o}{:}~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}~
     \end{\al{input}}
   \end{\al{sentence}}
 }
