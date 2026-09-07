@@ -190,10 +190,6 @@ Module Generalized_SSW_fin_porder.
 Context (T : finType) (O R B: relation T).
 
 Notation M := (B `|` R).
-(*
-Context (A1: nonempty [set: T]) (A2 : Assumption2 R) (A3 : Assumption3 B M O)
-  (A4 : Assumption4 R B M) (A5 :  Assumption5 R B M) (A6': Assumption6' R O M).
-*)
     (* end snippet GSSWp *)      
 
     Lemma maximal_mabsorbant S 
@@ -353,8 +349,7 @@ Module ABkernels.
   (* begin snippet ABkernels:: no-out *)  
 Parameter (T:choiceType) (A1 A2: relation T).
 
-Definition R := A1.
-Definition B := A2.
+Definition R := A1. Definition B := A2.
 Definition O := (Asym B). 
 
 Definition AB_1:= (nonempty [set: T]).
