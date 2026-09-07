@@ -44,17 +44,16 @@ Module Generalized_SSW.
     (** * we need [<= O] to be a porder *)
 
     (* begin snippet GSSW:: no-out *)  
-    Context {T:choiceType} (R B O: relation T).
+Context {T:choiceType} (R B O: relation T).
+Notation M := (B `|` R).
 
-    Notation M := (B `|` R).
-    
-    Context (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption3 B M O)
-      (A4: Assumption4 R B M) (A5:  Assumption5 R B M) (A6: Assumption6 R B O M).
-    
-    Theorem G_SSW: exists S, kernel M S.
+Theorem G_SSW:
+  Assumptions_1to5 R B M O ->  Assumption6 R B O M
+  ->  exists S, kernel M S.
     (* end snippet GSSW *)
     Proof.
-      move: A6 => [A6_1 [A6_2 [A6_3 A6_4]]].
+      move => [A1 [A2 [A3 [A4 A5]]]].
+      move => [A6_1 [A6_2 [A6_3 A6_4]]].
       (* a Maximal set using Zorn Lemma *)
       move: (Maximal_Zorn A1 A2 A6_1 A6_2 A6_3 A6_4) => [Sm [/set_mem Hpk Hmax]].
       (* The Maximal set is absorbant using the extend Lemma *)
@@ -79,19 +78,20 @@ Module Generalized_SSW_fin_notcyclic.
     (** * Generalized_SSW for finType and no cyclicity *)
     
     (* begin snippet GSSWpp:: no-out *)  
-    Context {T: finType} (O R B: relation T).
+Context {T: finType} (O R B: relation T).
 
-    Definition M := B `|` R.
-
-    Context (A1: nonempty [set: T]) (A2: Assumption2 R) (A3: Assumption3 B M O) 
-      (A4: Assumption4 R B M) (A5:  Assumption5 R B M) (A6'': Assumption6'' R O M).
+Definition M := B `|` R.
     (* end snippet GSSWpp *)      
 
-    (* There exists a kernel or an increasing mapping for [<< O] taking values in pre_kernels *)
-    Lemma kernel_or_iic_fun:
+    (* There exists a kernel 
+       or an increasing mapping for [<< O] taking values in pre_kernels *)
+    Lemma kernel_or_iic_fun 
+      (A1_to5: Assumptions_1to5 R B M O)
+      (A6'': Assumption6'' R O M):
       (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (pre_kernel R M)))
       \/ (exists S, (S \in (pre_kernel R M)) /\ S \in (absorbant M)).
     Proof.
+      move: A1_to5 => [A1 [A2 [A3 [A4 A5]]]].
       move: A6'' => [Au [Apk A_Onotcyclic]].
       (* using extend lemma *)
       have Ch0 S: S \in ((pre_kernel R M) `&` (absorbant M).^c)
@@ -152,23 +152,27 @@ Module Generalized_SSW_fin_notcyclic.
     Qed.
     
     Lemma iic_and_prekernels_to_cyclic (h : nat -> (set T)):
-      (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (pre_kernel R M))
+      Assumption6'' R O M
+      -> (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (pre_kernel R M))
       -> exists s, O.+ (s,s).
     Proof.
-      move: A6'' => [_ [Apk _]].
-      move => Hiic Hpk';move: (iic_to_allL Hiic Hpk') => [n [p [Ha [HallL Hpk]]]].
+      move => [_ [Apk _]] Hiic Hpk'.
+      move: (iic_to_allL Hiic Hpk') => [n [p [Ha [HallL Hpk]]]].
       by apply: (Cyclicity_BH_lemma HallL Hpk).
     Qed.
     
     (* begin snippet GSSWppN:: no-out *)  
-    Theorem G_SSW_fin_notcyclic: exists S, kernel M S.
+Theorem G_SSW_fin_notcyclic:
+  Assumptions_1to5 R B M O 
+  -> Assumption6'' R O M -> exists S, kernel M S.
     (* end snippet GSSWppN *)  
     Proof.
-      move: A6'' => [Au [Apk A_Onotcyclic]].
+      move => A1to5 /[dup] A6'' [_ [_ A_Onotcyclic]].
       have: exists S, S \in (pre_kernel R M) /\ S \in (absorbant M).
       {
-        move: kernel_or_iic_fun => [[h [Hiic Hk]] | H1];last by [].
-        by move: (iic_and_prekernels_to_cyclic Hiic Hk) => HOcyclic.
+        move: (kernel_or_iic_fun A1to5 A6'') => [[h [Hiic Hk]] | H1];last by [].
+        pose proof (@iic_and_prekernels_to_cyclic h).
+        by move: (@iic_and_prekernels_to_cyclic h A6'' Hiic Hk) => HOcyclic.
       }
       by move => [S [/set_mem [Hk _] /set_mem Habs]];exists S.
     Qed.
@@ -183,18 +187,21 @@ Module Generalized_SSW_fin_porder.
   Section Generalized_SSW_fin_porder.
     
     (* begin snippet GSSWp:: no-out *)  
-    Context (T : finType) (O R B: relation T).
-    
-    Notation M := (B `|` R).
+Context (T : finType) (O R B: relation T).
 
-    Context (A1: nonempty [set: T]) (A2 : Assumption2 R) (A3 : Assumption3 B M O)
-      (A4 : Assumption4 R B M) (A5 :  Assumption5 R B M) (A6': Assumption6' R O M).
+Notation M := (B `|` R).
+(*
+Context (A1: nonempty [set: T]) (A2 : Assumption2 R) (A3 : Assumption3 B M O)
+  (A4 : Assumption4 R B M) (A5 :  Assumption5 R B M) (A6': Assumption6' R O M).
+*)
     (* end snippet GSSWp *)      
 
-    Lemma maximal_mabsorbant S:
+    Lemma maximal_mabsorbant S 
+      (A1to5: Assumptions_1to5 R B M O)  (A6': Assumption6' R O M):
       (pre_kernel R M S) /\ (forall U, pre_kernel R M U -> S [<= O] U -> S = U)
       -> absorbant M S.
     Proof.
+      move: A1to5 => [A1 [A2 [A3 [A4 A5]]]].
       move: A6' => [_ [Apk Asp]].
       contra; move => H1;rewrite /pre_kernel /= => Hpk.
       have H3: ~ absorbant M S.
@@ -210,13 +217,16 @@ Module Generalized_SSW_fin_porder.
     Qed.
     
     (* begin snippet GSSWpN:: no-out *)  
-    Theorem G_SSW_fin_porder: exists S, kernel M S. 
+Theorem G_SSW_fin_porder:
+  Assumptions_1to5 R B M O -> Assumption6' R O M 
+  -> exists S, kernel M S. 
     (* end snippet GSSWpN *)  
     Proof.
-      move: A6' => [Au [Apk Asp]].
+      move => /[dup] A1to5 [A1 [A2 [A3 [A4 A5]]]].
+      move => /[dup] A6' [Au [Apk Asp]].
       (* There exist a maximal set *)
       move: (@Maximal T O R M A1 Asp Au Apk) => [S Hm].
-      move: Hm => /[dup] /maximal_mabsorbant Ma [[Hpk _] _]. 
+      move: Hm => /[dup] /(@maximal_mabsorbant S A1to5 A6') Ma [[Hpk _] _]. 
       by (exists S).
     Qed.
   End Generalized_SSW_fin_porder.
@@ -228,11 +238,10 @@ Module SSWext.
   (** * use G_SSW to prove kernel existence in infinite graphs *)
   (** * The Extended SSW Theorem and the SSW theorem as a corollary *)
 
-
   (* begin snippet SSWext:: no-out *)  
-  Parameter (T:choiceType) (Eb Er: relation T).
-  Definition R := Er.+. Definition B := Eb.+. Definition O := (Asym B). 
-  Notation M := (B `|` R).
+Parameter (T:choiceType) (Eb Er: relation T).
+Definition R := Er.+. Definition B := Eb.+. Definition O := (Asym B). 
+Notation M := (B `|` R).
   (* end snippet SSWext *)    
   
   Lemma R_trans: transitive R.
@@ -290,20 +299,28 @@ Module SSWext.
     by apply: A6_4.
   Qed.
   
-  (* begin snippet SSWextN:: no-out *)  
-  Theorem SSWext:
+  Lemma A1to5:
     (nonempty [set: T]) -> ~ (iic (Asym R)) -> ~ (iic (Asym B))
-    -> exists S, kernel M S.
+    ->Assumptions_1to5 R B M O.
+  Proof. 
+    move => Assw1 Assw2 Assw3.
+    by split;[|split;[|split;[apply:A3|split;[apply:A4|apply:A5]]]]. 
+  Qed.
+  
+  (* begin snippet SSWextN:: no-out *)  
+Theorem SSWext:
+  (nonempty [set: T]) -> ~ (iic (Asym R)) -> ~ (iic (Asym B))
+  -> exists S, kernel M S.
   (* end snippet SSWextN *)  
   Proof.
     move => Assw1 Assw2 Assw3. 
-    by pose proof (G_SSW Assw1 Assw2 A3 A4 A5 (A6 Assw3)).
+    by pose proof (G_SSW (A1to5 Assw1 Assw2 Assw3) (A6 Assw3)).
   Qed.
   
   (* begin snippet SSWextNN:: no-out *)  
-  Corollary SSW: 
-    (nonempty [set: T]) -> ~ (iic_inj Er) -> ~ (iic_inj Eb) 
-    -> exists S, kernel M S.
+Corollary SSW: 
+  (nonempty [set: T]) -> ~ (iic_inj Er) -> ~ (iic_inj Eb) 
+  -> exists S, kernel M S.
   (* end snippet SSWextNN *)  
   Proof.
     move => A1 A2 A3. 
@@ -333,21 +350,20 @@ Module ABkernels.
   (** * use G_SSW to prove kernel existence in infinite graphs *)
   (** * in the AB kernels case *)
 
-
   (* begin snippet ABkernels:: no-out *)  
-  Parameter (T:choiceType) (A1 A2: relation T).
+Parameter (T:choiceType) (A1 A2: relation T).
 
-  Definition R := A1.
-  Definition B := A2.
-  Definition O := (Asym B). 
+Definition R := A1.
+Definition B := A2.
+Definition O := (Asym B). 
 
-  Definition AB_1:= (nonempty [set: T]).
-  Definition AB_2:= ~ (iic (Asym R)).
-  Definition AB_3:= ~ (iic (Asym B)).
-  Definition AB_4:= transitive R.
-  Definition AB_5:= transitive B.
+Definition AB_1:= (nonempty [set: T]).
+Definition AB_2:= ~ (iic (Asym R)).
+Definition AB_3:= ~ (iic (Asym B)).
+Definition AB_4:= transitive R.
+Definition AB_5:= transitive B.
 
-  Notation M := (B `|` R).
+Notation M := (B `|` R).
   (* end snippet ABkernels *)  
 
   Lemma A3: (Assumption3 B M O).
@@ -367,6 +383,12 @@ Module ABkernels.
     move => x' y y' B0 B0' B0'' H1 [H2| H2] H3 [H4 H5].
     by left;apply: (Ab5 x' y' y H2 H3).
     by have H11: M (y,x') by right;apply: (Ab4 y' y x' H1 H2).
+  Qed.
+
+  Lemma A1to5 (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5):
+    Assumptions_1to5 R B M O.
+  Proof. 
+    by split;[|split;[|split;[apply:A3|split;[apply:A4|apply:A5]]]]. 
   Qed.
 
   Lemma A6_1 (Ab3: AB_3) : (Assumption6_1 O). 
@@ -399,13 +421,13 @@ Module ABkernels.
   Qed.
 
   (* begin snippet ABkernelsN:: no-out *)  
-  Theorem AB_kernels
-    (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5):
-    exists S, kernel M S.
+Theorem AB_kernels
+  (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5):
+  exists S, kernel M S.
   (* end snippet ABkernelsN *)  
   Proof.
-    by pose proof (G_SSW Ab1 Ab2 A3 (A4 Ab4 Ab5)
-                     (A5 Ab4 Ab5) (A6 Ab3 Ab4 Ab5)).
+    by apply: (G_SSW (A1to5 Ab1 Ab2 Ab3 Ab4 Ab5)
+                 (A6 Ab3 Ab4 Ab5)).
   Qed.
   
 End ABkernels.
@@ -416,29 +438,29 @@ Module Meunier_Langlois_inf.
 
 
   (* begin snippet MLinf:: no-out *)  
-  Parameter (T:choiceType) (R B: relation T).
+Parameter (T:choiceType) (R B: relation T).
 
-  Definition O := [set xy | (Asym B) (xy.1, xy.2) /\  ~ R (xy.2,xy.1)].
-  Definition AB_1:= (nonempty [set: T]).
-  Definition AB_2:= ~ (iic (Asym R)).
-  Definition AB_3:= ~ (iic (Asym B)).
-  Definition AB_4:=  forall x y z, 
-      ~ (y = x) -> ~ (y = z) -> ~ (z = x)       
-      -> R (x,y) -> R (y,z) -> R (x,z) \/ ( B (y,x) /\ B (z,x) ).
-  
-  Definition AB_5':=  forall x y z, 
-      ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
-      -> B (x,y) -> B (y,z) -> B (x,z) \/ ( R (z,x) /\ R (z,y) ).
-  
-  Definition AB_5:=  forall x y z, 
-      ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
-      -> B (x,y) -> B (y,z) -> B (x,z) \/ ( True /\ R (z,y) ).
+Definition O := [set xy | (Asym B) (xy.1, xy.2) /\  ~ R (xy.2,xy.1)].
+Definition AB_1:= (nonempty [set: T]).
+Definition AB_2:= ~ (iic (Asym R)).
+Definition AB_3:= ~ (iic (Asym B)).
+Definition AB_4:=  forall x y z, 
+    ~ (y = x) -> ~ (y = z) -> ~ (z = x)       
+    -> R (x,y) -> R (y,z) -> R (x,z) \/ ( B (y,x) /\ B (z,x) ).
 
-  (* a transitivity property for B `&` (B^-1 `|` R^-1) *)
-  Notation M := (B `|` R).
+Definition AB_5':=  forall x y z, 
+    ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
+    -> B (x,y) -> B (y,z) -> B (x,z) \/ ( R (z,x) /\ R (z,y) ).
 
-  Definition AB_6:=  forall x y z, 
-      B (x,y) /\ ~ M(y,x) -> B(y,z) /\ ~ M(z,y) -> B(x,z) /\ ~M (z,x).
+Definition AB_5:=  forall x y z, 
+    ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
+    -> B (x,y) -> B (y,z) -> B (x,z) \/ ( True /\ R (z,y) ).
+
+(* a transitivity property for B `&` (B^-1 `|` R^-1) *)
+Notation M := (B `|` R).
+
+Definition AB_6:=  forall x y z, 
+    B (x,y) /\ ~ M(y,x) -> B(y,z) /\ ~ M(z,y) -> B(x,z) /\ ~M (z,x).
   (* end snippet MLinf *)  
   Lemma A3: (Assumption3 B M O).
   Proof.
@@ -468,6 +490,12 @@ Module Meunier_Langlois_inf.
       move: (Ab4 y y' x' H6 P0 H7 H1 H2) => [H6' | [H6' _]].
       by have H11: M(y,x') by right.
       by left.
+  Qed.
+  
+  Lemma A1to5 (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5):
+    Assumptions_1to5 R B M O.
+  Proof. 
+    by split;[|split;[|split;[apply:A3|split;[apply:A4|apply:A5]]]]. 
   Qed.
   
   Lemma A6_1 (Ab3: AB_3): (Assumption6_1 O).
@@ -515,12 +543,12 @@ Module Meunier_Langlois_inf.
   Qed.
   
   (* begin snippet MLinfN:: no-out *)  
-  Theorem ML_inf
-    (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5) (Ab6: AB_6):
-    exists S, kernel M S.
+Theorem ML_inf
+  (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5) (Ab6: AB_6):
+  exists S, kernel M S.
   (* end snippet MLinfN *)  
   Proof.
-    by apply: (G_SSW Ab1 Ab2 A3 (A4 Ab4 Ab5) (A5 Ab4 Ab5)
+    by apply: (G_SSW (A1to5 Ab1 Ab2 Ab3 Ab4 Ab5)
                      (A6 Ab3 Ab4 Ab5 Ab6)).
   Qed.
   
@@ -622,16 +650,16 @@ Module Finite_case_Kernel_Champetier.
         version of the three cycles assymption *)
 
     (* begin snippet ChampetierContext:: no-out *)  
-    Context (T : finType) (G D O: relation T).
-    Context (A1: nonempty [set: T]).
-    Context (Asg: simpleGraph G).
-    Context (Ao: Orientation G O).
-    Context (Ad: Direction G D).
+Context (T : finType) (G D O: relation T).
+Context (A1: nonempty [set: T]).
+Context (Asg: simpleGraph G).
+Context (Ao: Orientation G O).
+Context (Ad: Direction G D).
 
-    Definition Three_cycles := 
-      forall x y z, D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z) -> D(y,x).
+Definition Three_cycles := 
+  forall x y z, D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z) -> D(y,x).
 
-    Definition R := D `&` O^-1. Definition B := D `&` O. Notation M := (B `|` R).
+Definition R := D `&` O^-1. Definition B := D `&` O. Notation M := (B `|` R).
     (* end snippet ChampetierContext *)  
 
     Lemma Au:  R `<=` O^-1. 
@@ -700,21 +728,28 @@ Module Finite_case_Kernel_Champetier.
       by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx').
     Qed.
     
+    Lemma A1to5 (Asp: sporder O) (Atc: Three_cycles) :   Assumptions_1to5 R B M O.
+    Proof.
+      split;first by [].
+      split;first by apply: A2_from_Asp.
+      split;first by apply: A3.
+      split;first by apply: A4_from_Asp_Atc.
+      by apply: A5_from_Atc.
+    Qed.
+    
     Lemma A6' (Asp: sporder O) : (Assumption6' R O M).
     Proof.
-      rewrite /Assumption6' /Assumption6'_1 /Assumption6'_2 /Assumption6'_3.
-      split. by right;apply: Au.
-      split. by apply: Apk.
+      split;first by right;apply: Au.
+      split;first by apply: Apk.
       by [].
     Qed.
     
     (* begin snippet FinCaseChampetier:: no-out *)  
-    Theorem Kernel_Champetier (Asp: sporder O) (Atc: Three_cycles): 
-      exists S, kernel M S.
+Theorem Kernel_Champetier (Asp: sporder O) (Atc: Three_cycles): 
+  exists S, kernel M S.
     (* end snippet FinCaseChampetier *)  
     Proof.
-      by apply: (@G_SSW_fin_porder T O R B A1 (A2_from_Asp Asp) A3 
-                   (A4_from_Asp_Atc Asp Atc) (A5_from_Atc Atc) (A6' Asp)).
+      by apply: (@G_SSW_fin_porder T O R B (A1to5 Asp Atc) (A6' Asp)).
     Qed.
     
   End Finite_case_Kernel_Champetier.
@@ -724,21 +759,21 @@ Module Finite_case_Kernel_Blidia_Engel.
   Section Finite_case_Kernel_Blidia_Engel.
 
     (* begin snippet BlidiaEngelContext:: no-out *)  
-    Context (T : finType) (G D O: relation T).
+Context (T : finType) (G D O: relation T).
 
-    Context (A1: nonempty [set: T]).
-    Context (Asg: simpleGraph G).
-    Context (Ao: Orientation G O).
-    Context (Ad: Direction G D).
-        
-    Definition Three_cycles := 
-      forall x y z, D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z) -> D(y,x).
+Context (A1: nonempty [set: T]).
+Context (Asg: simpleGraph G).
+Context (Ao: Orientation G O).
+Context (Ad: Direction G D).
+    
+Definition Three_cycles := 
+  forall x y z, D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z) -> D(y,x).
 
-    Definition R := D `&` O^-1. Definition B := D `&` O. Notation M := (B `|` R).
+Definition R := D `&` O^-1. Definition B := D `&` O. Notation M := (B `|` R).
 
-    Definition Forbiden_graph :=
-      forall x y z t, R (x,y) -> D(y,z) -> B(z,t) -> 
-                 D(x,t) \/ D(t,x) \/ D(x,z) \/ D (z,x) \/ D(y,t) \/ D(t,y).
+Definition Forbiden_graph :=
+  forall x y z t, R (x,y) -> D(y,z) -> B(z,t) -> 
+             D(x,t) \/ D(t,x) \/ D(x,z) \/ D (z,x) \/ D(y,t) \/ D(t,y).
     (* end snippet BlidiaEngelContext *)  
     
     Lemma Au:  R `<=` O^-1. 
@@ -799,19 +834,28 @@ Module Finite_case_Kernel_Blidia_Engel.
       by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx').
     Qed.
 
+    Lemma A1to5 (Anc: ~ (exists s, O.+ (s,s))) 
+      (Afg: Forbiden_graph) (Atc: Three_cycles):
+      Assumptions_1to5 R B M O.
+    Proof.
+      split;first by [].
+      split;first by apply: A2_from_Anc.
+      split;first by apply: A3.
+      split;first by apply: A4_from_Afg_Atc.
+      by apply: A5_from_Atc.
+    Qed.
+
     Lemma A6'' (Anc: ~ (exists s, O.+ (s,s))) : (Assumption6'' R O M).
     Proof. by split;[left;apply: Au | split;[right;apply: Apk|]]. Qed.
     
     (* begin snippet FinCaseBH:: no-out *)  
-    Theorem Kernel_Blidia_Hengel
-      (Anc: ~ (exists s, O.+ (s,s))) (Afg: Forbiden_graph) (Atc: Three_cycles):
-      exists S, kernel M S. 
+Theorem Kernel_Blidia_Hengel
+  (Anc: ~ (exists s, O.+ (s,s))) (Afg: Forbiden_graph) (Atc: Three_cycles):
+  exists S, kernel M S. 
     (* end snippet FinCaseBH *)  
     Proof.
-      by apply: (@G_SSW_fin_notcyclic T O R B 
-                   A1 (A2_from_Anc Anc) A3 
-                   (A4_from_Afg_Atc Afg Atc)
-                   (A5_from_Atc Atc) (A6'' Anc)).
+      by apply: (@G_SSW_fin_notcyclic T O R B
+                   (A1to5 Anc Afg Atc) (A6'' Anc)). 
     Qed.
     
   End Finite_case_Kernel_Blidia_Engel.
@@ -823,16 +867,16 @@ Module Finite_case_Kernel_Meunier_Langlois_P2_5.
     (** * but not in the case of a simple graph *)
 
     (* begin snippet MLPdcContext:: no-out *)  
-    Context (T : finType) (R B: relation T).
-    Notation M := (B `|` R).
-    Notation O := B.
-    
-    Definition M_L_Forbiden_graph := forall x y z t,
-      R (x,y) -> M(y,z) -> B(z,t) -> 
-      (~ (t = x) /\ (M(x,t) \/ M(t,x) \/ M(x,z) \/ M (z,x) \/ M(y,t) \/ B(y,x) \/ R(t,z)))
-      \/ ( t = x /\ (M(x,z) \/ B(y,x) \/ R(x,z))).
-    
-    Context (A1: nonempty [set: T]).
+Context (T : finType) (R B: relation T).
+Notation M := (B `|` R).
+Notation O := B.
+
+Definition M_L_Forbiden_graph := forall x y z t,
+  R (x,y) -> M(y,z) -> B(z,t) -> 
+  (~ (t = x) /\ (M(x,t) \/ M(t,x) \/ M(x,z) \/ M (z,x) \/ M(y,t) \/ B(y,x) \/ R(t,z)))
+  \/ ( t = x /\ (M(x,z) \/ B(y,x) \/ R(x,z))).
+
+Context (A1: nonempty [set: T]).
     (* end snippet MLPdcContext *)
     
     Lemma notcyclic_Iv (U: relation T): 
@@ -870,6 +914,16 @@ Module Finite_case_Kernel_Meunier_Langlois_P2_5.
       by move: Hd => [Dyx'| [By'y | Rzz]];[ | left |have: M (y, x') by right ].
     Qed.
     
+    Lemma A1to5 (Anc: ~ (exists s, R.+ (s,s))) (MLfg: M_L_Forbiden_graph):
+      Assumptions_1to5 R B M O.
+    Proof.
+      split;first by [].
+      split;first by apply: A2_from_Anc.
+      split;first by apply: A3.
+      split;first by apply: A4_from_MLfg.
+      by apply: A5_from_MLfg.
+    Qed.
+
     Lemma A6'' (Abnc: ~ (exists s : T, B.+ (s, s)))(Arnc: ~ (exists s, R.+ (s,s))):
       (Assumption6'' R B M).
     Proof.
@@ -880,16 +934,13 @@ Module Finite_case_Kernel_Meunier_Langlois_P2_5.
     Qed.
     
     (* begin snippet MLPdc:: no-out *)  
-    Theorem Meunier_Langlois_P2_5
-      (Abnc: ~ (exists s, B.+ (s,s))) (Arnc: ~ (exists s, R.+ (s,s))) 
-      (MLfg: M_L_Forbiden_graph) : exists S, kernel M S. 
+Theorem Meunier_Langlois_P2_5
+  (Abnc: ~ (exists s, B.+ (s,s))) (Arnc: ~ (exists s, R.+ (s,s))) 
+  (MLfg: M_L_Forbiden_graph) : exists S, kernel M S. 
     (* end snippet MLPdc *)  
     Proof.
-      apply: 
-        (@G_SSW_fin_notcyclic T O R B 
-                   A1 (A2_from_Anc Arnc) A3 
-                   (A4_from_MLfg MLfg)
-                   (A5_from_MLfg MLfg) (A6'' Abnc Arnc)). 
+      by apply: (@G_SSW_fin_notcyclic T O R B 
+                   (A1to5 Arnc MLfg)  (A6'' Abnc Arnc)).
     Qed.
 
   End Finite_case_Kernel_Meunier_Langlois_P2_5.

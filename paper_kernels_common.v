@@ -671,6 +671,10 @@ Section Assumptions.
                 -> ~ (R (x',y)) /\ ~ M (y, x')
                 -> M (y',y).
 
+  Definition Assumptions_1to5 R B M O:=
+    Assumption1 /\ Assumption2 R /\ Assumption3 B M O
+    /\ Assumption4 R B M /\ Assumption5 R B M.
+  
   Definition Assumption6_1 O:= ~ (iic O).
   Definition Assumption6_2 O:= sporder O.
   Definition Assumption6_3 O M := O  `<=` M `|` M^-1.
