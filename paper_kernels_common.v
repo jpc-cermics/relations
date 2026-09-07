@@ -42,16 +42,29 @@ Notation "[<= U ]%O" := (leSet U).
 Notation "A [<< U ] B" := ((('Δ).^c `&` (leSet U)) (A,B)). 
 Notation "[<< U ]%O" := (('Δ).^c `&` (leSet U)).
 
-Definition pre_absorbant {T: Type} (U I: relation T) (S:set T) := S:#U `<=` I#S.
+(* begin snippet preabsorbantN:: no-out *)    
+Definition pre_absorbant {T: Type}
+  (U I: relation T) (S:set T) :=
+  S:#U `<=` I#S.
+(* end snippet preabsorbantN *)       
 
-Definition absorbant {T: Type} (M: relation T) := 
-  [set S: set T| forall y, ~ (y \in S) -> (y \in M#S)].
+(* begin snippet absorbantN:: no-out *)    
+Definition absorbant {T: Type} (M: relation T)
+  :=  [set S: set T| forall y, ~ (y \in S)
+                          -> (y \in M#S)].
+(* end snippet absorbantN *)       
 
-Definition pre_kernel {T: Type} (U I: relation T) :=
-  [set S| RelIndep I S /\ (pre_absorbant U I S) /\ S != set0 ].
+(* begin snippet prekernelN:: no-out *)    
+Definition pre_kernel {T: Type} 
+  (U I: relation T) :=
+  [set S| RelIndep I S /\
+      (pre_absorbant U I S) /\ S != set0 ].
+(* end snippet prekernelN *)       
 
+(* begin snippet kernelN:: no-out *)    
 Definition kernel {T: Type} (I: relation T) :=
   [set S| RelIndep I S /\ absorbant I S].
+(* end snippet kernelN *)       
 
 Module utilities.
   Section utilities.
@@ -1054,10 +1067,16 @@ Module Extend_non_absorbant_pre_kernel.
     Qed.
 
     (** * main result *)
-    Lemma extend (A2: Assumption2 R) (A3: Assumption3 B M O)
-      (A4: Assumption4 R B M) (A5: Assumption5 R B M):
-      pre_kernel R M X -> ~ (absorbant M X) 
-      -> exists X', pre_kernel R M X' /\ (X [<< O] X'). 
+    (* begin snippet extend:: no-out *)    
+Lemma extend_prekernel
+  (A2: Assumption2 R)
+  (A3: Assumption3 B M O)
+  (A4: Assumption4 R B M) 
+  (A5: Assumption5 R B M):
+  pre_kernel R M X -> ~ (absorbant M X) 
+  -> exists X', pre_kernel R M X' 
+          /\ (X [<< O] X'). 
+    (* end snippet extend *)    
     Proof.
       have Hne: [set: Y] !=set0 <-> exists x, x \in Y.
       {
@@ -1077,7 +1096,7 @@ Module Extend_non_absorbant_pre_kernel.
     End Extend_non_absorbant_pre_kernel.
 End Extend_non_absorbant_pre_kernel.
 
-Export Extend_non_absorbant_pre_kernel (extend).
+Export Extend_non_absorbant_pre_kernel (extend_prekernel).
 
 Module Maximal_with_Zorn.
   Section Maximal_with_Zorn.
@@ -1087,24 +1106,34 @@ Module Maximal_with_Zorn.
     Variables (T:choiceType) (R B O: relation T).
     
     Notation M := (B `|` R).
-    
-    Definition Scal := pre_kernel R M. 
+    (* begin snippet ScalN:: no-out *)     
+Definition Scal := pre_kernel R M. 
+    (* end snippet ScalN *)     
 
-    Definition IsMaximal (S: set T):= 
-      S \in Scal /\ forall T, T \in Scal -> S [<= O] T -> T = S.
-    
-    Definition SType := {S | pre_kernel R M S}.
+    (* begin snippet IsMaximalN:: no-out *)     
+Definition IsMaximal (S: set T):= 
+  S \in Scal /\ forall T, T \in Scal -> S [<= O] T
+                  -> T = S.
+    (* end snippet IsMaximalN *)    
+    (* begin snippet STypeN:: no-out *)    
+Definition SType := {S | pre_kernel R M S}.
+    (* end snippet STypeN:: no-out *)    
 
-    Definition Elt (C: set SType) := {x : T |exists (S: SType), S \in C /\ x \in (sval S)}.
-    
+    (* begin snippet EltN:: no-out *)   
+Definition Elt (C: set SType) := 
+  {x : T |exists (S: SType), S \in C /\ x \in (sval S)}.
+    (* end snippet EltN *)   
+
     Lemma S2Scal: forall (S: SType), (sval S) \in Scal.
     Proof. by move => [S [H1 [H2 H3]]];rewrite inE. Qed.
 
     Lemma Scal2S: forall S, S \in Scal -> exists (S': SType), (sval S') = S.
     Proof. by move => S /set_mem H1; exists (exist _ S H1). Qed.
 
-    Lemma Scal_not_empty (A1: Assumption1 T) (A2: Assumption2 R):
-      exists v, Scal [set v].
+    (* begin snippet ScalnotemptyN:: no-out *) 
+Lemma Scal_not_empty (A1: Assumption1 T) 
+  (A2: Assumption2 R): exists v, Scal [set v].
+    (* end snippet ScalnotemptyN *) 
     Proof.
       have: Rloop R by apply: notiic_rloop.
       move => [v H1]; exists v.
@@ -1122,9 +1151,11 @@ Module Maximal_with_Zorn.
     Qed.
     
     (** * The relation on sets restricted to Stype subsets *)
-    Definition leSet1 (AB: SType*SType) :=
-      leSet O ((sval AB.1), (sval AB.2)).
-    Notation "A [<=] B" := (leSet1 (A,B)).
+    (* begin snippet leSetoneN:: no-out *)   
+Definition leSet1 (AB: SType*SType) :=
+    leSet O ((sval AB.1), (sval AB.2)).
+Notation "A [<=] B" := (leSet1 (A,B)).
+    (* end snippet leSetoneN *)   
     
     Section Scal_order. 
       
@@ -1170,11 +1201,13 @@ Module Maximal_with_Zorn.
       Hypothesis Hne: C != set0.
       
       (* Set Sinf associated to a chain C *)
-      Definition Sinf := 
-        [ set v: T | 
-          exists S, (S \in C) /\ (v \in (sval S)) /\
-                 (forall T, T \in C -> S [<=] T -> v \in (sval T))].
-
+      (* begin snippet SinfN:: no-out *)  
+Definition Sinf := 
+   [ set v: T | 
+     exists S, (S \in C) /\ (v \in (sval S)) /\
+          (forall T, T \in C -> S [<=] T
+                -> v \in (sval T))].
+      (* end snippet SinfN *)  
       (* A relation on the set Elt C, all the elements
        of T which are elements of a set in C *)
       Definition RC:= [set xy: (Elt C)*(Elt C) |
@@ -1471,14 +1504,18 @@ Module Maximal_with_Zorn.
     Qed.
     
     (** * back to Maximal set in pre_kernels *)
-    Lemma Maximal_Zorn (A1: Assumption1 T) (A2: Assumption2 R) (A3: Assumption6_1 O) (A4: Assumption6_2 O)
-      (A5: Assumption6_3 O M) (A9: Assumption6_4 R B O M):
-      exists Sm, IsMaximal Sm.
+    (* begin snippet MaximalZorn:: no-out *)    
+Lemma Maximal_Zorn:
+  Assumption1 T -> Assumption2 R
+  -> Assumption6 R B O M 
+  -> exists Sm, IsMaximal Sm.
+    (* end snippet MaximalZorn:: no-out *)    
     Proof. 
-      move: (Maximal_SType A1 A2 A3 A4 A5 A9) => [Sm H1];exists (sval Sm); split; first by  apply: S2Scal.
+      move => A1 A2 [A6_1 [A6_2 [A6_3 A6_4]]].
+      move: (Maximal_SType A1 A2 A6_1 A6_2 A6_3 A6_4) => [Sm H1];exists (sval Sm); split; first by  apply: S2Scal.
       by move => S /Scal2S [S' <-] H3; f_equal;by apply H1.
     Qed.
-
+    
   End Maximal_with_Zorn.
 End Maximal_with_Zorn.
 
@@ -1873,11 +1910,14 @@ Module ltSet_periodic_to_lt_periodic.
     Context {T: finType} (O R M: relation T).
 
     (** * The main result of this module *)
-    Lemma Cyclicity_BH_lemma S Sq: 
-      @allL (set T) ([<< O]%O) Sq S S
-      -> (S::Sq) [\in] (pre_kernel R M)
-      -> O `<=` M \/ (forall X, RelIndep O X <-> RelIndep M X)
-      -> exists s, O.+ (s,s).
+    (* begin snippet CyclicBHlem:: no-out *)    
+Lemma Cyclicity_BH_lemma S Sq: 
+  @allL (set T) ([<< O]%O) Sq S S
+  -> (S::Sq) [\in] (pre_kernel R M)
+  -> O `<=` M 
+    \/ (forall X, RelIndep O X <-> RelIndep M X)
+  -> exists s, O.+ (s,s).
+    (* end snippet CyclicBHlem *)    
     Proof.
       move => A0 A3 A4.
       move: (exists_g A0 A3) => [g [G1 [G2 [G3 G4]]]].

@@ -1569,8 +1569,9 @@ Section ZornRelation.
   
 
   (* begin snippet chains:: no-out *)  
-  Definition Chains (R: relation T) := 
-    [set C: set T| forall (c1 c2: T), C c1 -> C c2 ->  R (c1,c2) \/ R (c2,c1)].
+Definition Chains (R: relation T) := 
+  [set C: set T| forall (c1 c2: T), C c1 -> C c2
+      ->  R (c1,c2) \/ R (c2,c1)].
   (* end snippet chains *)  
 
   Lemma Zorn_relation (R: relation T) : 

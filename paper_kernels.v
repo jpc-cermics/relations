@@ -57,14 +57,14 @@ Theorem G_SSW:
     (* end snippet GSSW *)
     Proof.
       move => [A1 [A2 [A3 [A4 A5]]]].
-      move => [A6_1 [A6_2 [A6_3 A6_4]]].
+      move => A6.
       (* a Maximal set using Zorn Lemma *)
-      move: (Maximal_Zorn A1 A2 A6_1 A6_2 A6_3 A6_4) => [Sm [/set_mem Hpk Hmax]].
+      move: (Maximal_Zorn A1 A2 A6) => [Sm [/set_mem Hpk Hmax]].
       (* The Maximal set is absorbant using the extend Lemma *)
       have Hsmabs: ~ (absorbant M Sm) -> False.
       {
         move => Hna.
-        move: (extend A2 A3 A4 A5 Hpk Hna) => [X' [/mem_set H4 [/DeltaCP Hne Hle]]]. 
+        move: (extend_prekernel A2 A3 A4 A5 Hpk Hna) => [X' [/mem_set H4 [/DeltaCP Hne Hle]]]. 
         move: H4 Hle => /Hmax H4 /H4 Heq.
         by rewrite -Heq in Hne.
       }
@@ -101,7 +101,7 @@ Notation M := (B `|` R).
                   -> exists S', S' \in (pre_kernel R M) /\ (S [<< O] S').
       {
         rewrite inE => -[Hpk Hna].
-        move: (@extend T R B O S A2 A3 A4 A5 Hpk Hna) 
+        move: (@extend_prekernel T R B O S A2 A3 A4 A5 Hpk Hna) 
             => [S' [/mem_set Hpk' Hlt]].
         by exists S'. 
       }
@@ -210,7 +210,7 @@ Notation M := (B `|` R).
         rewrite /absorbant /mkset => /(_ y) H4. 
         by move: H1 => /H4;rewrite inE => H1.
       }
-      move: (@extend T R B O S A2 A3 A4 A5 Hpk H3)
+      move: (@extend_prekernel T R B O S A2 A3 A4 A5 Hpk H3)
           => [S' [Hpre [/DeltaCP H7 Hne]]].
       by exists S';[ | split;[| apply/negP => /eqP Heq]].
     Qed.

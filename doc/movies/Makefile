@@ -101,6 +101,20 @@ SNIPPETS = \
 	snippets/paper_kernels/iicasymToiicinj-n.tex \
 	snippets/paper_kernels_common/lesetN-n.tex \
 	snippets/paper_kernels_common/lesetporderN-n.tex \
+	snippets/paper_kernels_common/preabsorbantN-n.tex \
+	snippets/paper_kernels_common/absorbantN-n.tex \
+	snippets/paper_kernels_common/prekernelN-n.tex \
+	snippets/paper_kernels_common/kernelN-n.tex \
+	snippets/paper_kernels_common/STypeN-n.tex \
+	snippets/paper_kernels_common/ScalN-n.tex \
+	snippets/paper_kernels_common/ScalnotemptyN-n.tex \
+	snippets/paper_kernels_common/EltN-n.tex \
+	snippets/paper_kernels_common/leSetoneN-n.tex \
+	snippets/paper_kernels_common/SinfN-n.tex \
+	snippets/paper_kernels_common/IsMaximalN-n.tex \
+	snippets/paper_kernels_common/MaximalZorn-n.tex \
+	snippets/paper_kernels_common/extend-n.tex \
+	snippets/paper_kernels_common/CyclicBHlem-n.tex \
 
 OBSOL= \
 	snippets/seq1/Active-n.tex \
