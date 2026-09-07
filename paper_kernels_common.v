@@ -31,10 +31,13 @@ Reserved Notation "A [<= U ] B" (at level 4, no associativity).
 (* strict set order derived from set order *)
 Reserved Notation "A [<< U ] B" (at level 4, no associativity).
 
+(* begin snippet lesetN:: no-out *)    
 Definition leSet T U: relation (set T) := 
-  [set AB |forall (a:T), (a \in AB.1) -> exists b, b \in AB.2 /\ ( a = b \/ U (a,b)) ].
-
+  [set AB |forall (a:T), (a \in AB.1) -> exists b, 
+   b \in AB.2 /\ ( a = b \/ U (a,b)) ].
 Notation "A [<= U ] B" := (leSet U (A,B)).
+(* end snippet lesetN *)       
+
 Notation "[<= U ]%O" := (leSet U).
 Notation "A [<< U ] B" := ((('Δ).^c `&` (leSet U)) (A,B)). 
 Notation "[<< U ]%O" := (('Δ).^c `&` (leSet U)).
@@ -629,9 +632,12 @@ Section Set_order.
   
   End Util.
   
-  Lemma leSet2_porder U: 
-    sporder U -> 
-    @porder {S: set T| RelIndep U S} [set AB | (sval AB.1) [<= U] (sval AB.2)].
+  (* begin snippet lesetporderN:: no-out *)   
+Lemma leSet2_porder U: 
+  sporder U -> 
+  @porder {S: set T| RelIndep U S} 
+    [set AB | (sval AB.1) [<= U] (sval AB.2)].
+  (* end snippet lesetporderN  *)   
   Proof.
     move => H_sp.
     split => [ [A ?] | [A Ha] [B Hb] H1 H2 | [A ?] [B ?] [C ?]].

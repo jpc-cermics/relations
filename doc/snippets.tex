@@ -615,11 +615,12 @@
 %
   \begin{\al{sentence}}
     \begin{\al{input}}
-      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Mono2path}~\PY{n+nv}{x}~\PY{n+nv}{S}\PY{o}{:}~\Al{nl}
-      ~~~~\PY{n}{x}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{Mono}\PY{o}{\PYZsh{}}\PY{n}{S}~\PY{o}{\(\rightarrow\)}\Al{nl}
-      ~~~~\PY{k}{\(\exists\)}~\PY{n+nv}{y}\PY{o}{,}~\PY{n}{y}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{S}\Al{nl}
-      ~~~~~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{k}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{s}\PY{o}{:}~\PY{n}{seq}~\PY{n}{T}\PY{o}{)}~\PY{o}{,}~\PY{o}{\(\neg\)}~\PY{n}{x}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{s}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{\(\neg\)}~\PY{n}{y}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{s}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{uniq}~\PY{n}{s}~\Al{nl}
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{allL}~\PY{n}{Eb}~\PY{n}{s}~\PY{n}{x}~\PY{n}{y}~\PY{o}{\(\,\vee\,\)}~\PY{n}{allL}~\PY{n}{Er}~\PY{n}{s}~\PY{n}{x}~\PY{n}{y}\PY{o}{).}
+      \PY{k+kn}{Lemma}~\PY{n+nf}{Mono2path}~\PY{n+nv}{x}~\PY{n+nv}{S}\PY{o}{:}~\Al{nl}
+      ~~\PY{n}{x}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{Mono}\PY{o}{\PYZsh{}}\PY{n}{S}~\PY{o}{\(\rightarrow\)}\Al{nl}
+      ~~\PY{k}{\(\exists\)}~\PY{n+nv}{y}\PY{o}{,}~\PY{n}{y}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{S}\Al{nl}
+      ~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{k}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{s}\PY{o}{:}~\PY{n}{seq}~\PY{n}{T}\PY{o}{),}\Al{nl}
+      ~~~~~~~~\PY{o}{\(\neg\)}~\PY{n}{x}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{s}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{\(\neg\)}~\PY{n}{y}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{s}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{uniq}~\PY{n}{s}~\Al{nl}
+      ~~~~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{allL}~\PY{n}{Eb}~\PY{n}{s}~\PY{n}{x}~\PY{n}{y}~\PY{o}{\(\,\vee\,\)}~\PY{n}{allL}~\PY{n}{Er}~\PY{n}{s}~\PY{n}{x}~\PY{n}{y}\PY{o}{).}
     \end{\al{input}}
   \end{\al{sentence}}
 }
@@ -923,7 +924,7 @@
 %
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Context}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}\PY{n}{choiceType}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{B}~\PY{n+nv}{O}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{).}\Al{nl}
+      \PY{k+kn}{Context}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}\PY{n}{choiceType}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{O}~\PY{n+nv}{R}~\PY{n+nv}{B}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{).}\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
@@ -940,7 +941,8 @@
   \begin{\al{sentence}}
     \begin{\al{input}}
       \PY{k+kn}{Theorem}~\PY{n+nf}{G\PYZus{}SSW}\PY{o}{:}\Al{nl}
-      ~~\PY{n}{Assumptions\PYZus{}1to5}~\PY{n}{R}~\PY{n}{B}~\PY{n}{M}~\PY{n}{O}~\PY{o}{\(\rightarrow\)}~~\PY{n}{Assumption6}~\PY{n}{R}~\PY{n}{B}~\PY{n}{O}~\PY{n}{M}\Al{nl}
+      ~~\PY{n}{Assumptions\PYZus{}1to5}~\PY{n}{R}~\PY{n}{B}~\PY{n}{M}~\PY{n}{O}\Al{nl}
+      ~~\PY{o}{\(\rightarrow\)}~~\PY{n}{Assumption6}~\PY{n}{R}~\PY{n}{B}~\PY{n}{O}~\PY{n}{M}\Al{nl}
       ~~\PY{o}{\(\rightarrow\)}~~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}
     \end{\al{input}}
   \end{\al{sentence}}
@@ -953,10 +955,6 @@
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
-  \begin{\al{txt}}
-    \Al{nl}
-  \end{\al{txt}}
-  \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
       ~~\PY{k+kn}{Notation}~\PY{n+nf}{M}~\PY{o}{:=}~\PY{o}{(}\PY{n}{B}~\PY{o}{\(\cup\)}~\PY{n}{R}\PY{o}{).}
@@ -968,7 +966,8 @@
   \begin{\al{sentence}}
     \begin{\al{input}}
       \PY{k+kn}{Theorem}~\PY{n+nf}{G\PYZus{}SSW\PYZus{}fin\PYZus{}porder}\PY{o}{:}\Al{nl}
-      ~~\PY{n}{Assumptions\PYZus{}1to5}~\PY{n}{R}~\PY{n}{B}~\PY{n}{M}~\PY{n}{O}~\PY{o}{\(\rightarrow\)}~\PY{n}{Assumption6\PYZsq{}}~\PY{n}{R}~\PY{n}{O}~\PY{n}{M}~\Al{nl}
+      ~~\PY{n}{Assumptions\PYZus{}1to5}~\PY{n}{R}~\PY{n}{B}~\PY{n}{M}~\PY{n}{O}\Al{nl}
+      ~~~\PY{o}{\(\rightarrow\)}~\PY{n}{Assumption6\PYZsq{}}~\PY{n}{R}~\PY{n}{O}~\PY{n}{M}~\Al{nl}
       ~~\PY{o}{\(\rightarrow\)}~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}~
     \end{\al{input}}
   \end{\al{sentence}}
@@ -981,13 +980,9 @@
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
-  \begin{\al{txt}}
-    \Al{nl}
-  \end{\al{txt}}
-  \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{M}~\PY{o}{:=}~\PY{n}{B}~\PY{o}{\(\cup\)}~\PY{n}{R}\PY{o}{.}
+      ~~\PY{k+kn}{Notation}~\PY{n+nf}{M}~\PY{o}{:=}~\PY{o}{(}\PY{n}{B}~\PY{o}{\(\cup\)}~\PY{n}{R}\PY{o}{).}
     \end{\al{input}}
   \end{\al{sentence}}
 }
@@ -997,7 +992,8 @@
     \begin{\al{input}}
       \PY{k+kn}{Theorem}~\PY{n+nf}{G\PYZus{}SSW\PYZus{}fin\PYZus{}notcyclic}\PY{o}{:}\Al{nl}
       ~~\PY{n}{Assumptions\PYZus{}1to5}~\PY{n}{R}~\PY{n}{B}~\PY{n}{M}~\PY{n}{O}~\Al{nl}
-      ~~\PY{o}{\(\rightarrow\)}~\PY{n}{Assumption6\PYZsq{}\PYZsq{}}~\PY{n}{R}~\PY{n}{O}~\PY{n}{M}~\PY{o}{\(\rightarrow\)}~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}
+      ~~\PY{o}{\(\rightarrow\)}~\PY{n}{Assumption6\PYZsq{}\PYZsq{}}~\PY{n}{R}~\PY{n}{O}~\PY{n}{M}~\Al{nl}
+      ~~\PY{o}{\(\rightarrow\)}~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}
     \end{\al{input}}
   \end{\al{sentence}}
 }
@@ -1005,7 +1001,7 @@
 %
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Parameter}~\PY{o}{(}\PY{n+nv}{T}\PY{o}{:}\PY{n}{choiceType}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{Eb}~\PY{n+nv}{Er}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{).}\Al{nl}
+      \PY{k+kn}{Context}~\PY{o}{(}\PY{n+nv}{T}\PY{o}{:}\PY{n}{choiceType}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{Eb}~\PY{n+nv}{Er}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{).}\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
@@ -1017,7 +1013,7 @@
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{B}~\PY{o}{:=}~\PY{n}{Eb}\PY{o}{.+.}~
+      \PY{k+kn}{Definition}~\PY{n+nf}{B}~\PY{o}{:=}~\PY{n}{Eb}\PY{o}{.+.}\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
@@ -1038,8 +1034,8 @@
   \begin{\al{sentence}}
     \begin{\al{input}}
       \PY{k+kn}{Theorem}~\PY{n+nf}{SSWext}\PY{o}{:}\Al{nl}
-      ~~\PY{o}{(}\PY{n}{nonempty}~\PY{o}{[}\PY{n+nb}{set}\PY{o}{:}~\PY{n}{T}\PY{o}{])}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{R}\PY{o}{))}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{B}\PY{o}{))}\Al{nl}
-      ~~\PY{o}{\(\rightarrow\)}~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}
+      ~~\PY{o}{(}\PY{n}{nonempty}~\PY{o}{[}\PY{n+nb}{set}\PY{o}{:}~\PY{n}{T}\PY{o}{])}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{R}\PY{o}{))}~\Al{nl}
+      ~~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{B}\PY{o}{))}~\PY{o}{\(\rightarrow\)}~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}
     \end{\al{input}}
   \end{\al{sentence}}
 }
@@ -1048,8 +1044,8 @@
   \begin{\al{sentence}}
     \begin{\al{input}}
       \PY{k+kn}{Corollary}~\PY{n+nf}{SSW}\PY{o}{:}~\Al{nl}
-      ~~\PY{o}{(}\PY{n}{nonempty}~\PY{o}{[}\PY{n+nb}{set}\PY{o}{:}~\PY{n}{T}\PY{o}{])}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic\PYZus{}inj}~\PY{n}{Er}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic\PYZus{}inj}~\PY{n}{Eb}\PY{o}{)}~\Al{nl}
-      ~~\PY{o}{\(\rightarrow\)}~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}
+      ~~\PY{o}{(}\PY{n}{nonempty}~\PY{o}{[}\PY{n+nb}{set}\PY{o}{:}~\PY{n}{T}\PY{o}{])}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic\PYZus{}inj}~\PY{n}{Er}\PY{o}{)}\Al{nl}
+      ~~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic\PYZus{}inj}~\PY{n}{Eb}\PY{o}{)}~~\PY{o}{\(\rightarrow\)}~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}
     \end{\al{input}}
   \end{\al{sentence}}
 }
@@ -1060,10 +1056,6 @@
       \PY{k+kn}{Parameter}~\PY{o}{(}\PY{n+nv}{T}\PY{o}{:}\PY{n}{choiceType}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{A1}~\PY{n+nv}{A2}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{).}\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
-  \Al{sep}
-  \begin{\al{txt}}
-    \Al{nl}
-  \end{\al{txt}}
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
@@ -1080,6 +1072,12 @@
   \begin{\al{sentence}}
     \begin{\al{input}}
       \PY{k+kn}{Definition}~\PY{n+nf}{O}~\PY{o}{:=}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{B}\PY{o}{).}~\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Notation}~\PY{n+nf}{M}~\PY{o}{:=}~\PY{o}{(}\PY{n}{B}~\PY{o}{\(\cup\)}~\PY{n}{R}\PY{o}{).}\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
@@ -1113,17 +1111,7 @@
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{AB\PYZus{}5}\PY{o}{:=}~\PY{n}{transitive}~\PY{n}{B}\PY{o}{.}\Al{nl}
-    \end{\al{input}}
-  \end{\al{sentence}}
-  \Al{sep}
-  \begin{\al{txt}}
-    \Al{nl}
-  \end{\al{txt}}
-  \Al{sep}
-  \begin{\al{sentence}}
-    \begin{\al{input}}
-      ~~\PY{k+kn}{Notation}~\PY{n+nf}{M}~\PY{o}{:=}~\PY{o}{(}\PY{n}{B}~\PY{o}{\(\cup\)}~\PY{n}{R}\PY{o}{).}
+      \PY{k+kn}{Definition}~\PY{n+nf}{AB\PYZus{}5}\PY{o}{:=}~\PY{n}{transitive}~\PY{n}{B}\PY{o}{.}
     \end{\al{input}}
   \end{\al{sentence}}
 }
@@ -1131,9 +1119,9 @@
 %
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Theorem}~\PY{n+nf}{AB\PYZus{}kernels}\Al{nl}
-      ~~\PY{o}{(}\PY{n+nv}{Ab1}\PY{o}{:}~\PY{n}{AB\PYZus{}1}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{Ab2}\PY{o}{:}~\PY{n}{AB\PYZus{}2}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{Ab3}\PY{o}{:}~\PY{n}{AB\PYZus{}3}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{Ab4}\PY{o}{:}~\PY{n}{AB\PYZus{}4}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{Ab5}\PY{o}{:}~\PY{n}{AB\PYZus{}5}\PY{o}{):}\Al{nl}
-      ~~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}
+      \PY{k+kn}{Theorem}~\PY{n+nf}{AB\PYZus{}kernels}\PY{o}{:}\Al{nl}
+      ~~\PY{n}{AB\PYZus{}1}~\PY{o}{\(\rightarrow\)}~\PY{n}{AB\PYZus{}2}~\PY{o}{\(\rightarrow\)}~\PY{n}{AB\PYZus{}3}~\PY{o}{\(\rightarrow\)}~\PY{n}{AB\PYZus{}4}~\PY{o}{\(\rightarrow\)}~\PY{n}{AB\PYZus{}5}\Al{nl}
+      ~~\PY{o}{\(\rightarrow\)}~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}
     \end{\al{input}}
   \end{\al{sentence}}
 }
@@ -1144,71 +1132,6 @@
       \PY{k+kn}{Parameter}~\PY{o}{(}\PY{n+nv}{T}\PY{o}{:}\PY{n}{choiceType}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{B}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{).}\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
-  \Al{sep}
-  \begin{\al{txt}}
-    \Al{nl}
-  \end{\al{txt}}
-  \Al{sep}
-  \begin{\al{sentence}}
-    \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{O}~\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{xy}~\PY{o}{|}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{B}\PY{o}{)}~\PY{o}{(}\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{,}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~~\PY{o}{\(\neg\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{,}\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)].}\Al{nl}
-    \end{\al{input}}
-  \end{\al{sentence}}
-  \Al{sep}
-  \begin{\al{sentence}}
-    \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{AB\PYZus{}1}\PY{o}{:=}~\PY{o}{(}\PY{n}{nonempty}~\PY{o}{[}\PY{n+nb}{set}\PY{o}{:}~\PY{n}{T}\PY{o}{]).}\Al{nl}
-    \end{\al{input}}
-  \end{\al{sentence}}
-  \Al{sep}
-  \begin{\al{sentence}}
-    \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{AB\PYZus{}2}\PY{o}{:=}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{R}\PY{o}{)).}\Al{nl}
-    \end{\al{input}}
-  \end{\al{sentence}}
-  \Al{sep}
-  \begin{\al{sentence}}
-    \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{AB\PYZus{}3}\PY{o}{:=}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{B}\PY{o}{)).}\Al{nl}
-    \end{\al{input}}
-  \end{\al{sentence}}
-  \Al{sep}
-  \begin{\al{sentence}}
-    \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{AB\PYZus{}4}\PY{o}{:=}~~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}\PY{o}{,}~\Al{nl}
-      ~~~~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{y}~\PY{o}{=}~\PY{n}{x}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{y}~\PY{o}{=}~\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{z}~\PY{o}{=}~\PY{n}{x}\PY{o}{)}~~~~~~~\Al{nl}
-      ~~~~\PY{o}{\(\rightarrow\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{o}{(}~\PY{n}{B}~\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{B}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{).}\Al{nl}
-    \end{\al{input}}
-  \end{\al{sentence}}
-  \Al{sep}
-  \begin{\al{txt}}
-    \Al{nl}
-  \end{\al{txt}}
-  \Al{sep}
-  \begin{\al{sentence}}
-    \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{AB\PYZus{}5\PYZsq{}}\PY{o}{:=}~~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}\PY{o}{,}~\Al{nl}
-      ~~~~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{x}~\PY{o}{=}~\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{z}~\PY{o}{=}~\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{z}~\PY{o}{=}~\PY{n}{x}\PY{o}{)}~~~~~~~\Al{nl}
-      ~~~~\PY{o}{\(\rightarrow\)}~\PY{n}{B}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{B}~\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{B}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{o}{(}~\PY{n}{R}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{).}\Al{nl}
-    \end{\al{input}}
-  \end{\al{sentence}}
-  \Al{sep}
-  \begin{\al{txt}}
-    \Al{nl}
-  \end{\al{txt}}
-  \Al{sep}
-  \begin{\al{sentence}}
-    \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{AB\PYZus{}5}\PY{o}{:=}~~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}\PY{o}{,}~\Al{nl}
-      ~~~~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{x}~\PY{o}{=}~\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{z}~\PY{o}{=}~\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{z}~\PY{o}{=}~\PY{n}{x}\PY{o}{)}~~~~~~~\Al{nl}
-      ~~~~\PY{o}{\(\rightarrow\)}~\PY{n}{B}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{B}~\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{B}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{o}{(}~\PY{k+kt}{True}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{).}\Al{nl}
-    \end{\al{input}}
-  \end{\al{sentence}}
-  \Al{sep}
-  \begin{\al{txt}}
-    \Al{nl}
-    \PY{c}{(*~a~transitivity~property~for~B~`\PYZam{}`~(B\PYZca{}\PYZhy{}1~\(\cup\)~R\PYZca{}\PYZhy{}1)~*)}\Al{nl}
-  \end{\al{txt}}
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
@@ -1222,8 +1145,61 @@
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{AB\PYZus{}6}\PY{o}{:=}~~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}\PY{o}{,}~\Al{nl}
-      ~~~~\PY{n}{B}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{\(\neg\)}~\PY{n}{M}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{B}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{\(\neg\)}~\PY{n}{M}\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{B}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{\(\neg\)}\PY{n}{M}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{).}
+      \PY{k+kn}{Definition}~\PY{n+nf}{O}~\PY{o}{:=}\Al{nl}
+      ~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{xy}~\PY{o}{|}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{B}\PY{o}{)}~\PY{o}{(}\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{,}~\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{)}~\Al{nl}
+      ~~~~~~~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{o}{\(\neg\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{,}\PY{n}{xy}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)].}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Definition}~\PY{n+nf}{ML\PYZus{}1}\PY{o}{:=}~\PY{o}{(}\PY{n}{nonempty}~\PY{o}{[}\PY{n+nb}{set}\PY{o}{:}~\PY{n}{T}\PY{o}{]).}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Definition}~\PY{n+nf}{ML\PYZus{}2}\PY{o}{:=}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{R}\PY{o}{)).}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Definition}~\PY{n+nf}{ML\PYZus{}3}\PY{o}{:=}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{B}\PY{o}{)).}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Definition}~\PY{n+nf}{ML\PYZus{}4}\PY{o}{:=}~~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}\PY{o}{,}~\Al{nl}
+      ~~~~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{y}~\PY{o}{=}~\PY{n}{x}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{y}~\PY{o}{=}~\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{z}~\PY{o}{=}~\PY{n}{x}\PY{o}{)}~~~~~~~\Al{nl}
+      ~~~~\PY{o}{\(\rightarrow\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\Al{nl}
+      ~~~~\PY{o}{\(\rightarrow\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{o}{(}~\PY{n}{B}~\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{B}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{).}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{txt}}
+    \Al{nl}
+  \end{\al{txt}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Definition}~\PY{n+nf}{ML\PYZus{}5}\PY{o}{:=}~~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}\PY{o}{,}~\Al{nl}
+      ~~~~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{x}~\PY{o}{=}~\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{z}~\PY{o}{=}~\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{z}~\PY{o}{=}~\PY{n}{x}\PY{o}{)}~~~~~~~\Al{nl}
+      ~~~~\PY{o}{\(\rightarrow\)}~\PY{n}{B}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{B}~\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}\Al{nl}
+      ~~~~\PY{o}{\(\rightarrow\)}~\PY{n}{B}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{o}{(}~\PY{n}{R}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{).}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{txt}}
+    \Al{nl}
+  \end{\al{txt}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Definition}~\PY{n+nf}{ML\PYZus{}6}\PY{o}{:=}~~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}\PY{o}{,}~\Al{nl}
+      ~~~~\PY{n}{B}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{\(\neg\)}~\PY{n}{M}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{B}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{\(\neg\)}~\PY{n}{M}\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{y}\PY{o}{)}\Al{nl}
+      ~~~~\PY{o}{\(\rightarrow\)}~\PY{n}{B}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{\(\neg\)}\PY{n}{M}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{).}
     \end{\al{input}}
   \end{\al{sentence}}
 }
@@ -1231,9 +1207,9 @@
 %
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Theorem}~\PY{n+nf}{ML\PYZus{}inf}\Al{nl}
-      ~~\PY{o}{(}\PY{n+nv}{Ab1}\PY{o}{:}~\PY{n}{AB\PYZus{}1}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{Ab2}\PY{o}{:}~\PY{n}{AB\PYZus{}2}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{Ab3}\PY{o}{:}~\PY{n}{AB\PYZus{}3}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{Ab4}\PY{o}{:}~\PY{n}{AB\PYZus{}4}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{Ab5}\PY{o}{:}~\PY{n}{AB\PYZus{}5}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{Ab6}\PY{o}{:}~\PY{n}{AB\PYZus{}6}\PY{o}{):}\Al{nl}
-      ~~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}
+      \PY{k+kn}{Theorem}~\PY{n+nf}{ML\PYZus{}inf}\PY{o}{:}\Al{nl}
+      ~~\PY{n}{ML\PYZus{}1}~\PY{o}{\(\rightarrow\)}~\PY{n}{ML\PYZus{}2}~\PY{o}{\(\rightarrow\)}~\PY{n}{ML\PYZus{}3}~\PY{o}{\(\rightarrow\)}~\PY{n}{ML\PYZus{}4}~\PY{o}{\(\rightarrow\)}~\PY{n}{ML\PYZus{}5}~\PY{o}{\(\rightarrow\)}~\PY{n}{ML\PYZus{}6}\Al{nl}
+      ~~\PY{o}{\(\rightarrow\)}~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}
     \end{\al{input}}
   \end{\al{sentence}}
 }
@@ -1275,8 +1251,9 @@
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{Three\PYZus{}cycles}~\PY{o}{:=}~\Al{nl}
-      ~~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}\PY{o}{,}~\PY{n}{D}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{).}\Al{nl}
+      \PY{k+kn}{Definition}~\PY{n+nf}{Three\PYZus{}cycles}~\PY{o}{:=}~~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}\PY{o}{,}~\Al{nl}
+      ~~~~\PY{n}{D}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}\Al{nl}
+      ~~~~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{).}\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
@@ -1286,13 +1263,13 @@
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{R}~\PY{o}{:=}~\PY{n}{D}~\PY{o}{\(\cap\)}~\PY{n}{O}\PY{o}{\PYZca{}\PYZhy{}}\PY{l+m+mi}{1}\PY{o}{.}~
+      \PY{k+kn}{Definition}~\PY{n+nf}{R}~\PY{o}{:=}~\PY{n}{D}~\PY{o}{\(\cap\)}~\PY{n}{O}\PY{o}{\PYZca{}\PYZhy{}}\PY{l+m+mi}{1}\PY{o}{.}\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{B}~\PY{o}{:=}~\PY{n}{D}~\PY{o}{\(\cap\)}~\PY{n}{O}\PY{o}{.}~
+      \PY{k+kn}{Definition}~\PY{n+nf}{B}~\PY{o}{:=}~\PY{n}{D}~\PY{o}{\(\cap\)}~\PY{n}{O}\PY{o}{.}\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
@@ -1306,8 +1283,9 @@
 %
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Theorem}~\PY{n+nf}{Kernel\PYZus{}Champetier}~\PY{o}{(}\PY{n+nv}{Asp}\PY{o}{:}~\PY{n}{sporder}~\PY{n}{O}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{Atc}\PY{o}{:}~\PY{n}{Three\PYZus{}cycles}\PY{o}{):}~\Al{nl}
-      ~~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}
+      \PY{k+kn}{Theorem}~\PY{n+nf}{Kernel\PYZus{}Champetier}\PY{o}{:}\Al{nl}
+      ~~\PY{n}{sporder}~\PY{n}{O}~\PY{o}{\(\rightarrow\)}~\PY{n}{Three\PYZus{}cycles}~\Al{nl}
+      ~~\PY{o}{\(\rightarrow\)}~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}
     \end{\al{input}}
   \end{\al{sentence}}
 }
@@ -1353,8 +1331,9 @@
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{Three\PYZus{}cycles}~\PY{o}{:=}~\Al{nl}
-      ~~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}\PY{o}{,}~\PY{n}{D}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{).}\Al{nl}
+      \PY{k+kn}{Definition}~\PY{n+nf}{Three\PYZus{}cycles}~\PY{o}{:=}~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}\PY{o}{,}~\Al{nl}
+      ~~~~\PY{n}{D}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}\Al{nl}
+      ~~~~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{).}\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
@@ -1364,13 +1343,13 @@
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{R}~\PY{o}{:=}~\PY{n}{D}~\PY{o}{\(\cap\)}~\PY{n}{O}\PY{o}{\PYZca{}\PYZhy{}}\PY{l+m+mi}{1}\PY{o}{.}~
+      \PY{k+kn}{Definition}~\PY{n+nf}{R}~\PY{o}{:=}~\PY{n}{D}~\PY{o}{\(\cap\)}~\PY{n}{O}\PY{o}{\PYZca{}\PYZhy{}}\PY{l+m+mi}{1}\PY{o}{.}~\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{B}~\PY{o}{:=}~\PY{n}{D}~\PY{o}{\(\cap\)}~\PY{n}{O}\PY{o}{.}~
+      \PY{k+kn}{Definition}~\PY{n+nf}{B}~\PY{o}{:=}~\PY{n}{D}~\PY{o}{\(\cap\)}~\PY{n}{O}\PY{o}{.}~\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
@@ -1386,9 +1365,10 @@
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{Forbiden\PYZus{}graph}~\PY{o}{:=}\Al{nl}
-      ~~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}~\PY{n+nv}{t}\PY{o}{,}~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{B}\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\Al{nl}
-      ~~~~~~~~~~~~~\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{t}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{t}\PY{o}{,}\PY{n}{y}\PY{o}{).}
+      \PY{k+kn}{Definition}~\PY{n+nf}{Forbiden\PYZus{}graph}~\PY{o}{:=}~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}~\PY{n+nv}{t}\PY{o}{,}~\Al{nl}
+      ~~~~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{B}\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\Al{nl}
+      ~~~~\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{t}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}\Al{nl}
+      ~~~~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{D}\PY{o}{(}\PY{n}{t}\PY{o}{,}\PY{n}{y}\PY{o}{).}
     \end{\al{input}}
   \end{\al{sentence}}
 }
@@ -1396,9 +1376,9 @@
 %
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Theorem}~\PY{n+nf}{Kernel\PYZus{}Blidia\PYZus{}Hengel}\Al{nl}
-      ~~\PY{o}{(}\PY{n+nv}{Anc}\PY{o}{:}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{k}{\(\exists\)}~\PY{n+nv}{s}\PY{o}{,}~\PY{n}{O}\PY{o}{.+}~\PY{o}{(}\PY{n}{s}\PY{o}{,}\PY{n}{s}\PY{o}{)))}~\PY{o}{(}\PY{n+nv}{Afg}\PY{o}{:}~\PY{n}{Forbiden\PYZus{}graph}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{Atc}\PY{o}{:}~\PY{n}{Three\PYZus{}cycles}\PY{o}{):}\Al{nl}
-      ~~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}~
+      \PY{k+kn}{Theorem}~\PY{n+nf}{Kernel\PYZus{}Blidia\PYZus{}Hengel}\PY{o}{:}\Al{nl}
+      ~~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{k}{\(\exists\)}~\PY{n+nv}{s}\PY{o}{,}~\PY{n}{O}\PY{o}{.+}~\PY{o}{(}\PY{n}{s}\PY{o}{,}\PY{n}{s}\PY{o}{))}~\PY{o}{\(\rightarrow\)}~\PY{n}{Forbiden\PYZus{}graph}~\Al{nl}
+      ~~\PY{o}{\(\rightarrow\)}\PY{n}{Three\PYZus{}cycles}~\PY{o}{\(\rightarrow\)}~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}~
     \end{\al{input}}
   \end{\al{sentence}}
 }
@@ -1430,7 +1410,9 @@
     \begin{\al{input}}
       \PY{k+kn}{Definition}~\PY{n+nf}{M\PYZus{}L\PYZus{}Forbiden\PYZus{}graph}~\PY{o}{:=}~\PY{k}{\(\forall\)}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}~\PY{n+nv}{t}\PY{o}{,}\Al{nl}
       ~~\PY{n}{R}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{M}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{n}{B}\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\Al{nl}
-      ~~\PY{o}{(\PYZti{}}~\PY{o}{(}\PY{n}{t}~\PY{o}{=}~\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{M}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{M}\PY{o}{(}\PY{n}{t}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{M}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{M}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{M}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{B}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{R}\PY{o}{(}\PY{n}{t}\PY{o}{,}\PY{n}{z}\PY{o}{)))}\Al{nl}
+      ~~\PY{o}{(\PYZti{}}~\PY{o}{(}\PY{n}{t}~\PY{o}{=}~\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{M}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{t}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{M}\PY{o}{(}\PY{n}{t}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{M}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\Al{nl}
+      ~~~~~~~~~~~~~~~~\PY{o}{\(\,\vee\,\)}~\PY{n}{M}~\PY{o}{(}\PY{n}{z}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{M}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{t}\PY{o}{)}\Al{nl}
+      ~~~~~~~~~~~~~~~~\PY{o}{\(\,\vee\,\)}~\PY{n}{B}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{R}\PY{o}{(}\PY{n}{t}\PY{o}{,}\PY{n}{z}\PY{o}{)))}\Al{nl}
       ~~\PY{o}{\(\,\vee\,\)}~\PY{o}{(}~\PY{n}{t}~\PY{o}{=}~\PY{n}{x}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{M}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{B}\PY{o}{(}\PY{n}{y}\PY{o}{,}\PY{n}{x}\PY{o}{)}~\PY{o}{\(\,\vee\,\)}~\PY{n}{R}\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{z}\PY{o}{))).}\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
@@ -1449,9 +1431,45 @@
 %
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Theorem}~\PY{n+nf}{Meunier\PYZus{}Langlois\PYZus{}P2\PYZus{}5}\Al{nl}
-      ~~\PY{o}{(}\PY{n+nv}{Abnc}\PY{o}{:}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{k}{\(\exists\)}~\PY{n+nv}{s}\PY{o}{,}~\PY{n}{B}\PY{o}{.+}~\PY{o}{(}\PY{n}{s}\PY{o}{,}\PY{n}{s}\PY{o}{)))}~\PY{o}{(}\PY{n+nv}{Arnc}\PY{o}{:}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{k}{\(\exists\)}~\PY{n+nv}{s}\PY{o}{,}~\PY{n}{R}\PY{o}{.+}~\PY{o}{(}\PY{n}{s}\PY{o}{,}\PY{n}{s}\PY{o}{)))}~\Al{nl}
-      ~~\PY{o}{(}\PY{n+nv}{MLfg}\PY{o}{:}~\PY{n}{M\PYZus{}L\PYZus{}Forbiden\PYZus{}graph}\PY{o}{)}~\PY{o}{:}~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}~
+      \PY{k+kn}{Theorem}~\PY{n+nf}{Meunier\PYZus{}Langlois\PYZus{}P2\PYZus{}5}\PY{o}{:}\Al{nl}
+      ~~~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{k}{\(\exists\)}~\PY{n+nv}{s}\PY{o}{,}~\PY{n}{B}\PY{o}{.+}~\PY{o}{(}\PY{n}{s}\PY{o}{,}\PY{n}{s}\PY{o}{))}~\PY{o}{\(\rightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{k}{\(\exists\)}~\PY{n+nv}{s}\PY{o}{,}~\PY{n}{R}\PY{o}{.+}~\PY{o}{(}\PY{n}{s}\PY{o}{,}\PY{n}{s}\PY{o}{))}\Al{nl}
+      ~~~\PY{o}{\(\rightarrow\)}~~\PY{n}{M\PYZus{}L\PYZus{}Forbiden\PYZus{}graph}~\PY{o}{\(\rightarrow\)}~\PY{k}{\(\exists\)}~\PY{n+nv}{S}\PY{o}{,}~\PY{n}{kernel}~\PY{n}{M}~\PY{n}{S}\PY{o}{.}~
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetiicasymToiicinj}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Lemma}~\PY{n+nf}{iic\PYZus{}asym\PYZus{}to\PYZus{}iic\PYZus{}inj}\PY{o}{:}\Al{nl}
+      ~~\PY{o}{(}\PY{n}{iic}~\PY{o}{(}\PY{n}{Asym}~\PY{n}{U}\PY{o}{.+))}~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{n}{iic\PYZus{}inj}~\PY{n}{U}\PY{o}{).}~
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetlesetN}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Definition}~\PY{n+nf}{leSet}~\PY{n+nv}{T}~\PY{n+nv}{U}\PY{o}{:}~\PY{n}{relation}~\PY{o}{(}\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\Al{nl}
+      ~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{AB}~\PY{o}{|}\PY{k}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{a}\PY{o}{:}\PY{n}{T}\PY{o}{),}~\PY{o}{(}\PY{n}{a}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)}~\PY{o}{\(\rightarrow\)}~\PY{k}{\(\exists\)}~\PY{n+nv}{b}\PY{o}{,}~\Al{nl}
+      ~~~\PY{n}{b}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{2}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}~\PY{n}{a}~\PY{o}{=}~\PY{n}{b}~\PY{o}{\(\,\vee\,\)}~\PY{n}{U}~\PY{o}{(}\PY{n}{a}\PY{o}{,}\PY{n}{b}\PY{o}{))}~\PY{o}{].}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Notation}~\PY{l+s+s2}{\PYZdq{}A~[\PYZlt{}=~U~]~B\PYZdq{}}~\PY{o}{:=}~\PY{o}{(}\PY{n}{leSet}~\PY{n}{U}~\PY{o}{(}\PY{n}{A}\PY{o}{,}\PY{n}{B}\PY{o}{)).}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetlesetporderN}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Lemma}~\PY{n+nf}{leSet2\PYZus{}porder}~\PY{n+nv}{U}\PY{o}{:}~\Al{nl}
+      ~~\PY{n}{sporder}~\PY{n}{U}~\PY{o}{\(\rightarrow\)}~\Al{nl}
+      ~~\PY{o}{@}\PY{n}{porder}~\PY{o}{\PYZob{}}\PY{n}{S}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{|}~\PY{n}{RelIndep}~\PY{n}{U}~\PY{n}{S}\PY{o}{\PYZcb{}}~\Al{nl}
+      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{AB}~\PY{o}{|}~\PY{o}{(}\PY{n}{sval}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)}~\PY{o}{[\PYZlt{}=}~\PY{n}{U}\PY{o}{]}~\PY{o}{(}\PY{n}{sval}~\PY{n}{AB}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{)].}
     \end{\al{input}}
   \end{\al{sentence}}
 }

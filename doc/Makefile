@@ -4,13 +4,12 @@ MAKEFLAGS += --no-print-directory
 PDF= \
 	allsnippets.pdf \
 
-all:: movies_ $(PDF)
+all:: movies_
 
 movies_:
 	@+${MAKE} -C movies all
 
 allsnippets.pdf: movies allsnippets.tex snippets.tex
-	pdflatex allsnippets
 
 %.pdf : %.tex
 	pdflatex $*.tex

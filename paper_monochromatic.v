@@ -944,11 +944,12 @@ Section Paper.
     by apply: SSWext.
   Qed.
   (* begin snippet Monotopath:: no-out *)    
-  Lemma Mono2path x S: 
-    x \in Mono#S ->
-    exists y, y \in S
-         /\ exists (s: seq T) , ~ x \in s /\ ~ y \in s /\ uniq s 
-                          /\ (allL Eb s x y \/ allL Er s x y).
+Lemma Mono2path x S: 
+  x \in Mono#S ->
+  exists y, y \in S
+     /\ exists (s: seq T),
+        ~ x \in s /\ ~ y \in s /\ uniq s 
+        /\ (allL Eb s x y \/ allL Er s x y).
   (* end snippet Monotopath *)    
   Proof.
     rewrite inE /Mono /Fset => -[y [[H1 | H1] /mem_set H2]];(exists y;split;first by []).

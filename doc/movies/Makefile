@@ -98,6 +98,9 @@ SNIPPETS = \
 	snippets/paper_kernels/FinCaseBH-n.tex \
 	snippets/paper_kernels/MLPdcContext-n.tex \
 	snippets/paper_kernels/MLPdc-n.tex \
+	snippets/paper_kernels/iicasymToiicinj-n.tex \
+	snippets/paper_kernels_common/lesetN-n.tex \
+	snippets/paper_kernels_common/lesetporderN-n.tex \
 
 OBSOL= \
 	snippets/seq1/Active-n.tex \

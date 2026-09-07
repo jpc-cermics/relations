@@ -29,7 +29,10 @@ Section CheckAsym.
 
   Import Asyminf2Inf(Asym2P5', allL_rc_asym).
 
-  Lemma iic_asym_to_iic_inj:  (iic (Asym U.+)) -> (iic_inj U). 
+  (* begin snippet  iicasymToiicinj::  no-out *) 
+Lemma iic_asym_to_iic_inj:
+  (iic (Asym U.+)) -> (iic_inj U). 
+  (* end snippet iicasymToiicinj *) 
   Proof. by apply: (@Asym2P5' T U A1). Qed.
 
   Lemma not_iic_inj_to_not_iic_asym: ~ (iic_inj U) -> ~ (iic (Asym U.+)).
@@ -44,11 +47,12 @@ Module Generalized_SSW.
     (** * we need [<= O] to be a porder *)
 
     (* begin snippet GSSW:: no-out *)  
-Context {T:choiceType} (R B O: relation T).
+Context {T:choiceType} (O R B: relation T).
 Notation M := (B `|` R).
 
 Theorem G_SSW:
-  Assumptions_1to5 R B M O ->  Assumption6 R B O M
+  Assumptions_1to5 R B M O
+  ->  Assumption6 R B O M
   ->  exists S, kernel M S.
     (* end snippet GSSW *)
     Proof.
@@ -79,8 +83,7 @@ Module Generalized_SSW_fin_notcyclic.
     
     (* begin snippet GSSWpp:: no-out *)  
 Context {T: finType} (O R B: relation T).
-
-Definition M := B `|` R.
+Notation M := (B `|` R).
     (* end snippet GSSWpp *)      
 
     (* There exists a kernel 
@@ -164,7 +167,8 @@ Definition M := B `|` R.
     (* begin snippet GSSWppN:: no-out *)  
 Theorem G_SSW_fin_notcyclic:
   Assumptions_1to5 R B M O 
-  -> Assumption6'' R O M -> exists S, kernel M S.
+  -> Assumption6'' R O M 
+  -> exists S, kernel M S.
     (* end snippet GSSWppN *)  
     Proof.
       move => A1to5 /[dup] A6'' [_ [_ A_Onotcyclic]].
@@ -188,7 +192,6 @@ Module Generalized_SSW_fin_porder.
     
     (* begin snippet GSSWp:: no-out *)  
 Context (T : finType) (O R B: relation T).
-
 Notation M := (B `|` R).
     (* end snippet GSSWp *)      
 
@@ -214,7 +217,8 @@ Notation M := (B `|` R).
     
     (* begin snippet GSSWpN:: no-out *)  
 Theorem G_SSW_fin_porder:
-  Assumptions_1to5 R B M O -> Assumption6' R O M 
+  Assumptions_1to5 R B M O
+   -> Assumption6' R O M 
   -> exists S, kernel M S. 
     (* end snippet GSSWpN *)  
     Proof.
@@ -231,12 +235,14 @@ End Generalized_SSW_fin_porder.
 Export Generalized_SSW_fin_porder(G_SSW_fin_porder).
 
 Module SSWext.
+  Section SSWext.
   (** * use G_SSW to prove kernel existence in infinite graphs *)
   (** * The Extended SSW Theorem and the SSW theorem as a corollary *)
 
   (* begin snippet SSWext:: no-out *)  
-Parameter (T:choiceType) (Eb Er: relation T).
-Definition R := Er.+. Definition B := Eb.+. Definition O := (Asym B). 
+Context (T:choiceType) (Eb Er: relation T).
+Definition R := Er.+. Definition B := Eb.+.
+Definition O := (Asym B). 
 Notation M := (B `|` R).
   (* end snippet SSWext *)    
   
@@ -305,8 +311,8 @@ Notation M := (B `|` R).
   
   (* begin snippet SSWextN:: no-out *)  
 Theorem SSWext:
-  (nonempty [set: T]) -> ~ (iic (Asym R)) -> ~ (iic (Asym B))
-  -> exists S, kernel M S.
+  (nonempty [set: T]) -> ~ (iic (Asym R)) 
+  -> ~ (iic (Asym B)) -> exists S, kernel M S.
   (* end snippet SSWextN *)  
   Proof.
     move => Assw1 Assw2 Assw3. 
@@ -315,8 +321,8 @@ Theorem SSWext:
   
   (* begin snippet SSWextNN:: no-out *)  
 Corollary SSW: 
-  (nonempty [set: T]) -> ~ (iic_inj Er) -> ~ (iic_inj Eb) 
-  -> exists S, kernel M S.
+  (nonempty [set: T]) -> ~ (iic_inj Er)
+  -> ~ (iic_inj Eb)  -> exists S, kernel M S.
   (* end snippet SSWextNN *)  
   Proof.
     move => A1 A2 A3. 
@@ -341,6 +347,7 @@ Corollary SSW:
   Qed.
   
 End SSWext.
+End SSWext.
 
 Module ABkernels.
   (** * use G_SSW to prove kernel existence in infinite graphs *)
@@ -348,17 +355,15 @@ Module ABkernels.
 
   (* begin snippet ABkernels:: no-out *)  
 Parameter (T:choiceType) (A1 A2: relation T).
-
 Definition R := A1. Definition B := A2.
 Definition O := (Asym B). 
+Notation M := (B `|` R).
 
 Definition AB_1:= (nonempty [set: T]).
 Definition AB_2:= ~ (iic (Asym R)).
 Definition AB_3:= ~ (iic (Asym B)).
 Definition AB_4:= transitive R.
 Definition AB_5:= transitive B.
-
-Notation M := (B `|` R).
   (* end snippet ABkernels *)  
 
   Lemma A3: (Assumption3 B M O).
@@ -416,11 +421,12 @@ Notation M := (B `|` R).
   Qed.
 
   (* begin snippet ABkernelsN:: no-out *)  
-Theorem AB_kernels
-  (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5):
-  exists S, kernel M S.
+Theorem AB_kernels:
+  AB_1 -> AB_2 -> AB_3 -> AB_4 -> AB_5
+  -> exists S, kernel M S.
   (* end snippet ABkernelsN *)  
   Proof.
+    move => Ab1 Ab2 Ab3 Ab4 Ab5.
     by apply: (G_SSW (A1to5 Ab1 Ab2 Ab3 Ab4 Ab5)
                  (A6 Ab3 Ab4 Ab5)).
   Qed.
@@ -431,32 +437,36 @@ Module Meunier_Langlois_inf.
   (** * use G_SSW to prove kernel existence in infinite graphs *)
   (** * for a modifieed version of Meunier Langlois *)
 
-
   (* begin snippet MLinf:: no-out *)  
 Parameter (T:choiceType) (R B: relation T).
-
-Definition O := [set xy | (Asym B) (xy.1, xy.2) /\  ~ R (xy.2,xy.1)].
-Definition AB_1:= (nonempty [set: T]).
-Definition AB_2:= ~ (iic (Asym R)).
-Definition AB_3:= ~ (iic (Asym B)).
-Definition AB_4:=  forall x y z, 
-    ~ (y = x) -> ~ (y = z) -> ~ (z = x)       
-    -> R (x,y) -> R (y,z) -> R (x,z) \/ ( B (y,x) /\ B (z,x) ).
-
-Definition AB_5':=  forall x y z, 
-    ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
-    -> B (x,y) -> B (y,z) -> B (x,z) \/ ( R (z,x) /\ R (z,y) ).
-
-Definition AB_5:=  forall x y z, 
-    ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
-    -> B (x,y) -> B (y,z) -> B (x,z) \/ ( True /\ R (z,y) ).
-
-(* a transitivity property for B `&` (B^-1 `|` R^-1) *)
 Notation M := (B `|` R).
 
-Definition AB_6:=  forall x y z, 
-    B (x,y) /\ ~ M(y,x) -> B(y,z) /\ ~ M(z,y) -> B(x,z) /\ ~M (z,x).
+Definition O :=
+ [set xy | (Asym B) (xy.1, xy.2) 
+           /\ ~ R (xy.2,xy.1)].
+Definition ML_1:= (nonempty [set: T]).
+Definition ML_2:= ~ (iic (Asym R)).
+Definition ML_3:= ~ (iic (Asym B)).
+Definition ML_4:=  forall x y z, 
+    ~ (y = x) -> ~ (y = z) -> ~ (z = x)       
+    -> R (x,y) -> R (y,z) 
+    -> R (x,z) \/ ( B (y,x) /\ B (z,x) ).
+
+Definition ML_5:=  forall x y z, 
+    ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
+    -> B (x,y) -> B (y,z)
+    -> B (x,z) \/ ( R (z,x) /\ R (z,y) ).
+
+Definition ML_6:=  forall x y z, 
+    B (x,y) /\ ~ M(y,x) -> B(y,z) /\ ~ M(z,y)
+    -> B(x,z) /\ ~M (z,x).
   (* end snippet MLinf *)  
+
+  (** ML_5 could be replaced by ML_5' *)
+  Definition ML_5':=  forall x y z, 
+      ~ (x = y) -> ~ (z = y) -> ~ (z = x)       
+      -> B (x,y) -> B (y,z) -> B (x,z) \/ ( True /\ R (z,y) ).
+
   Lemma A3: (Assumption3 B M O).
   Proof.
     move => [x y] [H1 H2];split => [|/= H3].
@@ -464,7 +474,7 @@ Definition AB_6:=  forall x y z,
     by have H4:  M (y, x) by right. 
   Qed.
   
-  Lemma A4 (Ab4: AB_4) (Ab5: AB_5): (Assumption4 R B M).
+  Lemma A4 (Ab4: ML_4) (Ab5: ML_5): (Assumption4 R B M).
   Proof. 
     move => x x' y y' H1 H2 H3 H4 H5 H6 H7 [H8|H8] H9 H10 H11 [H12 H12'] _.
     + left;move: (Ab5  y' x' y H4 H6 H2 H8 H9) => [? // | [_ H10']]. 
@@ -474,7 +484,7 @@ Definition AB_6:=  forall x y z,
       by (have H11': M(x', x) by left).
   Qed.
   
-  Lemma A5 (Ab4: AB_4) (Ab5: AB_5): (Assumption5 R B M).
+  Lemma A5 (Ab4: ML_4) (Ab5: ML_5): (Assumption5 R B M).
   Proof. 
     move => x' y y' P0 P0' P0'' H1 [H2| H2] H3 [H4 H5].
     + left;move: (Ab5 y' x' y P0 P0'' P0' H2 H3) => [? // | [_ H6]].
@@ -487,19 +497,19 @@ Definition AB_6:=  forall x y z,
       by left.
   Qed.
   
-  Lemma A1to5 (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5):
+  Lemma A1to5 (Ab1: ML_1) (Ab2: ML_2) (Ab3: ML_3) (Ab4: ML_4) (Ab5: ML_5):
     Assumptions_1to5 R B M O.
   Proof. 
     by split;[|split;[|split;[apply:A3|split;[apply:A4|apply:A5]]]]. 
   Qed.
   
-  Lemma A6_1 (Ab3: AB_3): (Assumption6_1 O).
+  Lemma A6_1 (Ab3: ML_3): (Assumption6_1 O).
   Proof.
     move: Ab3. contra => -[f H].
     by exists f;move => n;move: H => /(_ n) [/= H1 _].
   Qed.
 
-  Lemma A6_2 (Ab6: AB_6) : (Assumption6_2 O). 
+  Lemma A6_2 (Ab6: ML_6) : (Assumption6_2 O). 
   Proof. 
     split. 
     + move => x [/= H1 _].
@@ -517,7 +527,7 @@ Definition AB_6:=  forall x y z,
   Lemma A6_3: (Assumption6_3 O M).
   Proof. by move => [x y] [[/= ? _] _];left;left.  Qed.
 
-  Lemma A6_4 (Ab4: AB_4) (Ab5: AB_5) : (Assumption6_4 R B O M).
+  Lemma A6_4 (Ab4: ML_4) (Ab5: ML_5) : (Assumption6_4 R B O M).
   Proof. 
     move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] [[/= H3 /=H3'] /=H3''] H4 H5 H6.
     + have P4': ~ (y' = x') by move => I1;rewrite I1 in P4.
@@ -529,7 +539,7 @@ Definition AB_6:=  forall x y z,
       by have: M (y,x) by left.
   Qed.
   
-  Lemma A6 (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5) (Ab6: AB_6): (Assumption6 R B O M).
+  Lemma A6 (Ab3: ML_3) (Ab4: ML_4) (Ab5: ML_5) (Ab6: ML_6): (Assumption6 R B O M).
   Proof.
     split;first by apply: A6_1.
     split;first by apply: A6_2.
@@ -538,11 +548,12 @@ Definition AB_6:=  forall x y z,
   Qed.
   
   (* begin snippet MLinfN:: no-out *)  
-Theorem ML_inf
-  (Ab1: AB_1) (Ab2: AB_2) (Ab3: AB_3) (Ab4: AB_4) (Ab5: AB_5) (Ab6: AB_6):
-  exists S, kernel M S.
+Theorem ML_inf:
+  ML_1 -> ML_2 -> ML_3 -> ML_4 -> ML_5 -> ML_6
+  -> exists S, kernel M S.
   (* end snippet MLinfN *)  
   Proof.
+    move => Ab1 Ab2 Ab3 Ab4 Ab5 Ab6.
     by apply: (G_SSW (A1to5 Ab1 Ab2 Ab3 Ab4 Ab5)
                      (A6 Ab3 Ab4 Ab5 Ab6)).
   Qed.
@@ -651,10 +662,13 @@ Context (Asg: simpleGraph G).
 Context (Ao: Orientation G O).
 Context (Ad: Direction G D).
 
-Definition Three_cycles := 
-  forall x y z, D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z) -> D(y,x).
+Definition Three_cycles :=  forall x y z, 
+    D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z)
+    -> D(y,x).
 
-Definition R := D `&` O^-1. Definition B := D `&` O. Notation M := (B `|` R).
+Definition R := D `&` O^-1.
+Definition B := D `&` O.
+Notation M := (B `|` R).
     (* end snippet ChampetierContext *)  
 
     Lemma Au:  R `<=` O^-1. 
@@ -740,10 +754,12 @@ Definition R := D `&` O^-1. Definition B := D `&` O. Notation M := (B `|` R).
     Qed.
     
     (* begin snippet FinCaseChampetier:: no-out *)  
-Theorem Kernel_Champetier (Asp: sporder O) (Atc: Three_cycles): 
-  exists S, kernel M S.
+Theorem Kernel_Champetier:
+  sporder O -> Three_cycles 
+  -> exists S, kernel M S.
     (* end snippet FinCaseChampetier *)  
     Proof.
+      move => Asp Atc.
       by apply: (@G_SSW_fin_porder T O R B (A1to5 Asp Atc) (A6' Asp)).
     Qed.
     
@@ -761,14 +777,18 @@ Context (Asg: simpleGraph G).
 Context (Ao: Orientation G O).
 Context (Ad: Direction G D).
     
-Definition Three_cycles := 
-  forall x y z, D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z) -> D(y,x).
+Definition Three_cycles := forall x y z, 
+    D (x,y) -> D(y,z) -> D(z,x) -> ~ D(x,z)
+    -> D(y,x).
 
-Definition R := D `&` O^-1. Definition B := D `&` O. Notation M := (B `|` R).
+Definition R := D `&` O^-1. 
+Definition B := D `&` O. 
+Notation M := (B `|` R).
 
-Definition Forbiden_graph :=
-  forall x y z t, R (x,y) -> D(y,z) -> B(z,t) -> 
-             D(x,t) \/ D(t,x) \/ D(x,z) \/ D (z,x) \/ D(y,t) \/ D(t,y).
+Definition Forbiden_graph := forall x y z t, 
+    R (x,y) -> D(y,z) -> B(z,t) -> 
+    D(x,t) \/ D(t,x) \/ D(x,z)
+    \/ D (z,x) \/ D(y,t) \/ D(t,y).
     (* end snippet BlidiaEngelContext *)  
     
     Lemma Au:  R `<=` O^-1. 
@@ -844,11 +864,12 @@ Definition Forbiden_graph :=
     Proof. by split;[left;apply: Au | split;[right;apply: Apk|]]. Qed.
     
     (* begin snippet FinCaseBH:: no-out *)  
-Theorem Kernel_Blidia_Hengel
-  (Anc: ~ (exists s, O.+ (s,s))) (Afg: Forbiden_graph) (Atc: Three_cycles):
-  exists S, kernel M S. 
+Theorem Kernel_Blidia_Hengel:
+  ~ (exists s, O.+ (s,s)) -> Forbiden_graph 
+  ->Three_cycles -> exists S, kernel M S. 
     (* end snippet FinCaseBH *)  
     Proof.
+      move => Anc Afg Atc.
       by apply: (@G_SSW_fin_notcyclic T O R B
                    (A1to5 Anc Afg Atc) (A6'' Anc)). 
     Qed.
@@ -868,7 +889,9 @@ Notation O := B.
 
 Definition M_L_Forbiden_graph := forall x y z t,
   R (x,y) -> M(y,z) -> B(z,t) -> 
-  (~ (t = x) /\ (M(x,t) \/ M(t,x) \/ M(x,z) \/ M (z,x) \/ M(y,t) \/ B(y,x) \/ R(t,z)))
+  (~ (t = x) /\ (M(x,t) \/ M(t,x) \/ M(x,z) 
+                \/ M (z,x) \/ M(y,t)
+                \/ B(y,x) \/ R(t,z)))
   \/ ( t = x /\ (M(x,z) \/ B(y,x) \/ R(x,z))).
 
 Context (A1: nonempty [set: T]).
@@ -929,11 +952,12 @@ Context (A1: nonempty [set: T]).
     Qed.
     
     (* begin snippet MLPdc:: no-out *)  
-Theorem Meunier_Langlois_P2_5
-  (Abnc: ~ (exists s, B.+ (s,s))) (Arnc: ~ (exists s, R.+ (s,s))) 
-  (MLfg: M_L_Forbiden_graph) : exists S, kernel M S. 
+Theorem Meunier_Langlois_P2_5:
+   ~ (exists s, B.+ (s,s)) -> ~ (exists s, R.+ (s,s))
+   ->  M_L_Forbiden_graph -> exists S, kernel M S. 
     (* end snippet MLPdc *)  
     Proof.
+      move => Abnc Arnc MLfg.
       by apply: (@G_SSW_fin_notcyclic T O R B 
                    (A1to5 Arnc MLfg)  (A6'' Abnc Arnc)).
     Qed.
