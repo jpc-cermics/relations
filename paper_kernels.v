@@ -60,8 +60,8 @@ Theorem G_SSW:
       move => A6.
       (* a Maximal set using Zorn Lemma *)
       move: (Maximal_Zorn A1 A2 A6) => [Sm [/set_mem Hpk Hmax]].
-      (* The Maximal set is absorbant using the extend Lemma *)
-      have Hsmabs: ~ (absorbant M Sm) -> False.
+      (* The Maximal set is absorbent using the extend Lemma *)
+      have Hsmabs: ~ (absorbent M Sm) -> False.
       {
         move => Hna.
         move: (extend_prekernel A2 A3 A4 A5 Hpk Hna) => [X' [/mem_set H4 [/DeltaCP Hne Hle]]]. 
@@ -72,6 +72,7 @@ Theorem G_SSW:
       exists Sm. split;first by move: Hpk => [? _].
       by apply/not_notP => /Hsmabs.
     Qed.
+
   End Generalized_SSW.
 End Generalized_SSW.
 
@@ -92,12 +93,12 @@ Notation M := (B `|` R).
       (A1_to5: Assumptions_1to5 R B M O)
       (A6'': Assumption6'' R O M):
       (exists h, (iic_fun ([<< O]%O) h) /\ (forall n, (h n) \in  (pre_kernel R M)))
-      \/ (exists S, (S \in (pre_kernel R M)) /\ S \in (absorbant M)).
+      \/ (exists S, (S \in (pre_kernel R M)) /\ S \in (absorbent M)).
     Proof.
       move: A1_to5 => [A1 [A2 [A3 [A4 A5]]]].
       move: A6'' => [Au [Apk A_Onotcyclic]].
       (* using extend lemma *)
-      have Ch0 S: S \in ((pre_kernel R M) `&` (absorbant M).^c)
+      have Ch0 S: S \in ((pre_kernel R M) `&` (absorbent M).^c)
                   -> exists S', S' \in (pre_kernel R M) /\ (S [<< O] S').
       {
         rewrite inE => -[Hpk Hna].
@@ -110,8 +111,8 @@ Notation M := (B `|` R).
         move: Au => [Au | Au ].
         + have Oinv_notcyclic: ~ (exists s, O^-1.+ (s,s))
             by rewrite -TclosIv.
-          (* exists a sink and thus a preabsorbant node *)
-          move: (@NotCyclic_exists_preabsorbant T O^-1 M A1 Oinv_notcyclic) => [v Hpa].
+          (* exists a sink and thus a preabsorbent node *)
+          move: (@NotCyclic_exists_preabsorbent T O^-1 M A1 Oinv_notcyclic) => [v Hpa].
           (* [set v] is in (pre_kernel R M). *)
           exists [set v]%classic;rewrite inE. 
           have Hinc:  (v)_:#R  `<=` (v)_:#O^-1 
@@ -121,7 +122,7 @@ Notation M := (B `|` R).
           ++ apply/negP => /eqP H.
              have Hv: [set v]%classic v by [].
              by rewrite H /= in Hv.
-        + move: (@NotCyclic_exists_preabsorbant T R M A1 Au) => [v Hpa].
+        + move: (@NotCyclic_exists_preabsorbent T R M A1 Au) => [v Hpa].
           exists [set v]%classic;rewrite inE.
           split;first by apply: RelIndep_set1.
           split;first exact. 
@@ -129,7 +130,7 @@ Notation M := (B `|` R).
              have Hv: [set v]%classic v by [].
              by rewrite H /= in Hv.
        }
-      move: (@choose_sub _ ([<< O]%O) (pre_kernel R M) (absorbant M).^c Ch0 Ch1)
+      move: (@choose_sub _ ([<< O]%O) (pre_kernel R M) (absorbent M).^c Ch0 Ch1)
           => [Hiic | [S [Hpk Hna]]].
       by left.
       by right;exists S;split;[| move: Hna;rewrite 2!inE /= => /contrapT].
@@ -172,7 +173,7 @@ Theorem G_SSW_fin_notcyclic:
     (* end snippet GSSWppN *)  
     Proof.
       move => A1to5 /[dup] A6'' [_ [_ A_Onotcyclic]].
-      have: exists S, S \in (pre_kernel R M) /\ S \in (absorbant M).
+      have: exists S, S \in (pre_kernel R M) /\ S \in (absorbent M).
       {
         move: (kernel_or_iic_fun A1to5 A6'') => [[h [Hiic Hk]] | H1];last by [].
         pose proof (@iic_and_prekernels_to_cyclic h).
@@ -180,7 +181,6 @@ Theorem G_SSW_fin_notcyclic:
       }
       by move => [S [/set_mem [Hk _] /set_mem Habs]];exists S.
     Qed.
-    
   End Generalized_SSW_fin_notcyclic.
 End Generalized_SSW_fin_notcyclic.
 
@@ -195,19 +195,19 @@ Context (T : finType) (O R B: relation T).
 Notation M := (B `|` R).
     (* end snippet GSSWp *)      
 
-    Lemma maximal_mabsorbant S 
+    Lemma maximal_mabsorbent S 
       (A1to5: Assumptions_1to5 R B M O)  (A6': Assumption6' R O M):
       (pre_kernel R M S) /\ (forall U, pre_kernel R M U -> S [<= O] U -> S = U)
-      -> absorbant M S.
+      -> absorbent M S.
     Proof.
       move: A1to5 => [A1 [A2 [A3 [A4 A5]]]].
       move: A6' => [_ [Apk Asp]].
       contra; move => H1;rewrite /pre_kernel /= => Hpk.
-      have H3: ~ absorbant M S.
+      have H3: ~ absorbent M S.
       {
         move: H1 => [y H1] H3.
         rewrite notin_setE in H3.
-        rewrite /absorbant /mkset => /(_ y) H4. 
+        rewrite /absorbent /mkset => /(_ y) H4. 
         by move: H1 => /H4;rewrite inE => H1.
       }
       move: (@extend_prekernel T R B O S A2 A3 A4 A5 Hpk H3)
@@ -226,7 +226,7 @@ Theorem G_SSW_fin_porder:
       move => /[dup] A6' [Au [Apk Asp]].
       (* There exist a maximal set *)
       move: (@Maximal T O R M A1 Asp Au Apk) => [S Hm].
-      move: Hm => /[dup] /(@maximal_mabsorbant S A1to5 A6') Ma [[Hpk _] _]. 
+      move: Hm => /[dup] /(@maximal_mabsorbent S A1to5 A6') Ma [[Hpk _] _]. 
       by (exists S).
     Qed.
   End Generalized_SSW_fin_porder.

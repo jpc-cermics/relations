@@ -59,6 +59,7 @@ SNIPPETS = \
 	snippets/rel/Rloop-n.tex \
 	snippets/rel/asym-n.tex \
 	snippets/rel/lefttotal-n.tex \
+	snippets/rel/iicfun-n.tex \
 	snippets/rel/iic-n.tex \
 	snippets/rel/iicinj-n.tex \
 	snippets/rel/chains-n.tex \
@@ -101,8 +102,8 @@ SNIPPETS = \
 	snippets/paper_kernels/iicasymToiicinj-n.tex \
 	snippets/paper_kernels_common/lesetN-n.tex \
 	snippets/paper_kernels_common/lesetporderN-n.tex \
-	snippets/paper_kernels_common/preabsorbantN-n.tex \
-	snippets/paper_kernels_common/absorbantN-n.tex \
+	snippets/paper_kernels_common/preabsorbentN-n.tex \
+	snippets/paper_kernels_common/absorbentN-n.tex \
 	snippets/paper_kernels_common/prekernelN-n.tex \
 	snippets/paper_kernels_common/kernelN-n.tex \
 	snippets/paper_kernels_common/STypeN-n.tex \
@@ -115,6 +116,8 @@ SNIPPETS = \
 	snippets/paper_kernels_common/MaximalZorn-n.tex \
 	snippets/paper_kernels_common/extend-n.tex \
 	snippets/paper_kernels_common/CyclicBHlem-n.tex \
+	snippets/paper_kernels_common/assumptionsdefs-n.tex \
+	snippets/paper_kernels_common/MaximalFin-n.tex \
 
 OBSOL= \
 	snippets/seq1/Active-n.tex \

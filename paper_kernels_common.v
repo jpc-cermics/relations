@@ -42,30 +42,30 @@ Notation "[<= U ]%O" := (leSet U).
 Notation "A [<< U ] B" := ((('Δ).^c `&` (leSet U)) (A,B)). 
 Notation "[<< U ]%O" := (('Δ).^c `&` (leSet U)).
 
-(* begin snippet preabsorbantN:: no-out *)    
-Definition pre_absorbant {T: Type}
+(* begin snippet preabsorbentN:: no-out *)    
+Definition pre_absorbent {T: Type}
   (U I: relation T) (S:set T) :=
   S:#U `<=` I#S.
-(* end snippet preabsorbantN *)       
+(* end snippet preabsorbentN *)       
 
-(* begin snippet absorbantN:: no-out *)    
-Definition absorbant {T: Type} 
+(* begin snippet absorbentN:: no-out *)    
+Definition absorbent {T: Type} 
   (M: relation T)
   :=  [set S: set T| forall y, ~ (y \in S)
                     -> (y \in M#S)].
-(* end snippet absorbantN *)       
+(* end snippet absorbentN *)       
 
 (* begin snippet prekernelN:: no-out *)    
 Definition pre_kernel {T: Type} 
   (U I: relation T) :=
   [set S| RelIndep I S /\
-      (pre_absorbant U I S) /\ S != set0 ].
+      (pre_absorbent U I S) /\ S != set0 ].
 (* end snippet prekernelN *)       
 
 (* begin snippet kernelN:: no-out *)    
 Definition kernel {T: Type}
   (I: relation T) :=
-  [set S| RelIndep I S /\ absorbant I S].
+  [set S| RelIndep I S /\ absorbent I S].
 (* end snippet kernelN *)       
 
 Module utilities.
@@ -365,10 +365,10 @@ Section pre_kernel.
   (** * properties of prekernels *)
   Context {T : choiceType} (U: relation T).
   
-  Lemma absorbant_not_empty (S: set T): 
-    (nonempty [set: T]) -> absorbant U S -> ~ (S = set0).
+  Lemma absorbent_not_empty (S: set T): 
+    (nonempty [set: T]) -> absorbent U S -> ~ (S = set0).
   Proof.
-    move => [t _] + Hne; rewrite {}Hne /absorbant => /(_ t) /=.
+    move => [t _] + Hne; rewrite {}Hne /absorbent => /(_ t) /=.
     have ->: t \in set0 = false by rewrite [t \in set0]inE;apply/asboolP.
     move => H1.
     have: t \in U#set0 by apply: H1.
@@ -553,7 +553,7 @@ Section Finite.
     by move: Hnsink Hsink => /(_ v) [x Rvx] /(_ x) nRvx.
   Qed.
   
-  Lemma NotCyclic_exists_preabsorbant U V: 
+  Lemma NotCyclic_exists_preabsorbent U V: 
     (nonempty [set: T]) ->  ~ (exists s, U.+ (s,s)) -> exists v, (v)_:#(U) `<=` V#_(v).
   Proof.
     (* use NotCyclic_exists_sink *)
@@ -665,71 +665,89 @@ Lemma leSet2_porder U:
   
 End Set_order. 
 
-
 Section Assumptions. 
 
   (*  abstract version *)
+  (* begin snippet assumptionsdefs:: no-out *)  
   Context (T: Type). 
   Implicit Types (R B O M: relation T).
   
   Definition Assumption1:= (nonempty [set: T]).
   Definition Assumption2 R:= ~ (iic (Asym R)).
-  Definition Assumption3 B M O:= B `&` M.^c^-1 `<=` O.
+  Definition Assumption3 B M O:=
+    B `&` M.^c^-1 `<=` O.
   
-  Definition Assumption4 R B M:= 
-    forall x x' y y', ~(x' = x) -> ~ (y = y') -> ~ (y' = x) 
-                 -> ~ (y' = x') -> ~ (y = x ) -> ~ (y = x' )
-                 -> R (x,y') -> M (y', x') -> B (x',y)
-                 -> ~ (R (x',y)) /\ ~(M (y,x')) 
-                 -> ~ (M (x,y)) /\ ~(M (y,x)) 
-                 -> ~ (M (x,x')) /\ ~ (M (x',x))
-                 -> ~ (M (y',x))
-                 -> M (y',y).
+  Definition Assumption4 R B M:= forall x x' y y',
+      ~(x' = x) -> ~ (y = y') -> ~ (y' = x) 
+      -> ~ (y' = x') -> ~ (y = x ) 
+      -> ~ (y = x' )
+      -> R (x,y') -> M (y', x') -> B (x',y)
+      -> ~ (R (x',y)) /\ ~(M (y,x')) 
+      -> ~ (M (x,y)) /\ ~(M (y,x)) 
+      -> ~ (M (x,x')) /\ ~ (M (x',x))
+      -> ~ (M (y',x))
+      -> M (y',y).
   
-  Definition Assumption5 R B M:=
-    forall x' y y', ~ (y' = x') -> ~ (y = y') -> ~ (y = x') 
-                -> R (y,y') -> M (y',x') -> B (x',y) 
-                -> ~ (R (x',y)) /\ ~ M (y, x')
-                -> M (y',y).
+  Definition Assumption5 R B M:=  forall x' y y',
+      ~ (y' = x') -> ~ (y = y') -> ~ (y = x') 
+      -> R (y,y') -> M (y',x') -> B (x',y) 
+      -> ~ (R (x',y)) /\ ~ M (y, x')
+      -> M (y',y).
 
   Definition Assumptions_1to5 R B M O:=
-    Assumption1 /\ Assumption2 R /\ Assumption3 B M O
-    /\ Assumption4 R B M /\ Assumption5 R B M.
+    Assumption1 /\ Assumption2 R
+    /\ Assumption3 B M O /\ Assumption4 R B M 
+    /\ Assumption5 R B M.
   
   Definition Assumption6_1 O:= ~ (iic O).
   Definition Assumption6_2 O:= sporder O.
-  Definition Assumption6_3 O M := O  `<=` M `|` M^-1.
+  Definition Assumption6_3 O M :=
+    O  `<=` M `|` M^-1.
   Definition Assumption6_4 R B O M:= 
-    forall x y x' y' , ~ (x = y) -> ~ (x = x') -> ~ (x = y')
-                   -> ~ (y = x') -> ~ (x' = y') -> ~ (y' = y) 
-                   -> R (x,y) -> M (y,x') -> O (x',y') -> ~(M (y,x)) 
-                   -> ~ ((M `|` M^-1) (x',x))
-                   -> ~ ((M `|` M^-1) (y',x))
-                   -> M (y,y').
+    forall x y x' y' ,
+      ~ (x = y) -> ~ (x = x') -> ~ (x = y')
+      -> ~ (y = x') -> ~ (x' = y')
+      -> ~ (y' = y) 
+      -> R (x,y) -> M (y,x') -> O (x',y')
+      -> ~(M (y,x)) 
+      -> ~ ((M `|` M^-1) (x',x))
+      -> ~ ((M `|` M^-1) (y',x))
+      -> M (y,y').
 
-  Definition Assumption6 R B O M:=  Assumption6_1 O /\  Assumption6_2 O 
-                                /\ Assumption6_3 O M /\ Assumption6_4 R B O M. 
+  Definition Assumption6 R B O M:=
+    Assumption6_1 O /\  Assumption6_2 O 
+    /\ Assumption6_3 O M
+    /\ Assumption6_4 R B O M. 
   
-  Definition Assumption6'_1 R O := (R `<=` O \/ R `<=` O^-1).
-  Definition Assumption6'_2 M O := forall X , RelIndep O X <-> RelIndep M X.
+  Definition Assumption6'_1 R O :=
+    (R `<=` O \/ R `<=` O^-1).
+  Definition Assumption6'_2 M O :=
+    forall X , RelIndep O X <-> RelIndep M X.
   Definition Assumption6'_3 O := sporder O.
 
   Definition Assumption6' R O M:= 
-    Assumption6'_1 R O /\  Assumption6'_2 M O /\ Assumption6'_3 O. 
+    Assumption6'_1 R O /\  Assumption6'_2 M O
+    /\ Assumption6'_3 O. 
 
-  Definition Assumption6''_1 R O := R `<=` O^-1 \/ ~ (exists s, R.+ (s,s)).
-  Definition Assumption6''_2 M O := O `<=` M \/ forall X , RelIndep O X <-> RelIndep M X.
-  Definition Assumption6''_3 O := ~ (exists s, O.+ (s,s)).
+  Definition Assumption6''_1 R O :=
+    R `<=` O^-1 \/ ~ (exists s, R.+ (s,s)).
+  Definition Assumption6''_2 M O :=
+    O `<=` M 
+    \/ forall X , RelIndep O X <-> RelIndep M X.
+  Definition Assumption6''_3 O :=
+    ~ (exists s, O.+ (s,s)).
 
   Definition Assumption6'' R O M:=
-    Assumption6''_1 R O /\  Assumption6''_2 M O /\ Assumption6''_3 O. 
-
+    Assumption6''_1 R O 
+    /\ Assumption6''_2 M O
+    /\ Assumption6''_3 O. 
+  (* end snippet assumptionsdefs *)  
 End Assumptions. 
 
-Module Extend_non_absorbant_pre_kernel.
+Module Extend_non_absorbent_pre_kernel.
   (** * if X is in pre_kernel but not a kernel there exists X' such that *)
   (** * X <= X' (X != X') and X' is also in pre_kernel *)
-  Section Extend_non_absorbant_pre_kernel.
+  Section Extend_non_absorbent_pre_kernel.
     
     Context {T:choiceType} (R B O: relation T).
   
@@ -761,8 +779,8 @@ Module Extend_non_absorbant_pre_kernel.
     
   Definition Y:= [set y | ~ (y \in X) /\ ~ (y \in M#X)].
   
-  Lemma not_absorbant_iff: 
-    ~ (absorbant M X) <-> exists y, y \in Y. 
+  Lemma not_absorbent_iff: 
+    ~ (absorbent M X) <-> exists y, y \in Y. 
   Proof.
     split;last by move => [y +] Hma;rewrite inE => [[/Hma ? ?]].
     contra => + y Hy => /(_ y). 
@@ -1075,7 +1093,7 @@ Lemma extend_prekernel
   (A3: Assumption3 B M O)
   (A4: Assumption4 R B M) 
   (A5: Assumption5 R B M):
-  pre_kernel R M X -> ~ (absorbant M X) 
+  pre_kernel R M X -> ~ (absorbent M X) 
   -> exists X', pre_kernel R M X' 
           /\ (X [<< O] X'). 
     (* end snippet extend *)    
@@ -1087,7 +1105,7 @@ Lemma extend_prekernel
       }
       have Hna: (nonempty [set: Y]) -> exists y, y \in Y /\ (SeP y)
             by move => H0;pose proof (Sx_1 A2 H0). 
-      move => H1 /not_absorbant_iff/Hne/Hna [y [H2 H3]]. 
+      move => H1 /not_absorbent_iff/Hne/Hna [y [H2 H3]]. 
       have H4: y \in (X:#(B) `|` (X:#(B)).^c) by rewrite (setUv X:#(B)) inE.
       move: H4 => /set_mem [ H4 | H4];rewrite -inE in H4.
       by move: (case2 A3 A4 A5 H1 H2 H3 H4) => H5;exists (X `\` Xy y `|` [set y]).
@@ -1095,10 +1113,10 @@ Lemma extend_prekernel
       by move: (case1 H1 H2 H3 H4) => H5;exists (X `|` [set y]).
     Qed.
     
-    End Extend_non_absorbant_pre_kernel.
-End Extend_non_absorbant_pre_kernel.
+    End Extend_non_absorbent_pre_kernel.
+End Extend_non_absorbent_pre_kernel.
 
-Export Extend_non_absorbant_pre_kernel (extend_prekernel).
+Export Extend_non_absorbent_pre_kernel (extend_prekernel).
 
 Module Maximal_with_Zorn.
   Section Maximal_with_Zorn.
@@ -1114,8 +1132,8 @@ Definition Scal := pre_kernel R M.
 
     (* begin snippet IsMaximalN:: no-out *)     
 Definition IsMaximal (S: set T):= 
-  S \in Scal /\ forall T, T \in Scal -> S [<= O] T
-                  -> T = S.
+  S \in Scal /\ forall T, T \in Scal
+  -> S [<= O] T -> T = S.
     (* end snippet IsMaximalN *)    
     (* begin snippet STypeN:: no-out *)    
 Definition SType := {S | pre_kernel R M S}.
@@ -1207,8 +1225,8 @@ Notation "A [<=] B" := (leSet1 (A,B)).
 Definition Sinf := 
    [ set v: T | 
      exists S, (S \in C) /\ (v \in (sval S)) /\
-          (forall T, T \in C -> S [<=] T
-                -> v \in (sval T))].
+          (forall S', S' \in C -> S [<=] S'
+                -> v \in (sval S'))].
       (* end snippet SinfN *)  
       (* A relation on the set Elt C, all the elements
        of T which are elements of a set in C *)
@@ -2161,10 +2179,10 @@ Section Maximal_in_pre_kernels.
     
   End RelIndep_fin. 
   
-  Definition pre_absorbant_fin R M S := (asbool (pre_absorbant R M [:set: S])).
+  Definition pre_absorbent_fin R M S := (asbool (pre_absorbent R M [:set: S])).
   
   Definition prekernel_fin R M: pred {set T} := 
-    fun S => (RelIndep_fin M S) && ((pre_absorbant_fin R M S) && (([:set: S]) != set0)).
+    fun S => (RelIndep_fin M S) && ((pre_absorbent_fin R M S) && (([:set: S]) != set0)).
 
   Lemma prekernelE R M S: 
     prekernel_fin R M S <-> pre_kernel R M [:set: S].
@@ -2185,7 +2203,7 @@ Section Maximal_in_pre_kernels.
     move: (@fin_rloop2 T O R M A1 Asp Au) => [v H6].
     exists v.
     apply/andP;split;first by apply: RelIndep_fin1.
-    apply/andP;split;first by apply/asboolP;rewrite /pre_absorbant_fin set_of_sfin.
+    apply/andP;split;first by apply/asboolP;rewrite /pre_absorbent_fin set_of_sfin.
     rewrite set_of_sfin;apply/asboolP => H.
     have H7: [set v]%classic v by exact.
     by rewrite H in H7.
@@ -2202,7 +2220,7 @@ Section Maximal_in_pre_kernels.
     move: (@fin_rloop2 T O^-1 R M A1 Asp Au) => [v H6].
     exists v.
     apply/andP;split;first by apply: RelIndep_fin1.
-    apply/andP;split;first by apply/asboolP;rewrite /pre_absorbant_fin set_of_sfin.
+    apply/andP;split;first by apply/asboolP;rewrite /pre_absorbent_fin set_of_sfin.
     rewrite set_of_sfin;apply/asboolP => H.
     have H7: [set v]%classic v by exact.
     by rewrite H in H7.
@@ -2275,10 +2293,17 @@ Section Maximal_in_pre_kernels.
   Qed.
   
   (* back to pre_kernels *)
-  Lemma Maximal O R M
-    (A1: nonempty [set: T]) (Asp: sporder O) (Au: (R `<=` O \/ R `<=` O^-1))
-    (Aiom: (forall X , RelIndep O X <-> RelIndep M X)): 
-    exists (S:set T), pre_kernel R M S /\ (forall S':set T, pre_kernel R M S' -> S [<= O] S' -> S = S').
+  (* begin snippet MaximalFin:: no-out *)    
+Lemma Maximal O R M
+  (A1: nonempty [set: T]) 
+  (Asp: sporder O)
+  (Au: (R `<=` O \/ R `<=` O^-1))
+  (Aiom: (forall X ,
+         RelIndep O X <-> RelIndep M X)): 
+  exists (S:set T), pre_kernel R M S 
+      /\ (forall S':set T, pre_kernel R M S' 
+         -> S [<= O] S' -> S = S').
+  (* end snippet MaximalFin *)    
   Proof.
     move: (@Maximal_in_prekernel_fin O R M A1 Asp Au Aiom)  => [S [HSpk Hm]].
     exists [:set: S]. 

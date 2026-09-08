@@ -1493,15 +1493,16 @@ Section Infinite_paths.
   Proof. 
     by move => [f H1] x; exists (fun n => ssrnat.iter n f x);rewrite /=.
   Qed.
-
-  Definition iic_fun R f:= forall n, R ((f n),(f (S n))).
+  (* begin snippet iicfun:: no-out *)  
+Definition iic_fun R f:= forall n, R ((f n),(f (S n))).
+  (* end snippet iicfun *)  
   (* begin snippet iic:: no-out *)  
-  Definition iic R := exists f, iic_fun R f.
+Definition iic R := exists f, iic_fun R f.
   (* end snippet iic *)
   
   (* begin snippet iicinj:: no-out *)  
-  Definition iic_inj R := 
-    exists f, (forall n, R (f n,f (S n))) /\ injective f.
+Definition iic_inj R := 
+  exists f, (forall n, R (f n,f (S n))) /\ injective f.
   (* end snippet iicinj *)  
 
   Lemma total_rel''_to_iic R: (nonempty [set: T]) ->  total_rel'' R -> iic R. 
