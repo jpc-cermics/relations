@@ -49,9 +49,10 @@ Definition pre_absorbant {T: Type}
 (* end snippet preabsorbantN *)       
 
 (* begin snippet absorbantN:: no-out *)    
-Definition absorbant {T: Type} (M: relation T)
+Definition absorbant {T: Type} 
+  (M: relation T)
   :=  [set S: set T| forall y, ~ (y \in S)
-                          -> (y \in M#S)].
+                    -> (y \in M#S)].
 (* end snippet absorbantN *)       
 
 (* begin snippet prekernelN:: no-out *)    
@@ -62,7 +63,8 @@ Definition pre_kernel {T: Type}
 (* end snippet prekernelN *)       
 
 (* begin snippet kernelN:: no-out *)    
-Definition kernel {T: Type} (I: relation T) :=
+Definition kernel {T: Type}
+  (I: relation T) :=
   [set S| RelIndep I S /\ absorbant I S].
 (* end snippet kernelN *)       
 

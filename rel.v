@@ -1500,7 +1500,8 @@ Section Infinite_paths.
   (* end snippet iic *)
   
   (* begin snippet iicinj:: no-out *)  
-  Definition iic_inj R := exists f, (forall n, R ((f n),(f (S n)))) /\ injective f.
+  Definition iic_inj R := 
+    exists f, (forall n, R (f n,f (S n))) /\ injective f.
   (* end snippet iicinj *)  
 
   Lemma total_rel''_to_iic R: (nonempty [set: T]) ->  total_rel'' R -> iic R. 

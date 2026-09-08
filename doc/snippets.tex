@@ -746,7 +746,8 @@
 %
   \begin{\al{sentence}}
     \begin{\al{input}}
-      ~~\PY{k+kn}{Definition}~\PY{n+nf}{iic\PYZus{}inj}~\PY{n+nv}{R}~\PY{o}{:=}~\PY{k}{\(\exists\)}~\PY{n+nv}{f}\PY{o}{,}~\PY{o}{(}\PY{k}{\(\forall\)}~\PY{n+nv}{n}\PY{o}{,}~\PY{n}{R}~\PY{o}{((}\PY{n}{f}~\PY{n}{n}\PY{o}{),(}\PY{n}{f}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))))}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{injective}~\PY{n}{f}\PY{o}{.}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{iic\PYZus{}inj}~\PY{n+nv}{R}~\PY{o}{:=}~\Al{nl}
+      ~~~~\PY{k}{\(\exists\)}~\PY{n+nv}{f}\PY{o}{,}~\PY{o}{(}\PY{k}{\(\forall\)}~\PY{n+nv}{n}\PY{o}{,}~\PY{n}{R}~\PY{o}{(}\PY{n}{f}~\PY{n}{n}\PY{o}{,}\PY{n}{f}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)))}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{injective}~\PY{n}{f}\PY{o}{.}
     \end{\al{input}}
   \end{\al{sentence}}
 }
@@ -1488,9 +1489,10 @@
 %
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{absorbant}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{M}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}\Al{nl}
+      \PY{k+kn}{Definition}~\PY{n+nf}{absorbant}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\Al{nl}
+      ~~\PY{o}{(}\PY{n+nv}{M}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}\Al{nl}
       ~~\PY{o}{:=}~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{S}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{|}~\PY{k}{\(\forall\)}~\PY{n+nv}{y}\PY{o}{,}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{y}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{S}\PY{o}{)}\Al{nl}
-      ~~~~~~~~~~~~~~~~~~~~~~~~~~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{n}{y}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{M}\PY{o}{\PYZsh{}}\PY{n}{S}\PY{o}{)].}
+      ~~~~~~~~~~~~~~~~~~~~\PY{o}{\(\rightarrow\)}~\PY{o}{(}\PY{n}{y}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{M}\PY{o}{\PYZsh{}}\PY{n}{S}\PY{o}{)].}
     \end{\al{input}}
   \end{\al{sentence}}
 }
@@ -1509,7 +1511,8 @@
 %
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Definition}~\PY{n+nf}{kernel}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{I}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}\Al{nl}
+      \PY{k+kn}{Definition}~\PY{n+nf}{kernel}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}\Al{nl}
+      ~~\PY{o}{(}\PY{n+nv}{I}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}\Al{nl}
       ~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{S}\PY{o}{|}~\PY{n}{RelIndep}~\PY{n}{I}~\PY{n}{S}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{absorbant}~\PY{n}{I}~\PY{n}{S}\PY{o}{].}
     \end{\al{input}}
   \end{\al{sentence}}

@@ -34,5 +34,5 @@ lem7-%-crop.pdf: lem7-%.tex
 	pdflatex lem7-$*.tex
 	pdfcrop lem7-$*.pdf lem7-$*-crop.pdf
 
-all:: lem7-1-crop.pdf lem7-2-crop.pdf lem7-3-crop.pdf lem7-4-crop.pdf 
+# all:: lem7-1-crop.pdf lem7-2-crop.pdf lem7-3-crop.pdf lem7-4-crop.pdf 
 
