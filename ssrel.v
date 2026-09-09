@@ -12,7 +12,6 @@
 (* This file is a modified version of the contents of lib/coq/theories/Relations
  * using mathcomp to define relations as set (T * T) and ssreflect for proofs
  * See the original files for the list of authors (B. Barras, P. Castéran, C. Cornes)
- * Jean-Philippe Chancelier 2023.
  *)
 
 (** * No more used in rel.v as we use a different definition for closures *)

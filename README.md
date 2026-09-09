@@ -1,15 +1,12 @@
-# Binary relations and extended oriented graphs
+# Binary relations, extended oriented graphs, kernels
 
-This repository contains Coq code used as companion material for the following papers:
-
-- [Conditional Separation as a Binary Relation. A Coq Assisted Proof](https://hal.science/hal-03315809v2)
-- [Topological Conditional Separation](https://hal.science/hal-03315811)
-- [A formal proof of the Sands-Sauer-Woodrow theorem](https://hal.science/xxxxxx)
+This repository contains a Rocq general library for classical relations 
+and Rocq code used as companion material for a set of papers.
 
 ## Meta
 
 - Author(s):
-  - Jean-Philippe Chancelier
+  - XXX 
 - License: see `LICENCE`
 - Compatible Coq versions: 8.20.1
 - Build system: `dune`

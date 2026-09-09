@@ -27,7 +27,6 @@ Local Open Scope classical_set_scope.
 
 (** ****************************************************************
  * Conditional Separation as a Binary Relation 
- *   Jean-Philippe Chancelier, Michel De Lara, Benjamin Heymann 
  ******************************************************************)
 
 (** * some relations results used in Csbr *)

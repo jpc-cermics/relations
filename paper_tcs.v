@@ -26,7 +26,6 @@ Local Open Scope classical_set_scope.
 Section Paper.
 (** ****************************************************************
  * Topological Conditional Separation
- *   Jean-Philippe Chancelier, Michel De Lara, Benjamin Heymann 
  * 
  * We list here the results of the paper
  *  Topological Conditional Separation
