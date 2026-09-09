@@ -120,33 +120,33 @@ SNIPPETS = \
 	snippets/paper_kernels_common/MaximalFin-n.tex \
 
 OBSOL= \
-	snippets/seq1/Active-n.tex \
-	snippets/seq1/ActiveOe-n.tex \
-	snippets/seq1/Activeeq-n.tex \
-	snippets/seq1/Aeop-n.tex \
-	snippets/seq1/Atr-n.tex \
-	snippets/seq1/ChrelO-n.tex \
-	snippets/seq1/DP-n.tex \
-	snippets/seq1/DPDV-n.tex \
-	snippets/seq1/DU-n.tex \
-	snippets/seq1/DUa-n.tex \
-	snippets/seq1/DUaone-n.tex \
-	snippets/seq1/DV-n.tex \
-	snippets/seq1/Dseparated-n.tex \
-	snippets/seq1/Eope-n.tex \
-	snippets/seq1/EopeLiftO-n.tex \
-	snippets/seq1/Epathgt-n.tex \
-	snippets/seq1/Epe-n.tex \
-	snippets/seq1/EpeLift-n.tex \
-	snippets/seq1/LiftO-n.tex \
-	snippets/seq1/OO-n.tex \
-	snippets/seq1/Oedge-n.tex \
-	snippets/seq1/Pe-n.tex \
-	snippets/seq1/PeUnLift-n.tex \
-	snippets/seq1/PeUnLiftO-n.tex \
-	snippets/seq1/Ugeone-n.tex \
-	snippets/seq1/Ugt-n.tex \
-	snippets/seq1/pair-n.tex \
+	snippets/paper_csbr_paths/Active-n.tex \
+	snippets/paper_csbr_paths/ActiveOe-n.tex \
+	snippets/paper_csbr_paths/Activeeq-n.tex \
+	snippets/paper_csbr_paths/Aeop-n.tex \
+	snippets/paper_csbr_paths/Atr-n.tex \
+	snippets/paper_csbr_paths/ChrelO-n.tex \
+	snippets/paper_csbr_paths/DP-n.tex \
+	snippets/paper_csbr_paths/DPDV-n.tex \
+	snippets/paper_csbr_paths/DU-n.tex \
+	snippets/paper_csbr_paths/DUa-n.tex \
+	snippets/paper_csbr_paths/DUaone-n.tex \
+	snippets/paper_csbr_paths/DV-n.tex \
+	snippets/paper_csbr_paths/Dseparated-n.tex \
+	snippets/paper_csbr_paths/Eope-n.tex \
+	snippets/paper_csbr_paths/EopeLiftO-n.tex \
+	snippets/paper_csbr_paths/Epathgt-n.tex \
+	snippets/paper_csbr_paths/Epe-n.tex \
+	snippets/paper_csbr_paths/EpeLift-n.tex \
+	snippets/paper_csbr_paths/LiftO-n.tex \
+	snippets/paper_csbr_paths/OO-n.tex \
+	snippets/paper_csbr_paths/Oedge-n.tex \
+	snippets/paper_csbr_paths/Pe-n.tex \
+	snippets/paper_csbr_paths/PeUnLift-n.tex \
+	snippets/paper_csbr_paths/PeUnLiftO-n.tex \
+	snippets/paper_csbr_paths/Ugeone-n.tex \
+	snippets/paper_csbr_paths/Ugt-n.tex \
+	snippets/paper_csbr_paths/pair-n.tex \
 
 
 
@@ -165,10 +165,10 @@ allstd: $(targets)
 clean:
 	@rm -fr $(snippets_root) 
 	@rm -f targets.mk
-	@rm -f $(SNIPPETS)
+	@rm -f $(SNIPPETS) $(OBSOL)
 
 clean-snippets:
-	@rm -f $(SNIPPETS)
+	@rm -f $(SNIPPETS) $(OBSOL)
 
 ignore:
 	svn propset svn:ignore -F .cvsignore .
@@ -200,7 +200,7 @@ SED= \
 	-e 's+{\\PYZti{}+{\\(\\neg\\)+g' \
 	-e 's+`\\PYZlt{}=`+\\(\\subset\\)+g' \
 
-allplus: $(SNIPPETS)
+allplus: $(SNIPPETS) $(OBSOL)
 
 snippets/%-n.tex: snippets/%.tex
 	@echo -n create $@
@@ -211,8 +211,8 @@ snippets/%-n.tex: snippets/%.tex
 	@echo '}' >> $@
 	@echo done
 
-../snippets.tex : $(SNIPPETS)
-	@cat $(SNIPPETS) > ../snippets.tex
+../snippets.tex : $(SNIPPETS) $(OBSOL)
+	@cat $(SNIPPETS) $(OBSOL) > ../snippets.tex
 	@echo ../snippets.tex updated
 
 

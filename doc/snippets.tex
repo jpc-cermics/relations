@@ -1860,3 +1860,264 @@
     \end{\al{input}}
   \end{\al{sentence}}
 }
+\newcommand{\SnippetActive}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Definition}~\PY{n+nf}{Active}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}\Al{nl}
+      ~~\PY{o}{(}\PY{k}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)),}~\PY{n}{Active\PYZus{}path}~\PY{n}{W}~\PY{n}{E}~\PY{n}{p}~\PY{n}{x}~\PY{n}{y}\PY{o}{).}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetActiveOe}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Definition}~\PY{n+nf}{ActiveOe}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{X}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~~\Al{nl}
+      ~~\PY{o}{((}\PY{n}{Oedge}~\PY{n}{R}\PY{o}{)}~\PY{o}{`*`}~\PY{n}{Oedge}~\PY{n}{R}\PY{o}{)}~\PY{o}{\(\cap\)}~\PY{o}{(}\PY{n}{A\PYZus{}tr}~\PY{n}{X}~\PY{n}{R}\PY{o}{).}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetActiveeq}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Ub}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\Al{nl}
+      ~~~~\PY{o}{\(\neg\)`}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{stto}~\PY{o}{|}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\PY{o}{\PYZbs{}}\PY{k}{in}\PY{o}{]}~\PY{o}{(}\PY{n}{A\PYZus{}tr}~\PY{n}{W}~\PY{n}{E}\PY{o}{)].}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{D\PYZus{}separated\PYZus{}iff}\PY{o}{:}~\PY{k}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{),}\Al{nl}
+      ~~~~~~\PY{o}{\(\neg\)(}\PY{k}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)),}~\PY{n}{Active\PYZus{}path}~\PY{n}{W}~\PY{n}{E}~\PY{n}{p}~\PY{n}{x}~\PY{n}{y}\PY{o}{)}\Al{nl}
+      ~~~~~~\PY{o}{\(\leftrightarrow\)}~\PY{o}{\(\neg\)}~\PY{o}{(}\PY{n}{x}~\PY{o}{=}~\PY{n}{y}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~~\PY{o}{(}\PY{n}{D\PYZus{}U}~\PY{o}{[}\PY{n+nb}{set}~\PY{o}{(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)]}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\subset\)}~\PY{o}{(}\PY{n}{Ub}~\PY{n}{W}~\PY{n}{E}\PY{o}{).}~
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetAeop}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Definition}~\PY{n+nf}{Active\PYZus{}path}\Al{nl}
+      ~~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{X}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{))}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}\Al{nl}
+      ~~\PY{k}{match}~\PY{n}{p}~\PY{k}{with}~\Al{nl}
+      ~~\PY{o}{|}~\PY{o}{[::]}~\PY{o}{=\PYZgt{}}~\PY{n}{x}~\PY{o}{=}~\PY{n}{y}~\Al{nl}
+      ~~\PY{o}{|}~\PY{o}{[::}\PY{n}{eo1}\PY{o}{]}~\PY{o}{=\PYZgt{}}~\PY{n}{eo1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}~\PY{o}{=}~\PY{n}{x}~\PY{o}{\(\,\wedge\,\)}~~\PY{n}{eo1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}~\PY{o}{=}~\PY{n}{y}~\PY{o}{\(\,\wedge\,\)}~~\PY{n}{Oedge}~\PY{n}{R}~\PY{n}{eo1}~\Al{nl}
+      ~~\PY{o}{|}~\PY{n}{eo1}~\PY{o}{::}~\PY{o}{[::}~\PY{n}{eo2}~\PY{o}{\PYZam{}}~\PY{n}{p}\PY{o}{]}\Al{nl}
+      ~~~~\PY{o}{=\PYZgt{}}~\PY{n}{eo1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}~\PY{o}{=}~\PY{n}{x}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n+nb}{last}~\PY{n}{eo2}~\PY{n}{p}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}~\PY{o}{=}~\PY{n}{y}~\Al{nl}
+      ~~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{allL}~\PY{o}{(}\PY{n}{ActiveOe\PYZsq{}}~\PY{n}{X}~\PY{n}{R}\PY{o}{)}~\PY{o}{(}\PY{n}{belast}~\PY{n}{eo2}~\PY{n}{p}\PY{o}{)}~\PY{n}{eo1}~\PY{o}{(}\PY{n+nb}{last}~\PY{n}{eo2}~\PY{n}{p}\PY{o}{)}\Al{nl}
+      ~~\PY{k}{end}\PY{o}{.}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetAtr}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Definition}~\PY{n+nf}{A\PYZus{}tr}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{X}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\Al{nl}
+      ~~\PY{n}{ChrelO}~\PY{o}{\(\cap\)}~\Al{nl}
+      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{oe}~\PY{o}{:}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)}~\PY{o}{*}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)|}~\PY{k}{match}~\PY{o}{(}\PY{n}{oe}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{,}\PY{n}{oe}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{,}~\PY{n}{oe}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{)}~\PY{k}{with}~\Al{nl}
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\PY{o}{|}~\PY{o}{(}\PY{n}{P}\PY{o}{,}\PY{n}{P}\PY{o}{,}\PY{n}{v}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{X}\PY{o}{.\PYZca{}}\PY{n}{c}~\PY{n}{v}~\PY{o}{|}~\PY{o}{(}\PY{n}{N}\PY{o}{,}\PY{n}{N}\PY{o}{,}\PY{n}{v}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{X}\PY{o}{.\PYZca{}}\PY{n}{c}~\PY{n}{v}~\PY{o}{|}~\PY{o}{(}\PY{n}{N}\PY{o}{,}\PY{n}{P}\PY{o}{,}\PY{n}{v}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{X}\PY{o}{.\PYZca{}}\PY{n}{c}~\PY{n}{v}\Al{nl}
+      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\PY{o}{|}~\PY{o}{(}\PY{n}{P}\PY{o}{,}\PY{n}{N}\PY{o}{,}\PY{n}{v}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{o}{(}\PY{n}{Fset}~\PY{n}{R}\PY{o}{.*}~\PY{n}{X}\PY{o}{)}~\PY{n}{v}~\PY{k}{end}\PY{o}{].}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetChrelO}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Definition}~\PY{n+nf}{ChrelO}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{ppa}\PY{o}{:}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)*(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)}~\PY{o}{|}~\PY{o}{(}\PY{n}{ppa}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{).}\PY{l+m+mi}{2}~\PY{o}{=}~\PY{o}{(}\PY{n}{ppa}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{].}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetDP}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}P}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):=}~\Al{nl}
+      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{spt}\PY{o}{|}~\PY{n}{spt}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{Lift\PYZus{}Im}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{Epe}~\PY{n}{spt}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{spt}~\PY{o}{[\PYZbs{}}\PY{k}{in}\PY{o}{]}~\PY{n}{E}~\PY{o}{].}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetDPDV}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{DP\PYZus{}DV}\PY{o}{:}~\PY{k}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{),}~\PY{n}{image}~\PY{o}{(}\PY{n}{D\PYZus{}V}~\PY{n}{R}~\PY{n}{E}\PY{o}{)}~\PY{o}{(@}\PY{n}{Lift}~\PY{n}{T}\PY{o}{)}~\PY{o}{=}~\PY{o}{(}\PY{n}{D\PYZus{}P}~\PY{n}{R}~\PY{n}{E}\PY{o}{).}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetDU}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}U}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{stto}~\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)}~\PY{o}{|}\PY{n}{size}\PY{o}{(}\PY{n}{stto}\PY{o}{)\PYZgt{}}\PY{l+m+mi}{0}~\Al{nl}
+      ~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{Eope}~\PY{n}{stto}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{stto}~\PY{o}{[\PYZbs{}}\PY{k}{in}\PY{o}{]}~\PY{o}{(}\PY{n}{Oedge}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\PY{o}{\PYZbs{}}\PY{k}{in}\PY{o}{]}~\PY{n}{ChrelO}\PY{o}{].}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetDUa}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}U\PYZus{}a}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}\PY{n}{T}\PY{o}{):=}\Al{nl}
+      ~~~~\PY{o}{(}\PY{n}{D\PYZus{}U}~\PY{n}{R}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\cap\)}~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{stto}~\PY{o}{|}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\PY{o}{\PYZbs{}}\PY{k}{in}\PY{o}{]}~\PY{o}{(}\PY{n}{A\PYZus{}tr}~\PY{n}{W}~\PY{n}{E}\PY{o}{)].}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetDUaone}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}U\PYZus{}a1}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}\PY{n}{T}\PY{o}{):=}\Al{nl}
+      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{stto}~\PY{o}{|}\PY{n}{size}\PY{o}{(}\PY{n}{stto}\PY{o}{)\PYZgt{}}\PY{l+m+mi}{0}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Eope}~\PY{n}{stto}\PY{o}{)=(}\PY{n}{x}\PY{o}{,}\PY{n}{y}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{stto}~\PY{o}{[\PYZbs{}}\PY{k}{in}\PY{o}{]}~\PY{o}{(}\PY{n}{Oedge}~\PY{n}{E}\PY{o}{)}~\Al{nl}
+      ~~~~~~~~~~~~~~~\PY{o}{\(\,\wedge\,\)}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\PY{o}{\PYZbs{}}\PY{k}{in}\PY{o}{]}~\PY{n}{ChrelO}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\PY{o}{\PYZbs{}}\PY{k}{in}\PY{o}{]}~\PY{o}{(}\PY{n}{A\PYZus{}tr}~\PY{n}{W}~\PY{n}{E}\PY{o}{)].}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetDV}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}V}~\PY{o}{(}\PY{n+nv}{R}~\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):=}\Al{nl}
+      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{st}\PY{o}{|}~\PY{n}{st}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{Lift\PYZus{}Dom}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{R}~\PY{o}{(}\PY{n}{Pe}~\PY{n}{st}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{st}~\PY{o}{[}\PY{n}{L}\PY{o}{\PYZbs{}}\PY{k}{in}\PY{o}{]}~\PY{n}{E}\PY{o}{].}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetDseparated}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Definition}~\PY{n+nf}{D\PYZus{}separated}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{W}\PY{o}{:}~\PY{n+nb}{set}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\Al{nl}
+      ~~\PY{o}{\(\neg\)(}\PY{k}{\(\exists\)}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)),}~\PY{n}{Active\PYZus{}path}~\PY{n}{W}~\PY{n}{E}~\PY{n}{p}~\PY{n}{x}~\PY{n}{y}\PY{o}{).}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetEope}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Eope}~\PY{o}{(}\PY{n+nv}{stto}~\PY{o}{:}~\PY{n}{seq}\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{))}~\PY{o}{:}~\PY{n}{T}\PY{o}{*}\PY{n}{T}~\PY{o}{:=}\Al{nl}
+      ~~~~\PY{o}{((}\PY{n}{head}~\PY{o}{(}\PY{n}{ptv}\PY{o}{,}\PY{n}{P}\PY{o}{)}~\PY{n}{stto}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{,}~\PY{o}{(}\PY{n+nb}{last}~\PY{o}{(}\PY{n}{ptv}\PY{o}{,}\PY{n}{P}\PY{o}{)}~\PY{n}{stto}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{.}\PY{l+m+mi}{2}\PY{o}{).}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetEopeLiftO}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Eope\PYZus{}LiftO}\PY{o}{:}~\PY{k}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{st}\PY{o}{:}\PY{n}{seq}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{so}\PY{o}{:}\PY{n}{seq}~\PY{n}{O}\PY{o}{),}\Al{nl}
+      ~~~~~~\PY{n}{size}\PY{o}{(}\PY{n}{st}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{l+m+mi}{1}~\PY{o}{\(\rightarrow\)}~\PY{n}{size}~\PY{o}{(}\PY{n}{so}\PY{o}{)}~\PY{o}{=}~\PY{n}{size}~\PY{n}{st}~\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}~\PY{o}{\(\rightarrow\)}~\PY{n}{Eope}~\PY{o}{(}\PY{n}{LiftO}~\PY{n}{st}~\PY{n}{so}\PY{o}{)}~\PY{o}{=}~\PY{n}{Pe}~\PY{n}{ptv}~\PY{n}{st}\PY{o}{.}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetEpathgt}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Example}~\PY{n+nf}{P\PYZus{}gt}~\PY{o}{(}\PY{n+nv}{n}\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{)}~~\PY{o}{:=}~\Al{nl}
+      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{spt}~\PY{o}{|}~\PY{n}{size}\PY{o}{(}\PY{n}{spt}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{n}{n}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{spt}~\PY{o}{[\PYZbs{}}\PY{k}{in}\PY{o}{]}~\PY{n}{E}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{spt}~\PY{o}{[}\PY{n}{L}\PY{o}{\PYZbs{}}\PY{k}{in}\PY{o}{]}~\PY{n}{Chrel}\PY{o}{].}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetEpe}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Epe}~\PY{o}{(}\PY{n+nv}{spt}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{))}~\PY{o}{:=}~\PY{o}{((}\PY{n}{head}~\PY{n}{ptv}~\PY{n}{spt}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{,}~\PY{o}{(}\PY{n+nb}{last}~\PY{n}{ptv}~\PY{n}{spt}\PY{o}{).}\PY{l+m+mi}{2}\PY{o}{).}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetEpeLift}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Epe\PYZus{}Lift}\PY{o}{:}~\PY{k}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{st}\PY{o}{:}\PY{n}{seq}~\PY{n}{T}\PY{o}{),}~\PY{n}{st}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{Lift\PYZus{}Dom}~\PY{o}{\(\rightarrow\)}~\PY{n}{Epe}~\PY{o}{(}\PY{n}{Lift}~\PY{n}{st}\PY{o}{)}~\PY{o}{=}~\PY{n}{Pe}~\PY{n}{st}\PY{o}{.}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetLiftO}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{LiftO}~\PY{o}{(}\PY{n+nv}{st}\PY{o}{:}~\PY{n}{seq}~\PY{n}{T}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{so}\PY{o}{:}~\PY{n}{seq}~\PY{n}{O}\PY{o}{)}~\PY{o}{:=}~\PY{n}{pair}~\PY{o}{(}\PY{n}{Lift}~\PY{n}{st}\PY{o}{)}~\PY{n}{so}\PY{o}{.}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetOO}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Inductive}~\PY{n+nf}{O}~\PY{o}{:=}~\PY{o}{|}~\PY{n}{P}~\PY{o}{|}~\PY{n}{N}\PY{o}{.}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetOedge}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Definition}~\PY{n+nf}{Oedge}~\PY{o}{\PYZob{}}\PY{n+nv}{T}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{R}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):}~\PY{n+nb}{set}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)}~\PY{o}{:=}\Al{nl}
+      ~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{oe}\PY{o}{:}~\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}~\PY{o}{|}~\PY{o}{(}\PY{k}{match}~\PY{n}{oe}~\PY{k}{with}~\PY{o}{|}~\PY{o}{(}\PY{n}{e}\PY{o}{,}\PY{n}{P}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{R}~\PY{n}{e}~\PY{o}{|}~\PY{o}{(}\PY{n}{e}\PY{o}{,}\PY{n}{N}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{R}\PY{o}{\PYZca{}\PYZhy{}}\PY{l+m+mi}{1}~\PY{n}{e}~\PY{k}{end}\PY{o}{)].}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetPe}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{Pe}~\PY{o}{(}\PY{n+nv}{st}\PY{o}{:}~\PY{n}{seq}~\PY{n}{T}\PY{o}{)}~\PY{o}{:=}~\PY{o}{(}\PY{n}{head}~\PY{n}{ptv}\PY{o}{.}\PY{l+m+mi}{1}~\PY{n}{st}\PY{o}{,}~\PY{n+nb}{last}~\PY{n}{ptv}\PY{o}{.}\PY{l+m+mi}{1}~\PY{n}{st}\PY{o}{).}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetPeUnLift}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Pe\PYZus{}UnLift}\PY{o}{:}~\PY{k}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{spt}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{)),}~\Al{nl}
+      ~~~~~~\PY{n}{spt}~\PY{o}{\PYZbs{}}\PY{k}{in}~\PY{n}{Lift\PYZus{}Im}\PY{o}{\(\rightarrow\)}\PY{n}{Pe}~\PY{o}{(}\PY{n}{UnLift}~\PY{n}{spt}~\PY{n}{ptv}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{)=}\PY{n}{Epe}~\PY{n}{spt}\PY{o}{.}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetPeUnLiftO}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Lemma}~\PY{n+nf}{Pe\PYZus{}UnLiftO}\PY{o}{:}~\PY{k}{\(\forall\)}~\PY{o}{(}\PY{n+nv}{stto}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)),}~\Al{nl}
+      ~~~~~~\PY{n}{size}\PY{o}{(}\PY{n}{stto}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{l+m+mi}{0}~\PY{o}{\(\rightarrow\)}~\PY{n}{stto}~\PY{o}{[}\PY{n}{L}\PY{o}{\PYZbs{}}\PY{k}{in}\PY{o}{]}~\PY{n}{ChrelO}~\PY{o}{\(\rightarrow\)}~\Al{nl}
+      ~~~~~~\PY{o}{(}\PY{n}{Pe}~\PY{n}{ptv}~\PY{o}{(}\PY{n}{UnLiftO}~\PY{n}{stto}~\PY{n}{ptv}\PY{o}{.}\PY{l+m+mi}{1}\PY{o}{).}\PY{l+m+mi}{1}\PY{o}{)}~\PY{o}{=}~~\PY{n}{Eope}~\PY{n}{stto}\PY{o}{.}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetUgeone}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Definition}~\PY{n+nf}{U\PYZus{}ge\PYZus{}1}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):=}\Al{nl}
+      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{sto}~\PY{o}{|}~\PY{n}{sto}~\PY{o}{[\PYZbs{}}\PY{k}{in}\PY{o}{]}~\PY{o}{(}\PY{n}{Oedge}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~~\PY{n}{size}\PY{o}{(}\PY{n}{sto}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{l+m+mi}{0}~\PY{o}{\(\,\wedge\,\)}~\Al{nl}
+      ~~~~~~~~~~~~~~~~~\PY{o}{(}\PY{n}{Lift}~\PY{n}{sto}\PY{o}{)}~\PY{o}{[\PYZbs{}}\PY{k}{in}\PY{o}{]}~\PY{n}{ChrelO}\PY{o}{].}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\SnippetUgt}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Example}~\PY{n+nf}{U\PYZus{}gt}~\PY{o}{(}\PY{n+nv}{n}\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{E}\PY{o}{:}~\PY{n}{relation}~\PY{n}{T}\PY{o}{):=}\Al{nl}
+      ~~~~\PY{o}{[}\PY{n+nb}{set}~\PY{n}{sto}~\PY{o}{|}~\PY{n}{size}\PY{o}{(}\PY{n}{sto}\PY{o}{)}~\PY{o}{\PYZgt{}}~\PY{n}{n}~\PY{o}{\(\,\wedge\,\)}~\PY{n}{sto}~\PY{o}{[\PYZbs{}}\PY{k}{in}\PY{o}{]}~\PY{o}{(}\PY{n}{Oedge}~\PY{n}{E}\PY{o}{)}~\PY{o}{\(\,\wedge\,\)}~\PY{o}{(}\PY{n}{Lift}~\PY{n}{sto}\PY{o}{)}~\PY{o}{[\PYZbs{}}\PY{k}{in}\PY{o}{]}~\PY{n}{ChrelO}\PY{o}{].}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
+\newcommand{\Snippetpair}{
+%
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kn}{Fixpoint}~\PY{n+nf}{pair}~\PY{o}{(}\PY{n+nv}{stt}\PY{o}{:}~\PY{n}{seq}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{))}~\PY{o}{(}\PY{n+nv}{so}\PY{o}{:}~\PY{n}{seq}~\PY{n}{O}\PY{o}{)}~\PY{o}{:=}~\Al{nl}
+      ~~~~\PY{k}{match}~\PY{n}{stt}\PY{o}{,}~\PY{n}{so}~\PY{k}{with}~\Al{nl}
+      ~~~~\PY{o}{|}~\PY{o}{(}\PY{n}{pt}\PY{o}{)::}\PY{n}{stt}\PY{o}{,}~\PY{n}{o}\PY{o}{::}\PY{n}{so}~\PY{o}{=\PYZgt{}}~\PY{o}{(}\PY{n}{pt}\PY{o}{,}\PY{n}{o}\PY{o}{)::(}\PY{n}{pair}~\PY{n}{stt}~\PY{n}{so}\PY{o}{)}\Al{nl}
+      ~~~~\PY{o}{|}~\PY{o}{(}\PY{n}{pt}\PY{o}{)::}\PY{n}{stt}\PY{o}{,}~\PY{o}{[::]}~\PY{o}{=\PYZgt{}}~~\PY{o}{(}\PY{n}{pt}\PY{o}{,}\PY{n}{P}\PY{o}{)::(}\PY{n}{pair}~\PY{n}{stt}~\PY{o}{[::])}\Al{nl}
+      ~~~~\PY{o}{|}~\PY{n}{\PYZus{}}~\PY{o}{,}~\PY{n}{\PYZus{}}~\PY{o}{=\PYZgt{}}~\PY{n}{Nil}~\PY{o}{(}\PY{n}{T}\PY{o}{*}\PY{n}{T}\PY{o}{*}\PY{n}{O}\PY{o}{)}\Al{nl}
+      ~~~~\PY{k}{end}\PY{o}{.}
+    \end{\al{input}}
+  \end{\al{sentence}}
+}
