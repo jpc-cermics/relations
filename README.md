@@ -37,6 +37,7 @@ Paper companion files:
 - `paper_csbr_paths.v`: path-related lemmas used in the CSBR development
 - `paper_tcs_facts.v`, `paper_tcs.v`: companion code for *Topological Conditional Separation*
 - `paper_monochromatic.v`, `paper_monochromatic_f.v`: companion developments for monochromatic-related results
+- `paper_kernels.v`, `paper_kernels_common.v`, companion developments for kernel-related results
 - `rel_dpdgraph.v`: utility to produce graphs for TeX files
   
 Unused files:
