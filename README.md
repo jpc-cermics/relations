@@ -46,11 +46,38 @@ Documentation and misc:
 
 - `doc/`: material used to produce snippets of code
 
-## How to get it
-
-Clone from GitHub:
-
-- https://github.com/jpc-cermics/relations
+## Installed packages with opam 
+# Name                        # Installed   # Synopsis
+coq                           9.1.1         Compatibility metapackage for Coq after the Rocq renaming
+coq-core                      9.1.1         Compatibility binaries for Coq after the Rocq renaming
+coq-dpdgraph                  1.0+9.1       Compute dependencies between Coq objects (definitions, theorems) and produce graphs
+coq-elpi                      3.5.0         Compatibility metapackage for Elpi extension language after the Rocq renaming
+coq-mathcomp-algebra          2.5.0         Compatibility package for rocq-mathcomp-algebra
+coq-mathcomp-algebra-tactics  1.2.7         Ring, field, lra, nra, and psatz tactics for Mathematical Components
+coq-mathcomp-ssreflect        2.5.0         Compatibility package for rocq-mathcomp-ssreflect
+coq-mathcomp-zify             1.7.0+2.4+9.0 Compatibility package for rocq-mathcomp-zify
+coq-stdlib                    9.0.0         Compatibility metapackage for Coq Stdlib library after the Rocq renaming
+rocq-elpi                     3.5.0         Elpi extension language for Coq
+rocq-hierarchy-builder        1.10.3        High level commands to declare and evolve a hierarchy based on packed classes
+rocq-mathcomp-algebra         2.5.0         Mathematical Components Library on Algebra
+rocq-mathcomp-analysis        1.16.0        An analysis library for mathematical components
+rocq-mathcomp-analysis-stdlib 1.16.0        A library to link real numbers from mathematical components and Stdlib
+rocq-mathcomp-bigenough       1.0.4         A small library to do epsilon - N reasoning
+rocq-mathcomp-boot            2.5.0         Small Scale Reflection
+rocq-mathcomp-classical       1.16.0        A library for classical logic for mathematical components
+rocq-mathcomp-field           2.5.0         Mathematical Components Library on Fields
+rocq-mathcomp-fingroup        2.5.0         Mathematical Components Library on finite groups
+rocq-mathcomp-finmap          2.2.4         Finite sets, finite maps, finitely supported functions
+rocq-mathcomp-order           2.5.0         Mathematical Components Library on order theory
+rocq-mathcomp-reals           1.16.0        A library for real numbers for mathematical components
+rocq-mathcomp-reals-stdlib    1.16.0        A library to link real numbers from mathematical components and Stdlib
+rocq-mathcomp-solvable        2.5.0         Mathematical Components Library on finite groups (II)
+rocq-mathcomp-ssreflect       2.5.0         Compatibility package for rocq-mathcomp-boot and rocq-mathcomp-order
+rocq-mathcomp-zify            1.7.0+2.4+9.0 Micromega tactics for Mathematical Components
+rocq-micromega-plugin         1.1.1         Micromega plugin for Rocq
+rocq-runtime                  9.1.1         The Rocq Prover -- Core Binaries and Tools
+rocq-stdlib                   9.0.0         The Rocq Proof Assistant -- Standard Library
+vsrocq-language-server        2.4.3+1       VSRocq language server
 
 ## Compilation
 
