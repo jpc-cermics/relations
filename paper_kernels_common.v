@@ -2019,6 +2019,31 @@ Section FinsetToClassical.
     move => /andP [/in_finP ? /in_finP ?].
     by rewrite inE;split;by rewrite -inE.
   Qed.
+
+  Lemma set_of_fin_subset A B : 
+    (A \subset B)%SET <-> (set_of_fin A) `<=` (set_of_fin B).
+  Proof.
+    split => [ Hpr | Hpr].
+    + move => x.
+      rewrite -2![set_of_fin _ x]in_setE.
+      move => /in_finP;rewrite -subset_pred1 => xinA.
+      apply/in_finP;rewrite -subset_pred1.
+      by apply: (@fintype.subset_trans T (pred1 x) A B).
+    + apply/fintype.subsetP => x.
+      by move => /in_finP/set_mem xinA;apply/Hpr.
+  Qed.
+
+  Lemma set_of_fin_proper A B : 
+    (A \proper B)%SET <-> (set_of_fin A) `<` (set_of_fin B).
+  Proof.
+    split => [| [Hpr Hpr']].
+    + rewrite fintype.properE => /andP [AsubB nBsubA].
+      split; first by rewrite -set_of_fin_subset.
+      by move: nBsubA;contra;rewrite set_of_fin_subset.
+    + rewrite fintype.properE;apply/andP. 
+      split;first by rewrite set_of_fin_subset.
+      by move: Hpr';contra;rewrite set_of_fin_subset.
+  Qed.
   
   Lemma set_of_fin_inj: injective set_of_fin.
   Proof.
