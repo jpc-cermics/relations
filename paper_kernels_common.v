@@ -1965,7 +1965,8 @@ Section FinsetToClassical.
   (* Coercion set_of_fin : set_of >-> set. *)
   
   (* reverse conversion which works for finType *)
-  Definition fin_of_set (A: set T) : {set T} := [set x in A]. 
+  Definition fin_of_set' (A: set T) : {set T} := [set x in A]. 
+  Definition fin_of_set (A: set T) : {set T} := [set x | x \in A]%SET. 
   Notation "[:fin: A ]" := (fin_of_set A).    
   
   Lemma in_set_of_fin A x: x \in [:set: A] <-> x \in A.
@@ -1973,10 +1974,25 @@ Section FinsetToClassical.
   
   Lemma in_fin_of_set (A: set T) x: x \in [:fin: A] <-> x \in A.
   Proof. by split => [H | H];[by rewrite inE in H | rewrite inE]. Qed.
-  
+
+  Lemma in_finE A x: (x \in A) = (x \in [:set: A]).
+  Proof.
+    rewrite [RHS]inE.
+    case H: `[< [:set: A] x >].
+    by move: H => /asboolP/mem_set/in_set_of_fin .
+    move: H => /asboolP;contra. 
+    by move => H;apply/set_mem/in_set_of_fin.
+  Qed.
+
   Lemma in_finP A x: reflect (x \in [:set: A]) (x \in A).
   Proof.  by apply: (iffP idP);move/in_set_of_fin. Qed.
-
+  
+  Lemma in_sinE A x: x \in A = (x \in (in_set [:set: A])).
+  Proof. by rewrite in_finE. Qed.
+  
+  Lemma set_of_fin_eqi A:  A =i [:set: A].
+  Proof. by move => x;apply: in_finE. Qed.
+  
   Lemma set_to_finK : cancel fin_of_set set_of_fin.
   Proof.
     move=> A;rewrite predeqE /fin_of_set /set_of_fin /= => x.
@@ -2044,6 +2060,9 @@ Section FinsetToClassical.
       split;first by rewrite set_of_fin_subset.
       by move: Hpr';contra;rewrite set_of_fin_subset.
   Qed.
+
+  Lemma set_of_fin_card A: #|A| = #|[:set: A]|.
+  Proof. by apply: eq_card; apply: set_of_fin_eqi. Qed.
   
   Lemma set_of_fin_inj: injective set_of_fin.
   Proof.
