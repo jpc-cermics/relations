@@ -4,6 +4,12 @@ assets_root := $(snippets_root)/assets
 
 include config.mk
 
+# Use driver-new.py, which applies the LaTeX substitutions that used to be
+# done by the SED variable below, directly inside the Alectryon pipeline.
+driver := $(dir $(lastword $(MAKEFILE_LIST)))driver-new.py
+alectryon = \
+	$(PYTHON) $(driver) $(alectryon_flags) --output-directory "$@"
+
 SNIPPETS = \
 	snippets/paper_csbr/dsepnota-n.tex \
 	snippets/paper_csbr/theoremfive-n.tex \
@@ -159,11 +165,11 @@ include targets.mk
 
 .PHONY: all clean
 
-allstd: $(targets) 
-	@$(PYTHON) ./driver.py --frontend coq --backend assets --output-directory $(assets_root) -
+allstd: $(targets)
+	@$(PYTHON) ./driver-new.py --frontend coq --backend assets --output-directory $(assets_root) -
 
 clean:
-	@rm -fr $(snippets_root) 
+	@rm -fr $(snippets_root)
 	@rm -f targets.mk
 	@rm -f $(SNIPPETS) $(OBSOL)
 
@@ -175,44 +181,21 @@ ignore:
 
 new: snippets/erel3/D_Un.tex
 
-SED= \
-	-e 's/{exists}/{\\(\\exists\\)}/g' \
-	-e 's/{forall}/{\\(\\forall\\)}/g' \
-	-e 's/⊥/\\(\\bot\\)/g' \
-	-e 's/Δ/\\(\\Delta\\)/g' \
-	-e 's+{/\\PYZbs{}+{\\(\\,\\wedge\\,\\)+g' \
-	-e 's/\\PY{o}{\\PYZbs{}}\\PY{k+kr}{in}/\\(\\in\\)/g' \
-	-e 's/\\PY{o}{\[\\PYZbs{}}\\PY{k+kr}{in}\\PY{o}{\]}/\\([{\\in}]\\)/g' \
-	-e 's/\[\\PYZbs{}in\]/\\([{\\in}]\\)/g' \
-	-e 's/`;`/;/g' \
-	-e 's/`|`/\\(\\cup\\)/g' \
-	-e 's/`&`/\\(\\cap\\)/g' \
-	-e 's+{\\PYZbs{}/+{\\(\\,\\vee\\,\\)+g' \
-	-e 's+{\\PYZlt{}\\PYZhy{}\\PYZgt{}}+{\\(\\leftrightarrow\\)}+g' \
-	-e 's+{\\PYZhy{}\\PYZgt{}}+{\\(\\rightarrow\\)}+g' \
-	-e 's+{`\\PYZam{}`}+{\\(\\cap\\)}+g' \
-	-e 's+~\\PY{o}{;}~+\\PY{o}{;}+g' \
-	-e 's+Suc\\PYZbs{}in+Suc{\\(\\in\\)}+g' \
-	-e 's+L\\PYZbs{}in+L{\\(\\in\\)}+g' \
-	-e 's/ \\PY{k+kn}{Notation}/ ~~\\PY{k+kn}{Notation}/g' \
-	-e 's/\\begin{alectryon}/%/g' \
-	-e 's/\\end{alectryon}//g' \
-	-e 's+{\\PYZti{}+{\\(\\neg\\)+g' \
-	-e 's+`\\PYZlt{}=`+\\(\\subset\\)+g' \
-
 allplus: $(SNIPPETS) $(OBSOL)
 
+# The LaTeX substitutions that used to run through sed here are now applied
+# by driver-new.py itself, directly in the Alectryon pipeline; this rule
+# only wraps the already-processed snippet in its \Snippet<name> command.
 snippets/%-n.tex: snippets/%.tex
 	@echo -n create $@
 	@echo -n '\\newcommand{\\Snippet' > $@
 	@echo -n `basename $*` >> $@
 	@echo '}{' >> $@
-	@sed $(SED)  $< >> $@
+	@cat $< >> $@
 	@echo '}' >> $@
 	@echo done
 
 ../snippets.tex : $(SNIPPETS) $(OBSOL)
 	@cat $(SNIPPETS) $(OBSOL) > ../snippets.tex
 	@echo ../snippets.tex updated
-
 

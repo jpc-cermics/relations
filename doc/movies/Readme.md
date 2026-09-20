@@ -11,8 +11,6 @@ This script requires Alectryon 1.4.
 To get it, you may run `pip install -r requirements.txt` or
 `nix-shell` (at the root of the project).
 
-
-
 ## Snippet Block
 A snippet blocs is a block formed by this template:
 ```coq
@@ -36,7 +34,10 @@ snippet1.tex  snippet2.tex
 
 For more informations do `python extract_snippets -h`
 
-
 ## Makefile
 Command `make file.v` extracts `.v` found in `theories/oridinals` and makes a latex file. \
 And extract snippets and in directory snippets.
+
+## Changes from original files 
+
+class Dedenter and dedent_snippet was added to get remove the indentation that enclosing sections add to a snippet.
