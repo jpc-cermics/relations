@@ -30,8 +30,8 @@ Section CheckAsym.
   Import Asyminf2Inf(Asym2P5', allL_rc_asym).
 
   (* begin snippet  iicasymToiicinj::  no-out *) 
-Lemma iic_asym_to_iic_inj:
-  (iic (Asym U.+)) -> (iic_inj U). 
+  Lemma iic_asym_to_iic_inj:
+    (iic (Asym U.+)) -> (iic_inj U). 
   (* end snippet iicasymToiicinj *) 
   Proof. by apply: (@Asym2P5' T U A1). Qed.
 
@@ -864,7 +864,7 @@ Definition Forbiden_graph := forall x y z t,
     Proof. by split;[left;apply: Au | split;[right;apply: Apk|]]. Qed.
     
     (* begin snippet FinCaseBH:: no-out *)  
-Theorem Kernel_Blidia_Hengel:
+Theorem Kernel_Blidia_Engel:
   ~ (exists s, O.+ (s,s)) -> Forbiden_graph 
   ->Three_cycles -> exists S, kernel M S. 
     (* end snippet FinCaseBH *)  
