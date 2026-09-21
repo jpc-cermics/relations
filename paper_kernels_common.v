@@ -13,7 +13,7 @@ From HB Require Import structures.
 
 Set Warnings "-parsing -coercions".
 From mathcomp Require Import all_boot seq order boolp classical_sets contra. 
-From mathcomp Require Import zify. (* enabling the use of lia tactic for ssrnat *)
+From mathcomp Require Import finmap cardinality zify. (* enabling the use of lia tactic for ssrnat *)
 Set Warnings "parsing coercions".
 From RL Require Import  seq1 seq2 rel.
 
@@ -78,18 +78,18 @@ Module utilities.
       -> forall n m, allL U (mkseq (fun i => f (n + i+1)) m) (f n) (f (n+m+1)).
     Proof.
       move => H0 n m.
-      elim: m n H0 => [n /=| n' Hr n H0].
-      by rewrite addn0 addn1 /mkseq/= allL0 inE. 
+      elim: m n H0 => [n /= | n' Hr n H0].
+      by rewrite addn0 addn1 /mkseq/= allL0 in_setE.
       rewrite mkseqS allL_rc.
       have ->: (n + (n'.+1) + 1) = (n + n' + 1).+1 by lia. 
-      by apply/andP;split;[rewrite inE|apply: Hr].
+      by apply/andP;split;[rewrite in_setE|apply: Hr].
     Qed.
 
     Lemma f2allL': 
       (forall n m, allL U (mkseq (fun i => f (n + i+1)) m) (f n) (f (n+m+1)))
       -> (forall n, U (f(n), f(n.+1))).
     Proof.
-      by move => + n => /(_ n 0);rewrite addn0 allL0 inE addn1.
+      by move => + n => /(_ n 0);rewrite addn0 allL0 in_setE addn1.
     Qed.
     
     Lemma f2in: (forall n, f(n) \in S)
@@ -98,7 +98,7 @@ Module utilities.
       move => H0 n m.
       elim: m n H0 => [n /= ?| n' Hr n H0];first by rewrite andbT.
       rewrite mkseqS -rcons_cons allset_rcons.  
-      split. by apply: Hr. by rewrite -inE.
+      split. by apply: Hr. by rewrite -in_setE.
     Qed.
     
   End utilities.
@@ -151,7 +151,7 @@ Module injectivity.
       move: fin_codomain_prop => [n [p Hheq]]. 
       move => /f2allL/(_ n p);rewrite -addnA addn1 -Hheq. 
       move => /(@allL_All _ U)/= /andP [Ha _].
-      by rewrite inE Fset_s in Ha;exists (h n).
+      by rewrite in_setE Fset_s in Ha;exists (h n).
     Qed.
     
   End injectivity.
@@ -202,7 +202,7 @@ Module setT_injectivity.
       move: (set_fin_codomain_prop h) => [n [p Hheq]]. 
       move => /f2allL/(_ n p);rewrite -addnA addn1 -Hheq. 
       move => /(@allL_All _ U)/= /andP [Ha _].
-      by rewrite inE Fset_s in Ha;exists (h n).
+      by rewrite in_setE Fset_s in Ha;exists (h n).
     Qed.
     
   End setT_injectivity.
@@ -267,9 +267,9 @@ Module partial_iic_lemma_sub.
       have H1: (iic U') \/ (exists s, ~ (s \in B')).
       {
         apply: choose. 
-        move => a;rewrite inE /B' /= => HainB.
+        move => a;rewrite in_setE /B' /= => HainB.
         have /A0 [b [Hb H1]]: (sval a) \in  A `&` B
-          by rewrite inE;split;[rewrite -inE;apply/valP| rewrite /B' -inE].
+          by rewrite in_setE;split;[rewrite -in_setE;apply/valP| rewrite /B' -in_setE].
         by (exists (exist _ b Hb)).
         move: (A1) => [a Ha].
         by (exists (exist _ a Ha)). 
@@ -277,8 +277,8 @@ Module partial_iic_lemma_sub.
       have H2: (exists s, ~ (s \in B')) ->  (exists s, s \in A /\ ~ s \in B).
       {
         move => [s Hs].
-        rewrite inE /B' /= in Hs.
-        have Ha: (sval s) \in A by rewrite inE;apply: set_valP.
+        rewrite in_setE /B' /= in Hs.
+        have Ha: (sval s) \in A by rewrite in_setE;apply: set_valP.
         by exists (sval s).
       }
       have H3: (iic U') -> (exists h, (iic_fun  U h) /\ (forall n, (h n) \in A)).
@@ -286,7 +286,7 @@ Module partial_iic_lemma_sub.
         move => [j Hj];exists (fun n => (sval (j n))).
         split. 
         by move => n;rewrite /U'/= in Hj;apply: Hj.
-        by move => n;rewrite inE;apply: set_valP.
+        by move => n;rewrite in_setE;apply: set_valP.
       }
       move: H1 => [H1 | H1].
       by left;apply: H3.
@@ -312,8 +312,8 @@ Module inc_selection_lemma.
     Proof. 
       move: A1 =>/(_ p1.1) Hp1;case H1: (p1.2 \in (f p1.1)).
       by move: (H1) => /Hp1 [s2 /= [? ?]];(exists (p1.1.+1,s2));
-                      rewrite inE;split;[left|].
-      by move: A0 H1 => [v0 ?] /negP ?;exists (p1.1.+1,v0);rewrite inE;split;[right|].
+                      rewrite in_setE;split;[left|].
+      by move: A0 H1 => [v0 ?] /negP ?;exists (p1.1.+1,v0);rewrite in_setE;split;[right|].
     Qed.
 
     #[local] Lemma P2: exists (j: nat*T -> nat*T),
@@ -372,7 +372,7 @@ Section pre_kernel.
     have ->: t \in set0 = false by rewrite [t \in set0]inE;apply/asboolP.
     move => H1.
     have: t \in U#set0 by apply: H1.
-    by rewrite inE => -[y [_ ?]].
+    by rewrite in_setE => -[y [_ ?]].
   Qed.
 
 End pre_kernel.
@@ -455,7 +455,7 @@ Module iic_paths.
   Proof.
     move => H0 Ninf.
     move: (notiic_rloop_sub_L2 H0 Ninf) => [v H1];exists (sval v).
-    split=> [| w H2];first by rewrite inE;apply: set_valP.
+    split=> [| w H2];first by rewrite in_setE;apply: set_valP.
     have [w' <-]: exists (w': X), (sval w') = w by (exists (exist _ w H2)).
     by move => ?;apply: H1.
   Qed.
@@ -585,7 +585,7 @@ Section set_relation.
   Qed.
   
   Lemma Ile U A B: A `<=` B -> A [<= U] B.
-  Proof. by move => H1 /= a /set_mem/H1 ?;exists a;split;[rewrite inE|left]. Qed.
+  Proof. by move => H1 /= a /set_mem/H1 ?;exists a;split;[rewrite in_setE|left]. Qed.
 
   Lemma leI U S: S `<=` U -> ([<= S]%O)  `<=` ([<= U]%O).
   Proof.
@@ -782,7 +782,7 @@ Module Extend_non_absorbent_pre_kernel.
   Lemma not_absorbent_iff: 
     ~ (absorbent M X) <-> exists y, y \in Y. 
   Proof.
-    split;last by move => [y +] Hma;rewrite inE => [[/Hma ? ?]].
+    split;last by move => [y +] Hma;rewrite in_setE => [[/Hma ? ?]].
     contra => + y Hy => /(_ y). 
     by rewrite (@notin_setE T Y y) /Y /=  not_andE => -[? // |/contrapT ?].
   Qed.
@@ -806,17 +806,17 @@ Module Extend_non_absorbent_pre_kernel.
     Lemma fact0: forall x y, x \in X `\` (Xy y) -> ~ B (x,y).
     Proof. 
       move => x y /set_mem [H3 H4].
-      rewrite -inE in H3.
-      rewrite -[X in ~X]inE in H4.
+      rewrite -in_setE in H3.
+      rewrite -[X in ~X]in_setE in H4.
       have H0: x \in X -> ~(x \in (Xy y)) -> ~ B (x,y).
-      by move => H3';rewrite inE not_andE => [[? // | /contrapT ? //]].
+      by move => H3';rewrite in_setE not_andE => [[? // | /contrapT ? //]].
       by apply: (H0 H3 H4). 
     Qed.
     
     Lemma fact4: (X:#(R) `<=` M#X) -> forall x y, x \in X -> y \in Y -> (~ (R (x,y))) /\ (~ (M (y,x))).
     Proof.
       move => H0 x y /set_mem H1 /set_mem [H2 H3].
-      move: H3; rewrite inE/Aset/Fset/mkset => H3.
+      move: H3; rewrite in_setE/Aset/Fset/mkset => H3.
       rewrite -not_orP => -[ H4 | H4]. 
       + have /H0 H5:  X:#R y by rewrite /Aset/Fset/mkset;(exists x).
         by have H3n: (exists y0 : T, M (y, y0) /\ X y0) by [].
@@ -850,18 +850,18 @@ Module Extend_non_absorbent_pre_kernel.
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /set_mem [H1 H2] H3 H4 y' H5.
       rewrite /Aset FsetUr => /set_mem [/H0' H6 | /Fset_s H6].
-      + by rewrite FsetUr inE;left.
+      + by rewrite FsetUr in_setE;left.
       + (* two subcases *)
-        case H7: ( y' \in M#(X));first by rewrite FsetUr inE;left;rewrite -inE.
-        have H8: y' \in Y. rewrite /Y inE;split.
+        case H7: ( y' \in M#(X));first by rewrite FsetUr in_setE;left;rewrite -in_setE.
+        have H8: y' \in Y. rewrite /Y in_setE;split.
         move => H9.
-        by have H10: y' \in X `|` [set y] by rewrite inE;left;rewrite -inE.
+        by have H10: y' \in X `|` [set y] by rewrite in_setE;left;rewrite -in_setE.
         by rewrite H7.
         (* end of H8 *)
         move: (H3 y' H8 H6) => H11.
-        have H12: y' \in M#([set y]). rewrite inE. exists y.
+        have H12: y' \in M#([set y]). rewrite in_setE. exists y.
         split. rewrite /M. by right. by [].
-        by rewrite FsetUr inE;right; by rewrite -inE.
+        by rewrite FsetUr in_setE;right; by rewrite -in_setE.
     Qed.
 
     Lemma case1_RMprop1: forall y, 
@@ -878,14 +878,14 @@ Module Extend_non_absorbent_pre_kernel.
       pre_kernel R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) -> X [<= O] (X `|` [set y]).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /set_mem [H1 H2] H3 H4 y' /= H5.
-      by exists y';split;[rewrite inE;left; rewrite -inE |left].
+      by exists y';split;[rewrite in_setE;left; rewrite -in_setE |left].
     Qed.
     
     Lemma case1_notequal: forall y,
       pre_kernel R M X -> y \in Y -> (SeP y) -> ~ ( y \in X:#(B) ) ->
       (exists x' : T, x' \in X `|` [set y] /\ ~ x' \in X).
     Proof.
-      by move => y _ /set_mem [H1 _]; exists y;split;[rewrite inE;right|].
+      by move => y _ /set_mem [H1 _]; exists y;split;[rewrite in_setE;right|].
     Qed.
     
     Lemma set_not_equal (X': set T): (exists x' : T, x' \in X' /\ ~ (x' \in X)) -> ~ (X = X').
@@ -924,24 +924,24 @@ Module Extend_non_absorbent_pre_kernel.
       by have H12: ~ B(x,y) by apply: H7.
       have H12:  X `\` Xy y `<=` X by apply: subDsetl.
       move: H10 => /set_mem/H12 H10.
-      move: H8. rewrite inE /Aset/Fset /mkset => H13.
+      move: H8. rewrite in_setE /Aset/Fset /mkset => H13.
       have H14: (exists x : T, R^-1 (y, x) /\ X x).
       by (exists x). by [].
       (** fin de H9 *)
       
       have H10:  forall x : T, x \in X `\` Xy y -> ~ M (y, x).
       move => x H11.
-      move: H2. rewrite inE /Aset/Fset /mkset => H12.
+      move: H2. rewrite in_setE /Aset/Fset /mkset => H12.
       have H13:  X `\` Xy y `<=` X by apply: subDsetl.
       move: H11 => /set_mem/H13 H11.
       move => H14.
       by have H15: (exists y0 : T, M (y, y0) /\ X y0) by (exists x).
       
       have H11: ~ y \in M#(X `\` Xy y).
-      by rewrite inE /Aset/Fset /mkset => -[x [H12 /mem_set/H10 H13]].
+      by rewrite in_setE /Aset/Fset /mkset => -[x [H12 /mem_set/H10 H13]].
 
       have H12: ~ y \in (X `\` Xy y):#M.
-      by rewrite inE /Aset/Fset /mkset => -[x [H12 /mem_set/H9 H13]].
+      by rewrite in_setE /Aset/Fset /mkset => -[x [H12 /mem_set/H9 H13]].
 
       by apply: RelIndep_U.
     Qed.
@@ -954,14 +954,14 @@ Module Extend_non_absorbent_pre_kernel.
       rewrite /SeP;move => y [H0 [H0' H0'']] /set_mem [H1 H2] H3 H4 y' H4'.
       (** on a necessairement ~ (y = y') **)
       have P0: ~ (y = y')
-        by move => I1;(have I2: y \in  X `\` Xy y `|` [set y] by rewrite inE;right);rewrite -I1 in H4'.
-      rewrite inE/Aset/Fset/mkset => -[x [H5 [/mem_set H6 | H6]]];rewrite inE/Aset/Fset/mkset.
+        by move => I1;(have I2: y \in  X `\` Xy y `|` [set y] by rewrite in_setE;right);rewrite -I1 in H4'.
+      rewrite in_setE/Aset/Fset/mkset => -[x [H5 [/mem_set H6 | H6]]];rewrite in_setE/Aset/Fset/mkset.
       + (** x \in X\X_y *)
         move: (H6) => /fact3/set_mem H6'.
         have P0': ~ (y' = x)
-          by move => I1;(have I2: x \in  X `\` Xy y `|` [set y] by rewrite inE;left;rewrite -inE);
+          by move => I1;(have I2: x \in  X `\` Xy y `|` [set y] by rewrite in_setE;left;rewrite -in_setE);
                     rewrite -I1 in I2.
-        have H7: y' \in  X:#R by rewrite inE /Aset/Fset /mkset;(exists x).
+        have H7: y' \in  X:#R by rewrite in_setE /Aset/Fset /mkset;(exists x).
         have H8: y' \in  M#X by move: H7 => /set_mem/H0'/mem_set.
         move: H8 => /set_mem [x' [H8 H9]].
         move: H9;rewrite -{1}(Xpart y) => -[H9 | H9];first  by (exists x');split;[by [] | left].
@@ -973,27 +973,27 @@ Module Extend_non_absorbent_pre_kernel.
            have P1: ~ (x' = x) by move => H11;move: H6 H9;move: H11 => -> /set_mem [_ ?] ?. 
            have P2: ~ (y = y') by apply: P0.
            have P3: ~ (y' = x) by apply: P0'.
-           have P5: ~ (y = x ) by move => I1;rewrite -I1 -inE in H6'.
+           have P5: ~ (y = x ) by move => I1;rewrite -I1 -in_setE in H6'.
            have P7: R (x,y') by apply: H5.
            have P8: M (y',x')  by apply: H8.
            have P9: B (x',y) by move: H9;rewrite /Xy => -[H9 H9'].
            have P10: ~ (R (x',y)) /\ ~ (M (y,x')) 
-             by apply: (fact4 H0');rewrite inE;move: (@XyI y) => H11;move: H9 => /H11. 
+             by apply: (fact4 H0');rewrite in_setE;move: (@XyI y) => H11;move: H9 => /H11. 
            have P11:  ~ (M (x,y)) /\ ~ (M (y,x)).
            { 
              have ?: ~ (B (x,y)) by apply: fact0. 
-             have [? ?]: ~ (R (x,y)) /\ ~ (M (y,x))  by apply: (fact4 H0');rewrite inE.
+             have [? ?]: ~ (R (x,y)) /\ ~ (M (y,x))  by apply: (fact4 H0');rewrite in_setE.
              split;first by move => [? | ?].
              move => [Byx | Ryx];first by have ?: M(y,x) by left.
              by have ?: M(y,x) by right.
            }
            have P12_1:  ~ (M (x,x'))
-             by apply: H0;[by rewrite inE
-                     | by rewrite inE;move: (@XyI y) => H11;move: H9 => /H11
+             by apply: H0;[by rewrite in_setE
+                     | by rewrite in_setE;move: (@XyI y) => H11;move: H9 => /H11
                      | by move => H11; rewrite H11 in P1].
            have P12_2:  ~ (M (x',x))
-             by apply: H0;[rewrite inE;move: (@XyI y) => H11;move: H9 => /H11 
-                          | rewrite inE | move => H11;rewrite H11 in P1].
+             by apply: H0;[rewrite in_setE;move: (@XyI y) => H11;move: H9 => /H11 
+                          | rewrite in_setE | move => H11;rewrite H11 in P1].
            have P12: ~ (M (x,x')) /\ ~ (M (x',x)) by split.
            have P13: ~ (M (y',x)) by exact.
            have P4: ~ (y' = x')
@@ -1008,10 +1008,10 @@ Module Extend_non_absorbent_pre_kernel.
                ++++ move: H10;rewrite /Xy => /set_mem [H11 H12].
                     exists y. split. by rewrite /M;left. by right.
                ++++ have H11: y' \in Y. 
-                    rewrite inE/Y. split.
-                    rewrite -{1}(Xpart y) inE => -[H12| H12]. 
-                    by have H13: y' \in X `\` Xy y `|` [set y] by rewrite inE; left.
-                    by rewrite -inE H10 in H12.
+                    rewrite in_setE/Y. split.
+                    rewrite -{1}(Xpart y) in_setE => -[H12| H12]. 
+                    by have H13: y' \in X `\` Xy y `|` [set y] by rewrite in_setE; left.
+                    by rewrite -in_setE H10 in H12.
                     by rewrite H9. 
                     (** * end H11 *)
                     have H12: M (y', y)  by rewrite /M;right;apply: (H3 y' H11 H8).
@@ -1023,7 +1023,7 @@ Module Extend_non_absorbent_pre_kernel.
                     (exists y);split;[|  right].
                     
                     have H11: x' \in X by move: H10;rewrite /Xy => -[? _]. 
-                    have H12: y \in Y by rewrite inE/Y.
+                    have H12: y \in Y by rewrite in_setE/Y.
                     
                     have B0: ~ (y' = x') by apply: H9'.
                     have B0': ~ (y = y') by apply: P0.
@@ -1055,11 +1055,11 @@ Module Extend_non_absorbent_pre_kernel.
       -> X [<= O] ((X`\` (Xy y)) `|` [set y]).
     Proof.
       rewrite /SeP;move => y [H0 [H0' H0'']] /set_mem [H1 H2] H3 H4 x /=.
-      rewrite -{1}(Xpart y) inE => -[ H5 | H5].
-      + (* x \in  X `\` Xy *) by (exists x);split;[rewrite inE;left | left].
-      + (* x \in Xy y *) exists y;split;first by rewrite inE;right. 
+      rewrite -{1}(Xpart y) in_setE => -[ H5 | H5].
+      + (* x \in  X `\` Xy *) by (exists x);split;[rewrite in_setE;left | left].
+      + (* x \in Xy y *) exists y;split;first by rewrite in_setE;right. 
         have H6: B (x,y) by move: H5 => [_ ?].
-        move: H2;rewrite inE/Fset/mkset => H2.
+        move: H2;rewrite in_setE/Fset/mkset => H2.
         have H7: X x  by rewrite -{1}(Xpart y);right.
         have H8: ~ (M (y, x))
           by move => H8;have H9: (exists y0 : T, M (y, y0) /\ X y0) by (exists x).
@@ -1070,7 +1070,7 @@ Module Extend_non_absorbent_pre_kernel.
       pre_kernel R M X -> y \in Y -> (SeP y) -> ( y \in X:#(B) ) ->
       (exists x' : T, x' \in ((X`\` (Xy y)) `|` [set y]) /\ ~ x' \in X).
     Proof.
-      by move => y _ /set_mem [H1 _]; exists y;split;[rewrite inE;right|].
+      by move => y _ /set_mem [H1 _]; exists y;split;[rewrite in_setE;right|].
     Qed.
 
     Lemma case2 (A3: Assumption3 B M O)(A4: Assumption4 R B M)(A5: Assumption5 R B M) : forall y,
@@ -1101,15 +1101,15 @@ Lemma extend_prekernel
       have Hne: [set: Y] !=set0 <-> exists x, x \in Y.
       {
         split => [[x _] |[x Hx]];last by (exists (exist _ x Hx)).
-        by exists (sval x);rewrite inE; apply/set_valP.
+        by exists (sval x);rewrite in_setE; apply/set_valP.
       }
       have Hna: (nonempty [set: Y]) -> exists y, y \in Y /\ (SeP y)
             by move => H0;pose proof (Sx_1 A2 H0). 
       move => H1 /not_absorbent_iff/Hne/Hna [y [H2 H3]]. 
-      have H4: y \in (X:#(B) `|` (X:#(B)).^c) by rewrite (setUv X:#(B)) inE.
-      move: H4 => /set_mem [ H4 | H4];rewrite -inE in H4.
+      have H4: y \in (X:#(B) `|` (X:#(B)).^c) by rewrite (setUv X:#(B)) in_setE.
+      move: H4 => /set_mem [ H4 | H4];rewrite -in_setE in H4.
       by move: (case2 A3 A4 A5 H1 H2 H3 H4) => H5;exists (X `\` Xy y `|` [set y]).
-      move: H4;rewrite in_setC notin_setE -[X in ~ X]inE => H4.
+      move: H4;rewrite in_setC notin_setE -[X in ~ X]in_setE => H4.
       by move: (case1 H1 H2 H3 H4) => H5;exists (X `|` [set y]).
     Qed.
     
@@ -1145,7 +1145,7 @@ Definition Elt (C: set SType) :=
     (* end snippet EltN *)   
 
     Lemma S2Scal: forall (S: SType), (sval S) \in Scal.
-    Proof. by move => [S [H1 [H2 H3]]];rewrite inE. Qed.
+    Proof. by move => [S [H1 [H2 H3]]];rewrite in_setE. Qed.
 
     Lemma Scal2S: forall S, S \in Scal -> exists (S': SType), (sval S') = S.
     Proof. by move => S /set_mem H1; exists (exist _ S H1). Qed.
@@ -1265,7 +1265,7 @@ Definition Sinf :=
             -> exists S1, S1 \in C /\ S [<=] S1 /\ ~ (s \in (sval S1)).
         Proof.
           move => S s H2 H3. 
-          apply contraPP;rewrite not_existsP 2!not_notE inE /Sinf => H4;exists S.
+          apply contraPP;rewrite not_existsP 2!not_notE in_setE /Sinf => H4;exists S.
           split => [// | ];split => [// |A ? ?].
           by move: H4 => /(_ A) /not_andP [? //|/not_andP [// | /contrapT ?]].
         Qed.
@@ -1449,9 +1449,9 @@ Definition Sinf :=
           by (exists x);(have H12: M(y,x) by right;move: B1;rewrite H11).
           by move: H11 => /H10 H11;(have H12: M(x,y) by right).
         + (* now  ~ y \in Sinf C *)
-          have B2: ~ (x = y) by move => I1;rewrite -I1 inE in H9'.
+          have B2: ~ (x = y) by move => I1;rewrite -I1 in_setE in H9'.
           move: (EM (M (y,x))) => [? | B3];first by (exists x).
-          have H10: (sval X):#R y by (exists x);split;[ |rewrite -inE].
+          have H10: (sval X):#R y by (exists x);split;[ |rewrite -in_setE].
           move: H10 => /H8 [x' [B4 /mem_set H11]].
           
           move: (EM (x' \in (Sinf C))) => [/set_mem ? | B5];first by (exists x').
@@ -1466,7 +1466,7 @@ Definition Sinf :=
           by rewrite -H21 in B7.
           
           move: (EM (x' = y')) B4 => [-> | B3''] B4.
-          by (exists y'); rewrite inE in B7. 
+          by (exists y'); rewrite in_setE in B7. 
           
           have P11': ~ ((M `|` M^-1) (x',x))
             by pose proof (@RelIndep_E _ x x' M _ H5 H11 B6 H7).
@@ -1488,14 +1488,14 @@ Definition Sinf :=
             by move: H3 => /mem_set H3;
                           pose proof (@RelIndep_E _ x y' M _ H3 B7 P3 (Sinf_indep)).
           
-          exists y'. split. by apply: (A9 x y x' y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12). by rewrite -inE.
+          exists y'. split. by apply: (A9 x y x' y' P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12). by rewrite -in_setE.
       Qed.
       
       Lemma Sinf_Scal (A2: Assumption2 R) (A3: Assumption6_1 O) (A4: Assumption6_2 O)
         (A5:Assumption6_3 O M) (A9: Assumption6_4 R B O M):
         (Sinf C) \in Scal. 
       Proof.
-        by rewrite inE;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
+        by rewrite in_setE;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
       Qed.
       
       Lemma Sinf_final (A2: Assumption2 R) (A3: Assumption6_1 O) (A4: Assumption6_2 O)   (A5:Assumption6_3 O M) (A9: Assumption6_4 R B O M):
@@ -1520,7 +1520,7 @@ Definition Sinf :=
       move: H4 => /negP/contrapT/eqP H4. 
       
       move: (SType_not_empty A1 A2);rewrite set0P => -[Sm Ht].
-      by exists Sm; move => S; rewrite H4 -inE in_set0. 
+      by exists Sm; move => S; rewrite H4 -in_setE in_set0. 
     Qed.
     
     (** * back to Maximal set in pre_kernels *)
@@ -1727,7 +1727,7 @@ Module ltSet_periodic_to_lt_periodic.
         (* implied by A2 *)
         have H1: 0 < size Sq.
         { move: A2;contra;rewrite leqn0 => /eqP/size0nil H1.
-          by move: A2;rewrite H1 allL0 inE DeltaCP notin_setE DeltaCP.
+          by move: A2;rewrite H1 allL0 in_setE DeltaCP notin_setE DeltaCP.
         }
         (* for lemma allL_Tr *)
         have Inc_Tr : transitive (@Inc T)
@@ -1764,7 +1764,7 @@ Module ltSet_periodic_to_lt_periodic.
         move: (@f_setR _ S Sq (leSet U)) A1 => Hinc /Hinc Hinc'.
         split;first by move => n k;rewrite addnA /g f_kperiodic.
         split;first by (exists a).
-        split;move => n;last by rewrite -inE.
+        split;move => n;last by rewrite -in_setE.
         by rewrite -addn1 addnA;move: Hinc' => /(_ (j + n));rewrite -addn1.
       Qed.
 
@@ -1897,7 +1897,7 @@ Module ltSet_periodic_to_lt_periodic.
         -> (h (k*(size (S::Sq)))) \in (Ig g).
       Proof.
         move => H4.
-        rewrite (IgP G1) inE => j Hs.
+        rewrite (IgP G1) in_setE => j Hs.
         have <-: g (j + k * size (S :: Sq)) = g j by apply:G1.
         have H5: j <= (size (S::Sq)) by lia.
         by move: H4 => /(_ j H5) <-;rewrite 1!addnC.
@@ -1975,7 +1975,7 @@ Section FinsetToClassical.
   Lemma in_fin_of_set (A: set T) x: x \in [:fin: A] <-> x \in A.
   Proof. by split => [H | H];[by rewrite inE in H | rewrite inE]. Qed.
 
-  Lemma in_finE A x: (x \in A) = (x \in [:set: A]).
+  Lemma in_fin_setE A x: (x \in A) = (x \in [:set: A]).
   Proof.
     rewrite [RHS]inE.
     case H: `[< [:set: A] x >].
@@ -1987,11 +1987,11 @@ Section FinsetToClassical.
   Lemma in_finP A x: reflect (x \in [:set: A]) (x \in A).
   Proof.  by apply: (iffP idP);move/in_set_of_fin. Qed.
   
-  Lemma in_sinE A x: x \in A = (x \in (in_set [:set: A])).
-  Proof. by rewrite in_finE. Qed.
+  Lemma in_sin_setE A x: x \in A = (x \in (in_set [:set: A])).
+  Proof. by rewrite in_fin_setE. Qed.
   
   Lemma set_of_fin_eqi A:  A =i [:set: A].
-  Proof. by move => x;apply: in_finE. Qed.
+  Proof. by move => x;apply: in_fin_setE. Qed.
   
   Lemma set_to_finK : cancel fin_of_set set_of_fin.
   Proof.
@@ -2033,7 +2033,7 @@ Section FinsetToClassical.
     rewrite in_set_of_fin finset.in_setI.
     split;last by move => /set_mem [/mem_set/in_finP -> /mem_set/in_finP ->].
     move => /andP [/in_finP ? /in_finP ?].
-    by rewrite inE;split;by rewrite -inE.
+    by rewrite in_setE;split;by rewrite -in_setE.
   Qed.
 
   Lemma set_of_fin_subset A B : 
@@ -2082,19 +2082,112 @@ Section FinsetToClassical.
   Lemma set_of_sfin v:  [:set: [set v]] = [set v]%classic.
   Proof.
     rewrite predeqE => x. 
-    split;first by rewrite -inE in_set_of_fin inE => /eqP ->.
-    by move => ->;rewrite -inE in_set_of_fin inE.
+    split;first by rewrite -in_setE in_set_of_fin inE => /eqP ->.
+    by move => ->;rewrite -in_setE in_set_of_fin inE.
   Qed.
 
   Lemma set_of_set0 :  [:set: finset.set0] = set0.
   Proof.
-    by rewrite predeqE => x;split;[rewrite -inE in_set_of_fin inE |].
+    by rewrite predeqE => x;split;[rewrite -in_setE in_set_of_fin inE |].
   Qed.
 
 End FinsetToClassical.
 
 Notation "[ ':set:' A ]" := (set_of_fin A) (format "[ ':set:'  A ]").
 Notation "[ ':fin:' A ]" := (fin_of_set A) (format "[ ':fin:'  A ]").
+
+
+Section FsetToClassical.
+  (** * XXXXXX WIP *)
+  (** * from {fset T} to (set T) *)
+  
+  Variable (T : choiceType).
+  Implicit Types (A B : {fset T}) (x: T).
+  
+  Notation "[ 'fset`' A ]":= (fset_set A).
+  
+  Lemma in_fsetE A x: x \in [set` A] <-> x \in A.
+  Proof. by rewrite in_setE /=. Qed.
+  
+  Lemma in_fsetP A x: reflect (x \in [set` A]) (x \in A).
+  Proof.  by apply: (iffP idP);move/in_fsetE. Qed.
+
+  Lemma in_fset_of_set (A: set T) x: finite_set A -> ( x \in [fset` A] <-> x \in A).
+  Proof. by move => /in_fset_set ->. Qed.
+
+  Lemma fset_setE A : [fset` [set` A]] = A.
+  Proof. 
+    apply/fsetP;move => x.
+    have Afin: (finite_set [set` A]) by [].
+    move: Afin => /in_fset_of_set => /(_ x).
+    rewrite in_fsetE => H1.
+    case xinA: (x \in A);first by move: xinA => /H1.
+    by move: xinA;contra;rewrite H1.
+  Qed.
+  
+  Lemma set_of_fset0 :  [set` (@fset0 T)] = set0.
+  Proof. by rewrite predeqE /= => x;rewrite in_fset0. Qed.
+
+  Lemma set_of_fset1 x: [set` ([fset x]%fset)] = [set x]%classic.
+  Proof.
+    by rewrite predeqE /= => x';rewrite in_fset1;split =>[/eqP |-> ]. 
+  Qed.
+  
+  Lemma set_of_fsetU A B: 
+    [set` (A `|` B)%fset] = [set` A] `|` [set` B].
+  Proof.
+    rewrite predeqE /= => x;rewrite in_fsetU.
+    split;first by move => /orP.
+    by move => [-> |->];[rewrite orTb|rewrite orbT].
+  Qed.
+
+  Lemma set_of_fsetI A B : 
+    [set` (A `&` B)%fset] = [set` A] `&` [set` B].
+  Proof.
+    rewrite predeqE /= => x;rewrite in_fsetI.
+    by split;[move => /andP | move => [-> ->]].
+  Qed.
+  
+  Lemma set_of_fset_subset A B : 
+    (A `<=` B)%fset <-> [set` A] `<=` [set` B].
+  Proof.
+    split => [/fsubsetP Hpr | Hpr];first by move => x /= => /Hpr.
+    apply/fsubsetP => x. 
+    by move => /in_fsetE/set_mem/Hpr/mem_set/in_fsetE xinA.
+  Qed.
+  
+  Lemma set_of_fset_proper A B : 
+    (A `<` B)%fset <-> [set` A] `<` [set` B].
+  Proof.
+    split => [ | [Hpr Hpr']].
+    + rewrite fproperEneq => /andP [AsubB nBsubA].
+      split; first by rewrite -set_of_fset_subset.
+      move: nBsubA;rewrite -set_of_fset_subset /=.
+      move => H1 H2.
+      have: A == B. rewrite eqEfsubset. apply/andP. by split.
+      by move: AsubB => + /eqP => /[swap] ->;rewrite eq_refl. 
+    + rewrite fproperEneq;apply/andP. 
+      split;last by rewrite set_of_fset_subset.
+      by apply/negP => /eqP Heq;rewrite Heq in Hpr Hpr'.
+  Qed.
+  
+  Lemma fset2set_inj A B: [set` A] = [set` B] -> A = B.
+  Proof. by move => H1;rewrite -(fset_setE A) -(fset_setE B) H1. Qed.
+  
+  Lemma set2fset_inj (A B: set T) : 
+    finite_set A -> finite_set B -> [fset` A] = [fset` B] -> A = B.
+  Proof. 
+    by move => /fset_setK H1 /fset_setK H2 H3;rewrite -H1 -H2 H3.
+  Qed.
+
+End FsetToClassical.
+
+Notation "[ 'fset`' A ]":= (fset_set A).
+
+
+
+
+
 
 Module fin_Maximal.
   (** * There's always a maximal element in a finite nonempty poset *)
