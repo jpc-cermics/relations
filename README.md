@@ -3,6 +3,10 @@
 This repository contains a Rocq general library for classical relations 
 and Rocq code used as companion material for a set of papers.
 
+- [Conditional Separation as a Binary Relation. A Coq Assisted Proof](https://hal.science/hal-03315809v2)
+- [Topological Conditional Separation](https://hal.science/hal-03315811)
+- [A formal proof of the Sands-Sauer-Woodrow theorem](https://hal.science/xxxxxx)
+
 ## Meta
 
 - Author(s):
@@ -18,16 +22,16 @@ and Rocq code used as companion material for a set of papers.
 
 ## What's inside?
 
-Binary relations: 
+### Binary relations: 
 
 - `rel.v`: binary relations as sets 
 
-Graphs and paths:
+### Graphs and paths:
 
 - `seq1.v`: edges, extended oriented paths, and active extended oriented paths
 - `seq2.v`: additional results on paths using eqtype and uniq 
 
-Paper companion files:
+### Paper companion files:
 
 - `paper_relations.v`: lemmas for binary relations used in the two first papers
 - `paper_csbr.v`: companion code for *Conditional Separation as a Binary Relation*
@@ -37,14 +41,34 @@ Paper companion files:
 - `paper_kernels.v`, `paper_kernels_common.v`, companion developments for kernel-related results
 - `rel_dpdgraph.v`: utility to produce graphs for TeX files
   
-Unused files:
+### Unused files:
 - `ssrel.v`: transitive closure (MathComp/SSReflect version of `Coq/theories/Relations`)
 - `topology.v`: topology notions associated to orders.
 - `mypreorder.v`: preorders and related utilities
 
-Documentation and misc:
+### Documentation and misc:
 
-- `doc/`: material used to produce snippets of code
+- `doc/`: material used to produce snippets of code using alectryon. 
+
+## How to get it
+
+Clone from GitHub:
+
+- https://github.com/jpc-cermics/relations
+
+## Compilation
+
+From the repository root:
+
+```sh
+make
+```
+
+The `Makefile` simply calls:
+
+```sh
+dune build
+```
 
 ## Installed packages with opam 
 
@@ -80,18 +104,4 @@ Documentation and misc:
 - rocq-runtime                  9.1.1         The Rocq Prover -- Core Binaries and Tools
 - rocq-stdlib                   9.0.0         The Rocq Proof Assistant -- Standard Library
 - vsrocq-language-server        2.4.3+1       VSRocq language server
-
-## Compilation
-
-From the repository root:
-
-```sh
-make
-```
-
-The `Makefile` simply calls:
-
-```sh
-dune build
-```
 
