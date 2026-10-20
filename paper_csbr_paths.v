@@ -42,7 +42,10 @@ Definition Oedge {T: Type} (R: relation T): set (T*T*O) :=
 Definition ChrelO {T: Type} := [set ppa: (T*T*O)*(T*T*O) | (ppa.1.1).2 = (ppa.2.1).1].
 (* end snippet ChrelO *)  
 
+(* Start of removable part XXXXXX  *)
+(* 
 (* begin snippet Atr:: no-out *)  
+(* unused *)
 Definition A_tr {T: Type} (X: set T) (R: relation T) := 
   ChrelO `&` 
     [set oe : (T*T*O) * (T*T*O)| match (oe.1.2,oe.2.2, oe.1.1.2) with 
@@ -51,11 +54,16 @@ Definition A_tr {T: Type} (X: set T) (R: relation T) :=
 (* end snippet Atr *)
  
 (* begin snippet ActiveOe:: no-out *)  
+(* unused *)
 Definition ActiveOe {T: Type} (X: set T) (R: relation T) :=  
   ((Oedge R) `*` Oedge R) `&` (A_tr X R).
 (* end snippet ActiveOe *)  
+*)
+(* End of removable part XXXXX *)
+
 
 (* Equivalent definition see ActiveOe_iff used in proofs *)
+(* begin snippet ActiveOep:: no-out *)  
 Definition ActiveOe' {T: Type} (X: set T) (R: relation T) := 
   [set oe : (T*T*O) * (T*T*O) | 
     Oedge R oe.1 /\ Oedge R oe.2 /\ (ChrelO oe)
@@ -65,7 +73,7 @@ Definition ActiveOe' {T: Type} (X: set T) (R: relation T) :=
       | (N,P,v) => X.^c v
       | (P,N,v) => (Fset R.* X) v
       end].
-
+(* end snippet ActiveOep *)  
 
 (* Active is now almost expressed as a transitive closure 
  * on an lifted space (A * A) * O as it uses AllL *)
@@ -760,6 +768,8 @@ Section ActiveOe_equiv.
   Context {T: Type}.
   Implicit Types (W X: set T) (R: relation T) (o: O) (p: seq (T*T*O)).
 
+(* Start of removable part XXXXXX  *)
+(*
   Lemma ActiveOe_iff: forall (W: set T) (E: relation T), 
       ActiveOe W E = ActiveOe' W E.
   Proof.
@@ -768,11 +778,14 @@ Section ActiveOe_equiv.
     by split => [[[H1 H2] [H3 H4]] | [H1 [H2 [H3 H4]]]]. 
   Qed.
   
-  Lemma ActiveOe'_ChrelO W R: (ActiveOe' W R) `<=` ChrelO.
-  Proof. by rewrite /subset => s [_ [_ [? _]]]. Qed.
-  
   Lemma ActiveOe'_A_tr W R: (ActiveOe' W R) `<=` (A_tr W R).
   Proof. by rewrite /setI /subset => s [_ [_ ?]]. Qed.
+*)
+(* End of removable part XXXXX *)
+  
+
+  Lemma ActiveOe'_ChrelO W R: (ActiveOe' W R) `<=` ChrelO.
+  Proof. by rewrite /subset => s [_ [_ [? _]]]. Qed.
   
   Lemma ChrelO_eq: forall (x y z t: T) (o1 o2:O),
       ChrelO ((x,y,o1), (z,t,o2)) <-> y = z.
@@ -781,7 +794,7 @@ Section ActiveOe_equiv.
 End  ActiveOe_equiv.
 
 (* Start of removable part XXXXXX  *)
-
+(* 
 Section Endpoints_and_Deployment.
   (** * endpoints  *)
   
@@ -1396,6 +1409,7 @@ Section Extended_Oriented_Paths.
   Qed.
   
 End Extended_Oriented_Paths.
+*)
 (* End of removable part XXXXX *)
 
 Section Active_path_unique. 

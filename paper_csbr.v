@@ -176,10 +176,12 @@ Section Bw_implies_active_path.
   
   Implicit Types (x y:T) (p: seq T).
 
+  (* begin snippet clten:: no-out *) 
   (** * csbr: Lemma 10 *)
   Lemma C_L10 x y:
     Bw (x,y) -> (exists (p: seq T), Active_path W E (Lifto (x::(rcons p y)) P) x y
                               /\ p [\in] (Ew.+)#_(y)).
+  (* end snippet clten *) 
   Proof.
     rewrite /Bw -DuT_eq_Tstar => -[x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
     move: H2; rewrite {1}TCP => -[p /Tclos_to_paths_l [H3 [H4 H5]]].

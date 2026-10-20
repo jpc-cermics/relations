@@ -17,6 +17,7 @@ SNIPPETS = \
 	snippets/paper_csbr/Lsepttwo-n.tex \
 	snippets/paper_csbr/Lseptthree-n.tex \
 	snippets/paper_csbr/Lseptfour-n.tex \
+	snippets/paper_csbr/clten-n.tex \
 	snippets/paper_monochromatic/Chains-n.tex \
 	snippets/paper_monochromatic/Mono-n.tex \
 	snippets/paper_monochromatic/SType-n.tex \
