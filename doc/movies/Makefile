@@ -6,7 +6,7 @@ include config.mk
 
 # Use driver-new.py, which applies the LaTeX substitutions that used to be
 # done by the SED variable below, directly inside the Alectryon pipeline.
-driver := $(dir $(lastword $(MAKEFILE_LIST)))driver-new.py
+driver := $(dir $(lastword $(MAKEFILE_LIST)))driver.py
 alectryon = \
 	$(PYTHON) $(driver) $(alectryon_flags) --output-directory "$@"
 
@@ -166,7 +166,7 @@ include targets.mk
 .PHONY: all clean
 
 allstd: $(targets)
-	@$(PYTHON) ./driver-new.py --frontend coq --backend assets --output-directory $(assets_root) -
+	@$(PYTHON) ./driver.py --frontend coq --backend assets --output-directory $(assets_root) -
 
 clean:
 	@rm -fr $(snippets_root)
