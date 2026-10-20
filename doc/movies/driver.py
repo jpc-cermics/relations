@@ -161,8 +161,10 @@ LATEX_SUBSTITUTIONS = [
     ("⊥", "\\(\\bot\\)"),
     ("Δ", "\\(\\Delta\\)"),
     ("{/\\PYZbs{}", "{\\(\\,\\wedge\\,\\)"),
+    ("\\PY{o}{[\\PYZbs{}}\\PY{k+kr}{in}\\PY{o}{]}", "\\PY{o}{[}\\({\\in}\\)\\PY{o}{]}"),
+    ("\\PY{o}{[\\PYZbs{}}\\PY{k}{in}\\PY{o}{]}", "\\PY{o}{[}\\({\\in}\\)\\PY{o}{]}"),
+    ("\\PY{o}{\\PYZbs{}}\\PY{k}{in}", "\\(\\in\\)"),
     ("\\PY{o}{\\PYZbs{}}\\PY{k+kr}{in}", "\\(\\in\\)"),
-    ("\\PY{o}{[\\PYZbs{}}\\PY{k+kr}{in}\\PY{o}{]}", "\\([{\\in}]\\)"),
     ("[\\PYZbs{}in]", "\\([{\\in}]\\)"),
     ("`;`", ";"),
     ("`|`", "\\(\\cup\\)"),
@@ -178,6 +180,8 @@ LATEX_SUBSTITUTIONS = [
     ("\\end{alectryon}", ""),
     ("{\\PYZti{}", "{\\(\\neg\\)"),
     ("`\\PYZlt{}=`", "\\(\\subset\\)"),
+    ("\\PY{o}{[}\\PY{n}{L}\\PY{o}{\\PYZbs{}}\\PY{k}{in}\\PY{o}{]}", "\\PY{o}{[}L{\\(\\in\\)}\\PY{o}{]}"),
+    
 ]
 
 def apply_latex_substitutions(tex):

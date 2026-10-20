@@ -788,19 +788,23 @@ Section Endpoints_and_Deployment.
   Variables (T: Type) (ptv: T*T).
   
   (* begin snippet Pe:: no-out *)  
+  (* unused *)
   Definition Pe (st: seq T) := (head ptv.1 st, last ptv.1 st).
   (* end snippet Pe:: no-out *)  
   
   (* begin snippet Epe1:: no-out *)  
+  (* unused *)
   Definition Epe1 (spt: seq (T*T)) := (Pe (UnLift spt ptv.1)) .
   (* end snippet Epe1 *)  
   
   (* begin snippet Epe:: no-out *)  
+  (* unused *)
   Definition Epe (spt: seq (T*T)) := ((head ptv spt).1, (last ptv spt).2).
   (* end snippet Epe *)  
   
   (* Epe (Lift st) = Pe st *)
   (* begin snippet EpeLift:: no-out *)  
+  (* unused *)
   Lemma Epe_Lift: forall (st:seq T), st \in Lift_Dom -> Epe (Lift st) = Pe st.
   (* end snippet EpeLift *)  
   Proof.
@@ -826,6 +830,7 @@ Section Endpoints_and_Deployment.
   
   (* Pe (UnLift spt ptv.1) = Epe spt. *) 
   (* begin snippet PeUnLift:: no-out *)  
+  (* unused *)
   Lemma Pe_UnLift: forall (spt: seq (T*T)), 
       spt \in Lift_Im->Pe (UnLift spt ptv.1)=Epe spt.
   (* end snippet PeUnLift *)  
@@ -839,20 +844,24 @@ Section Endpoints_and_Deployment.
    *) 
 
   (* begin snippet DP:: no-out *)  
+  (* unused *)
   Definition D_P (R E: relation T):= 
     [set spt| spt \in Lift_Im /\ R (Epe spt) /\ spt [\in] E ].
   (* end snippet DP *)  
   
   (* begin snippet DPs:: no-out *)  
+  (* unused *)
   Definition D_P_s (x y: T) (E: relation T):= D_P [set (x,y)] E.
   (* end snippet DPs *)  
 
   (* begin snippet DV:: no-out *)  
+  (* unused *)
   Definition D_V (R E: relation T):=
     [set st| st \in Lift_Dom /\ R (Pe st) /\ st [L\in] E].
   (* end snippet DV *)  
   
   (* begin snippet DVs:: no-out *)  
+  (* unused *)
   Definition D_V_s (x y:T) (E: relation T) := D_V [set (x,y)] E.
   (* end snippet DVs *)  
 
@@ -868,6 +877,7 @@ Section Endpoints_and_Deployment.
   Qed.
   
   (* begin snippet DPDV:: no-out *)  
+  (* unused *)
   Lemma DP_DV: forall (R E: relation T), image (D_V R E) (@Lift T) = (D_P R E).
   (* end snippet DPDV:: no-out *)  
   Proof.
@@ -909,6 +919,7 @@ Section seq_pairs_subsets.
   Variables (T: Type).
 
   (* begin snippet Epathgt:: no-out *)  
+  (* unused *)
   Example P_gt (n: nat) (E: relation T)  := 
     [set spt | size(spt) > n /\ spt [\in] E /\ spt [L\in] Chrel].
   (* end snippet Epathgt *)  
@@ -922,10 +933,12 @@ Section Extended_Oriented_Paths.
   Variable (T:Type) (tv:T) (ptv: T*T).
   
   (* begin snippet LiftO:: no-out *)  
+  (* unused *)
   Definition LiftO (st: seq T) (so: seq O) := pair (Lift st) so.
   (* end snippet LiftO *)  
   
   (* begin snippet LiftOp:: no-out *)  
+  (* unused *)
   Definition LiftOp (stso: (seq T)*(seq O)) := pair (Lift stso.1) stso.2.
   (* end snippet LiftOp *)  
   
@@ -1028,6 +1041,7 @@ Section Extended_Oriented_Paths.
   (** * U_gt and  p: seq (T*T*O), p [\in] E and p [L\in] R] *)
   
   (* begin snippet Ugt:: no-out *) 
+  (* unused *)
   Example U_gt (n: nat) (E: relation T):=
     [set sto | size(sto) > n /\ sto [\in] (Oedge E) /\ (Lift sto) [\in] ChrelO].
   (* end snippet Ugt *)
@@ -1054,6 +1068,7 @@ Section Extended_Oriented_Paths.
   Qed.
   
   (* begin snippet Ugeone:: no-out *) 
+  (* unused *)
   Definition U_ge_1 (E: relation T):=
     [set sto | sto [\in] (Oedge E) /\  size(sto) > 0 /\ 
                  (Lift sto) [\in] ChrelO].
@@ -1062,11 +1077,13 @@ Section Extended_Oriented_Paths.
   (** * Endpoints in Extended oriented paths *)
   
   (* begin snippet Eope:: no-out *)  
+  (* unused *)
   Definition Eope (stto : seq(T*T*O)) : T*T :=
     ((head (ptv,P) stto).1.1, (last (ptv,P) stto).1.2).
   (* end snippet Eope *)  
   
   (* begin snippet EopeLiftO:: no-out *)  
+  (* unused *)
   Lemma Eope_LiftO: forall (st:seq T) (so:seq O),
       size(st) > 1 -> size (so) = size st -1 -> Eope (LiftO st so) = Pe ptv st.
   (* end snippet EopeLiftO *)  
@@ -1086,6 +1103,7 @@ Section Extended_Oriented_Paths.
   Qed.
   
   (* begin snippet PeUnLiftO:: no-out *)  
+  (* unused *)
   Lemma Pe_UnLiftO: forall (stto: seq (T*T*O)), 
       size(stto) > 0 -> stto [L\in] ChrelO -> 
       (Pe ptv (UnLiftO stto ptv.1).1) =  Eope stto.
@@ -1110,15 +1128,18 @@ Section Extended_Oriented_Paths.
    *) 
   
   (* begin snippet DU:: no-out *)  
+  (* unused *)
   Definition D_U (R E: relation T) := [set stto : seq (T*T*O) |size(stto)>0 
      /\ R (Eope stto) /\ stto [\in] (Oedge E) /\ stto [L\in] ChrelO].
   (* end snippet DU *)  
   
   (* begin snippet DU1:: no-out *)  
+  (* unused *)
   Definition D_U_s (x y: T) (E: relation T):= D_U [set (x,y)] E.
   (* end snippet DU1 *)  
   
   (* begin snippet DUp:: no-out *)  
+  (* unused *)
   Definition D_U' (R E: relation T):=
     [set st : (seq T)*(seq O) | 
       st.1 \in (@Lift_Dom T) /\ size(st.2) = size(st.1) -1 /\ 
@@ -1126,10 +1147,12 @@ Section Extended_Oriented_Paths.
   (* end snippet DUp *)  
   
   (* begin snippet DV1:: no-out *)  
+  (* unused *)
   Definition D_U'_s (x y:T) (E: relation T) := D_U' [set (x,y)] E.
   (* end snippet DV1 *)  
   
   (* begin snippet DUDU':: no-out *) 
+  (* unused *)
   Lemma DU_DU': forall (R E: relation T), image (D_U' R E) LiftOp = (D_U R E).
   (* end snippet DUDU':: no-out *)  
   Proof.
@@ -1178,6 +1201,7 @@ Section Extended_Oriented_Paths.
   Qed.
   
   (* begin snippet DU2:: no-out *) 
+  (* unused *)
   Definition D_U'' (R E: relation T):=
     [set spa | spa [\in] (Oedge E) /\
                  (exists p, exists x,exists y,exists o, (LiftO (x::(rcons p y)) o) = spa /\ R (x,y))].
@@ -1192,6 +1216,7 @@ Section Extended_Oriented_Paths.
   (** * The final set we wish to study *)
 
   (* begin snippet DUa:: no-out *)  
+  (* unused *)
   Definition D_U_a (R E: relation T) (W: set T) (x y:T):=
     (D_U R E) `&` [set stto | stto [L\in] (A_tr W E)].
   (* end snippet DUa *)  
@@ -1216,6 +1241,7 @@ Section Extended_Oriented_Paths.
     D_U_a [set (x,y)] E W x y.
   
   (* begin snippet DUaone:: no-out *)  
+  (* unused *)
   Definition D_U_a1 (E: relation T) (W: set T) (x y:T):=
     [set stto |size(stto)>0 /\ (Eope stto)=(x,y) /\ stto [\in] (Oedge E) 
                /\ stto [L\in] ChrelO /\ stto [L\in] (A_tr W E)].
@@ -1358,6 +1384,7 @@ Section Extended_Oriented_Paths.
   Qed.
   
   (* begin snippet  Activeeq:: no-out *)  
+  (* unused *)
   Definition Ub (W: set T) (E: relation T) := 
     ~` [set stto | stto [L\in] (A_tr W E)].
   Lemma D_separated_iff: forall (W: set T) (E: relation T) (x y: T),
