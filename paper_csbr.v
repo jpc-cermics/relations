@@ -393,8 +393,8 @@ Section Dw_path.
       pose proof C_L13 H4 as [p2 [p3 [t' [z' [H7 [H8 [Ho2 Ho3]]]]]]].
       pose proof C_L14_2 H5 as [p4 [z'' [H9 Ho4]]].
       pose proof C_L13_2 H4 as [H10 H11].
-      have H12: ActiveOe' W E ((y', t, P), (t, t', N)) by [].
-      have H13: ActiveOe' W E ((z', z, P),(z, z'', N)) by [].
+      have H12: ActiveOe W E ((y', t, P), (t, t', N)) by [].
+      have H13: ActiveOe W E ((z', z, P),(z, z'', N)) by [].
       have H14: Active_path W E
                   (rcons p1 (y', t, P) ++ (t, t', N)::(rcons p2 (z', z, P)))
                   x z
@@ -407,7 +407,7 @@ Section Dw_path.
     + move: H4 => [H1 /= H4];rewrite -H4 in H5;clear H4.
       pose proof C_L14_1 H3 as [p1 [y' [H6 Ho1]]].
       pose proof C_L14_2 H5 as [p4 [t' [H9 Ho4]]].
-      have H12: ActiveOe' W E ((y', t, P), (t, t', N)) by [].
+      have H12: ActiveOe W E ((y', t, P), (t, t', N)) by [].
       exists ((rcons p1 (y', t, P))++ ((t, t', N) :: p4)).
       by apply Active_path_cat with t.
   Qed.

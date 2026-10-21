@@ -104,6 +104,65 @@ Fixpoint UnLift (T: Type) (spt: seq (T*T)) (t: T):=
 Definition allL (T: Type) (R:relation T) st x y := (x::(rcons st y)) [L\in] R.
 (* end snippet allL *)    
 
+
+
+Section link_with_path.
+  (** * whe have three equivalent formulations *)
+  (** * path R x (rcons st y) *)
+  (** * = (behead (pairmap pair t (x::(rcons st y))) [\in] R *)
+  (** * = allL R st x y. *)
+
+  (* spairs for sequence of pairs *)
+  Definition spairs {T: Type} (t :T) st := (behead (pairmap pair t st)).
+  (* new name for allL , bpath for between path *)
+  Definition bpath {T: Type} R st (x y:T) := allL R st x y.
+  
+  Local Lemma Lift_eq {T: Type}: forall (t:T) (st:seq T),
+      Lift st = spairs t st.
+  Proof.
+    move => t;elim => [// | t1 s _];elim: s t1 => [// | t2 s H1 t1 //]. 
+    have -> : Lift [:: t1, t2 & s] = (t1,t2)::(Lift [::t2 & s]) by split.
+    by rewrite H1.
+  Qed.
+  
+  Lemma path_bppE {T: Type} (x t:T) (st: seq T) (R: relation T): 
+    path (R2rel R) x st = (spairs t (x::st)) [\in] R.
+  Proof.
+    elim/last_ind: st => [//| st a Hr]. 
+    rewrite rcons_path {}Hr /=.
+    elim/last_ind: st x => [x| st b _ x];first by rewrite /= andbT [RHS]inE.
+    move: (cat_rcons a (rcons st b) [::]); rewrite cats0 => ->.
+    rewrite /spairs /= pairmap_cat /= last_rcons all_cat /= andbT.
+    by have -> :  (R2rel R) b a = ((b, a) \in R) by rewrite [RHS]inE. 
+  Qed.
+  
+  Lemma path_allLE (T: Type) (x y:T) (st: seq T) (R: relation T): 
+    path (R2rel R) x (rcons st y) = allL R st x y.
+  Proof. rewrite /allL (Lift_eq x (x :: rcons st y));apply: path_bppE. Qed.
+  
+End link_with_path.
+
+Section test.
+  (** * Using the above equivalences we can obtain shorter proofs *)
+  Context {T: Type}.
+  
+  Implicit Types (R: relation T) (X Y: set T) (spt: seq (T*T)) (x y z:T).  
+  
+  Lemma allL_nth' R st x y z:
+    allL R st x y 
+    <-> (forall n, n <= size st -> R ((nth z (x::(rcons st y)) n), (nth z (x::(rcons st y)) n.+1))).
+  Proof. 
+    rewrite -path_allLE;split => [+ n | ]. 
+    + move => /(@pathP _ _ _ _ z) /(_ n) Hp Hn. 
+      rewrite -(@rcons_cons T x st y).
+      by apply/asboolP/Hp;rewrite size_rcons ltnS.
+    + move => Hnth.
+      apply/(@pathP _ _ _ _ z) => n;rewrite size_rcons ltnS => Hs.
+      by apply/asboolP/Hnth.
+  Qed.
+  
+End test.
+
 Section Seq_utilities.
   (** * some utilities for sequences *)
   
@@ -677,6 +736,9 @@ Section allset_Lifted.
     move => H1;rewrite allL_splitl => -[_ H2].
     by have <- : last x s = last z s by apply: last_dv;apply:H1. 
   Qed.
+
+(** * replaced by a shorter version *)
+(* 
   
   Lemma nth_L0' st x y z: nth z (x::(rcons st y)) 1 = nth y st 0.
   Proof. 
@@ -687,28 +749,32 @@ Section allset_Lifted.
   Lemma nth_L0'' R st x y z: 
     R (nth z (x::(rcons st y)) 0, nth z (x::(rcons st y)) 1) = R(x,nth y st 0).
   Proof. by rewrite nth_L0'.  Qed.
-  
+*)
+
   Lemma nth_L1 st x y z: 
     nth z (x :: rcons st y) (size st) = nth x st (size st).-1.
   Proof.
     by rewrite -rcons_cons nth_rcons /= ltnSn nth_last -last_nth.
   Qed.
-  
+
   Lemma nth_L1' st x y z: nth z (x :: rcons st y) (size st).+1 = y.
   Proof. by rewrite /= nth_rcons ltnn eq_refl. Qed.
-    
+(*     
   Lemma nth_L1'' R st x y z: 
     R (nth z (x::(rcons st y)) (size st), nth z (x::(rcons st y)) (size st).+1) 
           = R(nth x st (size st).-1 , y ).
   Proof. by rewrite nth_L1 nth_L1'. Qed.
-  
+ *)
+
   Lemma nth_L2 st x y z (n: nat): 
     0 < n < size st -> nth z (x :: rcons st y) n = nth z st n.-1.
   Proof.
     move => /andP [/ltn_predK H1 H1'];rewrite -1!H1 /= nth_rcons. 
     by rewrite (leq_ltn_trans (leq_pred n) H1').  
   Qed.
-  
+
+(* 
+ 
   Lemma nth_L2' st x y z (n: nat): 
     0 < n < size st -> nth z (x :: rcons st y) n.+1 = nth z st n.
   Proof. by move => /andP [/ltn_predK H1 H1'];rewrite /= nth_rcons H1'. 
@@ -725,7 +791,7 @@ Section allset_Lifted.
     n = (size st) ->  nth z (rcons st y) n = y.
   Proof. by move => ->;rewrite nth_rcons ltnn eq_refl /=. Qed.
   
-  Lemma allL_nth' R st x y z:
+  Lemma allL_nth'' R st x y z:
     allL R st x y 
     <-> (forall n, n <= size st -> R ((nth z (x::(rcons st y)) n), (nth z (x::(rcons st y)) n.+1))).
   Proof. 
@@ -763,6 +829,9 @@ Section allset_Lifted.
          have ->: nth z st (size st).-1 = nth x st (size st).-1 by apply: nth_dv.
          exact.
   Qed.
+
+*) 
+
 
   Lemma allL_I U V st x y:
     allL (U `&` V) st x y <-> allL U st x y /\  allL V st x y.
@@ -1020,63 +1089,6 @@ Section PathRel.
   
 End PathRel.
 
-
-Section link_with_path.
-  (** * whe have three equivalent formulations *)
-  (** * path R x (rcons st y) *)
-  (** * = (behead (pairmap pair t (x::(rcons st y))) [\in] R *)
-  (** * = allL R st x y. *)
-
-  (* spairs for sequence of pairs *)
-  Definition spairs {T: Type} (t :T) st := (behead (pairmap pair t st)).
-  (* new name for allL , bpath for between path *)
-  Definition bpath {T: Type} R st (x y:T) := allL R st x y.
-  
-  Local Lemma Lift_eq {T: Type}: forall (t:T) (st:seq T),
-      Lift st = spairs t st.
-  Proof.
-    move => t;elim => [// | t1 s _];elim: s t1 => [// | t2 s H1 t1 //]. 
-    have -> : Lift [:: t1, t2 & s] = (t1,t2)::(Lift [::t2 & s]) by split.
-    by rewrite H1.
-  Qed.
-  
-  Lemma path_bppE {T: Type} (x t:T) (st: seq T) (R: relation T): 
-    path (R2rel R) x st = (spairs t (x::st)) [\in] R.
-  Proof.
-    elim/last_ind: st => [//| st a Hr]. 
-    rewrite rcons_path {}Hr /=.
-    elim/last_ind: st x => [x| st b _ x];first by rewrite /= andbT [RHS]inE.
-    move: (cat_rcons a (rcons st b) [::]); rewrite cats0 => ->.
-    rewrite /spairs /= pairmap_cat /= last_rcons all_cat /= andbT.
-    by have -> :  (R2rel R) b a = ((b, a) \in R) by rewrite [RHS]inE. 
-  Qed.
-  
-  Lemma path_allLE (T: Type) (x y:T) (st: seq T) (R: relation T): 
-    path (R2rel R) x (rcons st y) = allL R st x y.
-  Proof. rewrite /allL (Lift_eq x (x :: rcons st y));apply: path_bppE. Qed.
-  
-End link_with_path.
-
-Section test.
-  (** * Using the above equivalences we can obtain shorter proofs *)
-  Context {T: Type}.
-  
-  Implicit Types (R: relation T) (X Y: set T) (spt: seq (T*T)) (x y z:T).  
-  
-  Lemma allL_nth_new R st x y z:
-    allL R st x y 
-    <-> (forall n, n <= size st -> R ((nth z (x::(rcons st y)) n), (nth z (x::(rcons st y)) n.+1))).
-  Proof. 
-    rewrite -path_allLE;split => [+ n | ]. 
-    + move => /(@pathP _ _ _ _ z) /(_ n) Hp Hn. 
-      rewrite -(@rcons_cons T x st y).
-      by apply/asboolP/Hp;rewrite size_rcons ltnS.
-    + move => Hnth.
-      apply/(@pathP _ _ _ _ z) => n;rewrite size_rcons ltnS => Hs.
-      by apply/asboolP/Hnth.
-  Qed.
-  
-End test.
 
 
 

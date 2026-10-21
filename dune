@@ -1,7 +1,5 @@
 ;;  (theories elpi_elpi elpi HB mathcomp.ssreflect mathcomp AAC_tactics Equations dpdgraph)
 (rocq.theory
  (name RL)
-  (theories Stdlib elpi_elpi elpi HB mathcomp.ssreflect mathcomp AAC_tactics dpdgraph)
+  (theories Stdlib elpi_elpi elpi HB mathcomp.ssreflect mathcomp AAC_tactics dpdgraph RelationAlgebra)
  )
- 
- 
