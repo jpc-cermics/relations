@@ -104,8 +104,6 @@ Fixpoint UnLift (T: Type) (spt: seq (T*T)) (t: T):=
 Definition allL (T: Type) (R:relation T) st x y := (x::(rcons st y)) [L\in] R.
 (* end snippet allL *)    
 
-
-
 Section link_with_path.
   (** * whe have three equivalent formulations *)
   (** * path R x (rcons st y) *)
