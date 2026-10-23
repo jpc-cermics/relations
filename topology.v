@@ -29,7 +29,7 @@ Section Preorder.
   
   Variables (T: Type) (R: relation T).
 
-  Definition le: rel T := R2rel R.
+  Definition le: rel T := rel_of R.
   Hypothesis le_trans : ssrbool.transitive le. 
   Hypothesis le_refl : ssrbool.reflexive le.
   
@@ -43,7 +43,7 @@ Section Preorder.
   HB.instance Definition _ := gen_choiceMixin T.   
   Set Warnings "-redundant-canonical-projection".
   HB.instance Definition _  :=
-    @Order.Le_isPreorder.Build rel_display T (R2rel R) le_refl le_trans.
+    @Order.Le_isPreorder.Build rel_display T (rel_of R) le_refl le_trans.
 
 #[local] Set Warnings "+redundant-canonical-projection".
   (* 
@@ -55,7 +55,7 @@ Section Preorder.
   
   Lemma testR: forall (x y: T), (le x y) <-> R (x,y).
   Proof.
-    move => x y;rewrite /le /R2rel; split. by move => /asboolP.
+    move => x y;rewrite /le /rel_of; split. by move => /asboolP.
     by move => ?;apply/asboolP.
   Qed.
   
@@ -234,14 +234,14 @@ Section Intermediate_results_closed.
   Proof.
     rewrite predeqE /mkset => X;split => [-> // | ?].
     have H1: X `<=` R.*#X
-      by rewrite RTclosE -FsetUl Fset_D;apply: subsetUl.
+      by rewrite rtclosE -fsetUl fsetT;apply: subsetUl.
     by rewrite eqEsubset.
   Qed.
   
   Lemma Rclosed2: [set X | R.*#X `<=` X] = [set X | R.+#X `<=` X].
   Proof.
     rewrite predeqE /mkset => X.
-    rewrite RTclosE -FsetUl Fset_D.
+    rewrite rtclosE -fsetUl fsetT.
     split => [ H1 | H1].
     - have H2: R.+#X `<=` X `|` R.+#X by apply: subsetUr.
       by apply: (subset_trans H2 H1).
@@ -254,11 +254,11 @@ Section Intermediate_results_closed.
       R#X `<=` X -> forall (n: nat), R^(n.+1)#X `<=` X.
   Proof. 
     move =>X H1 n. 
-    elim: n => [ | n H2]; first by rewrite iter1_id.
+    elim: n => [ | n H2]; first by rewrite iter1.
     have H3: R^(n.+2)#X = (R^(n.+1) `;` R^(1))#X
       by rewrite -iter_compose addn1.
-    rewrite H3 -Fset_comp iter1_id.
-    have H4: R^(n.+1)#(R#X) `<=` R^(n.+1)#(X) by apply: Fset_inc1.
+    rewrite H3 -fset_comp iter1.
+    have H4: R^(n.+1)#(R#X) `<=` R^(n.+1)#(X) by apply: fsetSr.
     by apply: (subset_trans H4 H2).
   Qed.
 
@@ -266,10 +266,10 @@ Section Intermediate_results_closed.
   Proof.
     rewrite predeqE /mkset => X.
     split => [H1 | H1 x [y [H2 H3]]].
-    - have H2: R `<=` R.+ by apply: TclosSu.
-      have H3: R#X  `<=` R.+#X by apply: Fset_inc.
+    - have H2: R `<=` R.+ by apply: tcl_sub.
+      have H3: R#X  `<=` R.+#X by apply: fsetS.
       by apply: (subset_trans H3 H1).
-    - have [n H4]: exists (n:nat), R^(n.+1) (x,y) by apply: Tclos_iterk.
+    - have [n H4]: exists (n:nat), R^(n.+1) (x,y) by apply: tclos_iterP.
       have H5: R^(n.+1)#X x by (exists y).
       have H6: R^(n.+1)#X `<=` X by apply: (Rclosed3 H1).
       by move: H5 => /H6 H5.
@@ -301,7 +301,7 @@ Section Intermediate_results_closed_open.
   Lemma Rclosed7: forall (R : relation T) (X: set T),
       (X.^c :#R ) `<=` X.^c -> R#X  `<=` X. 
   Proof.
-    by rewrite /Aset => R X /Rclosed6; rewrite setCK /Aset inverseK.
+    by rewrite /aset => R X /Rclosed6; rewrite setCK /aset inverseK.
   Qed.
   
   (* from closed sets to open set via complement *)
@@ -319,13 +319,13 @@ Section Intermediate_results_open.
   Context (T: Type) (R: relation T). 
 
   Lemma Ropen1: [set X | X:#R.* = X ] = [set X | X:#R.* `<=` X].
-  Proof. by rewrite /Aset RTclosIv;apply: Rclosed1. Qed.
+  Proof. by rewrite /aset rtclosV;apply: Rclosed1. Qed.
   
   Lemma Ropen2: [set X | X:#R.* `<=` X] = [set X | X:#R.+ `<=` X].
-  Proof. by rewrite /Aset RTclosIv TclosIv;apply: Rclosed2. Qed.
+  Proof. by rewrite /aset rtclosV tclosV;apply: Rclosed2. Qed.
 
   Lemma Ropen4: [set X | X:#R.+ `<=` X]= [set X | X:#R  `<=` X].
-  Proof. by rewrite /Aset TclosIv; apply: Rclosed4. Qed.
+  Proof. by rewrite /aset tclosV; apply: Rclosed4. Qed.
   
   Lemma Ropen: [set X | X:#R.* = X] = [set X | X:#R  `<=` X].
   Proof. by rewrite Ropen1 Ropen2 Ropen4. Qed.
@@ -346,20 +346,20 @@ Section Relation_Topology.
   Definition tau : set (set T) := [ set O | O:#S `<=` O]%O.
   
   Local Lemma openT' : tau [set: W].
-  Proof. by apply:Aset_T. Qed.
+  Proof. by apply:asetTS. Qed.
   
   Local Lemma openI' : forall A B : set W, 
       tau A -> tau B -> tau (A `&` B).
-  Proof. by move => A B H1 H2;apply: (Aset_stableIf H1 H2). Qed.
+  Proof. by move => A B H1 H2;apply: (aset_stableI2 H1 H2). Qed.
   
   Local Lemma open_bigU' (I : Type) (f : I -> set W):
     (forall (i : I), tau (f i)) -> tau (\bigcup_i f i).
-  Proof. by apply:Aset_stableU. Qed.
+  Proof. by apply:aset_stableU. Qed.
   
   (** * Alexandrov topology *)
   Local Lemma open_bigI' (I : Type) (f : I -> set W):
     (forall (i : I), tau (f i)) -> tau (\bigcap_i f i).
-  Proof. by apply:Aset_stableI. Qed.
+  Proof. by apply:aset_stableI. Qed.
 
   HB.instance Definition _ := gen_eqMixin W.   
   HB.instance Definition _ := gen_choiceMixin W.   
@@ -429,7 +429,7 @@ Section Relation_Topology_props.
     move: H1; rewrite predeqE /mkset => <-.
     move => [H2 H3].
     rewrite -H2.
-    by apply: Fset_inc1.
+    by apply: fsetSr.
   Qed.
   
   Lemma Aset_closure: forall (X: set T), 
@@ -437,8 +437,8 @@ Section Relation_Topology_props.
   Proof.
     move => X.
     (** step 1: X is included in S.*#X (H5) which is closed (H6) *)
-    have H4: S.*#X = S.*#(S.*#X) by rewrite Fset_comp compose_rt_rt.
-    have H5: X `<=` S.*#X by rewrite RTclosE -FsetUl Fset_D;apply: subsetUl.
+    have H4: S.*#X = S.*#(S.*#X) by rewrite fset_comp rtclosK.
+    have H5: X `<=` S.*#X by rewrite rtclosE -fsetUl fsetT;apply: subsetUl.
     have H6: @closed tau_S S.*#X 
       by pose proof Aset_closed' as H1;move: H1; rewrite predeqE /mkset => <-.
     (** step 2 S.*#X `<=` @closure tau_S X. *)
@@ -543,15 +543,15 @@ Section finer_topology.
   Proof.
     rewrite /specialization_porder predeqE /mkset => -[x y] /=.
     rewrite -Aset_closure.
-    split;first by rewrite /Fset => -[y1 [H1 /= <-]].
-    by move => H1;rewrite /Fset /mkset /=; by exists y. 
+    split;first by rewrite /fset => -[y1 [H1 /= <-]].
+    by move => H1;rewrite /fset /mkset /=; by exists y. 
   Qed.
 
   Lemma St':
     (reflexive S /\ transitive S) 
     -> @specialization_porder (aset_topology S) = S.
   Proof.
-    by rewrite clos_rt_iff => H1;rewrite [RHS]H1; apply: St.
+    by rewrite rtclosE_refl_trans => H1;rewrite [RHS]H1; apply: St.
   Qed.
   
   Lemma St'' (tau: Topological T) : forall (O: set T),

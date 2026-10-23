@@ -354,7 +354,7 @@ Section allL_uniq.
   Qed.
   
   Lemma TCP_uniq' R x y: 
-    (Asym R.+)(x,y) -> exists s, uniq (x::(rcons s y)) /\ (x::(rcons s y)) [L\in] R.
+    (asym R.+)(x,y) -> exists s, uniq (x::(rcons s y)) /\ (x::(rcons s y)) [L\in] R.
   Proof.
     move => /[dup] H0 [H1 H2]. 
     have H3: ~ (x = y) by move => H7;rewrite H7 in H1 H2.
@@ -363,7 +363,7 @@ Section allL_uniq.
 
   Definition allLu R s x y := (x::(rcons s y)) [L\in] R /\ uniq (x :: rcons s y).
   
-  Lemma TCP_uniq1 R x y: (Asym R.+)(x,y) <-> (exists s, allLu R s x y) /\ ~ R.+ (y,x).
+  Lemma TCP_uniq1 R x y: (asym R.+)(x,y) <-> (exists s, allLu R s x y) /\ ~ R.+ (y,x).
   Proof. split. 
     by move => /[dup] /TCP_uniq' [s [H1 H2]] [_ H4];split;[exists s;split |].
     by move => [[s [H1 H2]] H3];split;[apply: allL_to_Tclos; apply: H1|].

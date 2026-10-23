@@ -30,11 +30,11 @@ Section CheckAsym.
   Import Asyminf2Inf(Asym2P5', allL_rc_asym).
 
   (* begin snippet infasym:: no-out *) 
-  Lemma iic_asym_to_iic_inj:  (iic (Asym R.+)) -> (iic_inj R). 
+  Lemma iic_asym_to_iic_inj:  (iic (asym R.+)) -> (iic_inj R). 
   (* end snippet infasym *)  
   Proof. by apply: (@Asym2P5' T R A1). Qed.
 
-  Lemma not_iic_inj_to_not_iic_asym: ~ (iic_inj R) -> ~ (iic (Asym R.+)).
+  Lemma not_iic_inj_to_not_iic_asym: ~ (iic_inj R) -> ~ (iic (asym R.+)).
   Proof. by move => ? /iic_asym_to_iic_inj ?. Qed.
 
 End  CheckAsym. 
@@ -62,7 +62,7 @@ Section Set_relation.
     rewrite predeqE => -[A B];split. 
     - move => H1 a /mem_set/H1 [b [/set_mem H2 [->| H3]]]; first by (exists b);split;[left|].
       by (exists b);split;[right|].
-    - rewrite /leSet' /mkset /= -FsetUl Fset_D.
+    - rewrite /leSet' /mkset /= -fsetUl fsetT.
       move => H1 a /set_mem/H1 [/mem_set H2 | [b [H2 /mem_set H3]]].
       by (exists a); split;[ | left].
       by exists b; split;[ | right].
@@ -76,7 +76,7 @@ Section Set_relation.
   Lemma leI R S: S `<=` R -> (leSet S)  `<=` (leSet R).
   Proof.
     move => H1;rewrite 2!lesetE => [[A B]] H2.
-    by apply: subset_trans H2 _;apply: Fset_inc; apply: setUS.
+    by apply: subset_trans H2 _;apply: fsetS; apply: setUS.
   Qed.
   
 End Set_relation.
@@ -94,9 +94,9 @@ Section Set_order.
     (** ingredients *)
     Lemma le_trans_if_tr R: transitive R -> transitive (leSet R).
     Proof.
-      rewrite lesetE => /Tclos_iff H0 B A C /= H1 H2.
-      have : ('Δ  `|` R)#B `<=` ('Δ  `|` R)#(('Δ  `|` R)#C) by apply: Fset_inc1.
-      rewrite Fset_comp H0 -RTclosE compose_rt_rt RTclosE -H0 => H3. (*  *)
+      rewrite lesetE => /transitive_tclosE H0 B A C /= H1 H2.
+      have : ('Δ  `|` R)#B `<=` ('Δ  `|` R)#(('Δ  `|` R)#C) by apply: fsetSr.
+      rewrite fset_comp H0 -rtclosE rtclosK rtclosE -H0 => H3. (*  *)
       by apply: subset_trans H1 H3.
     Qed.
 
@@ -104,9 +104,9 @@ Section Set_order.
     Proof. by move => A r H1;exists r;split;[| left]. Qed.
     
     Lemma le_antisym_if_sp' R: 
-      sporder R -> forall A B, (RelIndep R A) -> A [<= R] B -> B  [<= R] A -> A `<=` B.
+      sporder R -> forall A B, (indep R A) -> A [<= R] B -> B  [<= R] A -> A `<=` B.
     Proof.
-      move => /[dup] -[_ Htr] /sporder_asym/AsymEq Asy A B H1 + +  a H4.
+      move => /[dup] -[_ Htr] /sporder_asym/asymE Asy A B H1 + +  a H4.
       rewrite -Asy => H2 H3.
       move: (H4) => /mem_set /H2 [b [/= /set_mem H5 [-> // | [H6 H6']]]]. 
       move: (H5) => /mem_set/H3/= [c [/set_mem H8 H9]].
@@ -124,7 +124,7 @@ Section Set_order.
     
     Lemma le_antisym_if_sp R: 
       sporder R ->
-      forall A B, (RelIndep R A) -> (RelIndep R B) 
+      forall A B, (indep R A) -> (indep R B) 
              -> A [<= R] B -> B  [<= R] A -> A = B.
     Proof.
       move => Hsp A B H1 H2 H3 H4.
@@ -137,7 +137,7 @@ Section Set_order.
   (* begin snippet lesetporder:: no-out *)   
   Lemma leSet2_porder R: 
     sporder R -> 
-    @porder {S: set T| RelIndep R S} [set AB | (sval AB.1) [<= R] (sval AB.2)].
+    @porder {S: set T| indep R S} [set AB | (sval AB.1) [<= R] (sval AB.2)].
   (* end snippet lesetporder  *)   
   Proof.
     move => H_sp.
@@ -152,35 +152,35 @@ Section Set_order.
 End Set_order. 
 
 Section Infinite_paths.
-  (** * iic_asym_injective:  iic (Asym R.+) -> iic_inj (Asym R.+) *) 
+  (** * iic_asym_injective:  iic (asym R.+) -> iic_inj (asym R.+) *) 
 
   Context (T : Type).
   Implicit Types (T : Type) (R S: relation T) (A B: set T).
   
   Lemma iic_asym_L1 (f : nat -> T) R:
-    (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
-     forall p n, 0 < p -> (Asym R.+) (f n, f (n + p)). 
+    (forall n, (asym R.+) ((f n),(f (S n)))) -> 
+     forall p n, 0 < p -> (asym R.+) (f n, f (n + p)). 
   Proof.
     move => Hi. 
     elim => [// | p Hr n' _].
     case H2: (p == 0); first by move: H2 => /eqP ->;rewrite addn1;apply: Hi. 
     move: H2 =>  /neq0_lt0n /(Hr n') H2.
-    have H4: transitive (Asym R.+) by apply: Asym_preserve_transitivity;apply: TclosT.
-    have H5: Asym R.+ (f (n' + p), f (n' + p).+1) by apply: Hi.
+    have H4: transitive (asym R.+) by apply: asym_trans;apply: tclos_trans.
+    have H5: asym R.+ (f (n' + p), f (n' + p).+1) by apply: Hi.
     rewrite /transitive in H4.
     move: (H4 (f (n' + p)) (f n') (f (n'+p).+1) H2 H5).
     by rewrite -addn1 -[p.+1]addn1 addnA.
   Qed.
   
   Lemma iic_asym_L2 (f : nat -> T) R:
-    (forall n, (Asym R.+) ((f n),(f (S n)))) -> 
+    (forall n, (asym R.+) ((f n),(f (S n)))) -> 
     forall p n, 0 < p -> ~ (f n) = f (n + p). 
   Proof.
-    by move => + p n H1 => /iic_asym_L1 /(_ p n H1) + H2;rewrite -H2; apply: Asym_irreflexive.
+    by move => + p n H1 => /iic_asym_L1 /(_ p n H1) + H2;rewrite -H2; apply: asym_irreflexive.
   Qed.
   
   Lemma iic_asym_L3 (f : nat -> T) R:
-    (forall n, (Asym R.+) ((f n),(f (S n)))) -> injective f.
+    (forall n, (asym R.+) ((f n),(f (S n)))) -> injective f.
   Proof.
     have H0 n m: m < n -> exists p, p> 0 /\ n = m + p by move => H1;exists (n-m); lia.
     move => /iic_asym_L2 Hi p q;apply contraPP => H1.
@@ -189,7 +189,7 @@ Section Infinite_paths.
     by move: (H0 p q H2) => [p' [H3 ->]];move: (Hi p' q H3);symmetry.
   Qed.
   
-  Lemma iic_asym_injective R: iic (Asym R.+) -> iic_inj (Asym R.+).
+  Lemma iic_asym_injective R: iic (asym R.+) -> iic_inj (asym R.+).
   Proof. by move => [f /[dup] ? /iic_asym_L3  ?];exists f. Qed.
   
 End Infinite_paths.
@@ -202,23 +202,23 @@ Section Infinite_paths_X.
   Implicit Types (R: relation T) (X: set T).
 
   Lemma notiic_rloop_sub_L1 X (S: relation X):
-    (nonempty [set: X]) -> ~ (iic (Asym S)) -> (Rloop S).
+    (nonempty [set: X]) -> ~ (iic (asym S)) -> (rloop S).
   Proof. 
-    by move => Hne Hniic;apply: (notiic_rloop Hne Hniic).
+    by move => Hne Hniic;apply: (not_iic_rloop Hne Hniic).
   Qed.
   
   Lemma notiic_rloop_sub_L2 X R:
-    (nonempty [set: X]) -> ~ (iic (Asym R)) -> (Rloop (@Restrict' T X R)).
+    (nonempty [set: X]) -> ~ (iic (asym R)) -> (rloop (@restrict_sub T X R)).
   Proof.
-    have H3:  ~ (iic (Asym R)) -> ~ (iic (@Restrict' T X (Asym R)))
+    have H3:  ~ (iic (asym R)) -> ~ (iic (@restrict_sub T X (asym R)))
       by contra;move => [f // ?];exists (fun n => (sval (f n))). 
     move => Hne /H3 Hiic.
-    by apply/(@notiic_rloop_sub_L1 X (@Restrict' T X R) Hne).
+    by apply/(@notiic_rloop_sub_L1 X (@restrict_sub T X R) Hne).
   Qed.
   
-  (* notiic_rloop for a subset X *)
+  (* not_iic_rloop for a subset X *)
   Lemma notiic_rloop_sub X R:
-    (nonempty [set: X]) -> ~ (iic (Asym R))
+    (nonempty [set: X]) -> ~ (iic (asym R))
     -> (exists (v:T), v \in X /\ forall w, w \in X -> R (v,w) -> R (w,v)).
   Proof.
     move => H0 Ninf.
@@ -241,13 +241,13 @@ Section Paper.
   
   (* The set Scal as a subset of T *)
   (* begin snippet Scal:: no-out *) 
-  Definition Scal := [set S| RelIndep Mono S/\S:#(Er.+) `<=` Mono#S/\S != set0 ].
+  Definition Scal := [set S| indep Mono S/\S:#(Er.+) `<=` Mono#S/\S != set0 ].
   (* end snippet Scal *) 
     
   (* The set Scal as a Type *)
   
   (* begin snippet SType:: no-out *)    
-  Definition SType := {S | RelIndep Mono S/\S:#(Er.+) `<=` Mono#S/\S != set0}.
+  Definition SType := {S | indep Mono S/\S:#(Er.+) `<=` Mono#S/\S != set0}.
   (* end snippet SType *)  
 
   (* begin snippet Elt:: no-out *)   
@@ -264,38 +264,38 @@ Section Paper.
   (** * The relation on sets restricted to Stype subsets *)
   (* begin snippet leSetone:: no-out *)   
   Definition leSet1 (AB: SType*SType) :=
-    leSet (Asym Eb.+) ((sval AB.1), (sval AB.2)).
+    leSet (asym Eb.+) ((sval AB.1), (sval AB.2)).
   Notation "A [<=] B" := (leSet1 (A,B)).
   (* end snippet leSetone *)  
   
   Section Scal_order. 
     
-    Lemma sporderAst: sporder (Asym Eb.+).
+    Lemma sporderAst: sporder (asym Eb.+).
     Proof.
-      by split;[apply/Asym_irreflexive|apply/Asym_preserve_transitivity/TclosT].
+      by split;[apply/asym_irreflexive|apply/asym_trans/tclos_trans].
     Qed.
     
     Lemma leSet1_transitive: @transitive SType leSet1.
     Proof. by move => [A ?] [B ?] [C ?]; 
-                     apply/le_trans_if_tr/Asym_preserve_transitivity/TclosT. Qed.
+                     apply/le_trans_if_tr/asym_trans/tclos_trans. Qed.
     
     Lemma leSet1_reflexive: @reflexive SType leSet1.
     Proof. by move => [A ?];apply: le_refl. Qed.
     
     Lemma le_antisym_l1: forall A B, 
-        (RelIndep Mono A) -> (RelIndep Mono B)
-        -> A [<= (Asym Eb.+)] B -> B  [<= (Asym Eb.+)] A -> A = B.
+        (indep Mono A) -> (indep Mono B)
+        -> A [<= (asym Eb.+)] B -> B  [<= (asym Eb.+)] A -> A = B.
     Proof.
       move => A B H1 H2 H1' H2'. 
-      pose proof @AsymI T (Eb.+) as H3.
+      pose proof @asymS T (Eb.+) as H3.
       have H4: Eb.+ `<=` Mono by apply: subsetUl.
-      have H5: Asym Eb.+ `<=` Mono by apply: subset_trans H3 H4.
-      have H6: (RelIndep (Asym Eb.+) A) by apply: RelIndep_I H5 H1. 
-      have H7: (RelIndep (Asym Eb.+) B) by apply: RelIndep_I H5 H2. 
-      have H8: transitive (Asym Eb.+) 
-        by apply: Asym_preserve_transitivity;apply: TclosT.
-      have H9: irreflexive (Asym Eb.+) by apply Asym_irreflexive.
-      have H10: sporder (Asym Eb.+) by exact. 
+      have H5: asym Eb.+ `<=` Mono by apply: subset_trans H3 H4.
+      have H6: (indep (asym Eb.+) A) by apply: indepS H5 H1. 
+      have H7: (indep (asym Eb.+) B) by apply: indepS H5 H2. 
+      have H8: transitive (asym Eb.+) 
+        by apply: asym_trans;apply: tclos_trans.
+      have H9: irreflexive (asym Eb.+) by apply asym_irreflexive.
+      have H10: sporder (asym Eb.+) by exact. 
       by move : (le_antisym_if_sp H10 H6 H7 H1' H2').
     Qed.
     
@@ -340,12 +340,12 @@ Section Paper.
     Definition RC:= [set xy: (Elt C)*(Elt C) |
                       ((sval xy.1) \in Sinf /\ xy.2 = xy.1)
                       \/ (~ ((sval xy.1) \in Sinf) /\
-                           (Asym Eb.+) (sval xy.1, sval xy.2))].
+                           (asym Eb.+) (sval xy.1, sval xy.2))].
     (* end snippet RC*)   
         
     Lemma transitive_RC: transitive RC. 
     Proof.
-      have H3: transitive (Asym Eb.+) by apply/Asym_preserve_transitivity/TclosT.
+      have H3: transitive (asym Eb.+) by apply/asym_trans/tclos_trans.
       by move => y x z [/= [H0 ->]| [H1 H1']] [ /= [H0' /= ->]| /= [H2 H2']]; 
                 [left | right | right |right;split;[ | apply H3 with (sval y)]].
     Qed.
@@ -382,7 +382,7 @@ Section Paper.
       
       Lemma total_RC_L2: forall (S: SType) (s:T), 
           (S \in C) -> (s \in (sval S)) -> ( ~ (s \in Sinf)) 
-          -> exists S1, exists s1, S1 \in C /\ s1 \in (sval S1) /\ (Asym Eb.+) (s,s1).
+          -> exists S1, exists s1, S1 \in C /\ s1 \in (sval S1) /\ (asym Eb.+) (s,s1).
       Proof.
         move => S s H2 H3 H4.
         move: (total_RC_L1 H2 H3 H4) => [S1 [H5 [H6 H7]]].
@@ -390,7 +390,7 @@ Section Paper.
       Qed.
       
       Lemma total_RC_L3: forall (s: Elt C), 
-          ~ ((sval s) \in Sinf) -> exists (s1: Elt C), (Asym Eb.+) (sval s,sval s1).
+          ~ ((sval s) \in Sinf) -> exists (s1: Elt C), (asym Eb.+) (sval s,sval s1).
       Proof.
         move => [s [S [H1 H2]]] H3.
         move: (total_RC_L2 H1 H2 H3) => [S1 [s1 [H4 [H5 H6]]]].
@@ -411,7 +411,7 @@ Section Paper.
 
       Lemma iic_RC: (iic RC).
       Proof.
-        apply DC; last by apply: total_RC.
+        apply total_iic; last by apply: total_RC.
         by move: Elt_not_empty => [x _];exists x.
       Qed.
       
@@ -427,18 +427,18 @@ Section Paper.
         
       Lemma total_RC_P1 s f: 
         f 0=s /\ (forall n, RC ((f n),(f (S n)))) 
-        -> (forall n, ~ (sval (f n)) \in Sinf) -> iic (Asym Eb.+). 
+        -> (forall n, ~ (sval (f n)) \in Sinf) -> iic (asym Eb.+). 
       Proof. 
         move => H1 H2;exists (fun n => (sval (f n))) => n.
         by move: H1 H2 => [H0 /(_ n) [/=[H1 H1'] | /= [H1 H1']]] /(_ n) H2.
       Qed.
       
       Lemma total_RC_P2:
-        ~ (iic (Asym Eb.+))
+        ~ (iic (asym Eb.+))
         -> forall s, exists f, (f 0=s /\ (forall n, RC ((f n),(f (S n)))))
                     /\ exists n, (sval (f n)) \in Sinf.
       Proof. 
-        move: total_RC => /total_rel_iff /total_rel'_to_total_rel'' H1.
+        move: total_RC => /totalP /total_ex_fun H1.
         move: H1 => + H2 s => /(_ s) [f H3].
         exists f;split;[exact | apply/not_existsP]. 
         by move: H3 => /total_RC_P1 H3;move => /H3 H4.
@@ -459,7 +459,7 @@ Section Paper.
       
       (* begin snippet totalRCPTr:: no-out *)    
       Lemma total_RC_P3:
-        ~ (iic (Asym Eb.+)) ->
+        ~ (iic (asym Eb.+)) ->
         forall s, exists f, f 0=s /\ (exists n, (sval (f n)) \in Sinf /\ RC ((f 0), (f n))).
       (* end snippet totalRCPTr *)
       Proof.
@@ -475,9 +475,9 @@ Section Paper.
         by split;[| apply: H10].
       Qed.
       (* begin snippet ChooseRCCi:: no-out *)    
-      Lemma ChooseRC5:~ (iic (Asym Eb.+))
+      Lemma ChooseRC5:~ (iic (asym Eb.+))
             -> forall (s: Elt C), (sval s \in Sinf) \/ 
-                        exists (s':T), (s' \in Sinf) /\ (Asym Eb.+) (sval s, s').
+                        exists (s':T), (s' \in Sinf) /\ (asym Eb.+) (sval s, s').
       (* end snippet ChooseRCCi *)    
       Proof. 
         move => H1; move: (total_RC_P3 H1) => + s => /(_ s) [f [H2 [n [H3 H3']]]].
@@ -488,8 +488,8 @@ Section Paper.
       Qed.
 
       (* begin snippet ChooseRCSi:: no-out *)    
-      Lemma ChooseRC6:~ (iic (Asym Eb.+))
-            -> forall (S: SType), (S \in C) -> (sval S) [<= (Asym Eb.+)] Sinf.
+      Lemma ChooseRC6:~ (iic (asym Eb.+))
+            -> forall (S: SType), (S \in C) -> (sval S) [<= (asym Eb.+)] Sinf.
       (* end snippet ChooseRCSi *) 
       Proof. 
         move => H1 S H2 s /= H3.
@@ -504,12 +504,12 @@ Section Paper.
   End Sinf_set.
   
   Section SType_chains.
-    (** * set (C: set SType) which are in Chains *)
+    (** * set (C: set SType) which are in chains *)
     
     Implicit Type (C: set SType).
     
     (* begin snippet Chains:: no-out *)    
-    Definition ChainsB := @Chains SType leSet1. 
+    Definition ChainsB := @chains SType leSet1. 
     (* end snippet Chains *)    
     
     Lemma Chains_is_total C: C \in ChainsB <-> total_on C (curry leSet1).
@@ -530,7 +530,7 @@ Section Paper.
     Hypothesis Hne: C != set0.
         
     (* Sinf is a Mono-independent set when C is a chain *)
-    Lemma Sinf_indep: RelIndep Mono (Sinf C).
+    Lemma Sinf_indep: indep Mono (Sinf C).
     Proof.
       move: Hc => /set_mem H1 x y /set_mem H2 /set_mem H3 H4 /= H5.
       move: H2 H3 =>[S [/[dup] H6 /set_mem P6 [/= H7 H8]]]
@@ -546,26 +546,26 @@ Section Paper.
     Qed.
     
     (* begin snippet Scalnotempty:: no-out *) 
-    Lemma Scal_not_empty (A1: nonempty [set: T]) (A2: ~ (iic (Asym Er.+))):
+    Lemma Scal_not_empty (A1: nonempty [set: T]) (A2: ~ (iic (asym Er.+))):
       exists v, Scal [set v].
     (* end snippet Scalnotempty *)
     Proof.
-      have: Rloop Er.+ by apply: notiic_rloop.
+      have: rloop Er.+ by apply: not_iic_rloop.
       move => [v H1]; exists v.
       have H2': Er.+ `<=` Mono by apply: subsetUr.
-      split;first by rewrite /RelIndep;move => x y /set_mem /= -> /set_mem /= ->.
+      split;first by rewrite /indep;move => x y /set_mem /= -> /set_mem /= ->.
       split;first by move => t [y [/= H3 H4]];move: H3; rewrite H4 /= => /H1/H2' H3;exists v.
       by rewrite set0P;(exists v).
     Qed.
     
-    Lemma SType_not_empty (A1: nonempty [set: T]) (A2: ~ (iic (Asym Er.+))):
+    Lemma SType_not_empty (A1: nonempty [set: T]) (A2: ~ (iic (asym Er.+))):
       (@setT SType) != set0.
     Proof.
       rewrite set0P;move: (Scal_not_empty A1 A2) => [v H2].
       by exists (exist _ [set v] H2).
     Qed.
     
-    Lemma Sinf_not_empty (A3: ~ (iic (Asym Eb.+))) : (Sinf C) != set0.
+    Lemma Sinf_not_empty (A3: ~ (iic (asym Eb.+))) : (Sinf C) != set0.
     Proof.
       move: (@Elt_not_empty C Hne) => [s _];rewrite set0P.
       by move: (@ChooseRC5 C Hne A3 s) => [/set_mem H1 | [s' [/set_mem H1 _]]];
@@ -573,38 +573,38 @@ Section Paper.
     Qed.
     
     (* begin snippet SinfScalP:: no-out *)    
-    Lemma Sinf_ScalP (A3: ~ iic (Asym Eb.+)): (Sinf C):#(Er.+) `<=` Mono#(Sinf C).
+    Lemma Sinf_ScalP (A3: ~ iic (asym Eb.+)): (Sinf C):#(Er.+) `<=` Mono#(Sinf C).
      (* end snippet SinfScalP *)
     Proof.
       move: Hc => H1 y [s [ H2 H3]].
       move: (H3) => [S [H4 [H5 H6]]].
       move: (Chains_Scal H1 H4) => [H7 [H8 H9]].
       have H13: y \in Er.+^-1#(sval S)
-          by rewrite inE /Fset;exists s;split;[exact | rewrite -inE].
+          by rewrite inE /fset;exists s;split;[exact | rewrite -inE].
       move: H13 => /set_mem/H8 [t [H13 H14]]. 
       case H15: (t \in (Sinf C)); first by (exists t); split;[ exact | rewrite -inE].
       have H16: (s <> t) by move => H17;rewrite -inE H17 in H3;rewrite H3 in H15.
       have H17: ~ ( Er.+ (y,t)). 
       move => H18.
-      have H19: Mono (s,t) by right; apply: (TclosT H2 H18).
+      have H19: Mono (s,t) by right; apply: (tclos_trans H2 H18).
       move: H7 => /(_ s t) H7.
       move: H14 => /mem_set H14.
       by move: (H7 H5 H14 H16).
       have H18: (Eb.+ (y,t)) by move: H13 => [H13 | H13]. 
-      have H19: (sval S) [<= (Asym Eb.+)] (Sinf C) by apply: ChooseRC6. 
+      have H19: (sval S) [<= (asym Eb.+)] (Sinf C) by apply: ChooseRC6. 
       move: H14 => /mem_set/H19 [tinf [/= H20 [H21 | [H21 H22]]]].
       + by rewrite -H21 in H20;rewrite H20 in H15. 
-      + by exists tinf;split;[ left;apply: (TclosT H18 H21) | rewrite -inE].
+      + by exists tinf;split;[ left;apply: (tclos_trans H18 H21) | rewrite -inE].
     Qed.
     
     (* begin snippet SinfScal:: no-out *)    
-    Lemma Sinf_Scal (A3: ~ iic (Asym Eb.+)): (Sinf C) \in Scal. 
+    Lemma Sinf_Scal (A3: ~ iic (asym Eb.+)): (Sinf C) \in Scal. 
     (* end snippet SinfScal *)
     Proof.
       by rewrite inE;split;[apply: Sinf_indep|split;[apply: Sinf_ScalP|apply: Sinf_not_empty]].
     Qed.
     
-    Lemma Sinf_final (A3: ~ iic (Asym Eb.+)): exists Si, forall (S: SType), C S -> S [<=] Si.
+    Lemma Sinf_final (A3: ~ iic (asym Eb.+)): exists Si, forall (S: SType), C S -> S [<=] Si.
     Proof.
       move: (Sinf_Scal A3) => /set_mem H2;exists (exist _ (Sinf C) H2);move => S /mem_set H3. 
       by apply: ChooseRC6.
@@ -615,11 +615,11 @@ Section Paper.
   
   (** * existence of Smax with Zorn Lemma for type SType *)
   (* begin snippet SmaxSType:: no-out *)    
-  Lemma Smax_SType (A1: nonempty [set: T]) (A2: ~ (iic (Asym Er.+))) (A3: ~ (iic (Asym Eb.+))):
+  Lemma Smax_SType (A1: nonempty [set: T]) (A2: ~ (iic (asym Er.+))) (A3: ~ (iic (asym Eb.+))):
     exists Sm, forall S, Sm [<=] S -> S = Sm.
   (* end snippet SmaxSType *)
   Proof.
-    apply: (@Zorn_relation SType leSet1 leSet1_porder) => C.
+    apply: (@zorn_rel SType leSet1 leSet1_porder) => C.
     move: (@Sinf_final C) => H2 /mem_set H3.
     move: H3 => {}/H2 H3.
     case H4: ( C != set0 );first by move: H4 A3 => /H3 H4 {}/H4 H5.
@@ -631,8 +631,8 @@ Section Paper.
   
   (** * existence of Smax in set T *)
   (* begin snippet SmaxE:: no-out *)    
-  Lemma Smax_Scal (A1: nonempty [set: T]) (A2: ~ (iic (Asym Er.+))) (A3: ~ (iic (Asym Eb.+))):
-    exists Sm, Sm \in Scal /\ forall T, T \in Scal -> Sm [<= (Asym Eb.+)] T -> T = Sm.
+  Lemma Smax_Scal (A1: nonempty [set: T]) (A2: ~ (iic (asym Er.+))) (A3: ~ (iic (asym Eb.+))):
+    exists Sm, Sm \in Scal /\ forall T, T \in Scal -> Sm [<= (asym Eb.+)] T -> T = Sm.
   (* end snippet SmaxE *)    
   Proof.
     move: (Smax_SType A1 A2 A3) => [Sm H1];exists (sval Sm); split; first by  apply: S2Scal.
@@ -642,10 +642,10 @@ Section Paper.
   (** * existence of Smax in set T *)
   (* begin snippet IsMaximal:: no-out *)  
   Definition IsMaximal (S: set T):= 
-      S \in Scal /\ forall T, T \in Scal -> S [<= (Asym Eb.+)] T -> T = S.
+      S \in Scal /\ forall T, T \in Scal -> S [<= (asym Eb.+)] T -> T = S.
   (* end snippet IsMaximal:: no-out *)  
   (* begin snippet Smax:: no-out *)    
-  Lemma Smax (A1: nonempty [set: T]) (A2: ~ (iic (Asym Er.+))) (A3: ~ (iic (Asym Eb.+))):
+  Lemma Smax (A1: nonempty [set: T]) (A2: ~ (iic (asym Er.+))) (A3: ~ (iic (asym Eb.+))):
     exists Sm, IsMaximal Sm.
   (* end snippet Smax *)    
   Proof. by move: (Smax_Scal A1 A2 A3) => [Sm HH];exists Sm. Qed.
@@ -674,7 +674,7 @@ Section Paper.
 
     (* A consequence of A2 *)
     (* begin snippet Sxone:: no-out *)    
-    Lemma Sx_1 (A2: ~ (iic (Asym Er.+))):
+    Lemma Sx_1 (A2: ~ (iic (asym Er.+))):
       (nonempty [set: Se]) -> (exists (x:T), x \in Se /\ SeP x).
     (* end snippet Sxone*)       
     Proof. by move => H1;move: (notiic_rloop_sub H1 A2). Qed.
@@ -699,7 +699,7 @@ Section Paper.
     Lemma fact2: forall x, (x \in Se) -> ~(x \in Mono#(Tm x)).
     (* end snippet facttwo *)       
     Proof.
-      move => x /set_mem [H2 H2'] H3;move: TmI => /(_ x)/Fset_inc1 => /(_ Mono) H4.
+      move => x /set_mem [H2 H2'] H3;move: TmI => /(_ x)/fsetSr => /(_ Mono) H4.
       by have: x \in Mono#Sm by move: H3;rewrite inE => /H4 -/mem_set H3.
     Qed.
 
@@ -715,17 +715,17 @@ Section Paper.
     Qed.
 
     (* begin snippet factfour:: no-out *)    
-    Lemma fact4: IsMaximal Sm -> (forall x, x \in Se -> RelIndep Mono ((Tm x) `|` [set x])).
+    Lemma fact4: IsMaximal Sm -> (forall x, x \in Se -> indep Mono ((Tm x) `|` [set x])).
     (* end snippet factfour*)       
     Proof.
-      have fact4': IsMaximal Sm -> (forall x, RelIndep Mono (Tm x)).
+      have fact4': IsMaximal Sm -> (forall x, indep Mono (Tm x)).
       move => Smax x x1 x2 /set_mem [H3 _] /set_mem [H4 _] H5 H6;move: Smax => [/set_mem [H7 _] _].
       by move: ((H7 x1 x2) H3 H4 H5 H6).
-      by move => Smax x H2;apply: RelIndep_U;[apply: fact4'|apply: fact2|apply: fact3].
+      by move => Smax x H2;apply: indepU;[apply: fact4'|apply: fact2|apply: fact3].
     Qed.
     
     (* begin snippet factfive:: no-out *)    
-    Lemma fact5: forall x, x \in Se -> Sm [<= (Asym Eb.+)] ((Tm x) `|` [set x]).
+    Lemma fact5: forall x, x \in Se -> Sm [<= (asym Eb.+)] ((Tm x) `|` [set x]).
     (* end snippet factfive *)       
       move => x H2 x1 /= /set_mem H3.
       case H4: (x1 \in Tm x).
@@ -775,21 +775,21 @@ Section Paper.
     Lemma FsetlU: forall x X Y (R: relation T), x \in R#X -> x \in R#(X `|` Y).
     Proof.
       move => x X Y R /set_mem H2.
-      have H3: R#X `<=`  R#(X `|` Y) by apply: Fset_inc1; apply: subsetUl.
+      have H3: R#X `<=`  R#(X `|` Y) by apply: fsetSr; apply: subsetUl.
       by move: H2 => /H3/mem_set H2. 
     Qed.
     
     Lemma FsetUO: forall x X Y (R: relation T), 
         x \in R#(X `|` Y) -> x \in R#X \/ x \in R#Y.
     Proof.
-      by move => x X Y R;rewrite FsetUr => /set_mem [ /mem_set H1 | /mem_set H1];[left | right].
+      by move => x X Y R;rewrite fsetUr => /set_mem [ /mem_set H1 | /mem_set H1];[left | right].
     Qed.
     
     Lemma FsetDI: forall x X Y (R: relation T), 
         x \in R#(X `\` Y) -> x \in R#X.
     Proof.
       move => x X Y R /set_mem H2.
-      have H3: R#(X `\` Y) `<=` R#(X) by apply: Fset_inc1;rewrite setDE; apply: subIsetl.
+      have H3: R#(X `\` Y) `<=` R#(X) by apply: fsetSr;rewrite setDE; apply: subIsetl.
       by move: H2 => /H3 H2;rewrite inE.
     Qed.
     
@@ -814,26 +814,26 @@ Section Paper.
       move: (fact7 Smax H2) => [y [/FsetUO [H6|H6] H7]].
       - (* y \in Er.+.-1#(Tm x) *)
         have H8: y \in Er.+^-1#Sm
-            by move: TmI => /(_ x)/Fset_inc1 
+            by move: TmI => /(_ x)/fsetSr 
              => /(_ Er.+^-1) H9;
                move: H6; rewrite inE => /H9 H6;rewrite inE.
         have H9: y \in Mono#Sm by apply: fact1.
         move: (fact8 H2) => H12.
         move: H9;rewrite -H12 => /FsetUO [H9 | H9].
         by have H13:  y \in Mono#(Tm x `|` [set x]) by apply: FsetlU.
-        move: H9;rewrite -FsetUl inE => [[H9 | H9]].
+        move: H9;rewrite -fsetUl inE => [[H9 | H9]].
         + move: H9 => [t [H13 /mem_set H14]].
           move: H14 => /fact0 H14.
-          have H15: Eb.+ (y,x) by apply: (TclosT H13 H14).
+          have H15: Eb.+ (y,x) by apply: (tclos_trans H13 H14).
           have H16: y \in Mono#_(x)
-              by rewrite -FsetUl inE;left;rewrite -Fset_t0.
+              by rewrite -fsetUl inE;left;rewrite -fset1P0.
           have H17: y \in Mono#(Tm x `|` [set x])
               by rewrite setUC; apply: FsetlU.
           by [].
         + (* T -R-> y -R-> S \ (Tm x) contredit indep  *)
           move: H6 => /set_mem [z1 [H13 H14]].
           move: H9 => [z2 [H15 H16]].
-          have H17: Er.+ (z1, z2) by apply: TclosT H13 H15.
+          have H17: Er.+ (z1, z2) by apply: tclos_trans H13 H15.
           have H17': Mono (z1,z2) by right.
           
           (* montrer que z1 et z2 sont differents et dans Sm *)
@@ -850,25 +850,25 @@ Section Paper.
           have H22: ~( Mono(z1,z2)) by apply: (ISm H14 H16 H19).
           by [].
       - (* x -R-> y est contradictoire *)
-        move: H6; rewrite inE -Fset_t0 /inverse /= => H6.
+        move: H6; rewrite inE -fset1P0 /inverse /= => H6.
         have H8: ~(y \in Mono#Sm).
-        rewrite -FsetUl => /set_mem [H9 | H9].
+        rewrite -fsetUl => /set_mem [H9 | H9].
         + (* de H9 on a aussi Eb.+#(Sm\ T) y car ~ (y -M-> T) 
          on en deduit que y -B-> x quicontredit 5 *)
           move: (fact8 H2) H9 => <- /mem_set/FsetUO [H9 | H9].
           by have H11: y \in Mono#(Tm x `|` [set x])
-              by apply: FsetlU;rewrite -FsetUl inE;left;rewrite -inE.
+              by apply: FsetlU;rewrite -fsetUl inE;left;rewrite -inE.
           move: H9; rewrite inE => [[z1 [H10 /mem_set H11]]].
           move: (fact0 H11) => H12.
-          have H13: Eb.+ (y,x) by apply: (TclosT H10 H12).
+          have H13: Eb.+ (y,x) by apply: (tclos_trans H10 H12).
           have H14: y \in Mono#(Tm x `|` [set x])
-              by rewrite setUC;apply: FsetlU;rewrite -FsetUl inE;
-            left;rewrite -Fset_t0.
+              by rewrite setUC;apply: FsetlU;rewrite -fsetUl inE;
+            left;rewrite -fset1P0.
           by [].
         + (* ici y-R-> S et x-R-> y => x -R-> S contredit def de x *)
           move: H9 => [z1 [H9 H10]].
           have H11: x \in Mono#Sm
-              by rewrite inE;exists z1;split;[right;apply: (TclosT H6 H9) |].
+              by rewrite inE;exists z1;split;[right;apply: (tclos_trans H6 H9) |].
           by move: H2; rewrite inE => [[_ H13]].
           (** end of H8 *)
           have H13: ~ (y \in Sm).
@@ -884,13 +884,13 @@ Section Paper.
           rewrite /SeP in H3.
           have H15: Er.+ (y, x). apply: ((H3 y) H14 H6). 
           have H16: y \in Mono#(Tm x `|` [set x])
-              by rewrite setUC;apply: FsetlU;rewrite -FsetUl inE;
-            right;rewrite -Fset_t0.
+              by rewrite setUC;apply: FsetlU;rewrite -fsetUl inE;
+            right;rewrite -fset1P0.
           by [].
     Qed.
 
     (* begin snippet factten:: no-out *)    
-    Lemma fact10 (A2: ~ (iic (Asym Er.+))): IsMaximal Sm -> ~([set: Se] !=set0).
+    Lemma fact10 (A2: ~ (iic (asym Er.+))): IsMaximal Sm -> ~([set: Se] !=set0).
     (* end snippet factten*)       
     Proof.
       by move => H0 /(Sx_1 A2) [v [H1 H2]];apply: (fact9 H0 H1 H2).
@@ -918,8 +918,8 @@ Section Paper.
   (** * The Assumptions we use: weaker than the original paper assumptions *)
   (* begin snippet MainTh:: no-out *)    
   Theorem SSWext:
-    (nonempty [set: T]) -> ~ (iic (Asym Er.+)) -> ~ (iic (Asym Eb.+))
-    -> exists Sm, RelIndep Mono Sm /\  Sm != set0 /\ 
+    (nonempty [set: T]) -> ~ (iic (asym Er.+)) -> ~ (iic (asym Eb.+))
+    -> exists Sm, indep Mono Sm /\  Sm != set0 /\ 
               forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
   (* end snippet MainTh:: no-out *)    
   Proof.
@@ -935,7 +935,7 @@ Section Paper.
   (* begin snippet SSWTh:: no-out *)    
   Corollary SSW:
     (nonempty [set: T]) -> ~ (iic_inj Er) -> ~ (iic_inj Eb)
-     -> exists Sm, RelIndep Mono Sm /\  Sm != set0 /\
+     -> exists Sm, indep Mono Sm /\  Sm != set0 /\
                forall x, ~ (x\in Sm) -> (x \in Mono#Sm). 
   (* end snippet SSWTh:: no-out *)    
   Proof.
@@ -952,7 +952,7 @@ Lemma Mono2path x S:
         /\ (allL Eb s x y \/ allL Er s x y).
   (* end snippet Monotopath *)    
   Proof.
-    rewrite inE /Mono /Fset => -[y [[H1 | H1] /mem_set H2]];(exists y;split;first by []).
+    rewrite inE /Mono /fset => -[y [[H1 | H1] /mem_set H2]];(exists y;split;first by []).
     + move: H1 => /(@TCP_uniq T Eb) [s [H3 [H4 [H5 H6]]]].
       by (exists s;have H7: (allL Eb s x y \/ allL Er s x y) by left).
     + move: H1 => /(@TCP_uniq T Er) [s [H3 [H4 [H5 H6]]]].

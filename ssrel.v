@@ -31,8 +31,8 @@ Definition relation (T: Type) := set (T * T).
 (* end snippet relation *)  
 
 (* possible Corecion of relation T to rel T *)
-Definition R2rel (T: Type) (R: relation T) : rel T := (fun x y => ((x,y) \in R)).
-Global Coercion R2rel : relation >-> rel.
+Definition rel_of (T: Type) (R: relation T) : rel T := (fun x y => ((x,y) \in R)).
+Global Coercion rel_of : relation >-> rel.
 
 Section Relation_Definition.
   
@@ -63,7 +63,7 @@ Section Relation_Definition.
   Record equivalence (R : relation T) : Prop :=
     { equiv_refl : reflexive R; equiv_trans : transitive R; equiv_sym : symmetric R}.
 
-  Lemma irP (R : relation T): irreflexive R -> (asymmetric R <-> antisymmetric R).
+  Lemma asym_antisymP (R : relation T): irreflexive R -> (asymmetric R <-> antisymmetric R).
   Proof. move => Ir. split => [Asy x y /Asy ? ? //| Atsy x y /[dup] H0 H1 H2]. 
          by move: (Atsy x y H1 H2) H0 => ->;apply: Ir.
   Qed.
@@ -99,13 +99,13 @@ Section Transitive_Closure.
 
   (* transitive closure as set *)
   
-  Definition Tclos := [set x: T*T | clos_trans x.1 x.2].
+  Definition tclos := [set x: T*T | clos_trans x.1 x.2].
   Definition Tclos_1n := [set x: T*T | clos_trans_1n x.1 x.2].
   Definition Tclos_n1 := [set x: T*T | clos_trans_n1 x.1 x.2].
   
-  Lemma Tclos_t1n_iff : Tclos =  Tclos_1n.
+  Lemma Tclos_t1n_iff : tclos =  Tclos_1n.
   Proof.
-    rewrite /Tclos /Tclos_1n /mkset predeqE => xy.
+    rewrite /tclos /Tclos_1n /mkset predeqE => xy.
     split.
     - elim => [x' y' |x' y' z' H1 H2 H3]; first by constructor.
       elim: H2=> [x1 y1| x1 y1 z1 H4 H5 H6 H7]; first by apply t1n_trans. 
@@ -114,9 +114,9 @@ Section Transitive_Closure.
       by apply t_trans with y';[apply t_step |].
   Qed.
 
-  Lemma Tclos_tn1_iff : Tclos = Tclos_n1.
+  Lemma Tclos_tn1_iff : tclos = Tclos_n1.
   Proof.
-    rewrite /Tclos /Tclos_n1 /mkset predeqE => xy.
+    rewrite /tclos /Tclos_n1 /mkset predeqE => xy.
     split => [H | H].
     - elim: H => [x y H | x y z H1 H2 H3 H4]; first by apply tn1_step.
       elim: H4 => [y1 H5| y1 z1]; first by constructor 2 with y.
@@ -342,9 +342,9 @@ Section Properties.
   Qed.
     
   Lemma clos_rt_t : forall x y z,
-      clos_rt R (x,y) -> Tclos R (y,z) -> Tclos R (x,z).
+      clos_rt R (x,y) -> tclos R (y,z) -> tclos R (x,z).
   Proof.
-    move => x1 y1 z1. rewrite /Tclos /clos_rt /mkset /=.
+    move => x1 y1 z1. rewrite /tclos /clos_rt /mkset /=.
     by elim => [x y H| | x y z _ H1 _ H2 ?];
               [ apply: t_trans; apply: t_step| | apply: H1 ;apply: H2].
     Qed.

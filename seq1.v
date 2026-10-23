@@ -124,18 +124,18 @@ Section link_with_path.
   Qed.
   
   Lemma path_bppE {T: Type} (x t:T) (st: seq T) (R: relation T): 
-    path (R2rel R) x st = (spairs t (x::st)) [\in] R.
+    path (rel_of R) x st = (spairs t (x::st)) [\in] R.
   Proof.
     elim/last_ind: st => [//| st a Hr]. 
     rewrite rcons_path {}Hr /=.
     elim/last_ind: st x => [x| st b _ x];first by rewrite /= andbT [RHS]inE.
     move: (cat_rcons a (rcons st b) [::]); rewrite cats0 => ->.
     rewrite /spairs /= pairmap_cat /= last_rcons all_cat /= andbT.
-    by have -> :  (R2rel R) b a = ((b, a) \in R) by rewrite [RHS]inE. 
+    by have -> :  (rel_of R) b a = ((b, a) \in R) by rewrite [RHS]inE. 
   Qed.
   
   Lemma path_allLE (T: Type) (x y:T) (st: seq T) (R: relation T): 
-    path (R2rel R) x (rcons st y) = allL R st x y.
+    path (rel_of R) x (rcons st y) = allL R st x y.
   Proof. rewrite /allL (Lift_eq x (x :: rcons st y));apply: path_bppE. Qed.
   
 End link_with_path.
@@ -519,25 +519,25 @@ Section Lift_in_facts.
   Proof.
     elim: st y  => [// | x st Hr y];rewrite rcons_cons. 
     elim: st Hr => [_ | z st _ H1];
-                  first by rewrite /= 2!andbT inE [X in _ -> X]inE => /(@Fset_t1 _ R). 
+                  first by rewrite /= 2!andbT inE [X in _ -> X]inE => /(@fset1_tclos _ R). 
     rewrite Lift_crc 2!allset_cons => [[? /H1 /[dup] ?]];rewrite allset_cons => -[? ?].
-    by split;[apply Fset_t2; exists z|].
+    by split;[apply fset1_tclos_step; exists z|].
   Qed.
   
   Lemma Lift_in_FF R st y z:  (rcons st y) [L\in] R -> y \in R.+#_(z) -> st [\in] R.+#_(z).
-  Proof. by move => /Lift_in_F H2 /(@Fset_t5 _ R) H4;apply: (@allset_subset _ _ _ _ H4 H2). Qed.
+  Proof. by move => /Lift_in_F H2 /(@fset1_tclosSr _ R) H4;apply: (@allset_subset _ _ _ _ H4 H2). Qed.
   
   Lemma Lift_in_rev R st: st [L\in] R <-> (rev st) [L\in] R^-1. 
   Proof. by rewrite allset_rev allset_inv Lift_rev. Qed.
   
   Lemma Lift_in_A R st x: (x::st) [L\in] R -> st [\in] (x)_:#R.+.
-  Proof. by rewrite Lift_in_rev rev_cons => /Lift_in_F H1;rewrite allset_rev /Aset TclosIv.
+  Proof. by rewrite Lift_in_rev rev_cons => /Lift_in_F H1;rewrite allset_rev /aset tclosV.
   Qed.
   
   Lemma Lift_in_AA R st x y: (y::st) [L\in] R -> y \in (x)_:#R.+ -> st [\in] (x)_:#R.+.
   Proof.
     move => /[dup] H1 /Lift_in_A H2 H3. 
-    have H4: (y)_:#R.+ `<=` (x)_:#R.+ by rewrite /Aset TclosIv;apply: Fset_t5;rewrite -TclosIv.
+    have H4: (y)_:#R.+ `<=` (x)_:#R.+ by rewrite /aset tclosV;apply: fset1_tclosSr;rewrite -tclosV.
     by apply allset_subset with (y)_:#R.+.
   Qed.
   
@@ -636,7 +636,7 @@ Section allset_Lifted.
   Proof.
     elim: st x => [| z st Hr x];last first.
     by rewrite rcons_cons Lift_cc 2!allset_cons;split => [[? /Hr ?] // | [H1 /Hr H2]].
-    rewrite /= /Rr;split => [/andP [/set_mem/=/mem_set -> _ //] | /andP [/set_mem H1 _]].
+    rewrite /= /rrel;split => [/andP [/set_mem/=/mem_set -> _ //] | /andP [/set_mem H1 _]].
     by rewrite andbT;apply/mem_set. 
   Qed.
 
@@ -644,15 +644,15 @@ Section allset_Lifted.
   Proof.
     elim: st x => [| z st Hr x];last first.
     by rewrite rcons_cons Lift_cc 2!allset_cons;split => [[? /Hr ?] //|[? /Hr ?]].
-    rewrite /= /Lr; split => [/andP [/set_mem/=/mem_set -> _ //] | /andP [/set_mem H1 _]].
+    rewrite /= /lrel; split => [/andP [/set_mem/=/mem_set -> _ //] | /andP [/set_mem H1 _]].
     by rewrite andbT;apply/mem_set. 
   Qed.
   
   Lemma allset_Dl X R x y st: (Lift (x::(rcons st y))) [\in] (Δ_(X)`;`R) -> (x::st) [\in] X.
-  Proof. by rewrite DeltaLco allset_I => /andP [/allset_Lr H1 _]. Qed.
+  Proof. by rewrite delta_lrel allset_I => /andP [/allset_Lr H1 _]. Qed.
   
   Lemma allset_Dr X R x y st: (Lift (x::(rcons st y))) [\in] (R`;`Δ_(X)) -> (rcons st y) [\in] X.
-  Proof. by rewrite DeltaRco allset_I => /andP [_ /allset_Rr H1]. Qed.
+  Proof. by rewrite delta_rrel allset_I => /andP [_ /allset_Rr H1]. Qed.
   
   Lemma allL_splitl R st x y:  allL R st x y <-> (x::st) [L\in] R /\ R ((last x st), y).
   Proof. 
@@ -699,7 +699,7 @@ Section allset_Lifted.
     have H2: (L_(X) `&` R) `<=` L_(X) by apply: subIsetl.
     pose proof (@allset_subset (T*T) (L_(X) `&` R) L_(X)) as H3.
     pose proof (@allset_subset (T*T) (L_(X) `&` R) R) as H4.    
-    rewrite DeltaLco /allL allset_I.
+    rewrite delta_lrel /allL allset_I.
     by split => /andP [/allset_Lr H5 H6];[apply /andP | apply /andP].
   Qed.
   
@@ -709,7 +709,7 @@ Section allset_Lifted.
     have H2: (R `&` L_(X)) `<=` L_(X) by apply: subIsetr.
     pose proof (@allset_subset (T*T) (L_(X) `&` R) L_(X)) as H3.
     pose proof (@allset_subset (T*T) (L_(X) `&` R) R) as H4.    
-    rewrite DeltaRco /allL allset_I; split => /andP [H5 H6]. 
+    rewrite delta_rrel /allL allset_I; split => /andP [H5 H6]. 
     by rewrite allset_Rr in H6; apply /andP; split. 
     by apply /andP; split;[| rewrite allset_Rr].
   Qed.
@@ -721,7 +721,7 @@ Section allset_Lifted.
   Proof. by rewrite /allL -rcons_cons; apply: Lift_in_F.  Qed.
 
   Lemma allL_AllA R st x y: allL R st x y -> (rcons st y) [\in] (x)_:#(R.+).
-  Proof. by rewrite allL_rev => /allL_All;rewrite /Aset TclosIv -all_rev rev_cons revK. Qed.
+  Proof. by rewrite allL_rev => /allL_All;rewrite /aset tclosV -all_rev rev_cons revK. Qed.
 
   Lemma allL_Lift_in_rc R st x y: allL R st x y -> (rcons st y) [L\in] R.
   Proof. by elim:st x y => [x y // | x' st _ x y];rewrite allL_c rcons_cons => /andP [_ ?]. Qed.
@@ -840,7 +840,7 @@ Section allset_Lifted.
   Qed.
   
   (** * a link with path.v using coercion from relation to rel *)
-  Lemma Lift2path R st x y: (x::(rcons st y)) [L\in] R <-> path (R2rel R) x (rcons st y).
+  Lemma Lift2path R st x y: (x::(rcons st y)) [L\in] R <-> path (rel_of R) x (rcons st y).
   Proof.
     rewrite (allL_nth' R st x y x).
     split => [Hl |/(@pathP _ _ _ _ x) Hr n Hs] .
@@ -1022,11 +1022,11 @@ Section PathRel.
   Lemma Itern_iff_PathReln  (R: relation T) : forall (n:nat), R^(n.+1) =  PathRel_n R n.
   Proof.
     elim => [ | n' H].
-    - rewrite /iter /PathRel_n DeltaCl /mkset predeqE => [[x y]].
+    - rewrite /iter /PathRel_n comp1x /mkset predeqE => [[x y]].
       split => [ H | ].
       by (exists [::]); rewrite allL0 inE /=.
       by move => [p [/size0nil -> ]];rewrite allL0 inE.
-    - rewrite -add1n iter_compose H /iter DeltaCl /mkset predeqE => [[x y]].
+    - rewrite -add1n iter_compose H /iter comp1x /mkset predeqE => [[x y]].
       split => [[z [/= H1 [p [H2 /= H3]]]] |[p [H1 H2]]];
                 first by (exists (z::p));rewrite -H2 allL_c H3 andbT /= inE. 
       elim: p H1 H2 => [ // | z p' _ H1].
@@ -1040,10 +1040,10 @@ Section PathRel.
   Lemma TCP (R: relation T) : R.+ = [set vp | exists p, allL R p vp.1 vp.2 ].
   (* end snippet TCP *)  
   Proof.
-    rewrite predeqE => -[x y];split => [/(@Tclos_iterk T) [n] | [p H1]].
+    rewrite predeqE => -[x y];split => [/(@tclos_iterP T) [n] | [p H1]].
     by rewrite  Itern_iff_PathReln /PathRel_n => -[p [H1 H2]];(exists p).
     have: PathRel_n R (size p) (x, y) by (exists p).
-    by rewrite -Itern_iff_PathReln;apply: iterk_sub_Tclos.
+    by rewrite -Itern_iff_PathReln;apply: iterS_tclos.
   Qed.
   
   Lemma allL_to_Tclos  (R: relation T) : forall (st: seq T) x y, allL R st x y -> R.+ (x,y).

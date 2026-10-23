@@ -69,10 +69,10 @@ Section AAC_eq_relC.
   (* composition *)
   #[export] Instance aac_compose_eq_Assoc T :
     Associative eq (@compose T).
-  Proof. by move => R S U; rewrite composeA. Qed.
+  Proof. by move => R S U; rewrite compA. Qed.
   #[export] Instance aac_delta_compose_eq_Unit T :
     Unit eq (@compose T) ('Δ).
-  Proof. by split => R;[apply: DeltaCl | apply: DeltaCr]. Qed.
+  Proof. by split => R;[apply: comp1x | apply: compx1]. Qed.
   #[export] Instance aac_compose_eq_compat T :
     Proper (eq ==> eq ==> eq) (@compose T).
   Proof. by move => R S H1 U V H2; rewrite H1 H2. Qed.
@@ -88,12 +88,12 @@ Section AAC_eq_ops.
   
   (* .+ *) 
   #[export] Instance aac_clos_trans_eq_compat T :
-    Proper (eq ==> eq) (@Tclos T).
+    Proper (eq ==> eq) (@tclos T).
   Proof. by move => R S ->. Qed. 
 
   (* .* *) 
   #[export] Instance aac_clos_refl_trans_eq_compat T :
-    Proper (eq ==> eq) (@RTclos T).
+    Proper (eq ==> eq) (@rtclos T).
   Proof. by move => R S ->. Qed. 
 
 End AAC_eq_ops.

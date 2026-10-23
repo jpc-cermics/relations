@@ -11,12 +11,12 @@
 
 (** * The main result here is the last lemma of the file: Asym2P5'                 *)
 (** * Under assumption Hypothesis A1: (exists (v0:T), (v0 \in setT))               *)
-(** *    if there is an infinite path for the relation (Asym R.+)                  *)
+(** *    if there is an infinite path for the relation (asym R.+)                  *)
 (** *   then there is an infinite path for the relation R.                         *)
 (** *   By infinite path, we mean here that all the visited vertices are distincts.*)
 (** *   More formally,                                                             *)
 (** *                                                                              *)
-(** *   exists f: nat -> T, (forall n, (Asym R.+) ((f n), (f n.+1)))               *)
+(** *   exists f: nat -> T, (forall n, (asym R.+) ((f n), (f n.+1)))               *)
 (** *   => exists h: nat -> T, (forall n, R ((h n), (h n.+1))) /\ injective h.     *)
 (** *                                                                              *)
 (** *   Note that f is automatically injective.                                    *)
@@ -38,7 +38,7 @@ Local Open Scope classical_set_scope.
 Module Type Asyminf2Inf_Type. 
   Axiom Asym2P5': 
     forall (T:choiceType) (R: relation T) (A1: nonempty [set: T]),
-      (iic (Asym R.+)) -> (iic_inj R). 
+      (iic (asym R.+)) -> (iic_inj R). 
 End Asyminf2Inf_Type.
 
 Module Asyminf2Inf <: Asyminf2Inf_Type. 
@@ -51,103 +51,103 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
     
     Lemma allL_rc_asym st y z: z \in st -> (rcons st y) [L\in] R -> R.+ (z, y).
     Proof.
-      by move => H1 /(@Lift_in_F T R) H2;move: (allset_in H1 H2) => /set_mem ?;rewrite Fset_t0.
+      by move => H1 /(@Lift_in_F T R) H2;move: (allset_in H1 H2) => /set_mem ?;rewrite fset1P0.
     Qed.
     
     Lemma allL_c_asym st x y: y \in st -> (x::st) [L\in] R -> R.+ (x, y).
     Proof.
-      by move => H1 /(@Lift_in_A _ R) H3;move: (allset_in H1 H3);rewrite /Aset inE -Fset_t0.  
+      by move => H1 /(@Lift_in_A _ R) H3;move: (allset_in H1 H3);rewrite /aset inE -fset1P0.  
     Qed.
     
-    Lemma allL_asym_l1 st x y: allL R st x y -> ~ R.+ (y, last x st) -> (Asym R.+) (x, y).
+    Lemma allL_asym_l1 st x y: allL R st x y -> ~ R.+ (y, last x st) -> (asym R.+) (x, y).
     Proof.
       move => H1 H2;split => [|H3];first by apply: (allL_to_Tclos H1).
       case H4: (st == [::]); first by move: H4 H2 => /eqP -> /= ?. 
       move: H4 => /eqP/(@last_in T) => /(_ x) H4.
       have H5: (last x st) \in (rcons st y) by rewrite in_rcons;apply/orP;left. 
       move: (allL_c_asym H5 H1) => H6. 
-      by have: R.+ (y, last x st) by apply: TclosT H3 H6.
+      by have: R.+ (y, last x st) by apply: tclos_trans H3 H6.
     Qed.
 
-    Lemma allL_asym_r1 st x y: allL R st x y -> ~ R.+ (head y st,x) -> (Asym R.+) (x, y).
+    Lemma allL_asym_r1 st x y: allL R st x y -> ~ R.+ (head y st,x) -> (asym R.+) (x, y).
     Proof.
       move => H1 H2;split => [|H3];first by apply: (allL_to_Tclos H1). 
       case H4: (st == [::]);first by move: H4 H2 => /eqP -> /= ?.
       move: H4 => /eqP/(@head0 T) => /(_ y) H4.
       have H5: (head y st) \in (x::st) by rewrite in_cons;apply/orP;right.
       move: (allL_rc_asym H5 H1) => H6. 
-      by have: R.+ (head y st,x) by apply: TclosT H6 H3.
+      by have: R.+ (head y st,x) by apply: tclos_trans H6 H3.
     Qed.
     
     Lemma allL_asym_l st x s y:  s \in st -> allL R st x y -> ~ R.+ (y, last x st) 
-                                 -> (Asym R.+) (s, y).
+                                 -> (asym R.+) (s, y).
     Proof.
       move => H1 H4 H5;move: (allL_take_drop H1 H4) => [_ H1'].
       split; first by move: (allL_to_Tclos H1') => H6.
       case H3: (s == (last x st)); first by move: H3 => /eqP ->.
       have H6: ~ ( s = (last x st)) by move => H7; rewrite -H7 eq_refl in H3.
       pose proof (allL_belast H1 H6 H4) as H7.
-      by move => H8;have H9: R.+ (y, last x st) by apply: (TclosT H8 H7).
+      by move => H8;have H9: R.+ (y, last x st) by apply: (tclos_trans H8 H7).
     Qed.
     
     Lemma allL_asym_r st x s y: s \in st -> allL R st x y -> ~ R.+ (head y st, x) 
-                                -> (Asym R.+) (x, s).
+                                -> (asym R.+) (x, s).
     Proof.
       move => H1 H4 H5;move: (allL_take_drop H1 H4) => [H1' _].
       split;first by move: (allL_to_Tclos H1').
       case H3: (s == (head y st)); first by move: H3 => /eqP ->.
       have H6: ~ ( s = (head y st))  by move => H7; rewrite -H7 eq_refl in H3.
       pose proof (allL_behead H1 H6 H4) as H7.
-      by move => H8;have H9: R.+ (head y st,x) by apply: (TclosT H7 H8).
+      by move => H8;have H9: R.+ (head y st,x) by apply: (tclos_trans H7 H8).
     Qed.
     
     Lemma allL_asym_lr st st' x s y s' z: 
       s \in st -> allL R st x y -> ~ R.+ (y, last x st) 
       -> s' \in st'  -> allL R st' y z
-      -> (Asym R.+) (s, s').
+      -> (asym R.+) (s, s').
     Proof.
       move => H1 H3 H4 H5 H6;move: (allL_asym_l H1 H3 H4) => H7.
       have H8: s' \in (rcons st' z) by rewrite in_rcons H5 orTb. 
       pose proof (allL_c_asym H8 H6) as H9. 
-      have H10: (Asym(R.+) `;` R.+) (s,s') by (exists y).
-      by move: H10 => /AsymIncr H10.
+      have H10: (asym(R.+) `;` R.+) (s,s') by (exists y).
+      by move: H10 => /asym_compS H10.
     Qed.
     
     Lemma allL_asym_rl st st' x s y s' z:
       s \in st -> allL R st x y 
       -> s' \in st' -> allL R st' y z -> ~ R.+ (head z st', y) 
-      -> (Asym R.+) (s, s').
+      -> (asym R.+) (s, s').
     Proof.
       move => H1 H2 H3 H5 H6;move: (allL_asym_r H3 H5 H6) => H7.
       have H8: s \in (x::st) by rewrite in_cons H1 orbT. 
       pose proof (allL_rc_asym H8 H2) as H9. 
-      have H10: (R.+  `;` Asym(R.+)) (s,s') by (exists y).
-      by move: H10 => /AsymIncl H10.
+      have H10: (R.+  `;` asym(R.+)) (s,s') by (exists y).
+      by move: H10 => /comp_asymS H10.
     Qed.
     
     Lemma allL_asym_xx st x s z: 
       s \in st -> ~ (z = s) -> allL R st x z -> ~ R.+ (z, s)
-      -> (Asym R.+) (x,z).
+      -> (asym R.+) (x,z).
     Proof.
       elim: st x s z => [// | y st Hr x s z].
       rewrite in_cons => /orP [/eqP -> | H1] H2.
       + rewrite allL_c => /andP [/set_mem H3 H4] H5. 
         split.
         ++ pose proof (allL_to_Tclos H4) as H6.
-           have H7: R.+ (x, y) by apply: TclosSu.
-           by pose proof TclosT H7 H6.
+           have H7: R.+ (x, y) by apply: tcl_sub.
+           by pose proof tclos_trans H7 H6.
         ++ move => H6.
-           have H7: R.+ (x, y) by apply: TclosSu.
-           by pose proof TclosT H6 H7.
+           have H7: R.+ (x, y) by apply: tcl_sub.
+           by pose proof tclos_trans H6 H7.
       + rewrite allL_c => /andP [/set_mem H3 H4] H5. 
         split.
         ++ pose proof (allL_to_Tclos H4) as H6.
-           have H7: R.+ (x, y) by apply: TclosSu.
-           by pose proof TclosT H7 H6.      
+           have H7: R.+ (x, y) by apply: tcl_sub.
+           by pose proof tclos_trans H7 H6.      
         ++ pose proof (Hr y s z) H1 H2 H4 H5 as [H8 H9].
            move => H10.
-           have H7: R.+ (x, y) by apply: TclosSu.
-           have H11: R.+ (z,y) by apply: TclosT H10 H7.
+           have H7: R.+ (x, y) by apply: tcl_sub.
+           have H11: R.+ (z,y) by apply: tclos_trans H10 H7.
            exact.
     Qed.
     
@@ -160,7 +160,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
       move: H5 => /uniq_crc [J1 [J2 [J3 J4]]].
       move => s H9 H10.
       pose proof allL_asym_lr H10 H1 H3 H9 H4 as H12. 
-      by pose proof Asym_irreflexive H12.
+      by pose proof asym_irreflexive H12.
     Qed.
     
     Lemma allL2_fact: forall yl (stlr: seq T) yr str z,
@@ -177,9 +177,9 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
       + move => /[dup] H6 /H5 H7.
         have H8: R.+ (z, yr) 
           by pose proof (allset_in H6 (Lift_in_F (allL_Lift_in_rc H1)));
-          rewrite Fset_t0 -inE.
+          rewrite fset1P0 -inE.
         exact.
-      + (* Asym composition is Asym *) 
+      + (* asym composition is asym *) 
         by move: H1 => + H6;rewrite H6 => /(@allL_to_Tclos T) H1.
     Qed.
     
@@ -202,13 +202,13 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
         have H4: (rcons st z) [\in] R.+#_(x).
         move: H1; rewrite Lift_crc Lift_rcrc allset_cons allset_rcons => [[_ [H1 _]]].
         rewrite allset_rcons.
-        split;first by apply Lift_in_FF with z;[|rewrite inE -Fset_t0 -inE H3].
-        by rewrite -Fset_t0 -inE H3.
+        split;first by apply Lift_in_FF with z;[|rewrite inE -fset1P0 -inE H3].
+        by rewrite -fset1P0 -inE H3.
         (* end of H4 *)
         have H5: y = y \/ R.+ (y, y) by left.
         move: H3 => /set_mem H3.
         have H6: ~ R.+ (y, last x (rcons st z))
-          by rewrite last_rcons; move => H7;have H8: R.+ (y,x) by apply: TclosT H7 H3.
+          by rewrite last_rcons; move => H7;have H8: R.+ (y,x) by apply: tclos_trans H7 H3.
         exact. 
       - rewrite Lift_crc Lift_rcrc allset_cons allset_rcons in H1.
         move: (H1); rewrite H0 => [[H10 [H10' H10'']]].
@@ -222,8 +222,8 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
         by apply subseq_trans with (rcons st z);[ | apply subseq_rcons]. *)
         have H11: subseq st' (rcons st z) by apply/subseq_trans/subseq_rcons.
         (exists st', y'); move: H9 => [H9 | H9].
-        by have H12: (y = y' \/ R.+ (y', y)) by right;rewrite -H9;apply: TclosSu.
-        by have H12: (y = y' \/ R.+ (y', y)) by right;apply TclosT with z;[ |apply: TclosSu].
+        by have H12: (y = y' \/ R.+ (y', y)) by right;rewrite -H9;apply: tcl_sub.
+        by have H12: (y = y' \/ R.+ (y', y)) by right;apply tclos_trans with z;[ |apply: tcl_sub].
     Qed.
 
     (* utility lemma *)
@@ -247,13 +247,13 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
         have H4: (y1::st) [\in] (z)_:#R.+.
         move: H1;rewrite Lift_crc Lift_rcc allset_cons allset_rcons => [[_ [H1 _]]].
         rewrite allset_cons.
-        split;first by rewrite  /Aset -Fset_t0 /inverse /= -inE H3.
-        by apply Lift_in_AA with y1;[|rewrite inE /Aset -Fset_t0 /inverse /= -inE H3].
+        split;first by rewrite  /aset -fset1P0 /inverse /= -inE H3.
+        by apply Lift_in_AA with y1;[|rewrite inE /aset -fset1P0 /inverse /= -inE H3].
         (* end of H4 *)
         have H5: y = y \/ R.+ (y, y) by left.
         move: H3 => /set_mem H3.
         have H6: ~ R.+ (head z (y1 :: st), y)
-          by move => /= H7;have H8: R.+ (z,y) by apply: TclosT H3 H7.
+          by move => /= H7;have H8: R.+ (z,y) by apply: tclos_trans H3 H7.
         exact.
       - rewrite Lift_crc Lift_rcc allset_cons allset_rcons in H1.
         move: (H1) => [H10 [H10' H10'']].
@@ -265,13 +265,13 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
       by apply subseq_trans with (y1::st);[| apply subseq_cons]. *)
         have H11: subseq st' (y1 :: st) by apply/subseq_trans/subseq_cons.
         (exists st', z'); move: H9 => [H9 | H9].
-        by have H12: (y = z' \/ R.+ (y, z')) by right; rewrite -H9; apply: TclosSu.
-        by have H12: (y = z' \/ R.+ (y, z')) by right;apply TclosT with y1;[apply: TclosSu|].
+        by have H12: (y = z' \/ R.+ (y, z')) by right; rewrite -H9; apply: tcl_sub.
+        by have H12: (y = z' \/ R.+ (y, z')) by right;apply tclos_trans with y1;[apply: tcl_sub|].
         by move: H1'; rewrite cons_uniq rcons_cons => /andP [_ H1'].
     Qed.
     
     Lemma RedBackLR: forall (x y z:T) (stl: seq T),
-        allLu R stl x y -> ~ R.+ (y,x) -> (Asym R.+) (y,z) 
+        allLu R stl x y -> ~ R.+ (y,x) -> (asym R.+) (y,z) 
         -> exists stl', exists yl, exists str', exists yr, exists stlr,
             ((yl = yr) \/ (allLu R stlr yl yr))
             /\ subseq stl' stl (* (rcons stl' yl) (rcons stl y)  *)
@@ -286,12 +286,12 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
       pose proof (RedBackL (conj H1 H2) H3) as [stl' [yl [H7' H7]]].
       pose proof (RedBackR H4 H5 H6) as [str' [yr [_ H8]]].
       exists stl';exists yl;exists str';exists yr.
-      move: H7 => [L1 [L2 [L3 [L4 [L5 L6]]]]].
+      move: H7 => [rtclos_compE1 [rtclos_compE2 [L3 [L4 [L5 L6]]]]].
       move: H8 => [M1 [M2 [M3 [M4 [M5 M6]]]]].
       
       have: (yl = yr) \/  R.+ (yl, yr).
       by move: L5 M5 => [<- | H16] [<- | H17];
-                        [left | right | right | right;apply TclosT with y].
+                        [left | right | right | right;apply tclos_trans with y].
       
       move => [? | ?]; first by (exists [::]);split;[left |]. 
       case H17: (yl == yr);move: H17 => /eqP H17;first by (exists [::]);split;[ left|].
@@ -341,7 +341,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
     Qed.
 
     Lemma RedBackLR2:  forall (x y z:T) (stl: seq T),
-        allLu R stl x y -> ~ R.+ (y,x) -> (Asym R.+) (y,z) 
+        allLu R stl x y -> ~ R.+ (y,x) -> (asym R.+) (y,z) 
         -> exists stl', exists yl, exists (stlr: seq T), exists yr, exists str',
             ((yl = yr /\ (forall s, s \in stl' -> s \in str' -> False)
               /\ subseq stl' stl (* subseq (rcons stl' yl) (rcons stl y)  *)
@@ -415,7 +415,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
            have H12: ~ (yl =z) by move => H12;rewrite H12 in H15'.
            
            have H20: ~ (R.+ (z, yl)) 
-             by move => H21; have H22: R.+ (z,yr) by apply: (TclosT H21 H15').
+             by move => H21; have H22: R.+ (z,yr) by apply: (tclos_trans H21 H15').
            
            pose proof allL_take_drop H17 H11 as [_ H21]. 
            
@@ -452,7 +452,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
     
     (** * The main Lemma of this section *)
     Lemma Asym2P x y z stl: 
-      allLu R stl x y -> ~ R.+ (y,x) -> (Asym R.+) (y,z) 
+      allLu R stl x y -> ~ R.+ (y,x) -> (asym R.+) (y,z) 
       -> exists stl', exists y', exists str',
           subseq stl' stl 
           /\ allLu R stl' x y' /\ ~ R.+ (y',x)
@@ -470,7 +470,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
         have: (~ R.+ (head z stlr, yl) \/ (exists s : T, s \in stlr /\ ~ R.+ (z, s)))
           by left;rewrite H7.
         
-        have H14: (Asym R.+) (x, yl)
+        have H14: (asym R.+) (x, yl)
           by move: H9 => [H9 _];move: (allL_asym_l1 H9 H10).
         
         have H16: ~ R.+ (z, yl) 
@@ -555,12 +555,12 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
     Variables (T:choiceType) (R: relation T). 
     
     Lemma choose_Rseq: exists (g: T*T -> seq T), forall xy, 
-        (Asym R.+) xy -> allLu R (g xy) xy.1 xy.2.
+        (asym R.+) xy -> allLu R (g xy) xy.1 xy.2.
     Proof.
       have Au0: (exists (v0: seq T), (v0 \in [set: seq T]))
         by (exists [::]);rewrite inE.
       pose R' :=[set xyz: (T*T)*(seq T)| allLu R xyz.2 xyz.1.1 xyz.1.2].
-      have Au1: forall (xy:T*T), (Asym R.+) xy -> exists z, R' (xy,z)
+      have Au1: forall (xy:T*T), (asym R.+) xy -> exists z, R' (xy,z)
             by move => [x y] /TCP_uniq1 [[st H3] _];exists st.
       by move: (Au1_G Au0 Au1) => [g H1]; exists g. 
     Qed.
@@ -607,7 +607,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
     Proof. by move: A1 => [v0 _];exists ([::],v0,[::],0);rewrite inE. Qed.
     
     Lemma Asym2P1: 
-      (iic (Asym R.+)) -> 
+      (iic (asym R.+)) -> 
       exists f : nat -> T, exists g: T*T -> seq T, 
         (allLu R (g (f 0,f 1)) (f 0) (f 1) /\ ~ R.+ (f 1, f 0))
         /\ forall (p : T2), Re1 f p -> exists (t: T2), Re2 f (p,t).
@@ -622,7 +622,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
     Qed.
     
     Lemma Asym2P3: 
-      (iic (Asym R.+)) -> exists f : nat -> T, 
+      (iic (asym R.+)) -> exists f : nat -> T, 
           (exists (p0: T2), Re1 f p0) 
           /\ exists h: T2 -> T2, forall (p : T2), Re1 f p -> Re2 f (p,h p).
     Proof.
@@ -635,7 +635,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
     Qed.
     
     Lemma Asym2P4: 
-      (iic (Asym R.+)) -> exists f : nat -> T, exists h: T2 -> T2, exists (p0: T2),
+      (iic (asym R.+)) -> exists f : nat -> T, exists h: T2 -> T2, exists (p0: T2),
           Re1 f p0 /\ (forall n, Re2 f (iterh h p0 n, iterh h p0 n.+1)).
     Proof.
       move => /Asym2P3 [f [[p0 H0] [h H1]]]. 
@@ -646,7 +646,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
     
     (* begin snippet AsymdPV:: no-out *)  
     Lemma Asym2P5: 
-      (iic (Asym R.+)) -> exists k: nat -> T, exists l: nat -> seq T,
+      (iic (asym R.+)) -> exists k: nat -> T, exists l: nat -> seq T,
         forall n, allLu R (l n) (k n) (k n.+1) /\ ~ R.+ (k n.+1, k n)
                   /\ uniq ((l n) ++ (l n.+1)).
     (* end snippet AsymdPV *)  
@@ -930,7 +930,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
             last by (have <-: n = n' by lia);move: H0 => /(_ n) [_ [? _]].
           move: H2 => /Hr H2 H3.
           move: H0 => /(_ n') [[+ _] _] => /(@allL_to_Tclos T) H4.
-          by pose proof (@TclosT T R (f n'.+1) (f n')  _ H4 H3).
+          by pose proof (@tclos_trans T R (f n'.+1) (f n')  _ H4 H3).
         Qed.
         
         Lemma Asym2P9 (R: relation T): 
@@ -939,7 +939,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
         Proof.
           move => H0 n;elim => [//| n' Hr H1].
           move: H0 => /(_ n') /(@allL_to_Tclos T R) H0.
-          case H2: (n < n');first by move: H2 => /Hr H2;apply: (@TclosT T R (f n') (f n) _).
+          case H2: (n < n');first by move: H2 => /Hr H2;apply: (@tclos_trans T R (f n') (f n) _).
           by have /eqP ->: (n == n') by lia.
         Qed.
 
@@ -955,7 +955,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
             move: H1'' => /Asym2P9/(_ n n' H1) H3.
             move: H0 => /(_ n') [H4 _].
             pose proof (@allL_to_Tclos_left T _ _ _ _ x H2 H4). 
-            by apply: (@TclosT T R (f n') (f n) _).
+            by apply: (@tclos_trans T R (f n') (f n) _).
           + move: H0' => /eqP ->.
             move: H0 => /(_ n') [H0 _].
             by pose proof (@allL_to_Tclos_left T R (g n') (f n') (f n'.+1) x H2 H0). 
@@ -970,7 +970,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
           + move: H3 => /(@Asym2P9 R H0) H3.
             move: H0 => /(_ n) H4.
             pose proof (@allL_to_Tclos_right T _ _ _ _ x H2 H4). 
-            by apply: (@TclosT T R (f n.+1) x _).
+            by apply: (@tclos_trans T R (f n.+1) x _).
           + have /eqP <-: (n.+1 == n') by lia.
             move: H0 => /(_ n) H4.
             by pose proof (@allL_to_Tclos_right T _ _ _ _ x H2 H4). 
@@ -997,7 +997,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
           move => x H11 H12.
           pose proof (@allL_to_Tclos_left T _ _ _ _ x H12 H6) as T0.
           pose proof (@allL_to_Tclos_right T _ _ _ _ x H11 H2) as T1.    
-          have H13: R.+ (f n', f n.+1) by apply: (@TclosT T R _ _ _ T0 T1).
+          have H13: R.+ (f n', f n.+1) by apply: (@tclos_trans T R _ _ _ T0 T1).
           by pose proof (@Asym2P12 R H0 _ _ H10).
         Qed.
         
@@ -1108,7 +1108,7 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
   End val_construction.
 
   Lemma Asym2P5' (T:choiceType) (R: relation T) (A1: nonempty [set: T]):
-    (iic (Asym R.+)) -> (iic_inj R). 
+    (iic (asym R.+)) -> (iic_inj R). 
   Proof.
     move => /(@Asym2P5 T R A1) [k [l H1]]. 
     move: (H1) => /allL2val_inj ?.

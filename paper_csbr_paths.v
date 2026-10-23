@@ -50,7 +50,7 @@ Definition A_tr {T: Type} (X: set T) (R: relation T) :=
   ChrelO `&` 
     [set oe : (T*T*O) * (T*T*O)| match (oe.1.2,oe.2.2, oe.1.1.2) with 
                                  | (P,P,v) => X.^c v | (N,N,v) => X.^c v | (N,P,v) => X.^c v
-                                 | (P,N,v) => (Fset R.* X) v end].
+                                 | (P,N,v) => (fset R.* X) v end].
 (* end snippet Atr *)
  
 (* begin snippet ActiveOePP:: no-out *)  
@@ -71,7 +71,7 @@ Definition ActiveOe {T: Type} (X: set T) (R: relation T) :=
       | (P,P,v) => X.^c v
       | (N,N,v) => X.^c v
       | (N,P,v) => X.^c v
-      | (P,N,v) => (Fset R.* X) v
+      | (P,N,v) => (fset R.* X) v
       end].
 (* end snippet ActiveOe *)  
 
@@ -546,11 +546,11 @@ Section pair.
     by move => sto st so t to;rewrite pair_ch => -> /=. 
   Qed.
 
-  Definition Extend (R: relation (T*T)) :=
+  Definition extend (R: relation (T*T)) :=
     [set tto : (T*T*O)*(T*T*O) | R (tto.1.1,tto.2.1)].
   
   Lemma pair_L1: forall (R: relation  (T*T)) (st:seq (T*T)) (so:seq O), 
-      size(st) = size (so) -> (pair st so) [L\in] (Extend R) <-> st [L\in] R.
+      size(st) = size (so) -> (pair st so) [L\in] (extend R) <-> st [L\in] R.
   Proof.
     move => R st so H1.
     elim: st so H1 => [so H1 // | tt st Hr so H1].
@@ -573,14 +573,14 @@ Section pair.
   Qed.
   
   Lemma pair_L2: forall (R: relation  (T*T)) (stto:seq (T*T*O)),
-      stto [L\in] (Extend R) <-> (unpair stto).1 [L\in] R.
+      stto [L\in] (extend R) <-> (unpair stto).1 [L\in] R.
   Proof.
     move => R stto. 
     elim: stto => [ // | [[t1 t1'] o1] stto Hr ].
     elim: stto Hr => [ Hr // |[[t2 t2'] o2] stto Hr Hr'].
     rewrite unpair_c Lift_cc allset_cons.
     split => [ [H1 /Hr' H2] /= |].
-    - rewrite /Extend /mkset /= -inE in H1.
+    - rewrite /extend /mkset /= -inE in H1.
       by rewrite  H1 andbC andbT.
     - rewrite unpair_c Lift_cc allset_cons.
       move => [H1 H2].
@@ -1014,7 +1014,7 @@ Section Extended_Oriented_Paths.
     have H3: size(Lift st) = size so by apply Lift_sz in H1;rewrite H2 addn1 subn1 in H1.
     split; first by rewrite pair_sz1 H3;rewrite H2 addn1 in H1;apply leq_ltn_trans with 0. 
     rewrite /LiftO.
-    have -> : (pair (Lift st) so) [L\in] (Extend Chrel) 
+    have -> : (pair (Lift st) so) [L\in] (extend Chrel) 
          <-> (Lift st) [L\in] Chrel by  apply pair_L1.
     by rewrite Lift_Lift.
   Qed.
@@ -1026,7 +1026,7 @@ Section Extended_Oriented_Paths.
     move => stto;move => H1 H2.
     split; first by rewrite unpair_sz1.
     pose proof unpair_right stto as H3.
-    have H4: (Extend Chrel) = ChrelO by [].
+    have H4: (extend Chrel) = ChrelO by [].
     have H5: size ((unpair stto).1) = size (unpair stto).2 by apply unpair_sz.
     pose proof pair_L1 Chrel H5 as H6.
     by rewrite -H6 unpair_right H4. 
@@ -1429,8 +1429,8 @@ Section Active_path_unique.
     Proof.
       move => u v [H1 [w [H2 H3]]]. 
       have H4: (R `;` R.* ) (u,w) by (exists v).
-      have H5:  (R.+ `<=` R.*  ) by apply Tclos_sub_RTclos.
-      have H6: R.* (u, w) by rewrite r_RTclos_eq_Tclos in H4 ;apply H5 in H4.
+      have H5:  (R.+ `<=` R.*  ) by apply tclos_rtclosS.
+      have H6: R.* (u, w) by rewrite comp_rtclosE in H4 ;apply H5 in H4.
       by (exists w).
     Qed.
 
@@ -1468,7 +1468,7 @@ Section Active_path_unique.
     Lemma Active_path_shorten_L1 R X: forall (p: seq (T*T*O)) (x y z u v w: T),
         Active_path X R [::(x,y,P),(y,z,P) & (rcons (rcons p (u,v,N)) (v,w,N))] x w
         -> exists (q: seq T), Active_path X R (Lifto [::x,y & q] P) x (last y q) 
-                        /\ (Fset R.* X) (last y q).
+                        /\ (fset R.* X) (last y q).
     Proof. 
       elim => [x y z u v w| ].
       - rewrite -4!rcons_cons Active_path_rcrc'.

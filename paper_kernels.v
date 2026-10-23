@@ -31,11 +31,11 @@ Section CheckAsym.
 
   (* begin snippet  iicasymToiicinj::  no-out *) 
   Lemma iic_asym_to_iic_inj:
-    (iic (Asym U.+)) -> (iic_inj U). 
+    (iic (asym U.+)) -> (iic_inj U). 
   (* end snippet iicasymToiicinj *) 
   Proof. by apply: (@Asym2P5' T U A1). Qed.
 
-  Lemma not_iic_inj_to_not_iic_asym: ~ (iic_inj U) -> ~ (iic (Asym U.+)).
+  Lemma not_iic_inj_to_not_iic_asym: ~ (iic_inj U) -> ~ (iic (asym U.+)).
   Proof. by move => ? /iic_asym_to_iic_inj ?. Qed.
 
 End  CheckAsym. 
@@ -64,7 +64,7 @@ Theorem G_SSW:
       have Hsmabs: ~ (absorbent M Sm) -> False.
       {
         move => Hna.
-        move: (extend_prekernel A2 A3 A4 A5 Hpk Hna) => [X' [/mem_set H4 [/DeltaCP Hne Hle]]]. 
+        move: (extend_prekernel A2 A3 A4 A5 Hpk Hna) => [X' [/mem_set H4 [/deltaTCP Hne Hle]]]. 
         move: H4 Hle => /Hmax H4 /H4 Heq.
         by rewrite -Heq in Hne.
       }
@@ -110,21 +110,21 @@ Notation M := (B `|` R).
       {
         move: Au => [Au | Au ].
         + have Oinv_notcyclic: ~ (exists s, O^-1.+ (s,s))
-            by rewrite -TclosIv.
+            by rewrite -tclosV.
           (* exists a sink and thus a preabsorbent node *)
           move: (@NotCyclic_exists_preabsorbent T O^-1 M A1 Oinv_notcyclic) => [v Hpa].
           (* [set v] is in (pre_kernel R M). *)
           exists [set v]%classic;rewrite inE. 
           have Hinc:  (v)_:#R  `<=` (v)_:#O^-1 
-            by rewrite /Aset;apply: Fset_inc;apply: inverseS.
-          split;first by apply: RelIndep_set1.
+            by rewrite /aset;apply: fsetS;apply: inverseS.
+          split;first by apply: indep1.
           split;first by apply: (subset_trans Hinc _).
           ++ apply/negP => /eqP H.
              have Hv: [set v]%classic v by [].
              by rewrite H /= in Hv.
         + move: (@NotCyclic_exists_preabsorbent T R M A1 Au) => [v Hpa].
           exists [set v]%classic;rewrite inE.
-          split;first by apply: RelIndep_set1.
+          split;first by apply: indep1.
           split;first exact. 
           ++ apply/negP => /eqP H.
              have Hv: [set v]%classic v by [].
@@ -211,7 +211,7 @@ Notation M := (B `|` R).
         by move: H1 => /H4;rewrite inE => H1.
       }
       move: (@extend_prekernel T R B O S A2 A3 A4 A5 Hpk H3)
-          => [S' [Hpre [/DeltaCP H7 Hne]]].
+          => [S' [Hpre [/deltaTCP H7 Hne]]].
       by exists S';[ | split;[| apply/negP => /eqP Heq]].
     Qed.
     
@@ -242,15 +242,15 @@ Module SSWext.
   (* begin snippet SSWext:: no-out *)  
 Context (T:choiceType) (Eb Er: relation T).
 Definition R := Er.+. Definition B := Eb.+.
-Definition O := (Asym B). 
+Definition O := (asym B). 
 Notation M := (B `|` R).
   (* end snippet SSWext *)    
   
   Lemma R_trans: transitive R.
-  Proof. by apply: (@TclosT _ Er). Qed.
+  Proof. by apply: (@tclos_trans _ Er). Qed.
 
   Lemma B_trans: transitive B.
-  Proof. by apply: (@TclosT _ Eb). Qed.
+  Proof. by apply: (@tclos_trans _ Eb). Qed.
 
   Lemma A3: (Assumption3 B M O).
   Proof. 
@@ -272,16 +272,16 @@ Notation M := (B `|` R).
     by have H11: M (y,x') by right;apply: (R_trans H1 H2).
   Qed.
 
-  Lemma A6_1:  ~ (iic (Asym B)) -> (Assumption6_1 O).
+  Lemma A6_1:  ~ (iic (asym B)) -> (Assumption6_1 O).
   Proof. by exact. Qed.
   
   Lemma A6_2: (Assumption6_2 O). 
-  Proof. by apply: (@Asym_sporder _ B);apply: TclosT. Qed.
+  Proof. by apply: (@asym_sporder _ B);apply: tclos_trans. Qed.
   
   Lemma A6_3: (Assumption6_3 O M).
   Proof. 
     have H1: O `<=` M
-      by apply: (@subset_trans _ B _ _ (@AsymI _ B)
+      by apply: (@subset_trans _ B _ _ (@asymS _ B)
                    (@subsetUl _ B R)).
     by pose proof (@subset_trans _ _ O _  H1 (@subsetUl _ M M^-1)).
   Qed.
@@ -289,11 +289,11 @@ Notation M := (B `|` R).
   Lemma A6_4: (Assumption6_4 R B O M).
   Proof. 
     move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
-    by move: H3 => /(@AsymI _ B) H3;left;apply: (B_trans H2 H3).
+    by move: H3 => /(@asymS _ B) H3;left;apply: (B_trans H2 H3).
     by have: (M `|` M^-1) (x',x) by right;right;apply: (R_trans H1 H2).
   Qed.
   
-  Lemma A6 : ~ (iic (Asym B)) -> (Assumption6 R B O M).
+  Lemma A6 : ~ (iic (asym B)) -> (Assumption6 R B O M).
   Proof. 
     split;first by apply: A6_1.
     split;first by apply: A6_2.
@@ -302,7 +302,7 @@ Notation M := (B `|` R).
   Qed.
   
   Lemma A1to5:
-    (nonempty [set: T]) -> ~ (iic (Asym R)) -> ~ (iic (Asym B))
+    (nonempty [set: T]) -> ~ (iic (asym R)) -> ~ (iic (asym B))
     ->Assumptions_1to5 R B M O.
   Proof. 
     move => Assw1 Assw2 Assw3.
@@ -311,8 +311,8 @@ Notation M := (B `|` R).
   
   (* begin snippet SSWextN:: no-out *)  
 Theorem SSWext:
-  (nonempty [set: T]) -> ~ (iic (Asym R)) 
-  -> ~ (iic (Asym B)) -> exists S, kernel M S.
+  (nonempty [set: T]) -> ~ (iic (asym R)) 
+  -> ~ (iic (asym B)) -> exists S, kernel M S.
   (* end snippet SSWextN *)  
   Proof.
     move => Assw1 Assw2 Assw3. 
@@ -339,7 +339,7 @@ Corollary SSW:
     x \in M#S -> exists y, y \in S /\ exists s, ~ x \in s /\ ~ y \in s /\ uniq s 
                                 /\ (allL Eb s x y \/ allL Er s x y).
   Proof.
-    rewrite inE /M /Fset => -[y [[H1 | H1] /mem_set H2]];(exists y;split;first by []).
+    rewrite inE /M /fset => -[y [[H1 | H1] /mem_set H2]];(exists y;split;first by []).
     + move: H1 => /(@TCP_uniq T Eb) [s [H3 [H4 [H5 H6]]]].
       by (exists s;have H7: (allL Eb s x y \/ allL Er s x y) by left).
     + move: H1 => /(@TCP_uniq T Er) [s [H3 [H4 [H5 H6]]]].
@@ -356,12 +356,12 @@ Module ABkernels.
   (* begin snippet ABkernels:: no-out *)  
 Parameter (T:choiceType) (A1 A2: relation T).
 Definition R := A1. Definition B := A2.
-Definition O := (Asym B). 
+Definition O := (asym B). 
 Notation M := (B `|` R).
 
 Definition AB_1:= (nonempty [set: T]).
-Definition AB_2:= ~ (iic (Asym R)).
-Definition AB_3:= ~ (iic (Asym B)).
+Definition AB_2:= ~ (iic (asym R)).
+Definition AB_3:= ~ (iic (asym B)).
 Definition AB_4:= transitive R.
 Definition AB_5:= transitive B.
   (* end snippet ABkernels *)  
@@ -395,12 +395,12 @@ Definition AB_5:= transitive B.
   Proof. by []. Qed.
 
   Lemma A6_2 (Ab5: AB_5) : (Assumption6_2 O). 
-  Proof. by apply: (@Asym_sporder _ B). Qed.
+  Proof. by apply: (@asym_sporder _ B). Qed.
   
   Lemma A6_3: (Assumption6_3 O M).
   Proof. 
     have H1: O `<=` M 
-      by apply: (@subset_trans _ B _ _ (@AsymI _ B)
+      by apply: (@subset_trans _ B _ _ (@asymS _ B)
                    (@subsetUl _ B R)).
     by pose proof (@subset_trans _ _ O _  H1 (@subsetUl _ M M^-1)).
   Qed.
@@ -408,7 +408,7 @@ Definition AB_5:= transitive B.
   Lemma A6_4 (Ab4: AB_4) (Ab5: AB_5) : (Assumption6_4 R B O M). 
   Proof. 
     move =>  x y x' y' P0 P1 P2 P3 P4 P5 H1 [H2|H2] H3 H4 H5 H6.
-    by move: H3 => /(@AsymI _ B) H3;left;apply: (Ab5 x' y y' H2 H3).
+    by move: H3 => /(@asymS _ B) H3;left;apply: (Ab5 x' y y' H2 H3).
     by have: (M `|` M^-1) (x',x) by right;right;apply: (Ab4 y x x' H1 H2).
   Qed.
 
@@ -442,11 +442,11 @@ Parameter (T:choiceType) (R B: relation T).
 Notation M := (B `|` R).
 
 Definition O :=
- [set xy | (Asym B) (xy.1, xy.2) 
+ [set xy | (asym B) (xy.1, xy.2) 
            /\ ~ R (xy.2,xy.1)].
 Definition ML_1:= (nonempty [set: T]).
-Definition ML_2:= ~ (iic (Asym R)).
-Definition ML_3:= ~ (iic (Asym B)).
+Definition ML_2:= ~ (iic (asym R)).
+Definition ML_3:= ~ (iic (asym B)).
 Definition ML_4:=  forall x y z, 
     ~ (y = x) -> ~ (y = z) -> ~ (z = x)       
     -> R (x,y) -> R (y,z) 
@@ -513,7 +513,7 @@ Definition ML_6:=  forall x y z,
   Proof. 
     split. 
     + move => x [/= H1 _].
-      by pose proof (@Asym_irreflexive T B x). 
+      by pose proof (@asym_irreflexive T B x). 
     + move => y x z [/= [H1 H1'] H2] [/= [H3 H3'] H4].
       have Rexy : B (x, y) /\ ~ M (y, x) by split => [ | [? | ?]].
       have Reyz : B (y,z) /\ ~M(z,y)  by split => [ | [? | ?]].
@@ -571,7 +571,7 @@ Module  simpleGraph.
   Context {T : Type}.
   Implicit Types (G D O Re: relation T).
 
-  Lemma RelIndep_sym Re S: (RelIndep Re S) <-> (RelIndep (Re `|` Re^-1) S).
+  Lemma RelIndep_sym Re S: (indep Re S) <-> (indep (Re `|` Re^-1) S).
   Proof.
     split => [+ x y Hx Hy Hne|+ x y Hx Hy Hne].
     have Hne': ~ (y = x). by move => H1;rewrite H1 in Hne.
@@ -580,11 +580,11 @@ Module  simpleGraph.
   Qed.
   
   Lemma direction_relIndep G D S: 
-    Direction G D -> (RelIndep D S <-> RelIndep G S).
+    Direction G D -> (indep D S <-> indep G S).
   Proof. by move => Hd;rewrite RelIndep_sym Hd. Qed.
 
   Lemma orientation_relIndep G O S: 
-    Orientation G O -> (RelIndep O S <-> RelIndep G S).
+    Orientation G O -> (indep O S <-> indep G S).
   Proof. by move => [Hd _];rewrite RelIndep_sym Hd. Qed.
 
   Lemma directionIv G D: Direction G D -> Direction G D^-1.
@@ -599,7 +599,7 @@ Module  simpleGraph.
   Qed.
   
   Lemma orientationIv G O: Orientation G O -> Orientation G O^-1.
-  Proof. by move => [/directionIv Hd /asymmetric_inv Has]. Qed.
+  Proof. by move => [/directionIv Hd /asymmetricV Has]. Qed.
   
   Context (G D O: relation T).
   Context (Ag: simpleGraph G).
@@ -676,11 +676,11 @@ Notation M := (B `|` R).
 
     Lemma Rnotiic (Asp: sporder O): ~ (iic R).
     Proof. 
-      have: ~ (iic O^-1) by apply: (@fin_not_iic _ O^-1 (sporder_inv Asp)).              
-      by move => notHiicO /(@iic_sub T R O^-1 Au) HiicO.
+      have: ~ (iic O^-1) by apply: (@fin_not_iic _ O^-1 (sporderV Asp)).              
+      by move => notHiicO /(@iicS T R O^-1 Au) HiicO.
     Qed.
     
-    Lemma Apk:  forall X , RelIndep O X <->  RelIndep M X.
+    Lemma Apk:  forall X , indep O X <->  indep M X.
     Proof.
       move: Ao => [DO _] X. 
       rewrite (RB Ad Ao) (@direction_relIndep T G D X Ad).
@@ -696,12 +696,12 @@ Notation M := (B `|` R).
     Lemma Om1_notcyclic: 
       ~ (exists s, O.+ (s,s)) -> ~ (exists s, O^-1.+ (s,s)).
     Proof.
-      move => HOnc [s Hoc];rewrite -TclosIv in Hoc. 
+      move => HOnc [s Hoc];rewrite -tclosV in Hoc. 
       by have ?: (exists s : T, O.+ (s, s)) by (exists s).
     Qed.
     
     Lemma A2_from_Asp (Asp: sporder O): Assumption2 R.
-      by rewrite /Assumption2;move: Rasym => /AsymEq ->;apply: Rnotiic.
+      by rewrite /Assumption2;move: Rasym => /asymE ->;apply: Rnotiic.
     Qed.
 
     Lemma A3 : B `&` M.^c^-1 `<=` O. 
@@ -796,11 +796,11 @@ Definition Forbiden_graph := forall x y z t,
     
     Lemma Rnotiic (Asp: sporder O): ~ (iic R).
     Proof. 
-      have: ~ (iic O^-1) by apply: (@fin_not_iic _ O^-1 (sporder_inv Asp)).              
-      by move => notHiicO /(@iic_sub T R O^-1 Au) HiicO.
+      have: ~ (iic O^-1) by apply: (@fin_not_iic _ O^-1 (sporderV Asp)).              
+      by move => notHiicO /(@iicS T R O^-1 Au) HiicO.
     Qed.
     
-    Lemma Apk:  forall X , RelIndep O X <->  RelIndep M X.
+    Lemma Apk:  forall X , indep O X <->  indep M X.
     Proof.
       move: Ao => [DO _] X. 
       rewrite (RB Ad Ao) (@direction_relIndep T G D X Ad).
@@ -816,7 +816,7 @@ Definition Forbiden_graph := forall x y z t,
     Lemma Om1_notcyclic: 
       ~ (exists s, O.+ (s,s)) -> ~ (exists s, O^-1.+ (s,s)).
     Proof.
-      move => HOnc [s Hoc];rewrite -TclosIv in Hoc. 
+      move => HOnc [s Hoc];rewrite -tclosV in Hoc. 
       by have ?: (exists s : T, O.+ (s, s)) by (exists s).
     Qed.
     
@@ -824,8 +824,8 @@ Definition Forbiden_graph := forall x y z t,
     Proof.
       move: Anc => /Om1_notcyclic Anc'.
       have notiicOm1: ~ (iic O^-1) by move => /(@cyclic T O^-1)/Anc'.
-      rewrite /Assumption2;move: Rasym => /(AsymEq R) => -> HiicR.
-      by have: (iic O^-1) by apply: (iic_sub Au).
+      rewrite /Assumption2;move: Rasym => /(asymE R) => -> HiicR.
+      by have: (iic O^-1) by apply: (iicS Au).
     Qed.
     
     Lemma A3 : B `&` M.^c^-1 `<=` O. 
@@ -900,14 +900,14 @@ Context (A1: nonempty [set: T]).
     Lemma notcyclic_Iv (U: relation T): 
       ~ (exists s, U.+ (s,s)) -> ~ (exists s, U^-1.+ (s,s)).
     Proof.
-      move => HOnc [s Hoc];rewrite -TclosIv in Hoc. 
+      move => HOnc [s Hoc];rewrite -tclosV in Hoc. 
       by have ?: (exists s : T, U.+ (s, s)) by (exists s).
     Qed.
 
     Lemma A2_from_Anc (Anc: ~ (exists s, R.+ (s,s))): Assumption2 R.
     Proof.
       have notiicOm1: ~ (iic R) by move => /(@cyclic T R)/Anc.
-      by move => /(iic_sub (@AsymI T R)) ?.
+      by move => /(iicS (@asymS T R)) ?.
     Qed.
     
     Lemma A3 : B `&` M.^c^-1 `<=` O. 
