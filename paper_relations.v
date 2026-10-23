@@ -104,7 +104,7 @@ Section Bw_facts.
     rewrite /Bw /Ew.
     have H1: Δ_(W.^c) `;` E `<=` (Δ_(W.^c) `;` E).* .
     apply subset_trans with (Δ_(W.^c) `;` E).+ .
-    apply iter1_sub_Tclos.
+    apply TclosSu.
     apply Tclos_sub_RTclos.
     rewrite composeA.
     by apply composeSl.
@@ -324,7 +324,7 @@ Section Cw_facts.
   
   Lemma Cw_Ewrt_Cw : (Cw `;` Ew.* `;` Cw) = Cw.
   Proof.
-    rewrite -DuT_eq_Tstar -Ew_t_starts composeDl DeltaCr.
+    rewrite RTclosE -Ew_t_starts composeDl DeltaCr.
     rewrite {2}Cw_ends.
     have H1: Cw `;` Δ_(W) `;` (Δ_(W.^c) `;` Ew.+) =  Cw `;` (Δ_(W) `;` Δ_(W.^c)) `;` Ew.+
       by aac_reflexivity.

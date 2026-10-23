@@ -609,7 +609,7 @@ Section Set_order.
     Proof.
       rewrite lesetE => /Tclos_iff H0 B A C /= H1 H2.
       have : ('Δ  `|` U)#B `<=` ('Δ  `|` U)#(('Δ  `|` U)#C) by apply: Fset_inc1.
-      rewrite Fset_comp H0 DuT_eq_Tstar compose_rt_rt -DuT_eq_Tstar -H0 => H3.
+      rewrite Fset_comp H0 -RTclosE compose_rt_rt RTclosE -H0 => H3.
       by apply: subset_trans H1 H3.
     Qed.
 

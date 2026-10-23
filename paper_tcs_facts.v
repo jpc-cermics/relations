@@ -478,7 +478,7 @@ Section Tcs.
         Kw (x,y) -> Clos_( x | E,W) `&` Clos_(y | E,W) != set0.
     Proof. 
       have H0: Ew.+ `<=` Ew.* 
-        by move => xy; rewrite -DuT_eq_Tstar; apply subsetUr.
+        by move => xy; rewrite RTclosE; apply subsetUr.
       rewrite E9e; move => x y [z [/= H1 H2]].
       rewrite set0P;exists z. 
       rewrite -TclosIv /inverse /mkset /Ew /= in H1.
@@ -1104,14 +1104,14 @@ Section Tcs.
     Proof.
       move => R X;split => [-> | H1];first by [].
       have H2: X `<=` R.*#X
-        by rewrite -DuT_eq_Tstar -FsetUl Fset_D;apply: subsetUl.
+        by rewrite RTclosE -FsetUl Fset_D;apply: subsetUl.
       by rewrite eqEsubset.
     Qed.
 
     Lemma Ropen2: forall (R : relation T) (X: set T),
         R.*#X `<=` X <-> R.+#X `<=` X.
     Proof.
-      move => R X;rewrite -DuT_eq_Tstar -FsetUl Fset_D.
+      move => R X;rewrite RTclosE -FsetUl Fset_D.
       split => [ H1 | H1].
       - have H2: R.+#X `<=` X `|` R.+#X by apply: subsetUr.
         by apply: (subset_trans H2 H1).
@@ -1136,7 +1136,7 @@ Section Tcs.
         R.+#X `<=` X <-> R#X  `<=` X.
     Proof.
       move => R X;split => [H1 | H1 x [y [H2 H3]]].
-      - have H2:  R `<=` R.+ by apply: iter1_sub_Tclos.
+      - have H2:  R `<=` R.+ by apply: TclosSu.
         have H3: R#X  `<=` R.+#X by apply: Fset_inc.
         by apply: (subset_trans H3 H1).
       - have [n H4]: exists (n:nat), R^(n.+1) (x,y) by apply: Tclos_iterk.
@@ -1169,7 +1169,7 @@ Section Tcs.
     Proof.
       move => R Y X.
       have H4: R.*#X = R.*#(R.*#X) by rewrite Fset_comp compose_rt_rt.
-      have H5: X `<=` R.*#X by rewrite -DuT_eq_Tstar -FsetUl Fset_D;apply: subsetUl.
+      have H5: X `<=` R.*#X by rewrite RTclosE -FsetUl Fset_D;apply: subsetUl.
       split  => [ [H1 [H2 H3]] | H1].
       - have H6: Y `<=`  R.*#X by apply: H3.
         have H7: R.*#X `<=` Y by rewrite H1; apply: Fset_inc1 .

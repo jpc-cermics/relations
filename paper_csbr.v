@@ -183,7 +183,7 @@ Section Bw_implies_active_path.
                               /\ p [\in] (Ew.+)#_(y)).
   (* end snippet clten *) 
   Proof.
-    rewrite /Bw -DuT_eq_Tstar => -[x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
+    rewrite /Bw RTclosE => -[x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
     move: H2; rewrite {1}TCP => -[p /Tclos_to_paths_l [H3 [H4 H5]]].
     exists (x1::p);split;last by [].
     by apply Active_path_simple;split;[ | rewrite /R_o allL_c H4 andbT;apply: mem_set].
@@ -221,7 +221,7 @@ Section Bmw_implies_active_path.
       Bmw (x, y) -> (exists (p: seq T), Active_path W E (Lifto (x::(rcons p y)) N) x y
                                   /\ p [\in] (Ew.+)#_(x)).
   Proof.
-    rewrite /Bmw /inverse /Bw -DuT_eq_Tstar.
+    rewrite /Bmw /inverse /Bw RTclosE.
     move => [x1 [/= H1 [/DeltaP <- | H2]]];first by (exists [::]).
     move: H2; rewrite {1}TCP => -[p /Tclos_to_paths_l [H3 [/allL_rev H4 H5]]].
     move: H3 => /allset_cons [H3 H3'].

@@ -234,14 +234,14 @@ Section Intermediate_results_closed.
   Proof.
     rewrite predeqE /mkset => X;split => [-> // | ?].
     have H1: X `<=` R.*#X
-      by rewrite -DuT_eq_Tstar -FsetUl Fset_D;apply: subsetUl.
+      by rewrite RTclosE -FsetUl Fset_D;apply: subsetUl.
     by rewrite eqEsubset.
   Qed.
   
   Lemma Rclosed2: [set X | R.*#X `<=` X] = [set X | R.+#X `<=` X].
   Proof.
     rewrite predeqE /mkset => X.
-    rewrite -DuT_eq_Tstar -FsetUl Fset_D.
+    rewrite RTclosE -FsetUl Fset_D.
     split => [ H1 | H1].
     - have H2: R.+#X `<=` X `|` R.+#X by apply: subsetUr.
       by apply: (subset_trans H2 H1).
@@ -266,7 +266,7 @@ Section Intermediate_results_closed.
   Proof.
     rewrite predeqE /mkset => X.
     split => [H1 | H1 x [y [H2 H3]]].
-    - have H2: R `<=` R.+ by apply: iter1_sub_Tclos.
+    - have H2: R `<=` R.+ by apply: TclosSu.
       have H3: R#X  `<=` R.+#X by apply: Fset_inc.
       by apply: (subset_trans H3 H1).
     - have [n H4]: exists (n:nat), R^(n.+1) (x,y) by apply: Tclos_iterk.
@@ -438,7 +438,7 @@ Section Relation_Topology_props.
     move => X.
     (** step 1: X is included in S.*#X (H5) which is closed (H6) *)
     have H4: S.*#X = S.*#(S.*#X) by rewrite Fset_comp compose_rt_rt.
-    have H5: X `<=` S.*#X by rewrite -DuT_eq_Tstar -FsetUl Fset_D;apply: subsetUl.
+    have H5: X `<=` S.*#X by rewrite RTclosE -FsetUl Fset_D;apply: subsetUl.
     have H6: @closed tau_S S.*#X 
       by pose proof Aset_closed' as H1;move: H1; rewrite predeqE /mkset => <-.
     (** step 2 S.*#X `<=` @closure tau_S X. *)

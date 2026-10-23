@@ -134,19 +134,19 @@ Module Asyminf2Inf <: Asyminf2Inf_Type.
       + rewrite allL_c => /andP [/set_mem H3 H4] H5. 
         split.
         ++ pose proof (allL_to_Tclos H4) as H6.
-           have H7: R.+ (x, y) by apply: iter1_sub_Tclos.
+           have H7: R.+ (x, y) by apply: TclosSu.
            by pose proof TclosT H7 H6.
         ++ move => H6.
-           have H7: R.+ (x, y) by apply: iter1_sub_Tclos.
+           have H7: R.+ (x, y) by apply: TclosSu.
            by pose proof TclosT H6 H7.
       + rewrite allL_c => /andP [/set_mem H3 H4] H5. 
         split.
         ++ pose proof (allL_to_Tclos H4) as H6.
-           have H7: R.+ (x, y) by apply: iter1_sub_Tclos.
+           have H7: R.+ (x, y) by apply: TclosSu.
            by pose proof TclosT H7 H6.      
         ++ pose proof (Hr y s z) H1 H2 H4 H5 as [H8 H9].
            move => H10.
-           have H7: R.+ (x, y) by apply: iter1_sub_Tclos.
+           have H7: R.+ (x, y) by apply: TclosSu.
            have H11: R.+ (z,y) by apply: TclosT H10 H7.
            exact.
     Qed.

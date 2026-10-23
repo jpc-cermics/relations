@@ -572,10 +572,6 @@ Section Relation_Facts.
   Lemma Tclos_sym R: symmetric R -> symmetric R.+.
   Proof. by move => Hs x y [n /= H1 /(iter_sym Hs) H2];exists n. Qed.
 
-  Lemma iter1_sub_Tclos R: R `<=` R.+.
-  Proof. by move => xy H1;exists 1;[ | rewrite iter1_id]. Qed.
-  
-  
   Lemma Tclos_sep_n R: forall (n: nat) (x y: T) (W:set T),
       x\in W /\ y \in W.^c /\ R^(n.+1) (x, y)
       ->  (exists (x' y': T), x'\in W /\ y' \in W.^c /\ R (x',y')).
@@ -665,7 +661,7 @@ Section Relation_Facts.
   Proof.
     rewrite predeqE => -[x y];split.
     + move => [H1| [z /= [/Tclos_iterk [n1 H1] H3]]];
-             first by apply: iter1_sub_Tclos.
+             first by apply: TclosSu.
       by (exists n1.+2);[| rewrite (iter_compose1r R n1.+1);exists z].
     + move => /Tclos_iterk [n].
       case H2: (n == 0); first by move: H2 => /eqP ->;rewrite iter1_id;left.
@@ -730,10 +726,10 @@ Section Relation_Facts.
   Proof. by rewrite RTclosE. Qed.
   
   Lemma r_RTclos_eq_Tclos R: R `;` R.* = R.+.
-  Proof. by rewrite -DuT_eq_Tstar composeDl DeltaCr Tclos_decomp_rt. Qed.
+  Proof. by rewrite RTclosE composeDl DeltaCr Tclos_decomp_rt. Qed.
   
   Lemma RTclos_r_eq_Tclos R: R.* `;` R = R.+.
-  Proof. by rewrite -DuT_eq_Tstar composeDr DeltaCl Tclos_decomp_rt_r. Qed.
+  Proof. by rewrite RTclosE composeDr DeltaCl Tclos_decomp_rt_r. Qed.
     
   Definition iterU (T: Type) (R: relation T) n : relation T := [set xy | exists k, k < n.+1 /\ R^(k) xy].
   
@@ -785,16 +781,16 @@ Section Relation_Facts.
 
   (** * Reflexive and Transitive Closure *)
   Lemma L1 R S: R.* `;` S.* = ('Δ `|` R.+) `;` ('Δ `|` S.+ ).
-  Proof. by rewrite !DuT_eq_Tstar. Qed.
+  Proof. by rewrite -!RTclosE. Qed.
   
   Lemma L2 R S: R.* `;` S.* = 'Δ `|` R.+ `|` S.+ `|` (R.+ `;` S.+). 
   Proof.
-    by rewrite -!DuT_eq_Tstar
+    by rewrite !RTclosE
          !composeDl !composeDr DsetK DeltaCl DeltaCr setUA.
   Qed.
 
   Lemma compose_rt_rt R: R.* `;` R.* = R.*. 
-  Proof. by rewrite L2 -setUA Tclos_decomp_2 -setUA setUid DuT_eq_Tstar. Qed.
+  Proof. by rewrite L2 -setUA Tclos_decomp_2 -setUA setUid -RTclosE. Qed.
 
   (** * Foresets *)
   
