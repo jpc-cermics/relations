@@ -313,6 +313,12 @@ Section Relation_Facts.
   Lemma compSl R S U: S `<=` U ->(S `;` R ) `<=` (U `;` R). 
   Proof. by move => H x [z [? ?]];exists z;split;[apply: H|]. Qed.
   
+  Lemma compSS (R S U V: relation T) :
+    R `<=` U -> S `<=` V -> (R `;` S) `<=` (U `;` V).
+  Proof.
+    by move => H1 H2;apply: (subset_trans (@compSl S R U H1) (@compS U S V H2)).
+  Qed.
+
   Lemma compV  R S: (R `;` S)^-1 = S^-1 `;` R^-1.
   Proof. by rewrite predeqE => x;split;move => [z [? ?]];exists z;split. Qed.
 
@@ -762,6 +768,12 @@ Section Relation_Facts.
   Proof. by rewrite rtclosE => -[/deltaTP -> | [n H1 H2]];[(exists 0);rewrite iterU0| exists n;exists n].
   Qed.
 
+  Lemma rtclos_iterP R (x y: T): R.* (x,y) -> exists n, R^(n) (x,y).
+  Proof.
+    move => h; case: (@rtclos_iterUP R x y h) => n.
+    by rewrite /iterU /mkset => -[k [_ hk]]; exists k.
+  Qed.
+  
   (* transitive (reflexive closure) = (reflexive (transitive closure)) *)
   Lemma rclos_tclosE R: 'Δ `|` R.+ = ('Δ `|` R).+.
   Proof. 
@@ -789,9 +801,56 @@ Section Relation_Facts.
          !compUr !compUl deltaK comp1x compx1 setUA.
   Qed.
 
+  Lemma rtclos_idem R: R.*.* = R.* .
+  Proof.
+    rewrite eqEsubset; split; last by apply: rtclos_sub.
+    by apply: rtclos_ind; [apply: rtclos_trans | apply: rtclos_refl |].
+  Qed.
+  
+  Lemma rtclos_ind_l R S U:
+    S `<=` U -> (R `;` U) `<=` U -> (R.* `;` S) `<=` U.
+  Proof.
+  move => hS hRU [x y] [z [h1 h2]].
+  case: (@rtclos_iterUP R x z h1) => n hn; clear h1; move: x hn h2.
+  elim: n => [x | n ihn x].
+  - by rewrite iterU0 => -[_ /= ->] hz; apply: hS.
+  - rewrite iterUS => -[[_ /= ->] hz | [u [hu hun]] hz]; first by apply: hS.
+    by apply: (hRU (x,y)); exists u; split => //; apply: (ihn u).
+  Qed.
+
+  (* parameterless variant: R.* <= Z whenever 'Δ <= Z and R ; Z <= Z *)
+  Lemma rtclos_ind_l1 R S:
+    'Δ `<=` S -> (R `;` S) `<=` S -> R.* `<=` S.
+  Proof. by move => hD hRS; rewrite -[X in X `<=` _]compx1; apply: rtclos_ind_l. Qed.
+  
   Lemma rtclosK R: R.* `;` R.* = R.*. 
   Proof. by rewrite rtclos_compE2 -setUA tclosU_comp -setUA setUid -rtclosE. Qed.
 
+  Lemma denest R S: (R `|` S).* = R.* `;` (S `;` R.*).* .
+  Proof.
+  have hD (U: relation T) : 'Δ `<=` U.* by apply: delta_rtclosS.
+  set Z := (R.* `;` (S `;` R.*).*).
+  have hDZ : 'Δ `<=` Z
+    by rewrite /Z -[X in X `<=` _]comp1x; apply: compSS; apply: hD.
+  rewrite eqEsubset; split.
+  - apply: rtclos_ind_l1 => //.
+    rewrite compUl; apply: union_inc_b.
+    + rewrite /Z -compA; apply: compSl.
+      by rewrite comp_rtclosE; apply: tclos_rtclosS.
+    + rewrite /Z -compA.
+      apply: (subset_trans (_ : _ `<=` (S `;` R.*).*)).
+      * by rewrite comp_rtclosE; apply: tclos_rtclosS.
+      * by rewrite -[X in X `<=` _]comp1x; apply: compSl; apply: hD.
+  - have hR : R.* `<=` (R `|` S).*
+      by apply: rtclosS; apply: subsetUl.
+    have hS : (S `;` R.*) `<=` (R `|` S).*.
+      rewrite -[X in _ `<=` X]rtclosK; apply: compSS => //.
+      by apply: (subset_trans (@subsetUr _ R S)); apply: rtclos_sub.
+    have hS2 : (S `;` R.*).* `<=` (R `|` S).*
+      by rewrite -[X in _ `<=` X]rtclos_idem; apply: rtclosS.
+    by rewrite /Z -[X in _ `<=` X]rtclosK; apply: compSS.
+  Qed.
+                
   (** * Foresets *)
   
   Lemma fsetT X: 'Δ#X = X.
