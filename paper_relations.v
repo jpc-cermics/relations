@@ -57,6 +57,9 @@ Section Papers_relations.
 
   Definition CBK (X: set T) := (Cw `;` (Bmw `|` Kw))# X.
 
+  Definition D (X: set T) := Δ_(X) `;` Kw `;`  Δ_(X).
+  Definition C (X: set T) :=  (D X).+ `|` Δ_(X).
+
 End Papers_relations.
 
 Section Ew_facts.
@@ -193,9 +196,6 @@ End  DKD_facts.
 
 Section CwCw_s_facts.
   (** * Properties of Cw and Cws *)   
-  
-  Definition D (X: set T) := Δ_(X) `;` Kw `;`  Δ_(X).
-  Definition C (X: set T) :=  (D X).+ `|` Δ_(X).
 
   Lemma Dsym (X: set T): symmetric ( Δ_(X) `;` (Kw `;`  Δ_(X))).+ .
   Proof.

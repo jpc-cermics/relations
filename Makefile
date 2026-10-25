@@ -1,7 +1,13 @@
 
 
 all:
-	dune build
+	dune build --display short
+
+# temps de compilation par fichier, pour les fichiers recompilés par le
+# dernier appel à dune (make all times ; tout : make clean all times)
+times:
+	@dune trace cat | jq -r 'select(.name=="finish" and .args.process_args[0]=="compile") | [.dur, .args.process_args[-1]] | @tsv' \
+	  | sort -rn | awk -F'\t' '{printf "%8.2f s  %s\n", $$1, $$2}'
 
 clean:
 	dune clean
