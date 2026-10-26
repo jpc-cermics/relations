@@ -73,6 +73,40 @@ End Papers_relations.
 
 Ltac ra_unfold ::= cbv beta delta [Em Ew Bw Emw Bmw Kw DKD Cw Dw Aw W_s DKD_s Cw_s Aw_s Aw_sp Aw_sm Sw Smw CBK D C].
 
+(** from paper_tcs_facts *)
+
+Tactic Notation "ra_probe" string(s) :=
+  first
+  [ assert_succeeds (solve [timeout 20 rka]);                  idtac "RAP" s "ka"
+  | assert_succeeds (solve [timeout 20 rkat]);                 idtac "RAP" s "kat"
+  | assert_succeeds (solve [timeout 20 rka_cnv]);              idtac "RAP" s "ka_cnv"
+  | assert_succeeds (solve [timeout 20 rkat_cnv]);             idtac "RAP" s "kat_cnv"
+  | assert_succeeds (solve [timeout 20 rlattice]);             idtac "RAP" s "lattice"
+  | assert_succeeds (solve [timeout 40 rhkat]);                idtac "RAP" s "hkat"
+  | assert_succeeds (solve [ra_unfold; timeout 20 rka]);       idtac "RAP" s "U+ka"
+  | assert_succeeds (solve [ra_unfold; timeout 20 rkat]);      idtac "RAP" s "U+kat"
+  | assert_succeeds (solve [ra_unfold; timeout 20 rka_cnv]);   idtac "RAP" s "U+ka_cnv"
+  | assert_succeeds (solve [ra_unfold; timeout 20 rkat_cnv]);  idtac "RAP" s "U+kat_cnv"
+  | assert_succeeds (solve [ra_unfold; timeout 40 rhkat]);     idtac "RAP" s "U+hkat"
+  | idtac "RAP" s "-" ].
+(* ---- fin instrumentation ---- *)
+
+Lemma  L14_E1: (Emw.* `;` Ew.* ) = ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw).
+Proof. by ra_unfold;rkat_cnv. Qed.
+
+Lemma  L14_E2:  Cw `;` (Emw .* ) `;` (Ew .* ) = Cw `;` ('Δ `|` Bmw `;` Δ_(W.^c) `|` Kw).
+Proof. by ra_unfold;rkat_cnv. Qed.
+
+Lemma  L14_E3:  (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw .
+Proof. by ra_unfold;rkat_cnv. Qed.
+
+Lemma  L14_E4:  (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c).
+Proof. by ra_unfold;rkat_cnv. Qed.
+
+Lemma  L14_E5:  Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
+Proof. by ra_unfold;rkat_cnv. Qed.
+
+
 Section Ew_facts.
   (** * Properties of Ew *) 
 
@@ -392,9 +426,3 @@ Section BwKw.
 End BwKw.
 
 
-Section test.
-
-  Lemma B_L7: Aw = Aw_s. 
-  Proof. by ra_unfold;rka. Qed.
-
-End test.

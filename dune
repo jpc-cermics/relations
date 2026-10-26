@@ -1,4 +1,15 @@
 ;;  (theories elpi_elpi elpi HB mathcomp.ssreflect mathcomp AAC_tactics Equations dpdgraph)
+
+(rule
+ (target paper_relations.v)
+ (enabled_if (= %{profile} ra))
+ (action (copy variants/ra/paper_relations.v paper_relations.v)))
+
+(rule
+ (target paper_relations.v)
+ (enabled_if (<> %{profile} ra))
+ (action (copy variants/manual/paper_relations.v paper_relations.v)))
+
 (rocq.theory
  (name RL)
   (theories Stdlib elpi_elpi elpi HB mathcomp.ssreflect mathcomp AAC_tactics dpdgraph RelationAlgebra)
