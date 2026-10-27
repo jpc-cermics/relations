@@ -9,6 +9,7 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 
+(** * using relation algebra tactices to solve goals *)
 From AAC_tactics Require Import AAC.
 
 Set Warnings "-parsing -coercions".
@@ -111,27 +112,42 @@ Section Ew_facts.
   (** * Properties of Ew *) 
 
   Lemma Ew_t_starts: Δ_(W.^c) `;` Ew.+ = Ew.+ .
-  Proof. by ra_unfold;rkat. Qed.
+  Proof. (* ok with: by ra_unfold;rkat. Qed. *)
+    by rewrite {1}/Ew  tclos_deltal
+       -compA deltaK -tclos_deltal -/Ew.
+  Qed.
   
   Lemma Emw_1 : Emw.* = Ew.* ^-1.
-  Proof. by rka_cnv. Qed.
-  
+  Proof. (* ok with:  by rka_cnv. Qed. *)
+  by rewrite /Emw rtclosV.
+  Qed.
+
 End Ew_facts.
     
 Section Bw_facts.
   (** * Properties of Bw *) 
   Lemma Bw_ends : Bw = Bw `;` Ew.*.
-  Proof. by ra_unfold;rka. Qed.
-      
+  Proof. (* ok with: by ra_unfold;rka. Qed. *)
+    by rewrite {2}/Bw compA rtclosK -/Bw. 
+  Qed.
+  
   Lemma Bw_ends1 : Bw `;` Ew `<=` Bw.
-  Proof. by ra_unfold;rka. Qed.
-
+  Proof. (* ok with: by ra_unfold;rka. Qed. *)
+    rewrite /Bw compA rtclos_compE.
+    by apply compS; apply tclos_rtclosS.
+  Qed.
+  
   Lemma Bmw_starts : Bmw = (Emw.* `;` Bmw).
-  Proof. by ra_unfold;rka_cnv. Qed.
-
+  Proof. (* ok with: by ra_unfold;rka_cnv. Qed. *)
+    by rewrite {2}/Bmw compV [Ew .*^-1]rtclosV -compA rtclosK
+       -rtclosV -compV.
+  Qed.
+  
   Lemma E_incl_Bw : E `<=` Bw.
-  Proof. by ra_unfold;rka. Qed.
-
+  Proof. (* ok with: by ra_unfold;rka. Qed. *)
+    by rewrite -[E]compx1; apply: compS; apply: delta_rtclosS.
+  Qed.
+  
   Lemma EDwE_in_Bw: E `;` Δ_(W.^c) `;` E `<=` Bw.
   Proof. by ra_unfold;rka. Qed.
       
@@ -141,33 +157,43 @@ Section Bmw_facts.
   (** * Properties of Bmw *) 
 
   Lemma Einv_inc_Bmw: E^-1 `<=` Bmw.
-  Proof.  by ra_unfold;rka_cnv. Qed.
+  Proof. by ra_unfold;rka_cnv. Qed.
     
 End Bmw_facts.
 
 Section Kw_facts.
   (** * Properties of Kw *) 
   Lemma Kw_ends : Kw = Kw `;` Ew.*.
-  Proof.  by ra_unfold;rka. Qed.
-    
+  Proof. (* ok with:  by ra_unfold;rka. Qed. *)
+  by rewrite {2}/Kw compA -Bw_ends.
+  Qed.
+
   Lemma Kw_ends1 : Kw `;` Ew `<=` Kw.
-  Proof.  by ra_unfold;rka. Qed.
-
+  Proof. by ra_unfold;rka. Qed.
+  
   Lemma Kw_starts : Kw = (Emw.* `;` Kw).
-  Proof. by ra_unfold;rka_cnv. Qed.
-
+  Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
+    by rewrite {2}/Kw -compA -compA -Bmw_starts.
+  Qed.
+  
   Lemma Kw_starts_ends: Kw = (Emw.* `;` Kw `;` Ew.* ).
-  Proof. by ra_unfold;rka_cnv. Qed.
+  Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
+    by rewrite -Kw_starts -Kw_ends.
+  Qed.
   
   Lemma E9e : Kw = ((Emw).+ `;` Ew.+).
   Proof. by ra_unfold;rkat_cnv. Qed.
 
   Lemma Kw_inverse: Kw^-1 = Kw.
-  Proof. by ra_unfold;rka_cnv. Qed.
+  Proof. (* ok with: by ra_unfold;rka_cnv. Qed. *)
+    by rewrite E9e  -tclosV compV inverseK.
+  Qed.
 
   Lemma Kw_sym : @symmetric T Kw.
-  Proof. by ra_unfold;rka_cnv. Qed.
-
+  Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
+    by apply invP, Kw_inverse.
+  Qed.
+  
   Lemma Dx_Kw_Dx_sym: forall (X: set T), @symmetric T (Δ_(X) `;` (Kw `;` Δ_(X))).
   Proof. by ra_unfold;rka_cnv. Qed.
   
@@ -185,7 +211,9 @@ Section CwCw_s_facts.
   (** * Properties of Cw and Cws *)   
 
   Lemma Dsym (X: set T): symmetric ( Δ_(X) `;` (Kw `;`  Δ_(X))).+ .
-  Proof. by ra_unfold;rka_cnv. Qed.
+  Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
+     by apply tclos_sym, Dx_Kw_Dx_sym.
+  Qed.
   
   Lemma C_sym (X: set T) : symmetric (C X).
   Proof. by ra_unfold;rka_cnv. Qed.
@@ -210,11 +238,15 @@ Section CwCw_s_facts.
   Qed.
 
   Lemma C_inverse (X: set T) : (C X)^-1 = (C X).
-  Proof. by ra_unfold;rka_cnv. Qed.
+  Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
+    by apply invP, C_sym.
+  Qed.
 
   Lemma C_ends (X: set T): (C X) = (C X) `;`  Δ_(X).
-  Proof. by ra_unfold;rkat. Qed.
-
+  Proof. (* ok with:  by ra_unfold;rkat. Qed. *)
+    by rewrite compUl  deltaK -tclos_deltar.
+  Qed.
+  
   Lemma C_starts (X: set T): (C X) =  Δ_(X) `;` (C X).
   Proof. by ra_unfold;rkat. Qed.
   
@@ -223,79 +255,110 @@ End CwCw_s_facts.
 Section Cw_facts.
   (** * Properties of Cw *) 
   Lemma Cw_sym : @symmetric T Cw.
-  Proof. by ra_unfold;rka_cnv. Qed.
-
+  Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
+    by apply C_sym.
+  Qed.
+  
   (* could be derived from below as Cw is a transitive closure *)
   Lemma Cw_transitive : Cw `;` Cw = Cw.
-  Proof. by ra_unfold;rkat. Qed.
+  Proof.  (* ok with:  by ra_unfold;rkat. Qed. *)
+     apply C_transitive. 
+  Qed.
   
   (* Equivalence relation on W *)
   Lemma Cw_reflexive_W: forall w, W w -> Cw (w, w).
-  Proof. by apply C_reflexive_W. Qed.
+  Proof. (* ok with:  by apply C_reflexive_W. Qed. *)
+      apply C_reflexive_W.
+  Qed.
   
   Lemma Cw_n : forall (w w': T),
       w <> w' -> (Cw (w, w') <->  exists n, (Δ_(W) `;` Kw `;` Δ_(W))^(n.+1) (w, w')).
   Proof. by  apply C_n. Qed.
   
   Lemma Cw_inverse : Cw^-1 = Cw.
-  Proof. by ra_unfold;rka_cnv. Qed.
-
+  Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
+    apply C_inverse.
+  Qed.
+  
   Lemma Cw_ends : Cw = Cw `;`  Δ_(W).
-  Proof. by ra_unfold;rkat. Qed.
-
+  Proof. (* ok with:  by ra_unfold;rkat. Qed. *)
+    apply C_ends. 
+  Qed.
+  
   Lemma Cw_starts : Cw =  Δ_(W) `;` Cw.
-  Proof. by ra_unfold;rkat. Qed.
-
+  Proof. (* ok with:  by ra_unfold;rkat. Qed. *)
+    apply C_starts.
+  Qed.
+  
   Lemma Cw_Ewrt_Cw : (Cw `;` Ew.* `;` Cw) = Cw.
   Proof. by ra_unfold;rkat. Qed.
-
+  
   Lemma Fset_CW : forall (X: set T), Cw#(Clos( Cw#X | E,W))= Cw#X.
-  Proof. by ra_unfold;rkat. Qed.
-    
+  Proof. (* ok with:  by ra_unfold;rkat. Qed. *)
+  by move => X; rewrite fset_comp fset_comp -/Ew Cw_Ewrt_Cw.
+  Qed.
+  
 End Cw_facts.
 
 Section Cw_s_facts.
   (** * Properties of Cw_s *) 
   Lemma Cw_s_sym : @symmetric T Cw_s.
-  Proof. by ra_unfold;rka_cnv. Qed.
+  Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
+      apply C_sym. 
+  Qed.
   
   (* could be derived from below as Cw_s is a transitive closure *)
   Lemma Cw_s_transitive : Cw_s `;` Cw_s = Cw_s.
-  Proof. by ra_unfold;rkat. Qed.
+  Proof. (* ok with:  by ra_unfold;rkat. Qed. *)
+      apply C_transitive.
+  Qed.
   
   (* Equivalence relation on W *)
   Lemma Cw_s_reflexive_W: forall w, W_s w -> Cw_s (w, w).
-  Proof. by apply C_reflexive_W. Qed.
+  Proof. (* ok with:  by apply C_reflexive_W. Qed. *)
+      apply C_reflexive_W. 
+  Qed.
   
   Lemma Cw_s_n : forall (w w': T),
       w <> w' -> (Cw_s (w, w') <->  exists n, (Δ_(W_s) `;` Kw `;` Δ_(W_s))^(n.+1) (w, w')).
   Proof. by apply C_n. Qed.
   
   Lemma Cw_s_inverse : Cw_s^-1 = Cw_s.
-  Proof. by ra_unfold;rka_cnv. Qed.
-  
+  Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
+     apply C_inverse. 
+  Qed.
+
   Lemma Cw_s_ends : Cw_s = Cw_s `;`  Δ_(W_s).
-  Proof. by ra_unfold;rkat. Qed.
-    
+  Proof.  (* ok with:  by ra_unfold;rkat. Qed. *)
+        apply C_ends. 
+  Qed.
+  
   Lemma Cw_s_starts : Cw_s =  Δ_(W_s) `;` Cw_s.
-  Proof. by ra_unfold;rkat. Qed.
-    
+  Proof. (* ok with:  by ra_unfold;rkat. Qed. *)
+        apply C_starts.
+  Qed.
+
 End Cw_s_facts.
 
 Section Sw_facts.
   (** * Properties of Sw *)       
 
   Lemma Sw_inverse : Sw^-1 = Smw.
-  Proof. by ra_unfold;rka_cnv. Qed.
-  
+  Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
+      rewrite /Sw invU compV Cw_inverse invU.
+    by rewrite Kw_inverse /Bmw inverseK deltaV -/Smw.
+  Qed.
+ 
 End Sw_facts.
 
 Section CBK_facts.
   (** * Properties of CBK *) 
 
   Lemma CBK_Clos: forall (X: set T), Cw#(Clos(CBK X | E,W ))= CBK X.
-  Proof. by ra_unfold;rkat. Qed.
-
+  Proof. (* ok with:  by ra_unfold;rkat. Qed. *)
+    by move => X; rewrite /CBK -fset_comp Fset_CW.
+  Qed.
+  
   Lemma CBK_W: forall (X: set T), (CBK X) `<=` W.
   Proof.
     move => X x.
@@ -349,15 +412,21 @@ End Aw_sm_facts.
 
 (** already in E_incl_Bw *)
 Lemma E9b1 : E `<=` Bw.
-Proof. by ra_unfold;rka. Qed.
+Proof. (* ok with:  by ra_unfold;rka. Qed. *)
+  by rewrite -[E]compx1; apply: compS; apply: delta_rtclosS.
+Qed.
 
 (* Equation (9c) *)
 Lemma E9c : Emw = E^-1 `;` Δ_(W.^c). 
-Proof. by ra_unfold;rka_cnv. Qed.
-  
+Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
+    by rewrite /Emw /Ew compV deltaV.
+Qed.
+ 
 (* Equation (9d) *)
 Lemma E9d : Bmw = (Emw.* `;` E^-1).
-Proof. by ra_unfold;rka_cnv. Qed.
+Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
+  by rewrite /Bmw /Bw /Emw /Ew compV rtclosV.
+Qed.
 
 Section Aw_sp_sm_facts.
   (** * Properties of Aw_sp *)   
@@ -418,10 +487,14 @@ End Key_Lemma_W_s.
 Section BwKw.
 
   Lemma BwKw_ends : Bw `|` Kw = (Bw `|` Kw) `;` Ew.* .
-  Proof. by ra_unfold;rka. Qed.
+  Proof. (* ok with:  by ra_unfold;rka. Qed. *)
+  by rewrite compUl -Bw_ends -Kw_ends.
+Qed.
 
   Lemma BmKw_starts : Bmw `|` Kw = (Emw.* `;` (Bmw `|` Kw )).
-  Proof. by ra_unfold;rka_cnv. Qed.
+  Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
+  by rewrite compUr -Bmw_starts -Kw_starts.
+Qed.
 
 End BwKw.
 

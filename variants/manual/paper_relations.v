@@ -9,6 +9,7 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 
+(** * without relation algebra tactices to solve goals *)
 From AAC_tactics Require Import AAC.
 
 Set Warnings "-parsing -coercions".

@@ -3,6 +3,9 @@
 all:
 	dune build --display short
 
+ra:
+	dune build --display short --profile ra
+
 # temps de compilation par fichier, pour les fichiers recompilés par le
 # dernier appel à dune (make all times ; tout : make clean all times)
 times:
