@@ -74,6 +74,9 @@ Definition deltaC T X: relation T := delta (~` X).
 Definition lrel T X: relation T := [set x | X x.1].
 Definition rrel T X: relation T := [set x | X x.2].
 
+(* the universal relation on T, i.e. T x T. *)
+Definition relT {T: Type} : relation T := setT.
+
 Definition iter (T: Type) (R: relation T) S n : relation T:=
   let fix loop m := if m is i.+1 then (loop i) `;` R else S in loop n.
 
@@ -243,17 +246,6 @@ Section Relation_Facts.
 
   (** * Sets_facts *)
   
-  (** * name relID0  plutot :  (Y `<=` X) ->  Y `&` (X `\` Y) = set0.  *)
-      
-  Lemma setDI_eq0 X Y Z: (Y `<=` X) /\ (Z= X `\` Y) -> Y `&` Z = set0.
-  Proof. by move => [? H2];rewrite -nonemptyPn H2;move => [z [? [_ ?]]]. Qed.
-  
-  (** * XXX regarder subUset *)
-  (** * subUset : forall {T : Type} (A B C : set T), (B `|` C `<=` A) = (B `<=` A /\ C `<=` A) *)
-
-  Lemma union_inc_b (R S U:relation T): S `<=` U -> R `<=` U -> (S `|` R) `<=` U.
-  Proof. by move => H1 H2;(have <- : U `|` R = U by apply setUidPl);apply setSU. Qed.
-
   Lemma setUD X Y: X `|` Y = X `|` (Y `\` X). 
   Proof.
     rewrite /setU /setD /mkset predeqE => x.
@@ -261,6 +253,14 @@ Section Relation_Facts.
             [left|pose proof lem (X x) as [?|?];[left|right]|left|right].
   Qed.
   
+  (** * relT universal relation  *)
+
+  Lemma relT_prod: relT = (@setT T) `*` (@setT T).
+  Proof. rewrite predeqE => -[x y];by split. Qed.
+
+  Lemma subrelT R: R `<=` relT.
+  Proof. by apply: subsetT.  Qed.
+
   (** *  Inverse of a relation *)
   
   (**  R^-1^-1 = R *)
@@ -423,7 +423,7 @@ Section Relation_Facts.
   
   Lemma comp_deltaS R X: (R `;` Δ_(X) `<=` R).
   Proof. by move => -[x y] /= => [[z [H2 [_ /= <-]]]]. Qed.
-    
+
   (** * Composition iteration *)
   
   Lemma iter1 R: R^(1) = R.
@@ -646,8 +646,8 @@ Section Relation_Facts.
   
   Lemma tclosUl R: R `|` (R `;` R.+) = R.+ .
   Proof.
-    rewrite eqEsubset;split;first by
-      apply: (union_inc_b (@tcl_sub _) (@comp_tclosS _)).
+    rewrite eqEsubset;split;first by 
+      rewrite subUset;split;[apply:tcl_sub| apply: comp_tclosS].
     move => -[x y] /(@tclos_iterP R x y) [n].
     case H3: (n == 0);first by move: H3 => /eqP ->;rewrite iter1 => H3;left.
     move: H3 => /neq0_lt0n H3;rewrite (iterSl R) => -[z /= [H1 H2]].
@@ -834,7 +834,7 @@ Section Relation_Facts.
     by rewrite /Z -[X in X `<=` _]comp1x; apply: compSS; apply: hD.
   rewrite eqEsubset; split.
   - apply: rtclos_ind_l1 => //.
-    rewrite compUl; apply: union_inc_b.
+    rewrite compUl subUset;split.
     + rewrite /Z -compA; apply: compSl.
       by rewrite comp_rtclosE; apply: tclos_rtclosS.
     + rewrite /Z -compA.
@@ -1118,6 +1118,35 @@ Section Relation_Facts.
                       first by move => H; apply fset_iterU_rtclosS in H);
               exists z; split.
     by [].
+  Qed.
+
+  (* an other proof using  denest  *)
+  Lemma fset_rtclos_deltaC_1 R Y: R.* `<=`  (Δ_(Y.^c) `;` R).* `;` ('Δ `|` Δ_(Y)`;` relT).
+  Proof.
+    have : R = 'Δ `;` R by rewrite comp1x.
+    rewrite -{1}(setUv Y) setUC -deltaU compUl => H1.
+    rewrite {1}H1 denest.
+    apply:  compS; rewrite rtclosE; apply: setUS.
+    rewrite compA (@tclos_deltal (R`;`(Δ_(Y.^c)`;`R).* ) Y).
+    apply: compS.
+    by apply: subrelT.
+  Qed.
+
+  Lemma fset_rtclos_deltaC' R Y: (Δ_(Y.^c) `;` R).*#Y = R.*#Y.
+  Proof.
+    rewrite eqEsubset;split.
+    + move: (@fsetS (Δ_(Y.^c) `;` R).* R.* Y) => H1.
+      by move: (@delta_compS R Y.^c) => /rtclosS/H1 H0.
+    + have H1: ((Δ_(Y.^c) `;` R).* `;` ('Δ `|` Δ_(Y)`;` relT)) #Y `<=` Clos(Y|R,Y).
+      {
+        move => z.
+        rewrite /fset /= => -[y [[y' [/= H2 [H3 | H3]]] H4]].
+        ++ by rewrite deltaTP in H3;(exists y');split;[| rewrite H3 ].
+           by exists y';split;[| move: H3 => [t /= [/deltaE [? _] _]]].
+      }
+      have H2:  R.*#Y `<=`  ((Δ_(Y.^c) `;` R).* `;` ('Δ `|` Δ_(Y)`;` relT))#Y
+        by apply: fsetS;apply: fset_rtclos_deltaC_1.
+      by pose proof (subset_trans H2 H1).
   Qed.
   
   (** *  Restriction of a relation to a subset *)
