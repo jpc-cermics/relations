@@ -74,40 +74,6 @@ End Papers_relations.
 
 Ltac ra_unfold ::= cbv beta delta [Em Ew Bw Emw Bmw Kw DKD Cw Dw Aw W_s DKD_s Cw_s Aw_s Aw_sp Aw_sm Sw Smw CBK D C].
 
-(** from paper_tcs_facts *)
-
-Tactic Notation "ra_probe" string(s) :=
-  first
-  [ assert_succeeds (solve [timeout 20 rka]);                  idtac "RAP" s "ka"
-  | assert_succeeds (solve [timeout 20 rkat]);                 idtac "RAP" s "kat"
-  | assert_succeeds (solve [timeout 20 rka_cnv]);              idtac "RAP" s "ka_cnv"
-  | assert_succeeds (solve [timeout 20 rkat_cnv]);             idtac "RAP" s "kat_cnv"
-  | assert_succeeds (solve [timeout 20 rlattice]);             idtac "RAP" s "lattice"
-  | assert_succeeds (solve [timeout 40 rhkat]);                idtac "RAP" s "hkat"
-  | assert_succeeds (solve [ra_unfold; timeout 20 rka]);       idtac "RAP" s "U+ka"
-  | assert_succeeds (solve [ra_unfold; timeout 20 rkat]);      idtac "RAP" s "U+kat"
-  | assert_succeeds (solve [ra_unfold; timeout 20 rka_cnv]);   idtac "RAP" s "U+ka_cnv"
-  | assert_succeeds (solve [ra_unfold; timeout 20 rkat_cnv]);  idtac "RAP" s "U+kat_cnv"
-  | assert_succeeds (solve [ra_unfold; timeout 40 rhkat]);     idtac "RAP" s "U+hkat"
-  | idtac "RAP" s "-" ].
-(* ---- fin instrumentation ---- *)
-
-Lemma  L14_E1: (Emw.* `;` Ew.* ) = ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw).
-Proof. by ra_unfold;rkat_cnv. Qed.
-
-Lemma  L14_E2:  Cw `;` (Emw .* ) `;` (Ew .* ) = Cw `;` ('Δ `|` Bmw `;` Δ_(W.^c) `|` Kw).
-Proof. by ra_unfold;rkat_cnv. Qed.
-
-Lemma  L14_E3:  (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw .
-Proof. by ra_unfold;rkat_cnv. Qed.
-
-Lemma  L14_E4:  (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c).
-Proof. by ra_unfold;rkat_cnv. Qed.
-
-Lemma  L14_E5:  Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
-Proof. by ra_unfold;rkat_cnv. Qed.
-
-
 Section Ew_facts.
   (** * Properties of Ew *) 
 
@@ -498,4 +464,63 @@ Qed.
 
 End BwKw.
 
+Section Tcs_Lemma14. 
+  (** * Lemma 14 of Tcs *)
+  
+  Lemma  L14_E38a: (Emw.* `;` Ew.* ) = ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw).
+  Proof. by ra_unfold;rkat_cnv. Qed.
 
+  Lemma  L14_E38b:  Cw `;` (Emw .* ) `;` (Ew .* ) = Cw `;` ('Δ `|` Bmw `;` Δ_(W.^c) `|` Kw).
+  Proof. by ra_unfold;rkat_cnv. Qed.
+
+  Lemma  L14_E38c:  (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw .
+  Proof. by ra_unfold;rkat_cnv. Qed.
+  
+  Lemma  L14_E38d:  (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c).
+  Proof. by ra_unfold;rkat_cnv. Qed.
+  
+  Lemma  L14_E38e:  Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
+  Proof. by ra_unfold;rkat_cnv. Qed.
+
+  Lemma  L14:
+    (Emw.* `;` Ew.* ) = ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw)
+    /\ Cw `;` (Emw .* ) `;` (Ew .* ) = Cw `;` ('Δ `|` Bmw `;` Δ_(W.^c) `|` Kw)
+    /\ (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw 
+    /\ (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c)
+    /\ Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
+  Proof.
+    pose proof L14_E38a.
+    pose proof L14_E38b.
+    pose proof L14_E38c.
+    pose proof L14_E38d.
+    pose proof L14_E38e.
+    by [].
+  Qed.
+  
+End Tcs_Lemma14. 
+
+Section Tcs_Lemma15.
+
+  Lemma Kw_W: Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W) =Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W).
+  Proof.  by ra_unfold;rkat_cnv. Qed. 
+
+  Lemma L15: (Δ_(W.^c) `;` Smw `;`  Emw.* `;` Ew.* `;` Sw `;` Δ_(W.^c))
+             = Δ_(W.^c) `;` Aw `;`  Δ_(W.^c).
+  Proof.  by ra_unfold;rkat_cnv. Qed.
+
+End Tcs_Lemma15.
+
+  
+Section Appendix_D_L16. 
+
+  Lemma D_L16_E42a :  Aw_s = 'Δ `|` Aw_sp `|`  Aw_sm.
+  Proof. by ra_unfold;rka. Qed.
+    
+  Lemma D_L16_E42b :  (Aw_sm `;` Δ_(W.^c) `;` E) `<=`  Aw_sp.
+  Proof. by ra_unfold;rka. Qed.
+    
+  Lemma D_L16_E42c :  (Aw_sp `;` Δ_(W_s) `;` Em) `<=`  Aw_sm.
+  Proof. by ra_unfold;rkat_cnv. Qed.
+
+End Appendix_D_L16. 
+    

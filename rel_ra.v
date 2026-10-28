@@ -26,6 +26,7 @@
 (*   'Δc            0         (bot)  relation vide                             *)
 (*   set0           0         (bot)  relation vide                             *)
 (*   setT           top       (top)  relation pleine                           *)
+(*   relT           top       (top)  idem, nommée (= setT : relation T)        *)
 (*   R `|` S        R + S     (cup)  union                                     *)
 (*   R `&` S        R ∩ S     (cap)  intersection                              *)
 (*   R.^c           !R        (neg)  complémentaire                            *)
@@ -196,6 +197,11 @@ Section Morphism.
   Proof. by []. Qed.
 
   Lemma to_hrel_setT : to_hrel (setT: relation T) ≡ (top: hrel T T).
+  Proof. by []. Qed.
+
+  (* relT est setT au type relation T, mais autorewrite est syntaxique:    *)
+  (* sans cette règle relT resterait un atome opaque pour les tactiques.   *)
+  Lemma to_hrel_relT : to_hrel (relT: relation T) ≡ (top: hrel T T).
   Proof. by []. Qed.
 
   (* le complémentaire n'appartient pas au fragment décidé par ka/kat *)
@@ -387,7 +393,62 @@ Section Vec.
   Lemma vec_setT : vec (setT: set T) ≡ (top: hrel T unit).
   Proof. by []. Qed.
 
+  (** lien entre le test et le vecteur d'un même ensemble                   *)
+
+  (* C'est la brique qui manque aux tactiques de décision: pour elles,      *)
+  (* [pset X] et vec X sont deux atomes indépendants, alors qu'ils          *)
+  (* dénotent le même X.  L'identité ci-dessous est ce qui les relie.       *)
+  Lemma vec_pset X : vec X ≡ ([pset X] ⋅ top)%ra.
+  Proof.
+  move => x []; rewrite /vec /pset /=; split.
+  - by move => h; exists x; [split; [| apply/asboolP] |].
+  - by move => [z [e h] _]; apply/asboolP.
+  Qed.
+
 End Vec.
+
+(** * Premier point d'entrée dans un ensemble                               *)
+
+(* Schéma de preuve récurrent: pour atteindre X, on peut supposer qu'on n'y *)
+(* est pas passé avant la fin.  C'est l'équation (27) de l'article csbr,    *)
+(* soit B_L7_E25 / fset_rtclos_deltaC.                                      *)
+(*                                                                          *)
+(* Hors de portée de ka/kat/hkat, et pas par accident: l'énoncé repose sur  *)
+(* le fait que [p] et v dénotent le même ensemble, information que la       *)
+(* décision ne peut pas avoir puisqu'elle traite les atomes comme           *)
+(* indépendants.  L'hypothèse [p]⋅top ≡ v la fournit; elle est elle-même    *)
+(* hors fragment, puisqu'elle parle de top.                                 *)
+(*                                                                          *)
+(* La preuve est l'argument du premier point d'entrée, en KAT + top:        *)
+(* ≦ par monotonie ([!p] ≦ 1), ≧ par str_ind_l' en découpant 1 ≡ [p] + [!p] *)
+(* - la branche [p] retombe dans le vecteur, la branche [!p] consomme un    *)
+(* pas.  C'est le même découpage que la récurrence sur la longueur du       *)
+(* chemin de la preuve ensembliste (cf. rel1.v).                            *)
+
+Section First_entry.
+  Variable (T: Type).
+
+  Lemma first_entry (p: dset T) (r: hrel T T) (v: hrel T unit) :
+    (([p]⋅top ≡ v) -> (inj (neg p)⋅r)^*⋅v ≡ r^*⋅v)%ra.
+  Proof.
+  move => hv.
+  have h1: ((inj (neg p): hrel T T) ≦ 1)%ra
+    by rewrite -inj_top; apply: inj_leq; apply: leq_xt.
+  have hcup: (([p] + inj (neg p): hrel T T) ≡ 1)%ra
+    by rewrite -inj_cup cupneg inj_top.
+  apply: antisym.
+  - apply: dot_leq; last by [].
+    by apply: str_leq; rewrite -[X in _ ≦ X]dot1x; apply: dot_leq.
+  - apply: str_ind_l'.
+    + by rewrite -[X in X ≦ _]dot1x; apply: dot_leq; last by []; apply: str_refl.
+    + rewrite -[X in X ≦ _]dot1x -hcup dotplsx; apply/cup_spec; split.
+      * transitivity ([p]⋅(top: hrel T unit))%ra;
+          first by apply: dot_leq; last by apply: leq_xt.
+        by rewrite hv -[X in X ≦ _]dot1x; apply: dot_leq; last by []; apply: str_refl.
+      * by rewrite 2!dotA; apply: dot_leq; last by []; apply: str_cons.
+  Qed.
+
+End First_entry.
 
 (** * Tactiques *)
 
@@ -403,7 +464,7 @@ Create HintDb hrel_test discriminated.
   to_hrel_RTclos to_hrel_Tclos
   to_hrel_Delta to_hrel_DeltaC
   to_hrel_Lr to_hrel_Rr
-  to_hrel_set0 to_hrel_setT : hrel_morph.
+  to_hrel_set0 to_hrel_setT to_hrel_relT : hrel_morph.
 
 #[export] Hint Rewrite
   to_hrel_Delta_set to_hrel_DeltaC_set
@@ -614,6 +675,13 @@ Section Exemples.
 
   Goal (R.+ `;` R) `<=` R.+ .
   Proof. by rka. Qed.
+
+  (* équation (27) de l'article csbr (B_L7_E25 / fset_rtclos_deltaC).        *)
+  (* Hors de portée de rka/rkat/rhkat, cf. first_entry ci-dessus pour la     *)
+  (* raison; mais prouvable en RelationAlgebra une fois le lien test /       *)
+  (* vecteur fourni.                                                        *)
+  Goal (Δ_(X.^c) `;` R).*#X = R.*#X.
+  Proof. by to_ra_goal; apply: first_entry; rewrite vec_pset. Qed.
 
   (* dénestage.  La preuve directe à partir des seuls lemmes de rel.v fait   *)
   (* une quarantaine de lignes et réclame d'abord un principe d'induction    *)

@@ -1,3 +1,4 @@
+; -*- mode: lisp; -*-
 ;;  (theories elpi_elpi elpi HB mathcomp.ssreflect mathcomp AAC_tactics Equations dpdgraph)
 
 (rule
@@ -12,5 +13,6 @@
 
 (rocq.theory
  (name RL)
-  (theories Stdlib elpi_elpi elpi HB mathcomp.ssreflect mathcomp AAC_tactics dpdgraph RelationAlgebra)
+ (theories Stdlib elpi_elpi elpi HB mathcomp.ssreflect mathcomp AAC_tactics dpdgraph RelationAlgebra)
+ ;; (mode vos)	     
  )
