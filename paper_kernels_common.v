@@ -146,7 +146,7 @@ Module injectivity.
       by rewrite card_ord ltnn in H1. 
     Qed.
     
-    Lemma cyclic: (iic_fun U h) -> (exists s, U.+ (s,s)).
+    Lemma cyclic: (iic_fun U h) -> (exists s, U^{+} (s,s)).
     Proof. 
       move: fin_codomain_prop => [n [p Hheq]]. 
       move => /f2allL/(_ n p);rewrite -addnA addn1 -Hheq. 
@@ -197,7 +197,7 @@ Module setT_injectivity.
       apply: not_injective1_h.
     Qed.
     
-    Lemma set_fin_cyclic U (h: nat -> set T): (iic_fun U h) -> (exists s, U.+ (s,s)).
+    Lemma set_fin_cyclic U (h: nat -> set T): (iic_fun U h) -> (exists s, U^{+} (s,s)).
     Proof. 
       move: (set_fin_codomain_prop h) => [n [p Hheq]]. 
       move => /f2allL/(_ n p);rewrite -addnA addn1 -Hheq. 
@@ -379,34 +379,34 @@ End pre_kernel.
 
 Module iic_asym.
   Section iic_asym. 
-  (** * iic_asym_injective:  iic (asym R.+) -> iic_inj (asym R.+) *) 
+  (** * iic_asym_injective:  iic (asym R^{+}) -> iic_inj (asym R^{+}) *) 
     Context {T : Type}.
     Implicit Types (T : Type) (U: relation T) (A B: set T).
     
     #[local] Lemma iic_asym_L1 (f : nat -> T) U:
-      (forall n, (asym U.+) ((f n),(f n.+1))) -> 
-      forall p n, 0 < p -> (asym U.+) (f n, f (n + p)). 
+      (forall n, (asym U^{+}) ((f n),(f n.+1))) -> 
+      forall p n, 0 < p -> (asym U^{+}) (f n, f (n + p)). 
     Proof.
       move => Hi. 
       elim => [// | p Hr n' _].
       case H2: (p == 0); first by move: H2 => /eqP ->;rewrite addn1;apply: Hi. 
       move: H2 =>  /neq0_lt0n /(Hr n') H2.
-      have H4: transitive (asym U.+) by apply: asym_trans;apply: tclos_trans.
-      have H5: asym U.+ (f (n' + p), f (n' + p).+1) by apply: Hi.
+      have H4: transitive (asym U^{+}) by apply: asym_trans;apply: tclos_trans.
+      have H5: asym U^{+} (f (n' + p), f (n' + p).+1) by apply: Hi.
       rewrite /transitive in H4.
       move: (H4 (f (n' + p)) (f n') (f (n'+p).+1) H2 H5).
       by rewrite -addn1 -[p.+1]addn1 addnA.
     Qed.
     
     #[local] Lemma iic_asym_L2 (f : nat -> T) U:
-      (forall n, (asym U.+) ((f n),(f n.+1))) -> 
+      (forall n, (asym U^{+}) ((f n),(f n.+1))) -> 
       forall p n, 0 < p -> ~ (f n) = f (n + p). 
     Proof.
       by move => + p n H1 => /iic_asym_L1 /(_ p n H1) + H2;rewrite -H2; apply: asym_irreflexive.
     Qed.
     
     #[local] Lemma iic_asym_L3 (f : nat -> T) U:
-      (forall n, (asym U.+) ((f n),(f n.+1))) -> injective f.
+      (forall n, (asym U^{+}) ((f n),(f n.+1))) -> injective f.
     Proof.
       have H0 n m: m < n -> exists p, p> 0 /\ n = m + p by move => H1;exists (n-m); lia.
       move => /iic_asym_L2 Hi p q;apply contraPP => H1.
@@ -415,7 +415,7 @@ Module iic_asym.
       by move: (H0 p q H2) => [p' [H3 ->]];move: (Hi p' q H3);symmetry.
     Qed.
     
-    Lemma iic_asym_injective U: iic (asym U.+) -> iic_inj (asym U.+).
+    Lemma iic_asym_injective U: iic (asym U^{+}) -> iic_inj (asym U^{+}).
     Proof. by move => [f /[dup] ? /iic_asym_L3  ?];exists f. Qed.
 
     Lemma sporder_iic_injective U: (sporder U) -> iic U -> iic_inj U.
@@ -496,7 +496,7 @@ Section Finite.
     by move: Hnsink;contra;move => [x Hx];exists x. 
   Qed.
   
-  Lemma cyclic U: (iic U) -> ( exists s, U.+ (s,s)). 
+  Lemma cyclic U: (iic U) -> ( exists s, U^{+} (s,s)). 
   Proof. move => [h Hhiic];by apply: cyclic. Qed.
   
   Lemma fin_not_iic_inj U: ~ (iic_inj U). 
@@ -546,7 +546,7 @@ Section Finite.
   Qed.
   
   Lemma NotCyclic_exists_sink U: 
-    (nonempty [set: T]) ->  ~ (exists s, U.+ (s,s)) -> exists v, (Sink U v).
+    (nonempty [set: T]) ->  ~ (exists s, U^{+} (s,s)) -> exists v, (Sink U v).
   Proof.
     move => Hne;contra => Hnsink.
     apply/cyclic/(sink2iic Hne) => v Hsink.
@@ -554,7 +554,7 @@ Section Finite.
   Qed.
   
   Lemma NotCyclic_exists_preabsorbent U V: 
-    (nonempty [set: T]) ->  ~ (exists s, U.+ (s,s)) -> exists v, (v)_:#(U) `<=` V#_(v).
+    (nonempty [set: T]) ->  ~ (exists s, U^{+} (s,s)) -> exists v, (v)_:#(U) `<=` V#_(v).
   Proof.
     (* use NotCyclic_exists_sink *)
     move => Hne Hncl;move: (NotCyclic_exists_sink Hne Hncl)=> [v Hsink].
@@ -730,12 +730,12 @@ Section Assumptions.
     /\ Assumption6'_3 O. 
 
   Definition Assumption6''_1 R O :=
-    R `<=` O^-1 \/ ~ (exists s, R.+ (s,s)).
+    R `<=` O^-1 \/ ~ (exists s, R^{+} (s,s)).
   Definition Assumption6''_2 M O :=
     O `<=` M 
     \/ forall X , indep O X <-> indep M X.
   Definition Assumption6''_3 O :=
-    ~ (exists s, O.+ (s,s)).
+    ~ (exists s, O^{+} (s,s)).
 
   Definition Assumption6'' R O M:=
     Assumption6''_1 R O 
@@ -1858,7 +1858,7 @@ Module ltSet_periodic_to_lt_periodic.
       Qed.
       
       (** * true but too strong *)
-      Lemma h_Tclos1: forall m n, (('Δ `|` U).+ ((h n), (h (n+m+1)))).
+      Lemma h_Tclos1: forall m n, (('Δ `|` U)^{+} ((h n), (h (n+m+1)))).
       Proof.
         move => m n.
         have Hall: (forall m n, allL ('Δ `|` U) (mkseq (fun i => h (n + i+1)) m) (h n) (h (n+m+1))).
@@ -1867,7 +1867,7 @@ Module ltSet_periodic_to_lt_periodic.
       Qed.
       
       (** * the property we need *)
-      Lemma hP1: forall n m, (forall j, j <= m.+1 -> (h (n+j)= (h n))) \/ U.+ (h n, h (n+m+1)).
+      Lemma hP1: forall n m, (forall j, j <= m.+1 -> (h (n+j)= (h n))) \/ U^{+} (h n, h (n+m+1)).
       Proof.
         move => n m;elim: m n => [n|n' Hr n]. 
         + move: H2 => /(_ n) [H2' | H2'];last first.
@@ -1888,7 +1888,7 @@ Module ltSet_periodic_to_lt_periodic.
           ++ rewrite -addnA addn1 in Hr.
              move: H2 => /(_ (n+ n'.+1)) [H1' | H1'];right;rewrite addn1.
              by rewrite H1' in Hr.
-             by have /tclos_compS:  (U.+ `;` U) (h n, h (n + n'.+1).+1)
+             by have /tclos_compS:  (U^{+} `;` U) (h n, h (n + n'.+1).+1)
                by (exists (h (n + n'.+1))).
       Qed.
 
@@ -1903,7 +1903,7 @@ Module ltSet_periodic_to_lt_periodic.
         by move: H4 => /(_ j H5) <-;rewrite 1!addnC.
       Qed.
 
-      Lemma hmapk k: U.+ (h (k*(size (S::Sq))), h (k.+1*(size (S::Sq)))).
+      Lemma hmapk k: U^{+} (h (k*(size (S::Sq))), h (k.+1*(size (S::Sq)))).
       Proof.
         move: hP1 => /(_ (k*(size (S::Sq))) (size Sq)) [/inIg' H5|];last first. 
         by have ->: k * size (S :: Sq) + size Sq + 1 = k.+1 * size (S :: Sq)
@@ -1912,10 +1912,10 @@ Module ltSet_periodic_to_lt_periodic.
       Qed.
 
       (** * The main lemma of this module *)    
-      Lemma hmap' k p: U.+ (h (k*(size (S::Sq))), h ((k+ p.+1)*(size (S::Sq)))).
+      Lemma hmap' k p: U^{+} (h (k*(size (S::Sq))), h ((k+ p.+1)*(size (S::Sq)))).
       Proof.
         elim: p k => [k |p Hr k];first by rewrite [k + 1]addn1;apply: (hmapk k).
-        have: U.+ (h ((k + p.+1) * size (S :: Sq)), h ((k + p.+1).+1 * size (S :: Sq)))
+        have: U^{+} (h ((k + p.+1) * size (S :: Sq)), h ((k + p.+1).+1 * size (S :: Sq)))
           by apply: (hmapk (k+p.+1)) =>H1.
         have ->: (k + p.+1).+1 = k +p.+2 by lia.
         move => H4.
@@ -1936,7 +1936,7 @@ Lemma Cyclicity_BH_lemma S Sq:
   -> (S::Sq) [\in] (pre_kernel R M)
   -> O `<=` M 
     \/ (forall X, indep O X <-> indep M X)
-  -> exists s, O.+ (s,s).
+  -> exists s, O^{+} (s,s).
     (* end snippet CyclicBHlem *)    
     Proof.
       move => A0 A3 A4.

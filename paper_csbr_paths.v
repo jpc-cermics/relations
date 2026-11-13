@@ -50,7 +50,7 @@ Definition A_tr {T: Type} (X: set T) (R: relation T) :=
   ChrelO `&` 
     [set oe : (T*T*O) * (T*T*O)| match (oe.1.2,oe.2.2, oe.1.1.2) with 
                                  | (P,P,v) => X.^c v | (N,N,v) => X.^c v | (N,P,v) => X.^c v
-                                 | (P,N,v) => (fset R.* X) v end].
+                                 | (P,N,v) => (fset R^{*} X) v end].
 (* end snippet Atr *)
  
 (* begin snippet ActiveOePP:: no-out *)  
@@ -71,7 +71,7 @@ Definition ActiveOe {T: Type} (X: set T) (R: relation T) :=
       | (P,P,v) => X.^c v
       | (N,N,v) => X.^c v
       | (N,P,v) => X.^c v
-      | (P,N,v) => (fset R.* X) v
+      | (P,N,v) => (fset R^{*} X) v
       end].
 (* end snippet ActiveOe *)  
 
@@ -1425,18 +1425,18 @@ Section Active_path_unique.
         active path * to prove the general property, we have maybe to switch from
         Type to eqType to use unique * in seq ?  *)
     
-    Lemma Oedge_Fset R X:  forall (u v: T), Oedge R (u,v, P) /\ R.*#X v -> R.*#X u.
+    Lemma Oedge_Fset R X:  forall (u v: T), Oedge R (u,v, P) /\ R^{*}#X v -> R^{*}#X u.
     Proof.
       move => u v [H1 [w [H2 H3]]]. 
-      have H4: (R `;` R.* ) (u,w) by (exists v).
-      have H5:  (R.+ `<=` R.*  ) by apply tclos_rtclosS.
-      have H6: R.* (u, w) by rewrite comp_rtclosE in H4 ;apply H5 in H4.
+      have H4: (R `;` R^{*} ) (u,w) by (exists v).
+      have H5:  (R^{+} `<=` R^{*}  ) by apply tclos_rtclosS.
+      have H6: R^{*} (u, w) by rewrite comp_rtclosE in H4 ;apply H5 in H4.
       by (exists w).
     Qed.
 
     Lemma Active_path_Fset R X:  forall (p: seq T) (x y: T),
         Active_path X R ((x, y, P) :: Lifto (y :: p) P) x (last y p) 
-        /\ R.*#X (last y p) -> R.*#X x. 
+        /\ R^{*}#X (last y p) -> R^{*}#X x. 
     Proof.
       elim. 
       - rewrite /last /Lifto /pair_o /Lift.
@@ -1445,14 +1445,14 @@ Section Active_path_unique.
       - move => z p Hr x y.
         rewrite Lifto_c last_cons Active_path_cc.
         move => [[[H1 H1'] [H2 H3]] H4].
-        have H5: R.*#X y by apply Hr with z.
+        have H5: R^{*}#X y by apply Hr with z.
         move: H3 => [H3 _].
         by apply Oedge_Fset with y.
     Qed.
 
     Lemma Active_path_Fset' R X:  forall (p: seq T) (x y: T),
         Active_path X R ((x, y, P) :: Lifto (y :: p) P) x (last y p) 
-        /\ R.*#X (last y p) -> R.*#X y. 
+        /\ R^{*}#X (last y p) -> R^{*}#X y. 
     Proof.
       elim. 
       - rewrite /last /Lifto /pair_o /Lift.
@@ -1460,7 +1460,7 @@ Section Active_path_unique.
       - move => z p Hr x y.
         rewrite Lifto_c last_cons Active_path_cc.
         move => [[[H1 H1'] [H2 H3]] H4].
-        have H5: R.*#X z by apply Hr with y.
+        have H5: R^{*}#X z by apply Hr with y.
         move: H3 => [_ [H3 _]].
         by apply Oedge_Fset with z.
     Qed.
@@ -1468,7 +1468,7 @@ Section Active_path_unique.
     Lemma Active_path_shorten_L1 R X: forall (p: seq (T*T*O)) (x y z u v w: T),
         Active_path X R [::(x,y,P),(y,z,P) & (rcons (rcons p (u,v,N)) (v,w,N))] x w
         -> exists (q: seq T), Active_path X R (Lifto [::x,y & q] P) x (last y q) 
-                        /\ (fset R.* X) (last y q).
+                        /\ (fset R^{*} X) (last y q).
     Proof. 
       elim => [x y z u v w| ].
       - rewrite -4!rcons_cons Active_path_rcrc'.
@@ -1518,7 +1518,7 @@ Section Active_path_unique.
 
     Lemma Active_path_shorten_L2  R X: forall (p: seq (T*T*O)) (x y z u w: T),
         Active_path X R [::(x,y,P),(y,z,P) & (rcons (rcons p (u,y,N)) (y,w,N))] x w
-        -> R.*#X y. 
+        -> R^{*}#X y. 
     Proof. 
       move => p x y z u w H1.
       pose proof Active_path_shorten_L1 H1 as [q H2].

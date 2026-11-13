@@ -44,20 +44,20 @@ Section Papers_relations.
   (* begin snippet Aw:: no-out *)  
   Definition Em := E^-1.
   Definition Ew := Δ_(W.^c) `;` E.
-  Definition Bw := E `;` Ew.* .
+  Definition Bw := E `;` Ew^{*} .
   Definition Emw := Ew^-1. 
   Definition Bmw := Bw^-1.
   Definition Kw := (Bmw `;` Δ_(W.^c) `;` Bw).
   
   Definition DKD := ( Δ_(W) `;` Kw `;`  Δ_(W)).
-  Definition Cw := ((DKD).+) `|` Δ_(W).
+  Definition Cw := ((DKD)^{+}) `|` Δ_(W).
   Definition Dw := (Bw `|` Kw) `;` (Cw `;` (Bmw `|` Kw)).
   Definition Aw := 'Δ `|` Bw `|` Bmw `|` Kw `|` Dw.
   (* end snippet Aw *)  
   
-  Definition W_s := fset E.* W.
+  Definition W_s := fset E^{*} W.
   Definition DKD_s := ( Δ_(W_s) `;` Kw `;`  Δ_(W_s)).
-  Definition Cw_s := (DKD_s.+) `|` Δ_(W_s).
+  Definition Cw_s := (DKD_s^{+}) `|` Δ_(W_s).
   Definition Aw_s :=  'Δ `|` Bw `|` Bmw `|` Kw `|` (Bw `|` Kw) `;` Cw_s `;` (Bmw `|` Kw).
   Definition Aw_sp := Bw `|` Kw `|` ((Bw `|` Kw) `;` Cw_s `;` Kw).
   Definition Aw_sm := Bmw `|` ((Bw `|` Kw) `;` Cw_s `;` Bmw).
@@ -68,7 +68,7 @@ Section Papers_relations.
   Definition CBK (X: set T) := (Cw `;` (Bmw `|` Kw))# X.
 
   Definition D (X: set T) := Δ_(X) `;` Kw `;`  Δ_(X).
-  Definition C (X: set T) :=  (D X).+ `|` Δ_(X).
+  Definition C (X: set T) :=  (D X)^{+} `|` Δ_(X).
 
 End Papers_relations.
 
@@ -77,13 +77,13 @@ Ltac ra_unfold ::= cbv beta delta [Em Ew Bw Emw Bmw Kw DKD Cw Dw Aw W_s DKD_s Cw
 Section Ew_facts.
   (** * Properties of Ew *) 
 
-  Lemma Ew_t_starts: Δ_(W.^c) `;` Ew.+ = Ew.+ .
+  Lemma Ew_t_starts: Δ_(W.^c) `;` Ew^{+} = Ew^{+} .
   Proof. (* ok with: by ra_unfold;rkat. Qed. *)
     by rewrite {1}/Ew  tclos_deltal
        -compA deltaK -tclos_deltal -/Ew.
   Qed.
   
-  Lemma Emw_1 : Emw.* = Ew.* ^-1.
+  Lemma Emw_1 : Emw^{*} = Ew^{*} ^-1.
   Proof. (* ok with:  by rka_cnv. Qed. *)
   by rewrite /Emw rtclosV.
   Qed.
@@ -92,7 +92,7 @@ End Ew_facts.
     
 Section Bw_facts.
   (** * Properties of Bw *) 
-  Lemma Bw_ends : Bw = Bw `;` Ew.*.
+  Lemma Bw_ends : Bw = Bw `;` Ew^{*}.
   Proof. (* ok with: by ra_unfold;rka. Qed. *)
     by rewrite {2}/Bw compA rtclosK -/Bw. 
   Qed.
@@ -103,9 +103,9 @@ Section Bw_facts.
     by apply compS; apply tclos_rtclosS.
   Qed.
   
-  Lemma Bmw_starts : Bmw = (Emw.* `;` Bmw).
+  Lemma Bmw_starts : Bmw = (Emw^{*} `;` Bmw).
   Proof. (* ok with: by ra_unfold;rka_cnv. Qed. *)
-    by rewrite {2}/Bmw compV [Ew .*^-1]rtclosV -compA rtclosK
+    by rewrite {2}/Bmw compV [Ew^{*}^-1]rtclosV -compA rtclosK
        -rtclosV -compV.
   Qed.
   
@@ -129,7 +129,7 @@ End Bmw_facts.
 
 Section Kw_facts.
   (** * Properties of Kw *) 
-  Lemma Kw_ends : Kw = Kw `;` Ew.*.
+  Lemma Kw_ends : Kw = Kw `;` Ew^{*}.
   Proof. (* ok with:  by ra_unfold;rka. Qed. *)
   by rewrite {2}/Kw compA -Bw_ends.
   Qed.
@@ -137,17 +137,17 @@ Section Kw_facts.
   Lemma Kw_ends1 : Kw `;` Ew `<=` Kw.
   Proof. by ra_unfold;rka. Qed.
   
-  Lemma Kw_starts : Kw = (Emw.* `;` Kw).
+  Lemma Kw_starts : Kw = (Emw^{*} `;` Kw).
   Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
     by rewrite {2}/Kw -compA -compA -Bmw_starts.
   Qed.
   
-  Lemma Kw_starts_ends: Kw = (Emw.* `;` Kw `;` Ew.* ).
+  Lemma Kw_starts_ends: Kw = (Emw^{*} `;` Kw `;` Ew^{*} ).
   Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
     by rewrite -Kw_starts -Kw_ends.
   Qed.
   
-  Lemma E9e : Kw = ((Emw).+ `;` Ew.+).
+  Lemma E9e : Kw = ((Emw)^{+} `;` Ew^{+}).
   Proof. by ra_unfold;rkat_cnv. Qed.
 
   Lemma Kw_inverse: Kw^-1 = Kw.
@@ -176,7 +176,7 @@ End  DKD_facts.
 Section CwCw_s_facts.
   (** * Properties of Cw and Cws *)   
 
-  Lemma Dsym (X: set T): symmetric ( Δ_(X) `;` (Kw `;`  Δ_(X))).+ .
+  Lemma Dsym (X: set T): symmetric ( Δ_(X) `;` (Kw `;`  Δ_(X)))^{+} .
   Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
      by apply tclos_sym, Dx_Kw_Dx_sym.
   Qed.
@@ -197,7 +197,7 @@ Section CwCw_s_facts.
   Proof.
     rewrite /C /D; move => w w' H1; split => [[H3| [w1 H3] // ] | [n H3]].
     by apply: tclos_iterP.
-    have H4: (Δ_(X) `;` Kw `;` Δ_(X))^(n.+1) `<=` (Δ_(X) `;` Kw `;` Δ_(X)).+
+    have H4: (Δ_(X) `;` Kw `;` Δ_(X))^(n.+1) `<=` (Δ_(X) `;` Kw `;` Δ_(X))^{+}
       by apply iterS_tclos.
     apply H4 in H3.
     by left.
@@ -256,7 +256,7 @@ Section Cw_facts.
     apply C_starts.
   Qed.
   
-  Lemma Cw_Ewrt_Cw : (Cw `;` Ew.* `;` Cw) = Cw.
+  Lemma Cw_Ewrt_Cw : (Cw `;` Ew^{*} `;` Cw) = Cw.
   Proof. by ra_unfold;rkat. Qed.
   
   Lemma Fset_CW : forall (X: set T), Cw#(Clos( Cw#X | E,W))= Cw#X.
@@ -389,7 +389,7 @@ Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
 Qed.
  
 (* Equation (9d) *)
-Lemma E9d : Bmw = (Emw.* `;` E^-1).
+Lemma E9d : Bmw = (Emw^{*} `;` E^-1).
 Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
   by rewrite /Bmw /Bw /Emw /Ew compV rtclosV.
 Qed.
@@ -442,8 +442,8 @@ Section Key_Lemma_W_s.
 
   Lemma Ws_L3: forall (S R V: relation T) (X Y: set T),
       V `;` Δ_(X) `;` S = V `;` Δ_(Y) `;` S 
-      ->  (V `;` ((Δ_(X) `;` S `;` R `;` V `;` Δ_(X)).+) `;` S
-          = V `;` (Δ_(Y) `;` S `;` R `;` V `;` Δ_(Y)).+ `;` S ).
+      ->  (V `;` ((Δ_(X) `;` S `;` R `;` V `;` Δ_(X))^{+}) `;` S
+          = V `;` (Δ_(Y) `;` S `;` R `;` V `;` Δ_(Y))^{+} `;` S ).
   Proof.
     by move => S R V X Y H;apply: tclos_iterE; move => n; apply: Ws_L2.
   Qed.
@@ -452,12 +452,12 @@ End Key_Lemma_W_s.
 
 Section BwKw.
 
-  Lemma BwKw_ends : Bw `|` Kw = (Bw `|` Kw) `;` Ew.* .
+  Lemma BwKw_ends : Bw `|` Kw = (Bw `|` Kw) `;` Ew^{*} .
   Proof. (* ok with:  by ra_unfold;rka. Qed. *)
   by rewrite compUl -Bw_ends -Kw_ends.
 Qed.
 
-  Lemma BmKw_starts : Bmw `|` Kw = (Emw.* `;` (Bmw `|` Kw )).
+  Lemma BmKw_starts : Bmw `|` Kw = (Emw^{*} `;` (Bmw `|` Kw )).
   Proof. (* ok with:  by ra_unfold;rka_cnv. Qed. *)
   by rewrite compUr -Bmw_starts -Kw_starts.
 Qed.
@@ -467,27 +467,27 @@ End BwKw.
 Section Tcs_Lemma14. 
   (** * Lemma 14 of Tcs *)
   
-  Lemma  L14_E38a: (Emw.* `;` Ew.* ) = ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw).
+  Lemma  L14_E38a: (Emw^{*} `;` Ew^{*} ) = ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw).
   Proof. by ra_unfold;rkat_cnv. Qed.
 
-  Lemma  L14_E38b:  Cw `;` (Emw .* ) `;` (Ew .* ) = Cw `;` ('Δ `|` Bmw `;` Δ_(W.^c) `|` Kw).
+  Lemma  L14_E38b:  Cw `;` (Emw^{*} ) `;` (Ew^{*} ) = Cw `;` ('Δ `|` Bmw `;` Δ_(W.^c) `|` Kw).
   Proof. by ra_unfold;rkat_cnv. Qed.
 
-  Lemma  L14_E38c:  (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw .
+  Lemma  L14_E38c:  (Cw `;` (Emw^{*} ) `;` (Ew^{*} )) `;` Cw  = Cw .
   Proof. by ra_unfold;rkat_cnv. Qed.
   
-  Lemma  L14_E38d:  (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c).
+  Lemma  L14_E38d:  (Cw `;` (Emw^{*} ) `;` (Ew^{*} )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c).
   Proof. by ra_unfold;rkat_cnv. Qed.
   
-  Lemma  L14_E38e:  Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
+  Lemma  L14_E38e:  Δ_(W.^c) `;` (Emw^{*} `;` Ew^{*} ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
   Proof. by ra_unfold;rkat_cnv. Qed.
 
   Lemma  L14:
-    (Emw.* `;` Ew.* ) = ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw)
-    /\ Cw `;` (Emw .* ) `;` (Ew .* ) = Cw `;` ('Δ `|` Bmw `;` Δ_(W.^c) `|` Kw)
-    /\ (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw 
-    /\ (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c)
-    /\ Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
+    (Emw^{*} `;` Ew^{*} ) = ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw)
+    /\ Cw `;` (Emw^{*} ) `;` (Ew^{*} ) = Cw `;` ('Δ `|` Bmw `;` Δ_(W.^c) `|` Kw)
+    /\ (Cw `;` (Emw^{*} ) `;` (Ew^{*} )) `;` Cw  = Cw 
+    /\ (Cw `;` (Emw^{*} ) `;` (Ew^{*} )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c)
+    /\ Δ_(W.^c) `;` (Emw^{*} `;` Ew^{*} ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
   Proof.
     pose proof L14_E38a.
     pose proof L14_E38b.
@@ -501,10 +501,10 @@ End Tcs_Lemma14.
 
 Section Tcs_Lemma15.
 
-  Lemma Kw_W: Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W) =Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W).
+  Lemma Kw_W: Δ_(W) `;` (Emw^{*} `;` Ew^{*} ) `;` Δ_(W) =Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W).
   Proof.  by ra_unfold;rkat_cnv. Qed. 
 
-  Lemma L15: (Δ_(W.^c) `;` Smw `;`  Emw.* `;` Ew.* `;` Sw `;` Δ_(W.^c))
+  Lemma L15: (Δ_(W.^c) `;` Smw `;`  Emw^{*} `;` Ew^{*} `;` Sw `;` Δ_(W.^c))
              = Δ_(W.^c) `;` Aw `;`  Δ_(W.^c).
   Proof.  by ra_unfold;rkat_cnv. Qed.
 

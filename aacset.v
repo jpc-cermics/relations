@@ -86,12 +86,12 @@ Section AAC_eq_ops.
     Proper (eq ==> eq) (@inverse T).
   Proof. by move => R S ->. Qed. 
   
-  (* .+ *) 
+  (*^{+} *) 
   #[export] Instance aac_clos_trans_eq_compat T :
     Proper (eq ==> eq) (@tclos T).
   Proof. by move => R S ->. Qed. 
 
-  (* .* *) 
+  (*^{*} *) 
   #[export] Instance aac_clos_refl_trans_eq_compat T :
     Proper (eq ==> eq) (@rtclos T).
   Proof. by move => R S ->. Qed. 
@@ -160,17 +160,17 @@ Section Test2.
     by aac_reflexivity. 
   Qed.
 
-  Goal ((R `|` S).+ `|` S `|` U )%classic = ((S `|` R).+ `|` (U `|` S))%classic.
+  Goal ((R `|` S)^{+} `|` S `|` U )%classic = ((S `|` R)^{+} `|` (U `|` S))%classic.
     by aac_reflexivity. 
   Qed.
 
-  Goal ((R `|` S).+ `;` S `;` U )%classic = ((S `|` R).+ `;` (S `;` U))%classic.
+  Goal ((R `|` S)^{+} `;` S `;` U )%classic = ((S `|` R)^{+} `;` (S `;` U))%classic.
     by aac_reflexivity. 
   Qed.
 
   Hypothesis H: (Δ_(W) =  Δ_(W) `;` Δ_(W))%classic.
   
-  Goal ((R `|` S).+ `;` S `;` Δ_(W) `;` U )%classic = ((S `|` R).+ `;` (S `;` Δ_(W) `;` Δ_(W) `;` U))%classic.
+  Goal ((R `|` S)^{+} `;` S `;` Δ_(W) `;` U )%classic = ((S `|` R)^{+} `;` (S `;` Δ_(W) `;` Δ_(W) `;` U))%classic.
     rewrite {1}H.
     by aac_reflexivity. 
   Qed.

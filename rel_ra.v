@@ -10,37 +10,37 @@
 (************************************************************************)
 
 (******************************************************************************)
-(* Correspondance entre rel.v (relation T = set (T*T)) et la bibliothèque      *)
-(* RelationAlgebra (hrel T T = T -> T -> Prop), afin de pouvoir utiliser les   *)
-(* tactiques de décision ka, kat et hkat.                                      *)
+(* Correspondence between rel.v (relation T = set (T*T)) and the               *)
+(* RelationAlgebra library (hrel T T = T -> T -> Prop), in order to use the    *)
+(* decision tactics ka, kat and hkat.                                          *)
 (*                                                                             *)
-(* Dictionnaire des opérations:                                                *)
+(* Dictionary of operations:                                                   *)
 (*                                                                             *)
 (*   rel.v          RelationAlgebra                                            *)
 (*   -----------------------------------------------------------------------   *)
 (*   relation T     hrel T T         (T*T) -> Prop  /  T -> T -> Prop          *)
-(*   R = S          R ≡ S     (weq)  égalité / équivalence extensionnelle      *)
+(*   R = S          R ≡ S     (weq)  equality / extensional equivalence        *)
 (*   R `<=` S       R ≦ S     (leq)  inclusion                                 *)
 (*   R `;` S        R ⋅ S     (dot)  composition                               *)
-(*   'Δ             1         (one)  identité                                  *)
-(*   'Δc            0         (bot)  relation vide                             *)
-(*   set0           0         (bot)  relation vide                             *)
-(*   setT           top       (top)  relation pleine                           *)
-(*   relT           top       (top)  idem, nommée (= setT : relation T)        *)
+(*   'Δ             1         (one)  identity                                  *)
+(*   'Δc            0         (bot)  empty relation                            *)
+(*   set0           0         (bot)  empty relation                            *)
+(*   setT           top       (top)  full relation                             *)
+(*   relT           top       (top)  same, named (= setT : relation T)         *)
 (*   R `|` S        R + S     (cup)  union                                     *)
 (*   R `&` S        R ∩ S     (cap)  intersection                              *)
-(*   R.^c           !R        (neg)  complémentaire                            *)
+(*   R.^c           !R        (neg)  complement                                *)
 (*   R^-1           R°        (cnv)  converse                                  *)
-(*   R.*            R^*       (str)  clôture réflexive-transitive              *)
-(*   R.+            R^+       (itr)  clôture transitive                        *)
-(*   Δ_(X)          [pset X]  (inj)  test KAT                                  *)
-(*   Δ_(X.^c)       [!pset X]        test complémenté                          *)
+(*   R^{*}          R^*       (str)  reflexive-transitive closure              *)
+(*   R^{+}          R^+       (itr)  transitive closure                        *)
+(*   Δ_(X)          [pset X]  (inj)  KAT test                                  *)
+(*   Δ_(X.^c)       [!pset X]        complemented test                         *)
 (*   L_(X)          [pset X]⋅top                                               *)
 (*   R_(X)          top⋅[pset X]                                               *)
 (*   R |_(X)        [pset X]⋅R⋅[pset X]                                        *)
 (*                                                                             *)
-(* Ensembles (vus comme vecteurs, cf. [vec] et la section Vec):                *)
-(*   set T          hrel T unit      relation hétérogène vers un singleton     *)
+(* Sets (seen as vectors, cf. [vec] and section Vec):                          *)
+(*   set T          hrel T unit      heterogeneous relation to a singleton     *)
 (*   X = Y          vec X ≡ vec Y                                              *)
 (*   X `<=` Y       vec X ≦ vec Y                                              *)
 (*   R#X            R ⋅ vec X        foreset                                   *)
@@ -50,40 +50,47 @@
 (*   set0 / setT    0 / top                                                    *)
 (*                                                                             *)
 (* Transport:                                                                  *)
-(*   to_hrel R : hrel T T      de rel.v vers RelationAlgebra                   *)
-(*   of_hrel H : relation T    de RelationAlgebra vers rel.v                   *)
-(*   pset X    : dset T        de set T vers les tests (booléens) de KAT       *)
-(*   vec X     : hrel T unit   de set T vers les vecteurs                      *)
+(*   to_hrel R : hrel T T      from rel.v to RelationAlgebra                   *)
+(*   of_hrel H : relation T    from RelationAlgebra to rel.v                   *)
+(*   pset X    : dset T        from set T to (boolean) KAT tests               *)
+(*   vec X     : hrel T unit   from set T to vectors                           *)
 (*                                                                             *)
-(* Tactiques fournies:                                                         *)
-(*   to_ra_goal : met le but sous forme RelationAlgebra.  Reconnaît R = S,     *)
-(*                R `<=` S, reflexive R, symmetric R, transitive R, ainsi que  *)
-(*                X = Y et X `<=` Y sur les ensembles (via vec)                *)
-(*   to_ra      : idem, en transportant aussi les hypothèses                   *)
-(*   rka        : to_ra_goal puis ka      (algèbre de Kleene)                  *)
-(*   rkat       : to_ra_goal puis kat     (algèbre de Kleene avec tests)       *)
-(*   rhkat      : to_ra      puis hkat    (idem, avec hypothèses de Hoare)     *)
-(*   rlattice   : to_ra_goal puis lattice (treillis borné: `|`, `&`, set0, setT)*)
-(*   rra        : to_ra_goal puis ra      (normalisation, buts plus faibles)   *)
-(*   ra_cnv     : pousse le converse vers les atomes (cnvdot, cnvstr, ...)     *)
-(*   rka_cnv    : to_ra_goal puis ra_cnv puis ka                               *)
-(*   rkat_cnv   : to_ra_goal puis ra_cnv puis kat                              *)
+(* Provided tactics:                                                           *)
+(*   to_ra_goal : puts the goal in RelationAlgebra form.  Recognizes R = S,    *)
+(*                R `<=` S, reflexive R, symmetric R, transitive R, as well as *)
+(*                X = Y and X `<=` Y on sets (via vec)                         *)
+(*   to_ra      : same, also transporting the hypotheses                       *)
+(*   rka        : to_ra_goal then ka      (Kleene algebra)                     *)
+(*   rkat       : to_ra_goal then kat     (Kleene algebra with tests)          *)
+(*   rhkat      : to_ra      then hkat    (same, with Hoare hypotheses)        *)
+(*   rlattice   : to_ra_goal then lattice (bounded lattice: `|`, `&`, set0, setT) *)
+(*   rra        : to_ra_goal then ra      (normalisation, weaker goals)        *)
+(*   ra_cnv     : pushes converse down to atoms (cnvdot, cnvstr, ...)          *)
+(*   rka_cnv    : to_ra_goal then ra_cnv then ka                               *)
+(*   rkat_cnv   : to_ra_goal then ra_cnv then kat                              *)
 (*                                                                             *)
-(* Limites (cf. la section Limites en fin de fichier):                         *)
-(*   - ka/kat/hkat ne décident pas les fragments contenant ^-1 (converse),     *)
-(*     `&` (intersection), .^c (complément) ou setT (top).                     *)
-(*   - pour le converse, ra_cnv le pousse vers les atomes (R° devient un       *)
-(*     atome frais): rka_cnv/rkat_cnv sont alors corrects mais incomplets.     *)
-(*     C'est suffisant en pratique (cf. paper_relations.v).                    *)
-(*   - lattice ne décide que le fragment treillis borné, sans distributivité.  *)
-(*   - hkat n'élimine que les hypothèses de Hoare (x ≡ 0, [c];p ≡ [c], ...);   *)
-(*     une hypothèse de monotonie comme R `<=` S n'en fait pas partie.         *)
-(*   - sur un but ensembliste (donc typé), hkat échoue d'emblée: il annonce    *)
-(*     "typed hkat is not supported yet".  ka et kat, eux, acceptent le typé.  *)
+(* Limitations (cf. section Limites at the end of the file):                   *)
+(*   - ka/kat/hkat do not decide fragments containing ^-1 (converse),          *)
+(*     `&` (intersection), .^c (complement) or setT (top).                     *)
+(*   - for converse, ra_cnv pushes it down to atoms (R° becomes a              *)
+(*     fresh atom): rka_cnv/rkat_cnv are then sound but incomplete.            *)
+(*     This is enough in practice (cf. paper_relations.v).                     *)
+(*   - lattice only decides the bounded lattice fragment, without              *)
+(*     distributivity.                                                         *)
+(*   - hkat only eliminates Hoare hypotheses (x ≡ 0, [c];p ≡ [c], ...);        *)
+(*     a monotonicity hypothesis such as R `<=` S is not one of them.          *)
+(*   - on a set goal (hence typed), hkat fails immediately, reporting          *)
+(*     "typed hkat is not supported yet".  ka and kat accept typed goals.      *)
 (*                                                                             *)
-(* Les autres tactiques de RelationAlgebra (ra_normalise, mrewrite, dual,      *)
-(* solve_rmov, aac_rewrite, ...) s'emploient après to_ra_goal; elles sont      *)
-(* recensées dans probe/tactiques-RA.md.                                       *)
+(* The other RelationAlgebra tactics (ra_normalise, mrewrite, dual,            *)
+(* solve_rmov, aac_rewrite, ...) are used after to_ra_goal; they are           *)
+(* listed in probe/tactiques-RA.md.                                            *)
+(* Note: aac_rewrite (and aac_reflexivity) require the AAC instances for the   *)
+(* RelationAlgebra operations, which are declared in                           *)
+(* RelationAlgebra.rewriting_aac.  This module is NOT imported here (nor by    *)
+(* RelationAlgebra.all): add                                                   *)
+(*   From RelationAlgebra Require Import rewriting_aac.                        *)
+(* to use them.                                                                *)
 (******************************************************************************)
 
 From mathcomp Require Import ssreflect ssrfun ssrbool.
@@ -92,16 +99,16 @@ Set Warnings "-parsing -coercions -notation-incompatible-prefix".
 From mathcomp Require Import all_boot order.
 From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
-(* Export (et non Import): les clients de ce fichier ont besoin des instances *)
-(* Proper de RelationAlgebra, sans lesquelles setoid_rewrite ne descend pas    *)
-(* sous les opérations et la traduction s'arrête à la première passe.          *)
+(* Export (not Import): clients of this file need the Proper instances         *)
+(* of RelationAlgebra, without which setoid_rewrite does not go under          *)
+(* the operations and the translation stops after the first pass.              *)
 From RelationAlgebra Require Export kat normalisation rewriting kat_tac rel.
 Set Warnings "parsing coercions notation-incompatible-prefix".
 
-(* rel.v est chargé en dernier, et exporté: ses noms (relation, compose,      *)
-(* iter, ...) doivent masquer chez les clients ceux de RelationAlgebra.rel et  *)
-(* de Stdlib (Relation_Definitions.relation).  Importer rel_ra suffit donc,    *)
-(* et doit se faire APRÈS les autres imports mathcomp.                         *)
+(* rel.v is loaded last, and exported: its names (relation, compose,           *)
+(* iter, ...) must shadow, for clients, those of RelationAlgebra.rel and       *)
+(* of Stdlib (Relation_Definitions.relation).  Importing rel_ra is enough,     *)
+(* and must be done AFTER the other mathcomp imports.                          *)
 From RL Require Export rel.
 
 Set Implicit Arguments.
@@ -110,7 +117,7 @@ Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
 
-(** * Transport entre [relation T] et [hrel T T] *)
+(** * Transport between [relation T] and [hrel T T] *)
 
 Definition to_hrel (T: Type) (R: relation T) : hrel T T := fun x y => R (x,y).
 Definition of_hrel (T: Type) (H: hrel T T) : relation T := fun xy => H xy.1 xy.2.
@@ -118,10 +125,10 @@ Definition of_hrel (T: Type) (H: hrel T T) : relation T := fun xy => H xy.1 xy.2
 (* injection of a set in boolean tests of KAT *)
 Definition pset (T: Type) (X: set T) : dset T := fun x => `[< X x >].
 
-(* un sous-ensemble vu comme "vecteur": une relation hétérogène vers un      *)
-(* singleton.  Le monoïde de RelationAlgebra est une catégorie, et ka/kat    *)
-(* acceptent les buts typés: on peut donc décider des égalités d'ensembles   *)
-(* bâties sur les forsets/aftersets.  (hkat, lui, refuse le typé.)           *)
+(* a subset seen as a "vector": a heterogeneous relation to a                *)
+(* singleton.  The RelationAlgebra monoid is a category, and ka/kat          *)
+(* accept typed goals: we can thus decide set equalities built               *)
+(* on foresets/aftersets.  (hkat, however, rejects typed goals.)             *)
 Definition vec (T: Type) (X: set T) : hrel T unit := fun x _ => X x.
 
 Arguments to_hrel {T} R.
@@ -139,7 +146,7 @@ Section Transport.
   Lemma to_hrelK : to_hrel (of_hrel H) ≡ H.
   Proof. by []. Qed.
 
-  (** inclusion et égalité *)
+  (** inclusion and equality *)
 
   Lemma to_hrel_leqE : (R `<=` S) <-> (to_hrel R ≦ to_hrel S).
   Proof.
@@ -153,7 +160,7 @@ Section Transport.
   exact: (h x y).
   Qed.
 
-  (* versions orientées, utilisées par les tactiques *)
+  (* oriented versions, used by the tactics *)
   Lemma to_hrel_leqW : to_hrel R ≦ to_hrel S -> R `<=` S.
   Proof. by rewrite to_hrel_leqE. Qed.
 
@@ -166,7 +173,7 @@ Section Transport.
   Lemma to_hrel_weqF : R = S -> to_hrel R ≡ to_hrel S.
   Proof. by rewrite to_hrel_weqE. Qed.
 
-  (** prédicats de rel.v exprimés dans RelationAlgebra *)
+  (** predicates of rel.v expressed in RelationAlgebra *)
 
   Lemma to_hrel_reflW : (1 ≦ to_hrel R)%ra -> reflexive R.
   Proof. by move => h x; exact: (h x x (erefl x)). Qed.
@@ -179,13 +186,13 @@ Section Transport.
 
 End Transport.
 
-(** * [to_hrel] est un morphisme pour toutes les opérations *)
+(** * [to_hrel] is a morphism for all operations *)
 
 Section Morphism.
   Variable (T: Type).
   Implicit Types (R S: relation T) (X Y: set T).
 
-  (** structure de treillis *)
+  (** lattice structure *)
 
   Lemma to_hrel_setU R S : to_hrel (R `|` S) ≡ (to_hrel R + to_hrel S)%ra.
   Proof. by []. Qed.
@@ -199,16 +206,16 @@ Section Morphism.
   Lemma to_hrel_setT : to_hrel (setT: relation T) ≡ (top: hrel T T).
   Proof. by []. Qed.
 
-  (* relT est setT au type relation T, mais autorewrite est syntaxique:    *)
-  (* sans cette règle relT resterait un atome opaque pour les tactiques.   *)
+  (* relT is setT at type relation T, but autorewrite is syntactic:        *)
+  (* without this rule relT would remain an opaque atom for the tactics.   *)
   Lemma to_hrel_relT : to_hrel (relT: relation T) ≡ (top: hrel T T).
   Proof. by []. Qed.
 
-  (* le complémentaire n'appartient pas au fragment décidé par ka/kat *)
+  (* complement does not belong to the fragment decided by ka/kat *)
   Lemma to_hrel_setC R : to_hrel (R.^c) ≡ (!(to_hrel R))%ra.
   Proof. by []. Qed.
 
-  (** structure de monoïde *)
+  (** monoid structure *)
 
   Lemma to_hrel_compose R S : to_hrel (R `;` S) ≡ (to_hrel R ⋅ to_hrel S)%ra.
   Proof. by move => x y; split => [[z [h1 h2]] | [z h1 h2]]; exists z. Qed.
@@ -251,9 +258,9 @@ Section Morphism.
   - by move => [z _ [e h]]; rewrite -e; apply/asboolP.
   Qed.
 
-  (** clôtures *)
+  (** closures *)
 
-  Lemma to_hrel_RTclos R : to_hrel (R.*) ≡ ((to_hrel R)^*)%ra.
+  Lemma to_hrel_RTclos R : to_hrel (R^{*}) ≡ ((to_hrel R)^*)%ra.
   Proof.
   have Hrf: (1 ≦ (to_hrel R)^*)%ra by apply: str_refl.
   have Htr: ((to_hrel R)^* ⋅ (to_hrel R)^* ≦ (to_hrel R)^*)%ra by rewrite str_trans.
@@ -269,7 +276,7 @@ Section Morphism.
     + by apply: (@rtclos_trans T R z x y) => //; exact: (@rtclos_sub T R (x,z) h1).
   Qed.
 
-  Lemma to_hrel_Tclos R : to_hrel (R.+) ≡ ((to_hrel R)^+)%ra.
+  Lemma to_hrel_Tclos R : to_hrel (R^{+}) ≡ ((to_hrel R)^+)%ra.
   Proof.
   have Htr: ((to_hrel R)^+ ⋅ (to_hrel R)^+ ≦ (to_hrel R)^+)%ra by apply: itr_trans.
   have Hex: (to_hrel R ≦ (to_hrel R)^+)%ra by apply: itr_ext.
@@ -285,7 +292,7 @@ Section Morphism.
 
 End Morphism.
 
-(** * Opérations sur les tests *)
+(** * Operations on tests *)
 
 Section Pset.
   Variable (T: Type).
@@ -311,12 +318,12 @@ Section Pset.
 
 End Pset.
 
-(** * Converse: lois de RelationAlgebra spécialisées à [hrel]                *)
+(** * Converse: RelationAlgebra laws specialised to [hrel]                   *)
 
-(* Les lois générales (cnvdot, cnvstr, ...) portent sur une structure         *)
-(* inconnue; [rewrite ?cnvdot] déplie alors hrel_cnv en lambda et détruit le  *)
-(* but.  On les spécialise donc à hrel, ce qui les rend utilisables par       *)
-(* autorewrite.                                                              *)
+(* The general laws (cnvdot, cnvstr, ...) are about an unknown structure;     *)
+(* [rewrite ?cnvdot] then unfolds hrel_cnv into a lambda and destroys         *)
+(* the goal.  We thus specialise them to hrel, which makes them usable        *)
+(* by autorewrite.                                                            *)
 
 Section Cnv.
   Variable (T: Type).
@@ -332,19 +339,19 @@ Section Cnv.
   Lemma hcnv0 : (((0: hrel T T)° ≡ 0))%ra.         Proof. exact: cnv0. Qed.
   Lemma hcnvtop : (((top: hrel T T)° ≡ top))%ra.   Proof. exact: cnvtop. Qed.
 
-  (* un test est auto-converse; absent de RelationAlgebra.  Énoncé sur un    *)
-  (* test quelconque (et non sur pset X) pour attraper aussi les tests       *)
-  (* composés [!p], [p ⊔ q], ...                                             *)
+  (* a test is self-converse; missing from RelationAlgebra.  Stated for      *)
+  (* an arbitrary test (not only pset X) so as to also catch compound        *)
+  (* tests [!p], [p ⊔ q], ...                                                *)
   Lemma hcnv_inj (p: dset T) : (([p])° ≡ [p])%ra.
   Proof. by move => x y; split => [[e h] | [e h]]; split; rewrite ?e ?(esym e). Qed.
 
 End Cnv.
 
-(** * Ensembles vus comme vecteurs                                           *)
+(** * Sets seen as vectors                                                   *)
 
-(* [vec] est un morphisme du treillis des sous-ensembles, et transforme le   *)
-(* foreset/afterset en composition.  C'est ce qui permet de décider par ka   *)
-(* des égalités portant sur des ensembles et non sur des relations.          *)
+(* [vec] is a morphism of the lattice of subsets, and turns                  *)
+(* foreset/afterset into composition.  This is what allows ka to decide      *)
+(* equalities about sets and not only about relations.                       *)
 
 Section Vec.
   Variable (T: Type).
@@ -370,7 +377,7 @@ Section Vec.
   Lemma vec_weqF X Y : X = Y -> vec X ≡ vec Y.
   Proof. by rewrite vec_weqE. Qed.
 
-  (** morphisme *)
+  (** morphism *)
 
   Lemma vec_Fset R X : vec (R#X) ≡ (to_hrel R ⋅ vec X)%ra.
   Proof. by move => x []; split => [[y [h1 h2]] | [y h1 h2]]; exists y. Qed.
@@ -393,11 +400,11 @@ Section Vec.
   Lemma vec_setT : vec (setT: set T) ≡ (top: hrel T unit).
   Proof. by []. Qed.
 
-  (** lien entre le test et le vecteur d'un même ensemble                   *)
+  (** link between the test and the vector of the same set                  *)
 
-  (* C'est la brique qui manque aux tactiques de décision: pour elles,      *)
-  (* [pset X] et vec X sont deux atomes indépendants, alors qu'ils          *)
-  (* dénotent le même X.  L'identité ci-dessous est ce qui les relie.       *)
+  (* This is the piece missing to the decision tactics: for them,           *)
+  (* [pset X] and vec X are two independent atoms, whereas they             *)
+  (* denote the same X.  The identity below is what connects them.          *)
   Lemma vec_pset X : vec X ≡ ([pset X] ⋅ top)%ra.
   Proof.
   move => x []; rewrite /vec /pset /=; split.
@@ -407,23 +414,23 @@ Section Vec.
 
 End Vec.
 
-(** * Premier point d'entrée dans un ensemble                               *)
+(** * First entry point into a set                                          *)
 
-(* Schéma de preuve récurrent: pour atteindre X, on peut supposer qu'on n'y *)
-(* est pas passé avant la fin.  C'est l'équation (27) de l'article csbr,    *)
-(* soit B_L7_E25 / fset_rtclos_deltaC.                                      *)
+(* Recurring proof pattern: to reach X, one may assume X was not            *)
+(* visited before the end.  This is equation (27) of the csbr paper,        *)
+(* i.e. B_L7_E25 / fset_rtclos_deltaC.                                      *)
 (*                                                                          *)
-(* Hors de portée de ka/kat/hkat, et pas par accident: l'énoncé repose sur  *)
-(* le fait que [p] et v dénotent le même ensemble, information que la       *)
-(* décision ne peut pas avoir puisqu'elle traite les atomes comme           *)
-(* indépendants.  L'hypothèse [p]⋅top ≡ v la fournit; elle est elle-même    *)
-(* hors fragment, puisqu'elle parle de top.                                 *)
+(* Out of reach of ka/kat/hkat, and not by accident: the statement relies   *)
+(* on the fact that [p] and v denote the same set, an information the       *)
+(* decision procedures cannot have since they treat atoms as                *)
+(* independent.  The hypothesis [p]⋅top ≡ v provides it; it is itself       *)
+(* outside the fragment, since it mentions top.                             *)
 (*                                                                          *)
-(* La preuve est l'argument du premier point d'entrée, en KAT + top:        *)
-(* ≦ par monotonie ([!p] ≦ 1), ≧ par str_ind_l' en découpant 1 ≡ [p] + [!p] *)
-(* - la branche [p] retombe dans le vecteur, la branche [!p] consomme un    *)
-(* pas.  C'est le même découpage que la récurrence sur la longueur du       *)
-(* chemin de la preuve ensembliste (cf. rel1.v).                            *)
+(* The proof is the first-entry-point argument, in KAT + top:               *)
+(* ≦ by monotonicity ([!p] ≦ 1), ≧ by str_ind_l' splitting 1 ≡ [p] + [!p]   *)
+(* - the [p] branch falls back into the vector, the [!p] branch consumes    *)
+(* one step.  This is the same splitting as the induction on the length     *)
+(* of the path in the set-based proof (cf. rel1.v).                         *)
 
 Section First_entry.
   Variable (T: Type).
@@ -448,14 +455,14 @@ Section First_entry.
       * by rewrite 2!dotA; apply: dot_leq; last by []; apply: str_cons.
   Qed.
 
-  (* Variante avec témoin: au lieu de conclure dans un vecteur donné, on      *)
-  (* garde la trace du premier point d'entrée sous la forme [p]⋅top.  Même    *)
-  (* argument, et ici [p], r et top sont des objets sans lien caché: c'est    *)
-  (* un vrai théorème de KAT + top, qui n'échappe à kat que parce que celui-  *)
-  (* ci s'arrête à KAT.                                                       *)
+  (* Variant with a witness: instead of concluding in a given vector, we      *)
+  (* keep track of the first entry point in the form [p]⋅top.  Same           *)
+  (* argument, and here [p], r and top are unrelated objects: this is a       *)
+  (* genuine theorem of KAT + top, which escapes kat only because kat         *)
+  (* stops at KAT.                                                            *)
   (*                                                                          *)
-  (* S'applique directement, après to_ra_goal, à tout but de la forme         *)
-  (*     R.* `<=` (Δ_(Y.^c) `;` R).* `;` ('Δ `|` Δ_(Y) `;` relT)              *)
+  (* Applies directly, after to_ra_goal, to any goal of the form              *)
+  (*     R^{*} `<=` (Δ_(Y.^c) `;` R)^{*} `;` ('Δ `|` Δ_(Y) `;` relT)          *)
   Lemma first_entry_wit (p: dset T) (r: hrel T T) :
     (r^* ≦ (inj (neg p)⋅r)^*⋅(1 + [p]⋅top))%ra.
   Proof.
@@ -467,22 +474,22 @@ Section First_entry.
     by apply: leq_xcup; left.
   apply: str_ind_l1 => //.
   rewrite -[X in X⋅_ ≦ _]dot1x -hcup dotplsx dotplsx; apply/cup_spec; split.
-  - (* branche [p]: on entre dans l'ensemble, le témoin [p]⋅top absorbe *)
+  - (* [p] branch: we enter the set, the witness [p]⋅top absorbs *)
     rewrite -dotA; transitivity ([p]⋅(top: hrel T T))%ra;
       first by apply: dot_leq; [reflexivity | apply: leq_xt].
     rewrite /z -[X in X ≦ _]dot1x; apply: dot_leq; first by apply: str_refl.
     by apply: leq_xcup; right.
-  - (* branche [!p]: on reste dehors, un pas est consommé *)
+  - (* [!p] branch: we stay outside, one step is consumed *)
     by rewrite /z dotA; apply: dot_leq; [apply: str_cons | reflexivity].
   Qed.
 
 End First_entry.
 
-(** * Tactiques *)
+(** * Tactics *)
 
-(* Deux passes: [hrel_morph] traduit la structure (et les deux cas           *)
-(* particuliers 'Δ et 'Δc), puis [hrel_test] traduit les Δ_(X) restants en   *)
-(* tests KAT. L'ordre importe: Δ_(setT) doit devenir 1 et non [pset setT].   *)
+(* Two passes: [hrel_morph] translates the structure (and the two special    *)
+(* cases 'Δ and 'Δc), then [hrel_test] translates the remaining Δ_(X)        *)
+(* into KAT tests.  Order matters: Δ_(setT) must become 1, not [pset setT].  *)
 
 Create HintDb hrel_morph discriminated.
 Create HintDb hrel_test discriminated.
@@ -498,13 +505,13 @@ Create HintDb hrel_test discriminated.
   to_hrel_Delta_set to_hrel_DeltaC_set
   psetU psetI psetC psetT pset0 : hrel_test.
 
-(* Les ensembles sont décomposés en premier: vec_setU doit passer avant      *)
-(* vec_Fset, sinon vec (X `|` R#Y) reste bloqué et ka échoue sur un but      *)
-(* tronqué.  autorewrite boucle, ce qu'une suite de [rewrite !] ne fait pas. *)
+(* Sets are decomposed first: vec_setU must come before vec_Fset,            *)
+(* otherwise vec (X `|` R#Y) stays stuck and ka fails on a truncated         *)
+(* goal.  autorewrite iterates to a fixpoint, which [rewrite !] does not.    *)
 #[export] Hint Rewrite
   vec_Fset vec_Aset vec_setU vec_setI vec_set0 vec_setT : vec_morph.
 
-(* met le but sous la forme [_ ≡ _] ou [_ ≦ _] dans RelationAlgebra *)
+(* puts the goal in the form [_ ≡ _] or [_ ≦ _] in RelationAlgebra *)
 Ltac to_ra_goal :=
   intros;
   (apply: to_hrel_weqW || apply: to_hrel_leqW
@@ -514,7 +521,7 @@ Ltac to_ra_goal :=
   autorewrite with vec_morph;
   autorewrite with hrel_morph; autorewrite with hrel_test.
 
-(* transporte également les hypothèses (nécessaire pour hkat) *)
+(* also transports the hypotheses (needed for hkat) *)
 Ltac to_ra_hyps :=
   intros;
   repeat match goal with
@@ -532,9 +539,9 @@ Ltac to_ra_hyps :=
 
 Ltac to_ra := to_ra_hyps; to_ra_goal.
 
-(* pousse le converse vers les atomes: ka/kat voient alors R° comme un atome  *)
-(* frais.  Correct mais incomplet (la théorie équationnelle de KA + converse   *)
-(* n'est pas décidée par ces tactiques).                                       *)
+(* pushes converse down to atoms: ka/kat then see R° as a fresh atom.          *)
+(* Sound but incomplete (the equational theory of KA + converse is not         *)
+(* decided by these tactics).                                                  *)
 Create HintDb hrel_cnv discriminated.
 #[export] Hint Rewrite
   hcnvdot hcnvstr hcnvitr hcnvpls hcnvcap hcnvinvol
@@ -558,32 +565,32 @@ Section Tests.
   Variable (T: Type).
   Variables (R S U: relation T) (X Y W: set T).
 
-  (** ** algèbre de Kleene: rka *)
+  (** ** Kleene algebra: rka *)
 
-  Goal (R `|` S).* = (R.* `;` S.*).* .
+  Goal (R `|` S)^{*} = (R^{*} `;` S^{*})^{*} .
   Proof. by rka. Qed.
 
-  Goal R.* `;` R.* = R.* .
+  Goal R^{*} `;` R^{*} = R^{*} .
   Proof. by rka. Qed.
 
-  Goal (R `;` S).* `;` R = R `;` (S `;` R).* .
+  Goal (R `;` S)^{*} `;` R = R `;` (S `;` R)^{*} .
   Proof. by rka. Qed.
 
-  Goal R.+ = R `;` R.* .
+  Goal R^{+} = R `;` R^{*} .
   Proof. by rka. Qed.
 
-  Goal 'Δ `|` R.+ = R.* .
+  Goal 'Δ `|` R^{+} = R^{*} .
   Proof. by rka. Qed.
 
-  Goal R.* `<=` (R `|` S).* .
+  Goal R^{*} `<=` (R `|` S)^{*} .
   Proof. by rka. Qed.
 
-  (** ** algèbre de Kleene avec tests: rkat *)
+  (** ** Kleene algebra with tests: rkat *)
 
   Goal Δ_(X) `;` Δ_(X) = Δ_(X).
   Proof. by rkat. Qed.
 
-  Goal (Δ_(X) `;` R).* `;` Δ_(X) = Δ_(X) `;` (R `;` Δ_(X)).* .
+  Goal (Δ_(X) `;` R)^{*} `;` Δ_(X) = Δ_(X) `;` (R `;` Δ_(X))^{*} .
   Proof. by rkat. Qed.
 
   Goal Δ_(X) `;` Δ_(X.^c) = set0.
@@ -598,23 +605,23 @@ Section Tests.
   Goal Δ_(X) `;` R `<=` R.
   Proof. by rkat. Qed.
 
-  Goal (R |_(X)).+ `<=` Δ_(X) `;` R.+ `;` Δ_(X).
+  Goal (R |_(X))^{+} `<=` Δ_(X) `;` R^{+} `;` Δ_(X).
   Proof. by rkat. Qed.
 
-  (** ** hypothèses de Hoare: rhkat *)
+  (** ** Hoare hypotheses: rhkat *)
 
   Goal R `;` S = set0 -> R `;` S `;` U = set0.
   Proof. by rhkat. Qed.
 
-  Goal Δ_(X) `;` R = R `;` Δ_(X) -> Δ_(X) `;` R.* = R.* `;` Δ_(X).
+  Goal Δ_(X) `;` R = R `;` Δ_(X) -> Δ_(X) `;` R^{*} = R^{*} `;` Δ_(X).
   Proof. by rhkat. Qed.
 
-  (** ** prédicats reflexive / symmetric / transitive *)
+  (** ** predicates reflexive / symmetric / transitive *)
 
-  Goal reflexive (R.*).
+  Goal reflexive (R^{*}).
   Proof. by rka. Qed.
 
-  Goal transitive (R.+).
+  Goal transitive (R^{+}).
   Proof. by rka. Qed.
 
   Goal symmetric (R `|` R^-1).
@@ -623,37 +630,37 @@ Section Tests.
   Goal symmetric (Δ_(X) `;` R^-1 `;` R `;` Δ_(X)).
   Proof. by rka_cnv. Qed.
 
-  (** ** ensembles (forsets / aftersets) : les mêmes tactiques *)
+  (** ** sets (foresets / aftersets): the same tactics *)
 
   Goal (R `;` S)#X = R#(S#X).
   Proof. by rka. Qed.
 
-  Goal R.*#(R.*#X) = R.*#X.
+  Goal R^{*}#(R^{*}#X) = R^{*}#X.
   Proof. by rka. Qed.
 
-  Goal R.*#X = X `|` R#(R.*#X).
+  Goal R^{*}#X = X `|` R#(R^{*}#X).
   Proof. by rka. Qed.
 
-  Goal (R `|` S).*#X = (R.* `;` S.*).*#X.
+  Goal (R `|` S)^{*}#X = (R^{*} `;` S^{*})^{*}#X.
   Proof. by rka. Qed.
 
   Goal R#(X `|` Y) = R#X `|` R#Y.
   Proof. by rka. Qed.
 
-  Goal R.+#X = R#(R.*#X).
+  Goal R^{+}#X = R#(R^{*}#X).
   Proof. by rka. Qed.
 
-  Goal R#X `<=` R.*#X.
+  Goal R#X `<=` R^{*}#X.
   Proof. by rka. Qed.
 
-  (* idempotence d'une clôture: la forme de Fset_CW / CBK_Clos *)
+  (* idempotence of a closure: the shape of Fset_CW / CBK_Clos *)
   Goal Clos(X|R,W) = Clos(Clos(X|R,W)|R,W).
   Proof. by rka. Qed.
 
   Goal (X:#R) = R^-1#X.
   Proof. by rka. Qed.
 
-  (** ** treillis: rlattice *)
+  (** ** lattice: rlattice *)
 
   Goal R `&` S `<=` R.
   Proof. by rlattice. Qed.
@@ -663,7 +670,7 @@ Section Tests.
 
 End Tests.
 
-(** * Exemples: lemmes de rel.v redémontrés en une ligne *)
+(** * Examples: lemmas of rel.v reproved in one line *)
 
 Section Exemples.
   Variable (T: Type).
@@ -674,108 +681,108 @@ Section Exemples.
   Proof. by rka. Qed.
 
   (* rtclosE *)
-  Goal R.* = 'Δ `|` R.+ .
+  Goal R^{*} = 'Δ `|` R^{+} .
   Proof. by rka. Qed.
 
   (* rtclos_compE *)
-  Goal R.* `;` R = R.+ .
+  Goal R^{*} `;` R = R^{+} .
   Proof. by rka. Qed.
 
   (* tclosUl *)
-  Goal R `|` (R `;` R.+) = R.+ .
+  Goal R `|` (R `;` R^{+}) = R^{+} .
   Proof. by rka. Qed.
 
   (* tclosUr *)
-  Goal R `|` (R.+ `;` R) = R.+ .
+  Goal R `|` (R^{+} `;` R) = R^{+} .
   Proof. by rka. Qed.
 
   (* tclosU_comp *)
-  Goal R.+ `|` (R.+ `;` R.+) = R.+ .
+  Goal R^{+} `|` (R^{+} `;` R^{+}) = R^{+} .
   Proof. by rka. Qed.
 
   (* tclos_compK *)
-  Goal (R.+ `;` R.+) `<=` R.+ .
+  Goal (R^{+} `;` R^{+}) `<=` R^{+} .
   Proof. by rka. Qed.
 
   (* comp_tclosS / tclos_compS *)
-  Goal (R `;` R.+) `<=` R.+ .
+  Goal (R `;` R^{+}) `<=` R^{+} .
   Proof. by rka. Qed.
 
-  Goal (R.+ `;` R) `<=` R.+ .
+  Goal (R^{+} `;` R) `<=` R^{+} .
   Proof. by rka. Qed.
 
-  (* équation (27) de l'article csbr (B_L7_E25 / fset_rtclos_deltaC).        *)
-  (* Hors de portée de rka/rkat/rhkat, cf. first_entry ci-dessus pour la     *)
-  (* raison; mais prouvable en RelationAlgebra une fois le lien test /       *)
-  (* vecteur fourni.                                                        *)
-  Goal (Δ_(X.^c) `;` R).*#X = R.*#X.
+  (* equation (27) of the csbr paper (B_L7_E25 / fset_rtclos_deltaC).        *)
+  (* Out of reach of rka/rkat/rhkat, cf. first_entry above for the           *)
+  (* reason; but provable in RelationAlgebra once the test / vector          *)
+  (* link is provided.                                                       *)
+  Goal (Δ_(X.^c) `;` R)^{*}#X = R^{*}#X.
   Proof. by to_ra_goal; apply: first_entry; rewrite vec_pset. Qed.
 
-  (* dénestage.  La preuve directe à partir des seuls lemmes de rel.v fait   *)
-  (* une quarantaine de lignes et réclame d'abord un principe d'induction    *)
-  (* absent de rel.v (rtclos_ind exige la transitivité de la cible, qui est   *)
-  (* ici le point dur): cf. rel1.v, rt_ind_l et denest.                      *)
-  Goal (R `|` S).* = R.* `;` (S `;` R.*).* .
+  (* denesting.  The direct proof from the lemmas of rel.v alone takes       *)
+  (* about forty lines and first requires an induction principle missing     *)
+  (* from rel.v (rtclos_ind requires transitivity of the target, which is    *)
+  (* precisely the hard part here): cf. rel1.v, rt_ind_l and denest.         *)
+  Goal (R `|` S)^{*} = R^{*} `;` (S `;` R^{*})^{*} .
   Proof. by rka. Qed.
 
-  Goal (R `|` S).* = (R.* `;` S).* `;` R.* .
+  Goal (R `|` S)^{*} = (R^{*} `;` S)^{*} `;` R^{*} .
   Proof. by rka. Qed.
 
-  Goal (R `|` S).+ = R.* `;` (S `;` R.*).+ `|` R.+ .
+  Goal (R `|` S)^{+} = R^{*} `;` (S `;` R^{*})^{+} `|` R^{+} .
   Proof. by rka. Qed.
 
 End Exemples.
 
-(** * Limites *)
+(** * Limits *)
 
-(* Les buts ci-dessous sont hors des fragments décidés; les [Fail] documentent *)
-(* précisément ce qui n'est pas automatisable par ces tactiques.               *)
+(* The goals below are outside the decided fragments; the [Fail]s              *)
+(* document precisely what cannot be automated by these tactics.               *)
 
 Section Limites.
   Variable (T: Type).
   Variables (R S U: relation T) (X Y: set T).
 
-  (* le converse n'est pas dans le fragment décidé par ka/kat, mais ra_cnv   *)
-  (* le pousse vers les atomes, ce qui suffit en pratique                     *)
+  (* converse is not in the fragment decided by ka/kat, but ra_cnv           *)
+  (* pushes it down to atoms, which is enough in practice                    *)
   Goal (R `;` S)^-1 = S^-1 `;` R^-1.
   Proof. Fail by rka. by rka_cnv. Qed.
 
-  Goal R.*^-1 = R^-1.* .
+  Goal R^{*}^-1 = R^-1^{*} .
   Proof. Fail by rka. by rka_cnv. Qed.
 
-  Goal R.+^-1 = R^-1.+ .
+  Goal R^{+}^-1 = R^-1^{+} .
   Proof. Fail by rka. by rka_cnv. Qed.
 
   Goal (Δ_(X) `;` R `;` Δ_(X))^-1 = Δ_(X) `;` R^-1 `;` Δ_(X).
   Proof. Fail by rkat. by rka_cnv. Qed.
 
-  (* ra_cnv reste incomplet: R° traité comme un atome frais *)
-  Goal R `<=` R.* `;` R^-1 `;` R.* -> True.
+  (* ra_cnv remains incomplete: R° is treated as a fresh atom *)
+  Goal R `<=` R^{*} `;` R^-1 `;` R^{*} -> True.
   Proof. by []. Qed.
 
-  (* l'intersection n'est pas dans le fragment de ka/kat, mais le fragment *)
-  (* treillis borné est traité par lattice *)
+  (* intersection is not in the ka/kat fragment, but the bounded *)
+  (* lattice fragment is handled by lattice *)
   Goal R `&` S `<=` R.
   Proof. Fail by rka. by rlattice. Qed.
 
-  (* la distributivité n'est pas dans le fragment de lattice *)
+  (* distributivity is not in the lattice fragment *)
   Goal (R `|` S) `&` U = (R `&` U) `|` (S `&` U).
   Proof. Fail by rlattice. by rewrite setIUl. Qed.
 
-  (* top (setT, L_(X), R_(X)) n'est pas dans le fragment de ka/kat *)
+  (* top (setT, L_(X), R_(X)) is not in the ka/kat fragment *)
   Goal L_(X) `;` R `<=` L_(X).
   Proof. Fail by rkat. Abort.
 
-  (* sur les ensembles, hkat refuse le typé ("typed hkat is not supported") *)
+  (* on sets, hkat rejects typed goals ("typed hkat is not supported") *)
   Goal R `;` S = set0 -> (R `;` S)#X = set0.
   Proof. Fail by rhkat. Abort.
 
-  (* mélanger un test et une intersection d'ensembles sort du fragment *)
+  (* mixing a test and a set intersection leaves the fragment *)
   Goal Δ_(X)#Y = X `&` Y.
   Proof. Fail by rkat. Abort.
 
-  (* hkat n'élimine pas une hypothèse de monotonie *)
-  Goal R `<=` S -> R.+ `<=` S.+ .
+  (* hkat does not eliminate a monotonicity hypothesis *)
+  Goal R `<=` S -> R^{+} `<=` S^{+} .
   Proof. Fail by rhkat. by apply: tclosS. Qed.
 
 End Limites.

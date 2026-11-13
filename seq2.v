@@ -247,7 +247,7 @@ Section allL_uniq.
   Qed.
   
   Lemma allL_belast R: forall s (x z y:T),
-      z \in s -> ~ (z = (last x s)) -> allL R s x y -> R.+ (z, (last x s)).
+      z \in s -> ~ (z = (last x s)) -> allL R s x y -> R^{+} (z, (last x s)).
   Proof.
     move => s x z y H1 H2 H3.
     pose proof allL_take_drop H1 H3 as [_ H4].
@@ -257,7 +257,7 @@ Section allL_uniq.
   Qed.
   
   Lemma allL_behead R s x z y: 
-    z \in s  -> ~ (z = (head y s)) -> allL R s x y -> R.+ ((head y s),z).
+    z \in s  -> ~ (z = (head y s)) -> allL R s x y -> R^{+} ((head y s),z).
   Proof.
     move => H1 H3; move: (in_behead H1 H3) => H5.
     rewrite (@behead_head T s x z H1) allL_c => /andP [_ H4].
@@ -336,7 +336,7 @@ Section allL_uniq.
 
 
   (* begin snippet tcpuniq:: no-out *)  
-  Lemma TCP_uniq R x y: R.+ (x,y) <-> exists s, ~ x \in s /\ ~ y \in s /\ uniq s
+  Lemma TCP_uniq R x y: R^{+} (x,y) <-> exists s, ~ x \in s /\ ~ y \in s /\ uniq s
                                          /\ allL R s x y. 
   (* end snippet tcpuniq *)  
   Proof.
@@ -345,7 +345,7 @@ Section allL_uniq.
   Qed.
   
   Lemma TCP_uniq'' R x y:
-      R.+ (x,y) /\ ~ (x = y) 
+      R^{+} (x,y) /\ ~ (x = y) 
       <-> exists s, uniq (x::(rcons s y)) /\ (x::(rcons s y)) [L\in] R.
   Proof.
     split => [[H1 H7]|].
@@ -354,7 +354,7 @@ Section allL_uniq.
   Qed.
   
   Lemma TCP_uniq' R x y: 
-    (asym R.+)(x,y) -> exists s, uniq (x::(rcons s y)) /\ (x::(rcons s y)) [L\in] R.
+    (asym R^{+})(x,y) -> exists s, uniq (x::(rcons s y)) /\ (x::(rcons s y)) [L\in] R.
   Proof.
     move => /[dup] H0 [H1 H2]. 
     have H3: ~ (x = y) by move => H7;rewrite H7 in H1 H2.
@@ -363,7 +363,7 @@ Section allL_uniq.
 
   Definition allLu R s x y := (x::(rcons s y)) [L\in] R /\ uniq (x :: rcons s y).
   
-  Lemma TCP_uniq1 R x y: (asym R.+)(x,y) <-> (exists s, allLu R s x y) /\ ~ R.+ (y,x).
+  Lemma TCP_uniq1 R x y: (asym R^{+})(x,y) <-> (exists s, allLu R s x y) /\ ~ R^{+} (y,x).
   Proof. split. 
     by move => /[dup] /TCP_uniq' [s [H1 H2]] [_ H4];split;[exists s;split |].
     by move => [[s [H1 H2]] H3];split;[apply: allL_to_Tclos; apply: H1|].
@@ -377,13 +377,13 @@ Section allL_props.
   Context (T:eqType).
   Implicit Types  (R: relation T) (s: seq T) (x y z : T).
   
-  Lemma allL_to_Tclos_left R s x y z: z \in s -> allL R s x y -> R.+ (x, z).
+  Lemma allL_to_Tclos_left R s x y z: z \in s -> allL R s x y -> R^{+} (x, z).
   Proof.
     move => H1 H2;pose proof (@allL_take_drop T R s x y z H1 H2) as [H3 _].
     by move: H3 => /(@allL_to_Tclos T R) H3.
   Qed. 
 
-  Lemma allL_to_Tclos_right R s x y z: z \in s -> allL R s x y -> R.+ (z, y).
+  Lemma allL_to_Tclos_right R s x y z: z \in s -> allL R s x y -> R^{+} (z, y).
   Proof.
     move => H1 H2;pose proof (@allL_take_drop T R s x y z H1 H2) as [_ H3].
     by move: H3 => /(@allL_to_Tclos T R) H3.

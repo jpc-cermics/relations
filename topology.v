@@ -230,23 +230,23 @@ Section Intermediate_results_closed.
 
   Context (T: Type) (R: relation T). 
   
-  Lemma Rclosed1: [set X | R.*#X = X ] = [set X | R.*#X `<=` X].
+  Lemma Rclosed1: [set X | R^{*}#X = X ] = [set X | R^{*}#X `<=` X].
   Proof.
     rewrite predeqE /mkset => X;split => [-> // | ?].
-    have H1: X `<=` R.*#X
+    have H1: X `<=` R^{*}#X
       by rewrite rtclosE -fsetUl fsetT;apply: subsetUl.
     by rewrite eqEsubset.
   Qed.
   
-  Lemma Rclosed2: [set X | R.*#X `<=` X] = [set X | R.+#X `<=` X].
+  Lemma Rclosed2: [set X | R^{*}#X `<=` X] = [set X | R^{+}#X `<=` X].
   Proof.
     rewrite predeqE /mkset => X.
     rewrite rtclosE -fsetUl fsetT.
     split => [ H1 | H1].
-    - have H2: R.+#X `<=` X `|` R.+#X by apply: subsetUr.
+    - have H2: R^{+}#X `<=` X `|` R^{+}#X by apply: subsetUr.
       by apply: (subset_trans H2 H1).
     - have H2: X `<=` X by [].
-      have H3: X `|` R.+#X `<=` X `|` X by apply: setUSS.
+      have H3: X `|` R^{+}#X `<=` X `|` X by apply: setUSS.
       by move: H3;rewrite setUid.
   Qed.
 
@@ -262,12 +262,12 @@ Section Intermediate_results_closed.
     by apply: (subset_trans H4 H2).
   Qed.
 
-  Lemma Rclosed4: [set X | R.+#X `<=` X]= [set X | R#X  `<=` X].
+  Lemma Rclosed4: [set X | R^{+}#X `<=` X]= [set X | R#X  `<=` X].
   Proof.
     rewrite predeqE /mkset => X.
     split => [H1 | H1 x [y [H2 H3]]].
-    - have H2: R `<=` R.+ by apply: tcl_sub.
-      have H3: R#X  `<=` R.+#X by apply: fsetS.
+    - have H2: R `<=` R^{+} by apply: tcl_sub.
+      have H3: R#X  `<=` R^{+}#X by apply: fsetS.
       by apply: (subset_trans H3 H1).
     - have [n H4]: exists (n:nat), R^(n.+1) (x,y) by apply: tclos_iterP.
       have H5: R^(n.+1)#X x by (exists y).
@@ -275,7 +275,7 @@ Section Intermediate_results_closed.
       by move: H5 => /H6 H5.
   Qed.
   
-  Lemma Rclosed: [set X | R.*#X = X] = [set X | R#X  `<=` X].
+  Lemma Rclosed: [set X | R^{*}#X = X] = [set X | R#X  `<=` X].
   Proof.
     by rewrite Rclosed1 Rclosed2 Rclosed4. 
   Qed.
@@ -318,16 +318,16 @@ Section Intermediate_results_open.
 
   Context (T: Type) (R: relation T). 
 
-  Lemma Ropen1: [set X | X:#R.* = X ] = [set X | X:#R.* `<=` X].
+  Lemma Ropen1: [set X | X:#R^{*} = X ] = [set X | X:#R^{*} `<=` X].
   Proof. by rewrite /aset rtclosV;apply: Rclosed1. Qed.
   
-  Lemma Ropen2: [set X | X:#R.* `<=` X] = [set X | X:#R.+ `<=` X].
+  Lemma Ropen2: [set X | X:#R^{*} `<=` X] = [set X | X:#R^{+} `<=` X].
   Proof. by rewrite /aset rtclosV tclosV;apply: Rclosed2. Qed.
 
-  Lemma Ropen4: [set X | X:#R.+ `<=` X]= [set X | X:#R  `<=` X].
+  Lemma Ropen4: [set X | X:#R^{+} `<=` X]= [set X | X:#R  `<=` X].
   Proof. by rewrite /aset tclosV; apply: Rclosed4. Qed.
   
-  Lemma Ropen: [set X | X:#R.* = X] = [set X | X:#R  `<=` X].
+  Lemma Ropen: [set X | X:#R^{*} = X] = [set X | X:#R  `<=` X].
   Proof. by rewrite Ropen1 Ropen2 Ropen4. Qed.
   
 End Intermediate_results_open.
@@ -400,7 +400,7 @@ Section Relation_Topology_props.
     by apply: H6.
   Qed.
   
-  Lemma Aset_open' : [ set O | O:#S.* =  O] = @open tau_S.
+  Lemma Aset_open' : [ set O | O:#S^{*} =  O] = @open tau_S.
   Proof. by rewrite -Aset_open -Ropen. Qed.
   
   Lemma Aset_closed: [ set O | S#O `<=` O] = @closed tau_S.
@@ -418,11 +418,11 @@ Section Relation_Topology_props.
       by move: H2; rewrite predeqE /mkset => ->.
   Qed.
   
-  Lemma Aset_closed': [ set O | S.*#O = O] = @closed tau_S.
+  Lemma Aset_closed': [ set O | S^{*}#O = O] = @closed tau_S.
   Proof. by rewrite Rclosed Aset_closed. Qed.
 
   Lemma Aset_closed1 (X: set T) : forall (B: set T),
-      @closed tau_S B /\ X `<=` B -> S.*#X `<=` B.
+      @closed tau_S B /\ X `<=` B -> S^{*}#X `<=` B.
   Proof.
     move => B. 
     pose proof Aset_closed' as H1.
@@ -433,24 +433,24 @@ Section Relation_Topology_props.
   Qed.
   
   Lemma Aset_closure: forall (X: set T), 
-      S.*#X = @closure tau_S X.
+      S^{*}#X = @closure tau_S X.
   Proof.
     move => X.
-    (** step 1: X is included in S.*#X (H5) which is closed (H6) *)
-    have H4: S.*#X = S.*#(S.*#X) by rewrite fset_comp rtclosK.
-    have H5: X `<=` S.*#X by rewrite rtclosE -fsetUl fsetT;apply: subsetUl.
-    have H6: @closed tau_S S.*#X 
+    (** step 1: X is included in S^{*}#X (H5) which is closed (H6) *)
+    have H4: S^{*}#X = S^{*}#(S^{*}#X) by rewrite fset_comp rtclosK.
+    have H5: X `<=` S^{*}#X by rewrite rtclosE -fsetUl fsetT;apply: subsetUl.
+    have H6: @closed tau_S S^{*}#X 
       by pose proof Aset_closed' as H1;move: H1; rewrite predeqE /mkset => <-.
-    (** step 2 S.*#X `<=` @closure tau_S X. *)
+    (** step 2 S^{*}#X `<=` @closure tau_S X. *)
     pose proof Aset_closed1 as H7;move: H7 => /(_ X) H7.
-    have H9:  S.*#X `<=` @closure tau_S X
+    have H9:  S^{*}#X `<=` @closure tau_S X
       by rewrite closureE;apply: sub_bigcap => Y;rewrite /mkset => -[H9 H10];apply: H7.
     (** conclude *)
     by apply: closure_if1 H6 H5 H9.
   Qed.
 
   (** Question: Pourquoi est-ce que tau_S est la + coarser parmi les topologies telles 
-      que closure x = S.*#{x} pour tout x
+      que closure x = S^{*}#{x} pour tout x
    *)
 
 End Relation_Topology_props.
@@ -539,7 +539,7 @@ Section finer_topology.
   
   Definition tau_S' := aset_topology S.
   
-  Lemma St: @specialization_porder (aset_topology S) = S.*.
+  Lemma St: @specialization_porder (aset_topology S) = S^{*}.
   Proof.
     rewrite /specialization_porder predeqE /mkset => -[x y] /=.
     rewrite -Aset_closure.

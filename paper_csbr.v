@@ -37,7 +37,7 @@ Section Csbr.
     Implicit Types (R: relation T) (Y: set T).
     
     (* begin snippet Lseptone:: no-out *)  
-    Lemma B_L7_E25 R Y: (Δ_(Y.^c) `;` R).*#Y = R.*#Y. 
+    Lemma B_L7_E25 R Y: (Δ_(Y.^c) `;` R)^{*}#Y = R^{*}#Y. 
     Proof. by rewrite fset_rtclos_deltaC. Qed.
     (* end snippet Lseptone *)
 
@@ -49,24 +49,24 @@ Section Csbr.
     (* end snippet Lsepttwo *)
 
     (* begin snippet Lseptthree:: no-out *)  
-    Lemma B_L7_E28: ((Ew .* ) `;` Δ_(W) `;` (Emw .* )) = ((Ew .* ) `;` Δ_(W_s) `;` (Emw .* )).
+    Lemma B_L7_E28: ((Ew^{*} ) `;` Δ_(W) `;` (Emw^{*} )) = ((Ew^{*} ) `;` Δ_(W_s) `;` (Emw^{*} )).
     Proof.
-      have B_L7_E28a: (fset (Δ_(W.^c) `;` E).* W) = fset E.* W by apply: B_L7_E25.
-      have B_L7_E28b: Δ_(fset Ew.*  W) = Δ_(fset E.* W) by rewrite /Ew B_L7_E28a.
-      have B_L7_E28c : Δ_(W_s) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* )) 
+      have B_L7_E28a: (fset (Δ_(W.^c) `;` E)^{*} W) = fset E^{*} W by apply: B_L7_E25.
+      have B_L7_E28b: Δ_(fset Ew^{*}  W) = Δ_(fset E^{*} W) by rewrite /Ew B_L7_E28a.
+      have B_L7_E28c : Δ_(W_s) `<=` ((Ew^{*} ) `;` Δ_(W) `;` (Emw^{*} )) 
         by rewrite /W_s -B_L7_E28b Emw_1; apply: B_L7_E27.
-      have H1:  (Δ_(W_s) `;` (Emw .* )) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* ) `;` (Emw .* ))
+      have H1:  (Δ_(W_s) `;` (Emw^{*} )) `<=` ((Ew^{*} ) `;` Δ_(W) `;` (Emw^{*} ) `;` (Emw^{*} ))
         by apply: compSl B_L7_E28c.
-      have B_L7_E28e :  (Δ_(W_s) `;` (Emw .* )) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* ))
+      have B_L7_E28e :  (Δ_(W_s) `;` (Emw^{*} )) `<=` ((Ew^{*} ) `;` Δ_(W) `;` (Emw^{*} ))
         by rewrite compA  rtclosK in H1.
-      have B_L7_E28f : ((Ew .* ) `;` Δ_(W_s) `;` (Emw .* )) `<=` ((Ew .* ) `;` Δ_(W) `;` (Emw .* ))
-        by rewrite compA -{2}[Ew.*]rtclosK [(Ew .* `;` Ew .* `;` _ `;` _)]compA
-                               [(Ew .* `;` Ew .* `;` _ )]compA; apply: compS;
-        rewrite -[(Ew .* `;` _ )]compA.
+      have B_L7_E28f : ((Ew^{*} ) `;` Δ_(W_s) `;` (Emw^{*} )) `<=` ((Ew^{*} ) `;` Δ_(W) `;` (Emw^{*} ))
+        by rewrite compA -{2}[Ew^{*}]rtclosK [(Ew^{*} `;` Ew^{*} `;` _ `;` _)]compA
+                               [(Ew^{*} `;` Ew^{*} `;` _ )]compA; apply: compS;
+        rewrite -[(Ew^{*} `;` _ )]compA.
       have B_L7_E28g : Δ_( W) `<=` Δ_( W_s)
         by move => [x y] [H'1 H'2]; rewrite /W_s /fset /delta /mkset /=;
                   split;[exists x; split;[ apply: rtclos_refl |] | ].
-      have B_L7_E28h : (Ew .* `;` Δ_( W) `;` Emw .* ) `<=` (Ew .* `;` Δ_( W_s) `;` Emw .* )
+      have B_L7_E28h : (Ew^{*} `;` Δ_( W) `;` Emw^{*} ) `<=` (Ew^{*} `;` Δ_( W_s) `;` Emw^{*} )
         by apply: compSl; apply: compS; apply: B_L7_E28g.
       
       by rewrite eqEsubset; split;[apply: B_L7_E28h | apply: B_L7_E28f].
@@ -76,21 +76,21 @@ Section Csbr.
     (* begin snippet Lseptfour:: no-out *)  
     Lemma B_L7: Aw = Aw_s. 
     Proof.
-      have B_L7_1: (Ew.* `;` ((Δ_(W) `;` Kw `;` Δ_(W)).+ ) `;` Emw.* )
-                 = (Ew.* `;` ((Δ_(W_s) `;` Kw `;` Δ_(W_s)).+ ) `;` Emw.* )
+      have B_L7_1: (Ew^{*} `;` ((Δ_(W) `;` Kw `;` Δ_(W))^{+} ) `;` Emw^{*} )
+                 = (Ew^{*} `;` ((Δ_(W_s) `;` Kw `;` Δ_(W_s))^{+} ) `;` Emw^{*} )
         by rewrite /Cw /DKD /Cw_s Kw_starts_ends -![(Δ_(W) `;` _)]compA
              -![(Δ_(W_s) `;` _)]compA; apply Ws_L3; rewrite B_L7_E28.
-      have B_L7_2: (Ew.* `;` Cw `;` Emw.* = Ew.* `;` Cw_s `;` Emw.* )
+      have B_L7_2: (Ew^{*} `;` Cw `;` Emw^{*} = Ew^{*} `;` Cw_s `;` Emw^{*} )
         by rewrite /Cw /DKD /Cw_s compUr compUl
              [in RHS]compUr [in RHS]compUl B_L7_E28 B_L7_1.
       rewrite /Aw /Aw_s /Dw BmKw_starts BwKw_ends.
-      rewrite [(Bw `|` Kw) `;` Ew.* `;` _]compA.
-      rewrite -[(Ew.* `;` _)]compA.
-      rewrite -[(Ew.* `;` Cw `;`  _)]compA. 
+      rewrite [(Bw `|` Kw) `;` Ew^{*} `;` _]compA.
+      rewrite -[(Ew^{*} `;` _)]compA.
+      rewrite -[(Ew^{*} `;` Cw `;`  _)]compA. 
       rewrite B_L7_2.
       rewrite -2![in X in 'Δ `|` Bw `|` Bmw `|` Kw `|` X]compA.
       rewrite [in X in 'Δ `|` Bw `|` Bmw `|` Kw `|` X]compA.
-      by rewrite -[(Bw `|` Kw) `;` (Ew.* `;` Cw_s)]compA.
+      by rewrite -[(Bw `|` Kw) `;` (Ew^{*} `;` Cw_s)]compA.
     Qed.
     (* end snippet Lseptfour *)
   End Appendix_B_L7.
@@ -111,7 +111,7 @@ Section Bw_implies_active_path.
   (** * csbr: Lemma 10 *)
   Lemma C_L10 x y:
     Bw (x,y) -> (exists (p: seq T), Active_path W E (Lifto (x::(rcons p y)) P) x y
-                              /\ p [\in] (Ew.+)#_(y)).
+                              /\ p [\in] (Ew^{+})#_(y)).
   (* end snippet clten *) 
   Proof.
     rewrite /Bw rtclosE => -[x1 [/= H1 [/deltaTP <- | H2]]];first by (exists [::]).
@@ -134,11 +134,11 @@ Section Bw_implies_active_path.
   Lemma C_L10_2 x y:
     (Bw (x, y)) /\ W.^c x 
     -> (exists (p: seq T),  Active_path W E (Lifto (x::(rcons p y)) P) x y
-                      /\ (x::p) [\in] (Ew.+)#_(y)).
+                      /\ (x::p) [\in] (Ew^{+})#_(y)).
   Proof.
     move => [/[dup] H1 [x1 [H1' H2] H3]]. 
     pose proof C_L10 H1 as [p [H4 H5]].
-    have H6: Ew.+ (x, y) by rewrite -comp_rtclosE;exists x1;split;[exists x;split | ].
+    have H6: Ew^{+} (x, y) by rewrite -comp_rtclosE;exists x1;split;[exists x;split | ].
     by exists p;rewrite allset_cons;split;[ | split;[exists y|]].
   Qed.
 
@@ -150,7 +150,7 @@ Section Bmw_implies_active_path.
   (** * Lemma 11 *)
   Lemma C_L11 x y:
       Bmw (x, y) -> (exists (p: seq T), Active_path W E (Lifto (x::(rcons p y)) N) x y
-                                  /\ p [\in] (Ew.+)#_(x)).
+                                  /\ p [\in] (Ew^{+})#_(x)).
   Proof.
     rewrite /Bmw /inverse /Bw rtclosE.
     move => [x1 [/= H1 [/deltaTP <- | H2]]];first by (exists [::]).
@@ -178,11 +178,11 @@ Section Bmw_implies_active_path.
   Lemma C_L11_2 x y:
       Bmw (x, y) /\ W.^c y -> 
       (exists (p: seq T), Active_path W E (Lifto (x::(rcons p y)) N) x y
-                     /\ (rcons p y) [\in] (Ew.+)#_(x)).
+                     /\ (rcons p y) [\in] (Ew^{+})#_(x)).
   Proof.
     move => [/[dup] H1 [x1 [H1' H2]] H3]. 
     pose proof C_L11 H1 as [p [H4 H5]].
-    have H6: Ew.+ (y, x) by rewrite -comp_rtclosE;exists x1;split;[exists y;split | ].
+    have H6: Ew^{+} (y, x) by rewrite -comp_rtclosE;exists x1;split;[exists y;split | ].
     by exists p;rewrite allset_rcons; split;[ | split;[|exists x]].
   Qed.
   
@@ -196,8 +196,8 @@ Section Kw_implies_active_path.
       Kw (x, y) -> (exists (p q: seq T),exists t,
                       Active_path W E 
                         ((Lifto (x::(rcons p t)) N)++(Lifto (t::(rcons q y)) P )) x y
-                      /\ (rcons p t) [\in] (Ew.+)#_(x)
-                      /\ (t::q) [\in] (Ew.+)#_(y)).
+                      /\ (rcons p t) [\in] (Ew^{+})#_(x)
+                      /\ (t::q) [\in] (Ew^{+})#_(y)).
   Proof.
     move => [z [ [t [H2 [/= H3 <-]]] /= H4]]. 
     pose proof (C_L11_2 (conj H2 H3)) as [p [H5 H6]].
@@ -232,8 +232,8 @@ End Kw_implies_active_path.
 
 Section Cw_s_implies_active_path.
   (* we do not use Cw_s but use the fact that 
-   * Cw_s := (DKD_s.+) + Δ_(W_s) 
-   * and we consider (DKD_s.+) and  Δ_(W_s) separately
+   * Cw_s := (DKD_s^{+}) + Δ_(W_s) 
+   * and we consider (DKD_s^{+}) and  Δ_(W_s) separately
    *)
   (** * Lemma 13 *)
   
@@ -274,7 +274,7 @@ Section Cw_s_implies_active_path.
   Qed.
   
   Lemma C_L13: forall (x y: T),
-      (Δ_(W_s) `;` Kw `;` Δ_(W_s)).+ (x, y)
+      (Δ_(W_s) `;` Kw `;` Δ_(W_s))^{+} (x, y)
       -> exists (p q: seq (T*T*O)), exists (x' y': T),
         Active_path W E q x y
         /\ q = (x,x',N)::(rcons p (y',y,P)) /\ Oedge E (x,x',N) /\ Oedge E (y',y,P).
@@ -282,7 +282,7 @@ Section Cw_s_implies_active_path.
   
   (* XXX a mettre ailleurs *)
   Lemma C_L13_2: forall (x y: T),
-      (Δ_(W_s) `;` Kw `;` Δ_(W_s)).+ (x, y) ->  W_s x /\ W_s y.
+      (Δ_(W_s) `;` Kw `;` Δ_(W_s))^{+} (x, y) ->  W_s x /\ W_s y.
   Proof.
     move => x y H2.
     move: (H2);rewrite tclos_deltar => [[y' [_ [H3 /= <-]]]].

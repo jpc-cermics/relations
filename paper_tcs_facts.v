@@ -35,7 +35,7 @@ Section Tcs.
     Definition  ClosureI := 
       [set xy | Clos_(xy.1 | E,W) `&` Clos_(xy.2 | E,W) != set0 ].
     
-    Lemma ClosureI_iff: ClosureI = (Emw.* `;` Ew.* ).
+    Lemma ClosureI_iff: ClosureI = (Emw^{*} `;` Ew^{*} ).
     Proof.
       rewrite predeqE /ClosureI /mkset => [[x1 x2]] /=.
       split;rewrite set0P.
@@ -45,7 +45,7 @@ Section Tcs.
         by (exists z);split;rewrite clos1P. 
     Qed.
     
-    Lemma Kw_W: Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W) =Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W).
+    Lemma Kw_W: Δ_(W) `;` (Emw^{*} `;` Ew^{*} ) `;` Δ_(W) =Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W).
     Proof.
       rewrite L14_E38a.
       rewrite compUr compUr compUr compUl compUl compUl.
@@ -65,14 +65,14 @@ Section Tcs.
                         (let R:= Δ_(W) `;` Kw `;` Δ_(W) in R (w1, w2)).
     Proof.
       move => w1' w2' [H1 [H2 H3]]; split => H4.
-      - have H5: (Emw.* `;` Ew.* ) (w1', w2') by rewrite -ClosureI_iff.
-        have H6: (Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W)) (w1', w2') by apply restrictP.
+      - have H5: (Emw^{*} `;` Ew^{*} ) (w1', w2') by rewrite -ClosureI_iff.
+        have H6: (Δ_(W) `;` (Emw^{*} `;` Ew^{*} ) `;` Δ_(W)) (w1', w2') by apply restrictP.
         have H7: (Δ_(W) `|` Δ_(W) `;` Kw `;` Δ_(W))  (w1', w2') by rewrite -Kw_W.
         by move: H7 => [[z H7] | H7] //.
       - have H5:  (Δ_(W) `|` (Δ_(W) `;` Kw `;` Δ_(W)))  (w1', w2')
           by apply subsetUr.
-        have H6: (Δ_(W) `;` (Emw.* `;` Ew.* ) `;` Δ_(W)) (w1', w2') by rewrite Kw_W.
-        have H7: (Emw.* `;` Ew.* ) (w1', w2') by apply restrictP in H6.
+        have H6: (Δ_(W) `;` (Emw^{*} `;` Ew^{*} ) `;` Δ_(W)) (w1', w2') by rewrite Kw_W.
+        have H7: (Emw^{*} `;` Ew^{*} ) (w1', w2') by apply restrictP in H6.
         by rewrite -ClosureI_iff in H7.
     Qed.
     
@@ -157,12 +157,12 @@ Section Tcs.
       split.
       - rewrite set0P 2!fset_comp.
         move=> [z [ H1 H2]]. 
-        have H3: ((Ew.* `;` Sw)^-1 `;` (Ew.* `;` Sw)) (x, y)
+        have H3: ((Ew^{*} `;` Sw)^-1 `;` (Ew^{*} `;` Sw)) (x, y)
           by apply fset1_compVP; exists z;split.
-        have H4: (Δ_(W.^c) `;` ((Ew.* `;` Sw)^-1 `;` (Ew.* `;` Sw))  `;` Δ_(W.^c)) (x, y)
+        have H4: (Δ_(W.^c) `;` ((Ew^{*} `;` Sw)^-1 `;` (Ew^{*} `;` Sw))  `;` Δ_(W.^c)) (x, y)
           by apply restrictP.
         have H5: (Δ_(W.^c) `;` Aw `;` Δ_(W.^c)) = 
-                   (Δ_(W.^c) `;` ((Ew.* `;` Sw)^-1 `;` (Ew.* `;` Sw)) `;` Δ_(W.^c))
+                   (Δ_(W.^c) `;` ((Ew^{*} `;` Sw)^-1 `;` (Ew^{*} `;` Sw)) `;` Δ_(W.^c))
           by rewrite -L15 compV Sw_inverse Emw_1;aac_reflexivity.
         have H6: (Δ_(W.^c) `;` Aw `;` Δ_(W.^c)) (x, y)
           by rewrite H5.
@@ -170,13 +170,13 @@ Section Tcs.
       - move => H1.
         have H2: (Δ_(W.^c) `;` Aw `;` Δ_(W.^c)) (x, y) by apply restrictP.
         have H3: (Δ_(W.^c) `;` Aw `;` Δ_(W.^c)) = 
-                   (Δ_(W.^c) `;` ((Ew.* `;` Sw)^-1 `;` (Ew.* `;` Sw)) `;` Δ_(W.^c))
+                   (Δ_(W.^c) `;` ((Ew^{*} `;` Sw)^-1 `;` (Ew^{*} `;` Sw)) `;` Δ_(W.^c))
           by rewrite -L15 compV Sw_inverse Emw_1;aac_reflexivity.
-        have H4: (Δ_(W.^c) `;` ((Ew.* `;` Sw)^-1 `;` (Ew.* `;` Sw))  `;` Δ_(W.^c)) (x, y)
+        have H4: (Δ_(W.^c) `;` ((Ew^{*} `;` Sw)^-1 `;` (Ew^{*} `;` Sw))  `;` Δ_(W.^c)) (x, y)
           by rewrite H3 in H2.
         apply restrictP in H4; last by split.
         move: H4 => [z [/= H4 H5]].
-        have H6: (Ew.* `;` Sw) (z, x) by [].
+        have H6: (Ew^{*} `;` Sw) (z, x) by [].
         move: H6 => [t [/= H6 H'6]].
         move: H5 => [u [/= H5 H'5]].
         rewrite set0P.
@@ -248,7 +248,7 @@ Section Tcs.
     Proof. 
       move => x y H1 H2.
       have H3: (Δ_(W.^c) `;` Bw) (x, y) by apply restrictPl.
-      have H5: Ew.+ (x, y) by move: H3;rewrite /Bw -compA -/Ew comp_rtclosE.
+      have H5: Ew^{+} (x, y) by move: H3;rewrite /Bw -compA -/Ew comp_rtclosE.
       have H7: Clos_(y | E,W) x by apply clos1P; apply tclos_rtclosS.
       have H8: Clos_(x | E,W) x by apply clos1_refl.
       rewrite set0P; exists x;by split.
@@ -265,7 +265,7 @@ Section Tcs.
     Local Lemma L7_3: forall (x y: T), 
         Kw (x,y) -> Clos_( x | E,W) `&` Clos_(y | E,W) != set0.
     Proof. 
-      have H0: Ew.+ `<=` Ew.* 
+      have H0: Ew^{+} `<=` Ew^{*} 
         by move => xy; rewrite rtclosE; apply subsetUr.
       rewrite E9e; move => x y [z [/= H1 H2]].
       rewrite set0P;exists z. 
@@ -402,7 +402,7 @@ Section Tcs.
     
     Local Lemma tclos_sep : forall (W' W'': set T) (w' w'': T) (R: relation T),
         (W' `<=` W) /\ (W''= W `\` W') /\ 
-          w' \in W' /\ w'' \in W'' /\ (Δ_(W) `;` R `;` Δ_(W)).+ (w', w'')
+          w' \in W' /\ w'' \in W'' /\ (Δ_(W) `;` R `;` Δ_(W))^{+} (w', w'')
         -> let Rw := (Δ_(W) `;` R `;` Δ_(W)) in
            (exists (x' y': T), x'\in W' /\ y' \in W'' /\ Rw (x', y')).
     Proof.
@@ -426,7 +426,7 @@ Section Tcs.
         have H7: W' `&` W'' !=set0 by (exists w');split;rewrite -in_setE.
         by rewrite -nonemptyPn in H8.
       }
-      have H7:  (Δ_(W) `;` Kw `;` Δ_(W)).+ (w', w'') by move: H5 => [H5 | [ x H5]].
+      have H7:  (Δ_(W) `;` Kw `;` Δ_(W))^{+} (w', w'') by move: H5 => [H5 | [ x H5]].
       by apply tclos_sep with w' w''.
     Qed.
     
@@ -888,23 +888,23 @@ Section Tcs.
     
     (** * properties of open sets *)
     Lemma Ropen1: forall (R : relation T) (X: set T),
-        R.*#X = X <-> R.*#X `<=` X.
+        R^{*}#X = X <-> R^{*}#X `<=` X.
     Proof.
       move => R X;split => [-> | H1];first by [].
-      have H2: X `<=` R.*#X
+      have H2: X `<=` R^{*}#X
         by rewrite rtclosE -fsetUl fsetT;apply: subsetUl.
       by rewrite eqEsubset.
     Qed.
 
     Lemma Ropen2: forall (R : relation T) (X: set T),
-        R.*#X `<=` X <-> R.+#X `<=` X.
+        R^{*}#X `<=` X <-> R^{+}#X `<=` X.
     Proof.
       move => R X;rewrite rtclosE -fsetUl fsetT.
       split => [ H1 | H1].
-      - have H2: R.+#X `<=` X `|` R.+#X by apply: subsetUr.
+      - have H2: R^{+}#X `<=` X `|` R^{+}#X by apply: subsetUr.
         by apply: (subset_trans H2 H1).
       - have H2: X `<=` X by [].
-        have H3: X `|` R.+#X `<=` X `|` X by apply: setUSS.
+        have H3: X `|` R^{+}#X `<=` X `|` X by apply: setUSS.
         by move: H3;rewrite setUid.
     Qed.
 
@@ -921,11 +921,11 @@ Section Tcs.
     Qed.
 
     Lemma Ropen4: forall (R : relation T) (X: set T),
-        R.+#X `<=` X <-> R#X  `<=` X.
+        R^{+}#X `<=` X <-> R#X  `<=` X.
     Proof.
       move => R X;split => [H1 | H1 x [y [H2 H3]]].
-      - have H2:  R `<=` R.+ by apply: tcl_sub.
-        have H3: R#X  `<=` R.+#X by apply: fsetS.
+      - have H2:  R `<=` R^{+} by apply: tcl_sub.
+        have H3: R#X  `<=` R^{+}#X by apply: fsetS.
         by apply: (subset_trans H3 H1).
       - have [n H4]: exists (n:nat), R^(n.+1) (x,y) by apply: tclos_iterP.
         have H5: R^(n.+1)#X x by (exists y).
@@ -950,22 +950,22 @@ Section Tcs.
     (** * Closure of a set *)
     
     Definition T_closure (R : relation T) (Y: set T) (X: set T) 
-      := Y = R.*#Y /\ X`<=` Y /\ (forall Z, Z = R.*#Z /\ X `<=` Z -> Y `<=` Z).
+      := Y = R^{*}#Y /\ X`<=` Y /\ (forall Z, Z = R^{*}#Z /\ X `<=` Z -> Y `<=` Z).
     
     Lemma T_closure_iff: forall (R : relation T) (Y: set T) (X: set T),
-        T_closure R Y X <-> Y = R.*#X.
+        T_closure R Y X <-> Y = R^{*}#X.
     Proof.
       move => R Y X.
-      have H4: R.*#X = R.*#(R.*#X) by rewrite fset_comp rtclosK.
-      have H5: X `<=` R.*#X by rewrite rtclosE -fsetUl fsetT;apply: subsetUl.
+      have H4: R^{*}#X = R^{*}#(R^{*}#X) by rewrite fset_comp rtclosK.
+      have H5: X `<=` R^{*}#X by rewrite rtclosE -fsetUl fsetT;apply: subsetUl.
       split  => [ [H1 [H2 H3]] | H1].
-      - have H6: Y `<=`  R.*#X by apply: H3.
-        have H7: R.*#X `<=` Y by rewrite H1; apply: fsetSr .
+      - have H6: Y `<=`  R^{*}#X by apply: H3.
+        have H7: R^{*}#X `<=` Y by rewrite H1; apply: fsetSr .
         by rewrite eqEsubset.
       - split;rewrite H1;first by[].
         split;first by [].
         move => Z [H2 H3].
-        have H6:  R.*#X `<=`  R.*#Z by apply: fsetSr .
+        have H6:  R^{*}#X `<=`  R^{*}#Z by apply: fsetSr .
         by rewrite H2.
     Qed.
     

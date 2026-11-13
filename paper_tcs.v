@@ -117,16 +117,16 @@ Section Paper.
   Qed.
   
   Lemma  tcs_L14:
-    (Emw.* `;` Ew.* ) = ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw)
-    /\ Cw `;` (Emw .* ) `;` (Ew .* ) = Cw `;` ('Δ `|` Bmw `;` Δ_(W.^c) `|` Kw)
-    /\ (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Cw  = Cw 
-    /\ (Cw `;` (Emw .* ) `;` (Ew .* )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c)
-    /\ Δ_(W.^c) `;` (Emw.* `;` Ew.* ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
+    (Emw^{*} `;` Ew^{*} ) = ('Δ `|` (Δ_(W.^c) `;` Bw) `|` (Bmw `;` Δ_(W.^c)) `|` Kw)
+    /\ Cw `;` (Emw^{*} ) `;` (Ew^{*} ) = Cw `;` ('Δ `|` Bmw `;` Δ_(W.^c) `|` Kw)
+    /\ (Cw `;` (Emw^{*} ) `;` (Ew^{*} )) `;` Cw  = Cw 
+    /\ (Cw `;` (Emw^{*} ) `;` (Ew^{*} )) `;` Δ_(W.^c)  = Cw `;` (Bmw `|` Kw)  `;` Δ_(W.^c)
+    /\ Δ_(W.^c) `;` (Emw^{*} `;` Ew^{*} ) `;` Cw = Δ_(W.^c) `;` (Bw `|` Kw) `;` Cw.
   Proof.
     by apply: L14.
   Qed. 
   
-  Lemma tcs_L15: (Δ_(W.^c) `;` Smw `;`  Emw.* `;` Ew.* `;` Sw `;` Δ_(W.^c))
+  Lemma tcs_L15: (Δ_(W.^c) `;` Smw `;`  Emw^{*} `;` Ew^{*} `;` Sw `;` Δ_(W.^c))
              = Δ_(W.^c) `;` Aw `;`  Δ_(W.^c).
   Proof.
     by apply: L15.

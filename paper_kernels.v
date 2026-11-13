@@ -31,11 +31,11 @@ Section CheckAsym.
 
   (* begin snippet  iicasymToiicinj::  no-out *) 
   Lemma iic_asym_to_iic_inj:
-    (iic (asym U.+)) -> (iic_inj U). 
+    (iic (asym U^{+})) -> (iic_inj U). 
   (* end snippet iicasymToiicinj *) 
   Proof. by apply: (@Asym2P5' T U A1). Qed.
 
-  Lemma not_iic_inj_to_not_iic_asym: ~ (iic_inj U) -> ~ (iic (asym U.+)).
+  Lemma not_iic_inj_to_not_iic_asym: ~ (iic_inj U) -> ~ (iic (asym U^{+})).
   Proof. by move => ? /iic_asym_to_iic_inj ?. Qed.
 
 End  CheckAsym. 
@@ -109,7 +109,7 @@ Notation M := (B `|` R).
       have Ch1 : exists S, S \in (pre_kernel R M).
       {
         move: Au => [Au | Au ].
-        + have Oinv_notcyclic: ~ (exists s, O^-1.+ (s,s))
+        + have Oinv_notcyclic: ~ (exists s, O^-1^{+} (s,s))
             by rewrite -tclosV.
           (* exists a sink and thus a preabsorbent node *)
           move: (@NotCyclic_exists_preabsorbent T O^-1 M A1 Oinv_notcyclic) => [v Hpa].
@@ -158,7 +158,7 @@ Notation M := (B `|` R).
     Lemma iic_and_prekernels_to_cyclic (h : nat -> (set T)):
       Assumption6'' R O M
       -> (iic_fun ([<< O]%O) h) -> (forall n, (h n) \in  (pre_kernel R M))
-      -> exists s, O.+ (s,s).
+      -> exists s, O^{+} (s,s).
     Proof.
       move => [_ [Apk _]] Hiic Hpk'.
       move: (iic_to_allL Hiic Hpk') => [n [p [Ha [HallL Hpk]]]].
@@ -241,7 +241,7 @@ Module SSWext.
 
   (* begin snippet SSWext:: no-out *)  
 Context (T:choiceType) (Eb Er: relation T).
-Definition R := Er.+. Definition B := Eb.+.
+Definition R := Er^{+}. Definition B := Eb^{+}.
 Definition O := (asym B). 
 Notation M := (B `|` R).
   (* end snippet SSWext *)    
@@ -694,10 +694,10 @@ Notation M := (B `|` R).
     Qed.
 
     Lemma Om1_notcyclic: 
-      ~ (exists s, O.+ (s,s)) -> ~ (exists s, O^-1.+ (s,s)).
+      ~ (exists s, O^{+} (s,s)) -> ~ (exists s, O^-1^{+} (s,s)).
     Proof.
       move => HOnc [s Hoc];rewrite -tclosV in Hoc. 
-      by have ?: (exists s : T, O.+ (s, s)) by (exists s).
+      by have ?: (exists s : T, O^{+} (s, s)) by (exists s).
     Qed.
     
     Lemma A2_from_Asp (Asp: sporder O): Assumption2 R.
@@ -814,13 +814,13 @@ Definition Forbiden_graph := forall x y z t,
     Qed.
     
     Lemma Om1_notcyclic: 
-      ~ (exists s, O.+ (s,s)) -> ~ (exists s, O^-1.+ (s,s)).
+      ~ (exists s, O^{+} (s,s)) -> ~ (exists s, O^-1^{+} (s,s)).
     Proof.
       move => HOnc [s Hoc];rewrite -tclosV in Hoc. 
-      by have ?: (exists s : T, O.+ (s, s)) by (exists s).
+      by have ?: (exists s : T, O^{+} (s, s)) by (exists s).
     Qed.
     
-    Lemma A2_from_Anc (Anc: ~ (exists s, O.+ (s,s))): Assumption2 R.
+    Lemma A2_from_Anc (Anc: ~ (exists s, O^{+} (s,s))): Assumption2 R.
     Proof.
       move: Anc => /Om1_notcyclic Anc'.
       have notiicOm1: ~ (iic O^-1) by move => /(@cyclic T O^-1)/Anc'.
@@ -849,7 +849,7 @@ Definition Forbiden_graph := forall x y z t,
       by move: (@Atc y y' x' Dyy' Dy'x' Dx'y nDyx').
     Qed.
 
-    Lemma A1to5 (Anc: ~ (exists s, O.+ (s,s))) 
+    Lemma A1to5 (Anc: ~ (exists s, O^{+} (s,s))) 
       (Afg: Forbiden_graph) (Atc: Three_cycles):
       Assumptions_1to5 R B M O.
     Proof.
@@ -860,12 +860,12 @@ Definition Forbiden_graph := forall x y z t,
       by apply: A5_from_Atc.
     Qed.
 
-    Lemma A6'' (Anc: ~ (exists s, O.+ (s,s))) : (Assumption6'' R O M).
+    Lemma A6'' (Anc: ~ (exists s, O^{+} (s,s))) : (Assumption6'' R O M).
     Proof. by split;[left;apply: Au | split;[right;apply: Apk|]]. Qed.
     
     (* begin snippet FinCaseBH:: no-out *)  
 Theorem Kernel_Blidia_Engel:
-  ~ (exists s, O.+ (s,s)) -> Forbiden_graph 
+  ~ (exists s, O^{+} (s,s)) -> Forbiden_graph 
   ->Three_cycles -> exists S, kernel M S. 
     (* end snippet FinCaseBH *)  
     Proof.
@@ -898,13 +898,13 @@ Context (A1: nonempty [set: T]).
     (* end snippet MLPdcContext *)
     
     Lemma notcyclic_Iv (U: relation T): 
-      ~ (exists s, U.+ (s,s)) -> ~ (exists s, U^-1.+ (s,s)).
+      ~ (exists s, U^{+} (s,s)) -> ~ (exists s, U^-1^{+} (s,s)).
     Proof.
       move => HOnc [s Hoc];rewrite -tclosV in Hoc. 
-      by have ?: (exists s : T, U.+ (s, s)) by (exists s).
+      by have ?: (exists s : T, U^{+} (s, s)) by (exists s).
     Qed.
 
-    Lemma A2_from_Anc (Anc: ~ (exists s, R.+ (s,s))): Assumption2 R.
+    Lemma A2_from_Anc (Anc: ~ (exists s, R^{+} (s,s))): Assumption2 R.
     Proof.
       have notiicOm1: ~ (iic R) by move => /(@cyclic T R)/Anc.
       by move => /(iicS (@asymS T R)) ?.
@@ -932,7 +932,7 @@ Context (A1: nonempty [set: T]).
       by move: Hd => [Dyx'| [By'y | Rzz]];[ | left |have: M (y, x') by right ].
     Qed.
     
-    Lemma A1to5 (Anc: ~ (exists s, R.+ (s,s))) (MLfg: M_L_Forbiden_graph):
+    Lemma A1to5 (Anc: ~ (exists s, R^{+} (s,s))) (MLfg: M_L_Forbiden_graph):
       Assumptions_1to5 R B M O.
     Proof.
       split;first by [].
@@ -942,7 +942,7 @@ Context (A1: nonempty [set: T]).
       by apply: A5_from_MLfg.
     Qed.
 
-    Lemma A6'' (Abnc: ~ (exists s : T, B.+ (s, s)))(Arnc: ~ (exists s, R.+ (s,s))):
+    Lemma A6'' (Abnc: ~ (exists s : T, B^{+} (s, s)))(Arnc: ~ (exists s, R^{+} (s,s))):
       (Assumption6'' R B M).
     Proof.
       rewrite /Assumption6'' /Assumption6''_1 /Assumption6''_2 /Assumption6''_3.
@@ -953,7 +953,7 @@ Context (A1: nonempty [set: T]).
     
     (* begin snippet MLPdc:: no-out *)  
 Theorem Meunier_Langlois_P2_5:
-   ~ (exists s, B.+ (s,s)) -> ~ (exists s, R.+ (s,s))
+   ~ (exists s, B^{+} (s,s)) -> ~ (exists s, R^{+} (s,s))
    ->  M_L_Forbiden_graph -> exists S, kernel M S. 
     (* end snippet MLPdc *)  
     Proof.
