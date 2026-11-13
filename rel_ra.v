@@ -448,6 +448,34 @@ Section First_entry.
       * by rewrite 2!dotA; apply: dot_leq; last by []; apply: str_cons.
   Qed.
 
+  (* Variante avec témoin: au lieu de conclure dans un vecteur donné, on      *)
+  (* garde la trace du premier point d'entrée sous la forme [p]⋅top.  Même    *)
+  (* argument, et ici [p], r et top sont des objets sans lien caché: c'est    *)
+  (* un vrai théorème de KAT + top, qui n'échappe à kat que parce que celui-  *)
+  (* ci s'arrête à KAT.                                                       *)
+  (*                                                                          *)
+  (* S'applique directement, après to_ra_goal, à tout but de la forme         *)
+  (*     R.* `<=` (Δ_(Y.^c) `;` R).* `;` ('Δ `|` Δ_(Y) `;` relT)              *)
+  Lemma first_entry_wit (p: dset T) (r: hrel T T) :
+    (r^* ≦ (inj (neg p)⋅r)^*⋅(1 + [p]⋅top))%ra.
+  Proof.
+  have hcup: (([p] + inj (neg p): hrel T T) ≡ 1)%ra
+    by rewrite -inj_cup cupneg inj_top.
+  set z := ((inj (neg p)⋅r)^*⋅(1 + [p]⋅top))%ra.
+  have h1: ((1: hrel T T) ≦ z)%ra.
+    rewrite /z -[X in X ≦ _]dot1x; apply: dot_leq; first by apply: str_refl.
+    by apply: leq_xcup; left.
+  apply: str_ind_l1 => //.
+  rewrite -[X in X⋅_ ≦ _]dot1x -hcup dotplsx dotplsx; apply/cup_spec; split.
+  - (* branche [p]: on entre dans l'ensemble, le témoin [p]⋅top absorbe *)
+    rewrite -dotA; transitivity ([p]⋅(top: hrel T T))%ra;
+      first by apply: dot_leq; [reflexivity | apply: leq_xt].
+    rewrite /z -[X in X ≦ _]dot1x; apply: dot_leq; first by apply: str_refl.
+    by apply: leq_xcup; right.
+  - (* branche [!p]: on reste dehors, un pas est consommé *)
+    by rewrite /z dotA; apply: dot_leq; [apply: str_cons | reflexivity].
+  Qed.
+
 End First_entry.
 
 (** * Tactiques *)

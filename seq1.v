@@ -735,20 +735,6 @@ Section allset_Lifted.
     by have <- : last x s = last z s by apply: last_dv;apply:H1. 
   Qed.
 
-(** * replaced by a shorter version *)
-(* 
-  
-  Lemma nth_L0' st x y z: nth z (x::(rcons st y)) 1 = nth y st 0.
-  Proof. 
-    case H1: (size st == 0);first by move: H1 => /eqP/size0nil -> /=.
-    by move: H1 => /neq0_lt0n H1;rewrite /= nth_rcons H1;apply: nth_dv.
-  Qed.
-  
-  Lemma nth_L0'' R st x y z: 
-    R (nth z (x::(rcons st y)) 0, nth z (x::(rcons st y)) 1) = R(x,nth y st 0).
-  Proof. by rewrite nth_L0'.  Qed.
-*)
-
   Lemma nth_L1 st x y z: 
     nth z (x :: rcons st y) (size st) = nth x st (size st).-1.
   Proof.
@@ -757,12 +743,6 @@ Section allset_Lifted.
 
   Lemma nth_L1' st x y z: nth z (x :: rcons st y) (size st).+1 = y.
   Proof. by rewrite /= nth_rcons ltnn eq_refl. Qed.
-(*     
-  Lemma nth_L1'' R st x y z: 
-    R (nth z (x::(rcons st y)) (size st), nth z (x::(rcons st y)) (size st).+1) 
-          = R(nth x st (size st).-1 , y ).
-  Proof. by rewrite nth_L1 nth_L1'. Qed.
- *)
 
   Lemma nth_L2 st x y z (n: nat): 
     0 < n < size st -> nth z (x :: rcons st y) n = nth z st n.-1.
@@ -770,67 +750,7 @@ Section allset_Lifted.
     move => /andP [/ltn_predK H1 H1'];rewrite -1!H1 /= nth_rcons. 
     by rewrite (leq_ltn_trans (leq_pred n) H1').  
   Qed.
-
-(* 
- 
-  Lemma nth_L2' st x y z (n: nat): 
-    0 < n < size st -> nth z (x :: rcons st y) n.+1 = nth z st n.
-  Proof. by move => /andP [/ltn_predK H1 H1'];rewrite /= nth_rcons H1'. 
-  Qed.
   
-  Lemma nth_L3 st y z : nth y st 0 = (nth z (rcons st y) 0).
-  Proof.   by rewrite -(@nth_L0' st y y z) /=. Qed.
-  
-  Lemma nth_L6 n st y z:
-    n < (size st) -> nth z (rcons st y) n = nth y st n.
-  Proof. move => H0;rewrite nth_rcons H0;by apply: nth_dv. Qed.
-
-  Lemma nth_L7 n st y z:
-    n = (size st) ->  nth z (rcons st y) n = y.
-  Proof. by move => ->;rewrite nth_rcons ltnn eq_refl /=. Qed.
-  
-  Lemma allL_nth'' R st x y z:
-    allL R st x y 
-    <-> (forall n, n <= size st -> R ((nth z (x::(rcons st y)) n), (nth z (x::(rcons st y)) n.+1))).
-  Proof. 
-    rewrite (allL_nth R st x y z).
-    split. 
-    + move => [H4 [H5 H6]] n H7.
-      case H8: (n == 0);first by move: H8 => /eqP ->; rewrite nth_L0''. 
-      case H9: (n == (size st));first by move: H9 => /eqP ->;rewrite nth_L1''.
-      have H10: 0 < n < size st
-        by move: H8 H7 => /neq0_lt0n ->;rewrite leq_eqVlt H9 orFb => ->.
-      move: (H10) => /[dup] /(@nth_L2 st x y z n) -> /(@nth_L2' st x y z n) ->.
-      move: H10 => /andP [H10 H10'].
-      have H11: n.-1.+1 = n by apply: (@ltn_predK 0 _). 
-      move: H5 => /(_ n.-1);rewrite H11 => H5.
-      by apply: H5.
-    + move => H1.
-      split. 
-      by move: H1 => /(_ 0) /= H1;rewrite (nth_L3 st y z);apply: H1.
-      split.
-      ++ move: H1 => + n H2 => /(_ n.+1) H1.
-         have H3: n < size st by apply/(ltn_trans _ H2)/ltnSn. 
-         move: (H3) => /[dup] /(@nth_L6 n st y z) + /H1 /= => ->. 
-         move: (H2) => /(@nth_L6 n.+1 st y z) ->.
-         have ->: nth y st n = nth z st n by apply: nth_dv. 
-         have ->: nth y st n.+1 = nth z st n.+1 by apply: nth_dv. 
-         exact.
-      ++ move: H1 => /(_ (size st)) H1.
-         (have: size st <= size st by apply: leqnn) => {}/H1 /=.
-         rewrite nth_L7;last by exact. 
-         case H1: (size st == 0);first by move: H1 => /eqP /size0nil -> /=.
-         move: H1 => /neq0_lt0n H1.
-         have H3: (size st).-1.+1 = size st by apply: (@ltn_predK 0 _). 
-         have H4: (size st).-1 < size st by rewrite ltn_predL.
-         rewrite -1!H3 /= nth_rcons H4.
-         have ->: nth z st (size st).-1 = nth x st (size st).-1 by apply: nth_dv.
-         exact.
-  Qed.
-
-*) 
-
-
   Lemma allL_I U V st x y:
     allL (U `&` V) st x y <-> allL U st x y /\  allL V st x y.
   Proof. 
