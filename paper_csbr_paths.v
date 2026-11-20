@@ -1443,22 +1443,6 @@ Section Active_path_unique.
       by (exists w).
     Qed.
 
-    Lemma Active_path_Fset R X:  forall (p: seq T) (x y: T),
-        Active_path X R ((x, y, P) :: Lifto (y :: p) P) x (last y p) 
-        /\ R^{*}#X (last y p) -> R^{*}#X x. 
-    Proof.
-      elim. 
-      - rewrite /last /Lifto /pair_o /Lift.
-        move => x y [[_ [_ H2]] H3].
-        by apply Oedge_Fset with y.
-      - move => z p Hr x y.
-        rewrite Lifto_c last_cons Active_path_cc.
-        move => [[[H1 H1'] [H2 H3]] H4].
-        have H5: R^{*}#X y by apply Hr with z.
-        move: H3 => [H3 _].
-        by apply Oedge_Fset with y.
-    Qed.
-
     Lemma Active_path_Fset' R X:  forall (p: seq T) (x y: T),
         Active_path X R ((x, y, P) :: Lifto (y :: p) P) x (last y p) 
         /\ R^{*}#X (last y p) -> R^{*}#X y. 
