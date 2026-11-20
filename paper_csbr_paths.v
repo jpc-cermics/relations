@@ -14,6 +14,7 @@
 (******************************************************************************)
 
 Set Warnings "-parsing -coercions".
+From HB Require Import structures.
 From mathcomp Require Import all_boot order.
 From mathcomp Require Import mathcomp_extra boolp.
 From mathcomp Require Import classical_sets.
@@ -32,6 +33,14 @@ Local Open Scope classical_set_scope.
 (* begin snippet OO:: no-out *)
 Inductive O := | P | N.
 (* end snippet OO *)
+
+(* O is a finite type (hence an eqType) through a bijection with bool *)
+Definition O2bool (o: O) := if o is P then true else false.
+Definition bool2O (b: bool) := if b then P else N.
+Lemma O2boolK : cancel O2bool bool2O. Proof. by case. Qed.
+Set Warnings "-redundant-canonical-projection".
+HB.instance Definition _ := Finite.copy O (can_type O2boolK).
+Set Warnings "redundant-canonical-projection".
 
 (* begin snippet Oedge:: no-out *)  
 Definition Oedge {T: Type} (R: relation T): set (T*T*O) :=
@@ -1420,7 +1429,7 @@ Section Active_path_unique.
       ChrelO ((x,y,o1), (z,t,o2)) <-> y = z.
   Proof. by []. Qed.
   
-    (** * If there exists an active path from x to y there exists a walk from x to y
+    (** * If there exists an active walk from x to y there exists a path from x to y
         we just prove that when a variable is repeated twice we can shorten the
         active path * to prove the general property, we have maybe to switch from
         Type to eqType to use unique * in seq ?  *)
@@ -1553,3 +1562,149 @@ Section Active_path_unique.
     Qed.
     
 End Active_path_unique. 
+
+(** * From an active walk one can extract an active path without repeated nodes *)
+Section Active_path_uniq.
+  Variables (T: eqType).
+  Implicit Types (X: set T) (R: relation T) (p q c: seq (T*T*O)).
+
+  Lemma ActiveOe_chain X R (e1 e2: T*T*O): ActiveOe X R (e1, e2) -> e1.1.2 = e2.1.1.
+  Proof. by move => [_ [_ [H _]]]. Qed.
+
+  Lemma Active_path_loop R X (x y w: T) (o1 o2 o4: O):
+    Active_path X R [:: (x,y,o1); (y,y,o2); (y,w,o4)] x w
+    -> ActiveOe X R ((x,y,o1), (y,w,o4)).
+  Proof.
+    move => /Active_path_cc [_ [/Active_path_cc [_ [_ [_ [H2 [_ H4]]]]] [H1 [_ [_ H3]]]]].
+    by case: o1 H1 H3; case: o2 H4 H2; case: o4.
+  Qed.
+  
+  Lemma Active_path_prefix R X p q (x y: T) (eo: T*T*O):
+    0 < size p -> Active_path X R (p ++ q) x y -> Active_path X R p x (last eo p).1.2.
+  Proof.
+    case/lastP: p => [// | p e1 _]; rewrite last_rcons.
+    case: q => [| e2 q]; first by rewrite cats0 => H; have [_ [Hy _]] := Active_path_rc_hto H; rewrite -Hy.
+    by move => H; have [H1 _] := Active_path_split H.
+  Qed.
+
+  Lemma Active_path_suffix R X p q (x y: T) (eo: T*T*O):
+    0 < size q -> Active_path X R (p ++ q) x y -> Active_path X R q (head eo q).1.1 y.
+  Proof.
+    case: q => [// | e2 q _]; rewrite [head _ _]/=.
+    case/lastP: p => [| p e1]; first by move => H; have [Hx _] := Active_path_c_hto H; rewrite -Hx.
+    by move => H; have [_ [H1 _]] := Active_path_split H.
+  Qed.
+
+  (* the junction lemma: removing a non empty cycle c between e1 and e2 *)
+  Lemma Active_path_junction R X (e1 e2: T*T*O) c (x y: T) (eo: T*T*O):
+    0 < size c -> (head eo c).1.1 = (last eo c).1.2 ->
+    Active_path X R (e1 :: rcons c e2) x y -> ActiveOe X R (e1, e2).
+  Proof.
+    case: c => [// | [[u v] o2] c _].
+    move: e1 e2 => [[a b] o1] [[d f] o4]; rewrite [head _ _]/= [last _ _]/=.
+    case/lastP: c => [| c [[s t] o3]] Hc H; move: Hc => /=; rewrite ?last_rcons /= => Hc;
+      have [[Hx Hy] _] := (Active_path_cc R X _ _ _ _ _).1 H;
+      have /ActiveOe_chain /= H2 := Active_path_cc_a H.
+    - have [_ [H1 _]] := (Active_path_cc R X _ _ _ _ _).1 H.
+      have /ActiveOe_chain /= H3 := Active_path_cc_a H1.
+      rewrite /= in Hx Hy.
+      by subst; apply: Active_path_loop H.
+    - have /ActiveOe_chain /= H3 :=
+        @Active_path_rcrc_a _ R X [:: (a,b,o1), (u,v,o2) & c] (s,t,o3) (d,f,o4) x y H.
+      rewrite /= last_rcons /= in Hx Hy.
+      by subst; apply: Active_path_shorten H.
+  Qed.
+
+  Lemma Active_path_head R X p (x y: T) (eo: T*T*O):
+    0 < size p -> Active_path X R p x y -> x = (head eo p).1.1.
+  Proof. by case: p => [// | e p] _ H; have [-> _] := Active_path_c_hto H. Qed.
+
+  Lemma Active_path_last R X p (x y: T) (eo: T*T*O):
+    0 < size p -> Active_path X R p x y -> y = (last eo p).1.2.
+  Proof. by case: p => [// | e p] _ H; have [_ [-> _]] := Active_path_c_hto H. Qed.
+
+  (* removing a cycle from an active path gives an active path *)
+  Lemma Active_path_cut R X p1 c p2 (x y: T) (eo: T*T*O):
+    0 < size c -> (head eo c).1.1 = (last eo c).1.2 ->
+    Active_path X R (p1 ++ c ++ p2) x y -> Active_path X R (p1 ++ p2) x y.
+  Proof.
+    move => Hs Hc.
+    case/lastP: p1 => [| p1 e1]; case: p2 => [| e2 p2]; rewrite ?cat0s ?cats0 => H.
+    - have Hx := Active_path_head eo Hs H; have Hy := Active_path_last eo Hs H.
+      by change (x = y); rewrite Hx Hy.
+    - move: Hs Hc H; case/lastP: c => [// | c cl] _; rewrite last_rcons => Hc H.
+      have [H1 [H2 /ActiveOe_chain H3]] := Active_path_split H.
+      have Hx := Active_path_head eo (_: 0 < size (rcons c cl)) H1.
+      by rewrite Hx ?size_rcons // Hc H3.
+    - move: Hs Hc H; case: c => [// | c1 c] _ /= Hc H.
+      have [H1 [H2 /ActiveOe_chain H3]] := Active_path_split H.
+      have Hy := Active_path_last eo (_: 0 < size (c1 :: c)) H2.
+      by rewrite Hy // -Hc -H3.
+    - have Hj: ActiveOe X R (e1, e2).
+        have E: rcons p1 e1 ++ c ++ e2 :: p2 = p1 ++ ((e1 :: rcons c e2) ++ p2)
+          by rewrite cat_rcons /= cat_rcons.
+        move: H; rewrite E => H.
+        have /= H1 := Active_path_suffix eo (_: 0 < size (e1 :: rcons c e2 ++ p2)) H.
+        have H2 := Active_path_prefix eo (_: 0 < size (e1 :: rcons c e2)) (H1 erefl).
+        exact: (Active_path_junction Hs Hc (H2 erefl)).
+      have H1 := Active_path_prefix eo (_: 0 < size (rcons p1 e1)) H.
+      have {}H1 := H1 (ltac:(by rewrite size_rcons)).
+      move: (H); rewrite (catA (rcons p1 e1)) => H'.
+      have H2 := Active_path_suffix eo (_: 0 < size (e2 :: p2)) H'.
+      have {}H2 := H2 erefl.
+      rewrite last_rcons in H1.
+      rewrite (ActiveOe_chain Hj) in H1.
+      by apply: (@Active_path_cat _ R X _ _ _ _ _ e2.1.1); split; [|split].
+  Qed.
+
+  Lemma in_map_snd (z: T) p:
+    z \in [seq e.1.2 | e <- p] -> exists p1 f p2, p = p1 ++ f :: p2 /\ f.1.2 = z.
+  Proof.
+    elim: p => [// | e p Hr]; rewrite map_cons in_cons => /orP [/eqP -> | /Hr].
+    - by exists [::], e, p.
+    - by move => [p1 [f [p2 [-> Hf]]]]; exists (e :: p1), f, p2.
+  Qed.
+
+  (* a repeated node in an active path gives a cycle *)
+  Lemma Active_path_nuniq R X p (x y: T) (eo: T*T*O):
+    Active_path X R p x y -> ~~ uniq (x :: [seq e.1.2 | e <- p]) ->
+    exists p1 c p2, p = p1 ++ c ++ p2 /\ 0 < size c /\ (head eo c).1.1 = (last eo c).1.2.
+  Proof.
+    elim: p x => [x _ /= | e p Hr x H]; first by [].
+    have Hx := Active_path_head eo (isT: 0 < size (e :: p)) H.
+    rewrite cons_uniq negb_and negbK => /orP [/in_map_snd [p1 [f [p2 [E Hf]]]] | Hu].
+    - exists [::], (rcons p1 f), p2; rewrite /= cat_rcons -E last_rcons size_rcons Hf Hx.
+      by split => //; split => //; case: p1 E => [| g p1] /= [-> _].
+    - move: H Hu; clear Hx; case: p Hr => [_ _ /= | e' p Hr]; first by [].
+      move => /Active_path_cc [_ [H1 /ActiveOe_chain H2]] Hu.
+      rewrite -H2 in H1.
+      have [p1 [c [p2 [-> Hc]]]] := Hr _ H1 Hu.
+      by exists (e :: p1), c, p2.
+  Qed.
+
+  (* from an active walk one can extract an active path (no repeated nodes) *)
+  Theorem Active_path_uniq R X p (x y: T):
+    Active_path X R p x y ->
+    exists q, subseq q p /\ uniq (x :: [seq e.1.2 | e <- q]) /\ Active_path X R q x y.
+  Proof.
+    have [n Hn]: exists n, size p < n by exists (size p).+1.
+    elim: n p Hn => [// | n Hr] p Hs H.
+    case: (boolP (uniq (x :: [seq e.1.2 | e <- p]))) => Hu; first by exists p; rewrite subseq_refl.
+    have [p1 [c [p2 [E [Hc Hh]]]]] := Active_path_nuniq (x,x,P) H Hu.
+    rewrite E in H Hs; have H' := Active_path_cut Hc Hh H.
+    have Hs': size (p1 ++ p2) < n.
+      move: Hs; rewrite !size_cat ltnS => /(leq_trans _); apply.
+      by rewrite ltn_add2l -{1}[size p2]add0n ltn_add2r.
+    have [q [Hq1 Hq2]] := Hr _ Hs' H'.
+    by exists q; split => //; rewrite E; apply: (subseq_trans Hq1);
+      rewrite subseq_cat2l suffix_subseq.
+  Qed.
+
+  Corollary Active_uniq W E (x y: T):
+    Active W E x y <->
+    exists p, uniq (x :: [seq e.1.2 | e <- p]) /\ Active_path W E p x y.
+  Proof.
+    split => [[p /Active_path_uniq [q [_ ?]]] | [p [_ H]]]; last by exists p.
+    by exists q.
+  Qed.
+End Active_path_uniq.
